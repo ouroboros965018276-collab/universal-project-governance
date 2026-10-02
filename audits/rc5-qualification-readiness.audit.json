@@ -2,7 +2,7 @@
   "schema_version": 1,
   "version": "2.0.0-rc.5",
   "candidate": "Causal Qualification & Protocol Freeze",
-  "status": "framework-frozen-ready-for-real-agent-qualification",
+  "status": "framework-frozen-engineering-valid-ready-for-real-agent-qualification",
   "identities": {
     "behavioral_fingerprint": "sha256:3d8f3255c228a7fe9a423d74cdd011e0a471a24e1c62c65435e14dc0dfa72161",
     "qualification_fingerprint": "sha256:b3e259b65b7e3e54122fa4b680a2ed8e89a346548d98b54121f45b38eafc5da8",
@@ -78,8 +78,8 @@
     },
     {
       "name": "private GitHub default-branch install",
-      "result": "pending",
-      "evidence": "RC5 promoted to main; default-branch remote-install validation requested on this audit-state commit"
+      "result": "pass",
+      "evidence": "main Run #55: skills@1.7.0 cloned the private default branch, installed universal-project-governance into a clean Codex target, and installed-copy integrity passed (14 generated runtime files)"
     }
   ],
   "real_qualification_gates": [
@@ -121,5 +121,5 @@
     "minimum agent-family and project-profile generalization",
     "locked qualification-summary PASS"
   ],
-  "conclusion": "RC5 framework is engineering-valid and machine-frozen. This does not yet prove that UPG improves real Agents. Stable promotion remains blocked on empirical qualification."
+  "conclusion": "RC5 framework is engineering-valid, default-branch-install-valid, and machine-frozen. This does not prove that UPG improves real Agents. Stable promotion remains blocked on the locked empirical qualification gates."
 }
