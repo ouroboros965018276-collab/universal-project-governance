@@ -26,6 +26,10 @@ class RC5QualificationTests(unittest.TestCase):
         cp=run("tools/validate_qualification.py",".")
         self.assertEqual(cp.returncode,0,cp.stdout+cp.stderr)
 
+    def test_machine_freeze_matches(self):
+        cp=run("tools/qualification_freeze.py",".","--check")
+        self.assertEqual(cp.returncode,0,cp.stdout+cp.stderr)
+
     def test_trigger_suite_is_large_balanced_and_multilingual(self):
         cfg=json.loads((ROOT/"qualification/fixtures/trigger-families.json").read_text(encoding="utf-8"))
         cases=build_trigger_suite(cfg)

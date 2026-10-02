@@ -33,6 +33,8 @@ jobs:
         run: python tools/validate_freeze_delta.py
       - name: Validate RC5 qualification infrastructure
         run: python tools/validate_qualification.py .
+      - name: Validate machine qualification freeze
+        run: python tools/qualification_freeze.py . --check
       - name: Validate repository contract
         run: python tools/validate_repository.py .
       - name: Validate compiled Skill bundle
@@ -76,6 +78,8 @@ jobs:
         run: python tools/validate_qualification.py .
       - name: Verify behavior is frozen from RC4
         run: python tools/validate_freeze_delta.py
+      - name: Recheck qualification freeze identity
+        run: python tools/qualification_freeze.py . --check
       - name: Build metamorphic trigger suite
         run: |
           python qualification/trigger_suite.py --output /tmp/trigger-suite.json
