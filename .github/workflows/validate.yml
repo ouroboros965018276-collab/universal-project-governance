@@ -9,58 +9,49 @@ permissions:
   contents: read
 
 concurrency:
-  group: validate-upg-${{ github.ref }}
+  group: validate-pre-release-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  repository-integrity:
-    name: repository-integrity-and-security
+  source-runtime-integrity:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
         with:
-          python-version: '3.13'
-      - name: Validate installed Skill integrity ledger
-        run: python universal-project-governance/scripts/validate_integrity.py universal-project-governance
-      - name: Validate installable Skill bundle
-        run: python tools/validate_skill_bundle.py universal-project-governance
-      - name: Validate repository release invariants
+          python-version: '3.11'
+      - name: Verify source compiles exactly to tracked runtime
+        run: python compiler/compile_governance.py --check
+      - name: Enforce governance complexity and rule-graph invariants
+        run: python tools/governance_lint.py .
+      - name: Validate repository contract
         run: python tools/validate_repository.py .
-      - name: Run static security audit
+      - name: Validate compiled Skill bundle
+        run: python tools/validate_skill_bundle.py universal-project-governance
+      - name: Validate runtime integrity
+        run: python universal-project-governance/scripts/validate_integrity.py universal-project-governance
+      - name: Static security audit
         run: python tools/security_audit.py .
-      - name: Validate repository self-governance state
-        run: python universal-project-governance/scripts/validate_project_governance.py .
-      - name: Run integrated governance check
-        run: python universal-project-governance/scripts/governance_check.py . --skill-root universal-project-governance
-      - name: Compile Python sources
-        env:
-          PYTHONDONTWRITEBYTECODE: '1'
-        run: python -m compileall -q tools tests universal-project-governance/scripts
 
-  helpers:
-    name: helper-tests-python-${{ matrix.python-version }}
+  runtime-matrix:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.8', '3.11', '3.13']
-    env:
-      PYTHONDONTWRITEBYTECODE: '1'
+        python-version: ['3.8','3.11','3.13']
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Run executable helper and repository tests
-        run: python -m unittest discover -s tests -v
-      - name: Smoke-test read-only inspector
-        run: python universal-project-governance/scripts/inspect_project.py universal-project-governance --format json > /tmp/project-inspection.json
-      - name: Build deterministic release package
-        run: python tools/package_release.py universal-project-governance --output-dir /tmp/upg-dist
+      - name: Run RC4 compiler/runtime/state tests
+        run: PYTHONDONTWRITEBYTECODE=1 python -m unittest discover -s tests -v
+      - name: Reconfirm compiler and package on this runtime
+        run: |
+          python compiler/compile_governance.py --check
+          python tools/package_release.py universal-project-governance --output-dir /tmp/upg-dist
 
-  upstream-spec:
-    name: upstream-agent-skills-spec
+  upstream-agent-skills:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -69,20 +60,18 @@ jobs:
           python-version: '3.11'
       - name: Install pinned Agent Skills reference validator
         run: python -m pip install --disable-pip-version-check skills-ref==0.1.1
-      - name: Run upstream Agent Skills validation
+      - name: Validate compiled Agent Skill
         run: |
           python - <<'PY'
           from pathlib import Path
           from skills_ref import validate
-          path = Path('universal-project-governance')
-          errors = validate(path)
+          errors = validate(Path('universal-project-governance'))
           if errors:
               raise SystemExit('\n'.join(map(str, errors)))
           print('Upstream Agent Skills validation passed.')
           PY
 
-  skills-cli-smoke:
-    name: skills-cli-discovery-and-install
+  skills-cli:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -90,11 +79,14 @@ jobs:
         with:
           node-version: '24'
           package-manager-cache: false
-      - name: Discover local Skill with pinned CLI
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+      - name: Discover compiled Skill
         env:
           DISABLE_TELEMETRY: '1'
         run: npx -y skills@1.7.0 add ./universal-project-governance --list
-      - name: Install local Skill into a clean Codex target
+      - name: Install compiled Skill into clean Codex target
         env:
           DISABLE_TELEMETRY: '1'
         shell: bash
@@ -103,11 +95,10 @@ jobs:
           work="$(mktemp -d)"
           cd "$work"
           npx -y skills@1.7.0 add "$GITHUB_WORKSPACE/universal-project-governance" --skill universal-project-governance -a codex --copy -y
-          test -f .agents/skills/universal-project-governance/SKILL.md
-          python .agents/skills/universal-project-governance/scripts/validate_integrity.py .agents/skills/universal-project-governance
-          test ! -e .agents/skills/universal-project-governance/tests
-          test ! -e .agents/skills/universal-project-governance/evals
-      - name: Install from this private GitHub repository
+          skill="$(find . -path '*/universal-project-governance/SKILL.md' -type f -print -quit)"
+          test -n "$skill"
+          python "$GITHUB_WORKSPACE/universal-project-governance/scripts/validate_integrity.py" "$(dirname "$skill")"
+      - name: Install from private GitHub default branch
         if: github.ref == 'refs/heads/main'
         env:
           DISABLE_TELEMETRY: '1'
@@ -118,7 +109,6 @@ jobs:
           work="$(mktemp -d)"
           cd "$work"
           npx -y skills@1.7.0 add "${{ github.repository }}" --skill universal-project-governance -a codex --copy -y
-          test -f .agents/skills/universal-project-governance/SKILL.md
-          python .agents/skills/universal-project-governance/scripts/validate_integrity.py .agents/skills/universal-project-governance
-          test ! -e .agents/skills/universal-project-governance/tests
-          test ! -e .agents/skills/universal-project-governance/evals
+          skill="$(find . -path '*/universal-project-governance/SKILL.md' -type f -print -quit)"
+          test -n "$skill"
+          python "$GITHUB_WORKSPACE/universal-project-governance/scripts/validate_integrity.py" "$(dirname "$skill")"

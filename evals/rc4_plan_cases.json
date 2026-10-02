@@ -1,0 +1,216 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "id": "trivial-code-edit",
+      "context": {
+        "operation": "edit",
+        "domains": [
+          "code"
+        ],
+        "signals": [],
+        "profiles": [
+          "software"
+        ],
+        "risk": {}
+      },
+      "expect": {
+        "risk_level": "trivial",
+        "report": "none",
+        "handoff": "not-required",
+        "contains": [
+          "CLEANUP_OBSOLETE",
+          "TRUTH_CURRENT",
+          "EVIDENCE_AFFECTED"
+        ],
+        "max_rules": 5
+      }
+    },
+    {
+      "id": "api-migration",
+      "context": {
+        "operation": "migration",
+        "domains": [
+          "api"
+        ],
+        "signals": [
+          "contract_change",
+          "compatibility"
+        ],
+        "profiles": [
+          "software"
+        ],
+        "unfinished": true,
+        "risk": {
+          "migration": 2,
+          "contract_change": 2,
+          "external_consumers": 2,
+          "handoff": 1
+        }
+      },
+      "expect": {
+        "report": "engineering",
+        "handoff": "required",
+        "contains": [
+          "MIGRATION_CUTOVER",
+          "CONTRACT_VALIDATE",
+          "COMPATIBILITY_BOUND",
+          "SAFE_DELETE",
+          "TRUTH_CURRENT"
+        ]
+      }
+    },
+    {
+      "id": "data-delete",
+      "context": {
+        "operation": "delete",
+        "domains": [
+          "data"
+        ],
+        "signals": [
+          "data_delete",
+          "retention"
+        ],
+        "profiles": [
+          "data"
+        ],
+        "risk": {
+          "data": 2,
+          "external_consumers": 1
+        }
+      },
+      "expect": {
+        "report": "engineering",
+        "contains": [
+          "DATA_RETENTION",
+          "SAFE_DELETE"
+        ]
+      }
+    },
+    {
+      "id": "security-change",
+      "context": {
+        "operation": "security",
+        "domains": [
+          "security"
+        ],
+        "signals": [
+          "permission_change"
+        ],
+        "profiles": [
+          "infrastructure"
+        ],
+        "risk": {
+          "security": 2,
+          "reversibility": 1
+        }
+      },
+      "expect": {
+        "report": "engineering",
+        "contains": [
+          "SECURITY_ASSURANCE"
+        ]
+      }
+    },
+    {
+      "id": "generated-output",
+      "context": {
+        "operation": "generated",
+        "domains": [
+          "generated"
+        ],
+        "signals": [
+          "generated_artifact"
+        ],
+        "profiles": [
+          "software"
+        ],
+        "risk": {
+          "scope": 1
+        }
+      },
+      "expect": {
+        "contains": [
+          "GENERATED_SOURCE"
+        ]
+      }
+    },
+    {
+      "id": "unfinished-refactor",
+      "context": {
+        "operation": "refactor",
+        "domains": [
+          "code"
+        ],
+        "signals": [
+          "handoff",
+          "known_debt"
+        ],
+        "profiles": [
+          "software"
+        ],
+        "unfinished": true,
+        "risk": {
+          "scope": 1,
+          "handoff": 1
+        }
+      },
+      "expect": {
+        "handoff": "required",
+        "contains": [
+          "HANDOFF_CONTINUITY",
+          "DEBT_BOUNDARY"
+        ]
+      }
+    },
+    {
+      "id": "release",
+      "context": {
+        "operation": "release",
+        "domains": [
+          "code"
+        ],
+        "signals": [
+          "audit"
+        ],
+        "profiles": [
+          "software"
+        ],
+        "explicit_audit": true,
+        "risk": {
+          "scope": 2
+        }
+      },
+      "expect": {
+        "risk_level": "release",
+        "report": "audit",
+        "contains": [
+          "RELEASE_AUDIT"
+        ]
+      }
+    },
+    {
+      "id": "governance-upgrade",
+      "context": {
+        "operation": "governance_upgrade",
+        "domains": [
+          "governance"
+        ],
+        "signals": [],
+        "profiles": [],
+        "explicit_audit": true,
+        "risk": {
+          "scope": 2,
+          "contract_change": 2
+        }
+      },
+      "expect": {
+        "report": "audit",
+        "contains": [
+          "GOVERNANCE_UPGRADE",
+          "RELEASE_AUDIT"
+        ]
+      }
+    }
+  ]
+}
