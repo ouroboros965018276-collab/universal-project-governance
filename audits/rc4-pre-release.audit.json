@@ -67,7 +67,7 @@
     {
       "name": "private GitHub default-branch install",
       "result": "pending",
-      "evidence": "runs only after RC4 is advanced to main"
+      "evidence": "RC4 promoted to main; final default-branch remote-install validation requested on this audit-state commit"
     },
     {
       "name": "deterministic release package",
