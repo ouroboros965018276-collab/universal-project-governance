@@ -1,7 +1,7 @@
 # RC3 Pre-release Audit — 2.0.0-rc.3
 
 Audit date: 2026-10-02  
-Status: **RC3 deterministic engineering gates pass on the candidate branch. NOT STABLE.**
+Status: **RC3 engineering + installability pre-release gates PASS on `main`. NOT STABLE.**
 
 ## Candidate identity
 
@@ -47,7 +47,7 @@ validation, and handoff. RC3 adds executable protection and proportional observa
 | Local Skills CLI discovery/install | PASS |
 | Installed local copy integrity | PASS |
 | Deterministic package across 3 runtimes | PASS |
-| GitHub remote install | Must be verified after RC3 reaches default branch `main` |
+| GitHub remote install from default branch | **PASS** — private repository cloned, Skill installed, installed-copy integrity PASS |
 
 ## Integrity model assessment
 
@@ -102,6 +102,22 @@ Stable publication remains blocked until:
 
 ## Conclusion
 
-RC3 is **engineering-valid as a private release candidate** subject to a successful final branch run
-and successful remote GitHub install after merge to `main`. It is intentionally **not stable** until
-the empirical behavior and handoff gates are completed.
+RC3 is **engineering-valid and installability-valid as a private release candidate on `main`**.
+GitHub Actions Run #26 for merge commit `bdfe829454ce67686b4fad4670771aec00af9a22` passed the complete
+default-branch gate, including private-GitHub remote installation and post-install integrity validation.
+
+It is intentionally **not stable** until the empirical trigger, behavior, cross-agent handoff, and
+overhead gates are completed. This audit is now frozen for the RC3 deterministic pre-release evidence set.
+
+## Main-branch closure evidence
+
+- Merge PR: #1
+- Main RC3 merge commit: `bdfe829454ce67686b4fad4670771aec00af9a22`
+- Main validation run: `37021120271` (Run #26) — **PASS**
+- Local Skills CLI install: **PASS**
+- Private-GitHub default-branch remote install: **PASS**
+- Installed-copy integrity after both install paths: **PASS**
+- Python 3.8 / 3.11 / 3.13: **19/19 tests each**
+- Official Agent Skills reference validation: **PASS**
+- Deterministic package SHA-256 unchanged:
+  `7cf5a301cb8cd4a9f576145418bd31ab6c65071a699ddc5d78081b7517df4580`

@@ -103,17 +103,17 @@
 - **Change safety:** gate changes require full rerun.
 
 ### Last meaningful change
+- **When:** 2026-10-02T22:37:33+08:00
+- **Change ID:** rc3-main-remote-install
+- **What / why:** Verified the merged RC3 from the actual GitHub default branch, including remote clone/install and installed-copy integrity.
+- **Before / after:** branch-local install evidence only → authoritative default-branch remote-install evidence.
+- **Impact:** closes RC3 deterministic installability qualification on the private repository.
+- **Validation:** main GitHub Actions Run #26 passed all jobs; remote Skills CLI install and post-install integrity both passed.
+
+### Previous meaningful change
 - **When:** 2026-10-02T22:28:00+08:00
 - **Change ID:** rc3-ci-integrity
 - **What / why:** Added installed-Skill integrity validation and corrected branch remote-install semantics.
 - **Before / after:** branch CI could accidentally test RC2 default branch as RC3 → branch validates local candidate, main validates real remote install.
-- **Impact:** CI evidence now corresponds to the bytes actually under test.
-- **Validation:** RC3 branch CI passes after correction.
-
-### Previous meaningful change
-- **When:** 2026-10-02T21:38:00+08:00
-- **Change ID:** rc2-audit-anchor-hardening
-- **What / why:** Removed self-referential audit run/commit requirement.
-- **Before / after:** recursive audit churn → stable content-identity evidence.
-- **Impact:** cleaner release pipeline.
-- **Validation:** RC2 pre-release workflow completed successfully with package and installation evidence.
+- **Impact:** CI evidence corresponds to the bytes actually under test.
+- **Validation:** final RC3 branch CI passed after correction.

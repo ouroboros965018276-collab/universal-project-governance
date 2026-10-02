@@ -11,9 +11,10 @@ changes clean, current, evidenced, traceable, handoff-ready, and protected from 
 
 The repository is a private pre-release workspace for **Universal Project Governance 2.0.0-rc.3**.
 RC3 implements **Self-Protecting Governance + Feedback Driven Governance** while preserving the original
-single-Skill concept. Structural, integrity, security, helper, package, official-spec, and local-install
-gates pass on the RC3 branch. Stable/public release remains intentionally blocked until real-agent trigger
-and behavior qualification is completed.
+single-Skill concept. RC3 is now merged into `main`; structural, integrity, security, helper, package,
+official-spec, local-install, and private-GitHub default-branch remote-install gates all pass. Stable/public
+release remains intentionally blocked until real-agent trigger, behavior, cross-agent handoff, and
+overhead qualification is completed.
 
 ## Architecture / structure
 
@@ -86,6 +87,19 @@ Repository-only tests/evals/audits are not installed into consumer projects.
 
 ## Last meaningful change
 
+- **When:** 2026-10-02T22:37:33+08:00
+- **Change ID:** rc3-main-remote-install-verification
+- **Scope:** default-branch release/install evidence
+- **Before:** RC3 branch gates were green, but a true `owner/repo` install still resolved to RC2 because GitHub installs clone the repository default branch.
+- **What changed:** merged tested RC3 through PR #1 into `main`, then ran the complete default-branch CI including private-GitHub remote clone/install and post-install integrity validation.
+- **Why:** prove that users with repository access receive the actual RC3 bytes and that installation does not alter protected Skill content.
+- **After:** RC3 engineering and installability gates are complete on `main`; only empirical real-agent behavior/handoff/overhead gates remain before stable/public promotion.
+- **Impact:** closes the final deterministic pre-release installation gate without changing installed Skill bytes.
+- **Validation:** GitHub Actions Run #26 completed successfully; remote repository clone, Skill discovery/install, and installed-copy integrity all passed; Python 3.8/3.11/3.13 each passed 19/19 tests; package SHA-256 remained `7cf5a301cb8cd4a9f576145418bd31ab6c65071a699ddc5d78081b7517df4580`.
+- **Removed / superseded:** RC3 audit language that described remote GitHub installation as pending.
+
+## Previous meaningful change
+
 - **When:** 2026-10-02T22:28:00+08:00
 - **Change ID:** rc3-self-protecting-feedback-governance
 - **Scope:** installable Skill, integrity model, adaptive evidence/reporting, handoff, feedback, tests, release gates
@@ -94,20 +108,7 @@ Repository-only tests/evals/audits are not installed into consumer projects.
 - **Why:** make cross-agent continuity auditable without forcing every small task to generate expensive persistent reports, while preventing ordinary agents from silently rewriting the governance contract.
 - **After:** RC3 is self-protecting in the tamper-evident sense and can produce proportional review evidence without making the evidence system itself unbounded technical debt.
 - **Impact:** governance behavior and release engineering; original maintenance/documentation/technical-debt concept remains intact.
-- **Validation:** 19 tests pass on Python 3.8/3.11/3.13; upstream validator passes; integrity and local install checks pass; deterministic package digest is recorded in RC3 audit.
-- **Removed / superseded:** misplaced root-level RC3 draft structures and the completed `RC3_UPGRADE_PLAN.md`.
-
-## Previous meaningful change
-
-- **When:** 2026-10-02T21:38:00+08:00
-- **Change ID:** rc2-audit-anchor-hardening
-- **Scope:** release evidence
-- **Before:** audit prose risked self-referential commit/run churn.
-- **What changed:** release identity anchored to candidate version, deterministic package SHA-256, and successful CI provenance.
-- **Why:** keep evidence strict without creating documentation-only loops.
-- **After:** release audit can remain stable while GitHub preserves exact run/commit provenance.
-- **Impact:** release process.
-- **Validation:** RC2 full CI passed.
+- **Validation:** final RC3 branch CI passed all deterministic gates before merge; main Run #26 subsequently confirmed remote installability and integrity.
 
 ## Active exceptions
 
