@@ -2,96 +2,47 @@
 
 ## Purpose
 
-Develop, validate, audit, and publish **Universal Project Governance**, one model-agnostic Agent Skill that keeps maintained-project changes coherent, current, evidenced, clean, and handoff-ready without letting governance complexity grow linearly with capability.
+Develop, qualify, and publish Universal Project Governance as a model-agnostic Agent Skill that improves maintained-project engineering behavior without allowing governance complexity or overhead to become a second technical-debt system.
 
 ## Current state
 
-The repository is validating **2.0.0-rc.4 — Compiled Governance Architecture**.
+The repository is validating **2.0.0-rc.5 — Causal Qualification & Protocol Freeze**.
 
-RC4 has replaced the RC3 document-heavy installable runtime with a generated runtime compiled from one canonical typed governance model. Stable/public release remains blocked until real-agent behavioral qualification is complete.
+RC4 established the compiled governance runtime. RC5 intentionally freezes those semantics and adds a repository-only empirical qualification system. The project has not yet claimed real-agent behavioral improvement; that claim is blocked until locked qualification produces real evidence.
 
-## Architecture / structure
+## Architecture
 
-- `governance-src/` — canonical governance source, schemas, profiles, runtime-script source, and presentation template.
-- `compiler/` — deterministic source→runtime compiler.
-- `universal-project-governance/` — generated installable Skill; never hand-maintained.
-- `tools/` — repository validators, static analysis, security, and packaging.
-- `tests/` / `evals/` — compiler/runtime/state/evaluation coverage.
-- `audits/` — frozen or candidate release evidence.
+- governance-src/: canonical governance semantics; behavior frozen from RC4 except version identity.
+- compiler/: deterministic source-to-runtime compiler; contract frozen.
+- universal-project-governance/: generated installable runtime; normalized behavior must match RC4.
+- qualification/: repository-only causal evaluation plane.
+- tests/ and evals/: deterministic development/regression coverage.
+- audits/: candidate and release evidence.
 
-## Canonical sources of truth
+## Qualification capabilities
 
-| Concern | Canonical source |
-|---|---|
-| Governance semantics | `governance-src/model/governance-model.json` |
-| Project-type activation | `governance-src/profiles/*.json` |
-| Structured state contracts | `governance-src/schemas/*.json` |
-| Runtime presentation template | `governance-src/templates/SKILL.template.md` |
-| Runtime helper source | `governance-src/runtime-scripts/` |
-| Generated installable Skill | `universal-project-governance/` |
-| Release gates | `PUBLISHING.md` |
-| Current project state | `PROJECT_STATE.md` |
-| Active design decisions | `DECISIONS.md` |
+RC5 provides A0/A1/A2/K arms, fresh paired trials, executable dev/holdout labs, deterministic grading, normalized blind bundles, multilingual trigger cases, activation-trace contracts, controlled-checkpoint handoff contracts, policy/repository mutations, confidence analysis, overhead metrics, and immutable evidence-round rules.
 
-## Major capabilities
+## Identity and freeze
 
-| Capability | Current implementation | Status |
-|---|---|---|
-| Core governance kernel | 7 hot-path invariants | RC4 |
-| Typed Policy IR | canonical JSON model | RC4 |
-| Rule graph | stable IDs + `requires` / conflicts | RC4 |
-| Risk/context classification | typed task context + weighted risk vector | RC4 |
-| Governance compiler | task-specific active closure + evidence/report/handoff output | RC4 |
-| Capability profiles | activate existing policy IDs only | RC4 |
-| Schema-first state | handoff/execution/feedback/audit JSON schemas | RC4 |
-| Complexity gate | deterministic linter + CI hard limits | RC4 |
-| Runtime integrity | compiler-generated SHA-256 manifest | RC4 |
-| Evidence compaction/export | `state_tool.py` | RC4 |
+qualification/FREEZE.json is generated after the infrastructure stabilizes. It binds the behavioral fingerprint, qualification fingerprint, governance model, compiler, runtime, protocol, fixtures, graders, and adapter contract. A changed behavioral fingerprint invalidates prior qualification.
 
-## Constraints and invariants
+## Evidence state
 
-- One semantic rule has one canonical definition.
-- Governance profiles may activate but never redefine rules.
-- The generated runtime is not manually edited.
-- Runtime cognitive load is bounded by CI budgets.
-- Deterministic structural defects hard-fail; semantic-similarity heuristics remain advisory.
-- Current-state documentation describes current truth; release audits may remain historical/frozen.
-- Stable release requires real-agent evidence beyond static correctness.
+Real Agent qualification results are pending. No empty result placeholders are accepted as evidence.
 
-## Validation / operation
-
-```bash
-python compiler/compile_governance.py --check
-python tools/governance_lint.py .
-python tools/validate_repository.py .
-python tools/validate_skill_bundle.py universal-project-governance
-python universal-project-governance/scripts/validate_integrity.py universal-project-governance
-python -m unittest discover -s tests -v
-```
-
-GitHub CI additionally covers supported Python runtimes, upstream Agent Skills validation, Skills CLI installation, and deterministic release packaging.
+Final qualification has only PASS, FAIL, or MORE_DATA. No aggregate score can compensate for a critical failure.
 
 ## Last meaningful change
 
-- **When:** 2026-10-03
-- **Change ID:** rc4-compiled-governance
-- **Scope:** governance architecture, runtime distribution, validation, state/evidence contracts
-- **Before:** RC3 required a 256-line runtime `SKILL.md`, a multi-document reference tree, Markdown templates, and agent-side composition of overlapping governance concepts.
-- **What changed:** governance semantics moved into one typed canonical model; policy dependencies are compiled into task-specific plans; the installable runtime is generated and complexity-bounded.
-- **Why:** prevent governance meta-complexity, semantic duplication, cognitive debt, and linear runtime-context growth.
-- **After:** source complexity is absorbed by compiler/static analysis while runtime agent context remains bounded.
-- **Impact:** major internal architecture replacement while preserving the original governance objectives.
-- **Validation:** RC4 compiler/linter/tests/CI gates; final pre-release evidence is tracked in the RC4 audit.
-- **Removed / superseded:** install-time reference-document tree, Markdown report templates, manual runtime policy synchronization.
+- When: 2026-10-03
+- Change ID: rc5-causal-qualification-freeze
+- Before: RC4 proved internal correctness, bounded complexity, installability, and deterministic behavior, but not causal benefit to real Agents.
+- What changed: added a preregistered causal qualification plane while freezing runtime behavior.
+- Why: distinguish 'the policy compiler works as designed' from 'the policy improves real engineering outcomes'.
+- After: the repository can produce auditable counterfactual evidence for behavior, safety, handoff, triggering, and overhead.
+- Validation: deterministic qualification infrastructure and final CI; real Agent qualification remains pending.
 
 ## Previous meaningful change
 
-- **When:** 2026-10-02
-- **Change ID:** rc3-self-protecting-feedback-governance
-- **Scope:** integrity, adaptive reporting, feedback, handoff
-- **What / why:** added self-protection and proportional evidence feedback around the original governance lifecycle.
-- **Validation:** RC3 main-branch CI and installability audit passed.
-
-## Active exceptions
-
-None in the RC4 implementation. Stable-release behavioral evidence remains a deliberate release gate, not hidden technical debt.
+RC4 converted the document-heavy governance system into typed Policy IR + Rule Graph + Compiler + bounded runtime and passed engineering/installability gates.

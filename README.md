@@ -1,121 +1,66 @@
 # 通用项目治理 | Universal Project Governance
 
-**Universal Project Governance** is a model-agnostic Agent Skill for maintained-project governance.
+Current candidate: **2.0.0-rc.5 — Causal Qualification & Protocol Freeze**
 
-Current candidate: **2.0.0-rc.4 — Compiled Governance Architecture**
+RC5 deliberately does not add new governance policy. RC4 established the compiled governance runtime; RC5 adds a repository-only empirical qualification plane that can prove or falsify whether the frozen runtime actually improves real coding agents.
 
-RC4 replaces the RC3 document-heavy runtime with a compiled architecture:
+## RC5 architecture
 
-```text
-Canonical Governance Source
-        ↓
-Typed Policy IR
-        ↓
-Rule Graph + Static Analysis
-        ↓
-Risk-Adaptive Compiler
-        ↓
-Task-specific Governance Plan
-        ↓
-Bounded Runtime Skill
-        ↓
-Evidence / State / Handoff
-```
+Frozen Governance Runtime → Real Agent + Real Task → Observable Repository Outcome → Qualification Plane.
 
-## What changed in RC4
+The Qualification Plane covers paired counterfactual trials, no-Skill / attention-control / Full-UPG arms, targeted kernel/policy ablation, executable repository labs, trigger activation qualification, cross-agent handoff experiments, mutation-based evaluator sensitivity, deterministic and blinded grading, confidence intervals, and token/latency/tool overhead.
 
-- one canonical machine-readable governance model;
-- stable policy IDs and dependency graph;
-- typed task context and governance-plan schemas;
-- deterministic risk-adaptive plan compilation;
-- schema-first handoff, execution, feedback, and audit state;
-- generated installable runtime;
-- hard complexity budgets in CI;
-- static checks for duplicate IDs, missing dependencies, cycles, orphan rules, conflicts, missing evidence contracts, unknown profile activations, and runtime bloat;
-- deterministic compaction/export helpers for governance evidence;
-- integrity validation for generated runtime bytes.
+## Runtime freeze
 
-The runtime `SKILL.md` is intentionally small and is generated from the canonical model. Do not maintain runtime policy prose by hand.
+Runtime behavior is frozen from RC4. The only governance-runtime change in RC5 is prerelease version identity. CI verifies a normalized behavioral fingerprint against the RC4 baseline commit.
 
-## Repository layout
+The installable Skill remains bounded: 15 policies, 7 hot-path invariants, generated SKILL.md under the RC5 90-line freeze target, no runtime reference tree, and no new governance DSL.
 
-```text
-governance-src/                 # canonical governance source
-├── model/
-├── profiles/
-├── schemas/
-├── templates/
-└── runtime-scripts/
+## Experimental arms
 
-compiler/
-└── compile_governance.py       # source → installable runtime
+- A0 — No Skill baseline.
+- A1 — Attention Control: generic careful-engineering instructions to separate UPG benefit from generic extra attention.
+- A2 — Full UPG: real host Skill treatment.
+- K — Kernel Only: targeted diagnostic ablation, not a primary release arm.
 
-universal-project-governance/   # generated installable Skill
-├── SKILL.md
-├── policy-index.json
-├── schemas/
-├── scripts/
-└── integrity/
+Primary qualification uses fresh paired trials with the same task, fixture, model/agent scaffold, tools, and budgets. The experimental arm is the intended variable.
 
-tools/
-tests/
-evals/
-audits/
-.github/
-```
+## Evidence authority
 
-## Source of truth
+Deterministic repository/test evidence outranks semantic judgment. LLM judges are only for aspects that cannot be mechanically established, operate on de-identified outcome bundles, and cannot overrule deterministic failure. Human review is reserved for disagreements, critical cases, and release spot checks.
 
-Governance semantics live only in:
+Private chain-of-thought is neither required nor part of the qualification contract.
 
-```text
-governance-src/model/governance-model.json
-```
+## Executable qualification assets
 
-Profiles may activate existing rule IDs but may not redefine them. Runtime Markdown is generated presentation, not a second semantic source.
+- 12 development behavioral labs.
+- 12 locked behavioral holdout labs.
+- development and locked cross-agent handoff labs.
+- 144 generated multilingual metamorphic trigger cases.
+- policy mutants for Eval-the-Eval sensitivity testing.
+- repository mutation categories for governance-behavior testing.
 
-## Install
+Locked holdout oracle material is never copied into an Agent workspace. Formal holdout runs require strong external sandbox/container/VM isolation.
 
-For compatible Skills clients:
+## No magic score
 
-```bash
-npx skills add ouroboros965018276-collab/universal-project-governance --skill universal-project-governance
-```
+RC5 uses non-compensatory gates: evaluator validity → critical safety → core-task non-inferiority → governance uplift → handoff uplift → trigger quality → efficiency → generalization. A severe failure cannot be averaged away by a better cleanup score.
 
-The repository is currently private and RC4 is **not stable**.
+## Results are evidence, not templates
 
-## Maintainer validation
+There are intentionally no fake empty behavioral-results.json, handoff-results.json, or overhead-results.json files. Real qualification runs create immutable qN result rounds. Raw traces stay out of Git by default; Git keeps reviewed manifests, hashes, aggregates, and summaries.
 
-```bash
-python compiler/compile_governance.py --check
-python tools/governance_lint.py .
-python tools/validate_repository.py .
-python -m unittest discover -s tests -v
-python tools/package_release.py universal-project-governance --output-dir dist
-```
+## Current status
 
-The GitHub workflow additionally validates Python 3.8 / 3.11 / 3.13, the upstream Agent Skills reference validator, Skills CLI discovery/install, runtime integrity, security, and deterministic packaging.
+RC5 qualification infrastructure is under validation. The project is not yet empirically qualified and is not Stable. If locked qualification passes without changing the behavioral fingerprint, the intended next promotion is 2.0.0 Stable. If evidence exposes a core defect, Stable is blocked.
 
-## Complexity policy
+## Maintainer checks
 
-RC4 hard-fails when governance complexity exceeds declared budgets. Current key budgets include:
+    python compiler/compile_governance.py --check
+    python tools/governance_lint.py .
+    python tools/validate_freeze_delta.py
+    python tools/validate_qualification.py .
+    python tools/validate_repository.py .
+    python -m unittest discover -s tests -v
 
-- runtime `SKILL.md`: ≤120 lines;
-- hot-path invariants: ≤8;
-- default active policy closure: ≤5;
-- runtime Markdown files: ≤4;
-- dependency cycles: 0;
-- orphan policies: 0;
-- conflicting blocking rules: 0.
-
-Semantic-similarity duplicate detection remains advisory until it can be made deterministic enough for a hard release gate.
-
-## Release state
-
-Engineering/installability validation is required before RC promotion. Stable publication additionally requires real-agent trigger, behavior, cross-agent handoff, and overhead evidence.
-
-See `PUBLISHING.md` and `audits/rc4-pre-release.audit.json`.
-
-## License
-
-Apache-2.0.
+License: Apache-2.0.

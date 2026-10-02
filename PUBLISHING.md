@@ -1,78 +1,50 @@
 # Publishing and Release Gates
 
-The installable Skill is the compiler-generated `universal-project-governance/` directory.
+## RC5 engineering gate
 
-## RC4 source/runtime gate
+Before qualification or candidate promotion run:
 
-Before any candidate promotion:
+    python compiler/compile_governance.py --check
+    python tools/governance_lint.py .
+    python tools/validate_freeze_delta.py
+    python tools/validate_qualification.py .
+    python tools/validate_repository.py .
+    python tools/validate_skill_bundle.py universal-project-governance
+    python universal-project-governance/scripts/validate_integrity.py universal-project-governance
+    python -m unittest discover -s tests -v
+    python tools/package_release.py universal-project-governance --output-dir dist
 
-```bash
-python compiler/compile_governance.py --check
-python tools/governance_lint.py .
-python tools/validate_repository.py .
-python tools/validate_skill_bundle.py universal-project-governance
-python universal-project-governance/scripts/validate_integrity.py universal-project-governance
-python -m unittest discover -s tests -v
-python tools/package_release.py universal-project-governance --output-dir dist
-```
+Final RC5 freeze additionally requires:
 
-GitHub CI must additionally pass:
+    python tools/qualification_freeze.py . --check
 
-- Python 3.8 / 3.11 / 3.13;
-- upstream `skills-ref==0.1.1`;
-- Skills CLI discovery and clean installation;
-- default-branch private-GitHub installation;
-- security static audit;
-- deterministic release package.
+GitHub CI must continue to pass Python 3.8 / 3.11 / 3.13, upstream Agent Skills validation, Skills CLI discovery/install, security audit, deterministic package construction, and default-branch private install after promotion.
 
-## Complexity gate
+## RC4→RC5 behavioral freeze
 
-The release fails on deterministic governance defects including:
+RC5 may not add runtime governance semantics. The normalized behavioral fingerprint must equal the frozen RC4 baseline despite the rc.5 version identity. A changed fingerprint invalidates RC5 qualification evidence.
 
-- duplicate/invalid policy IDs;
-- missing dependency references;
-- dependency cycles;
-- orphan policies;
-- blocking rules without evidence contracts;
-- unknown profile activations;
-- conflicts inside a rule closure;
-- runtime `SKILL.md` over budget;
-- hot path/default rule closure over budget;
-- excess runtime Markdown;
-- source/runtime compiler drift.
+## Qualification prerequisites
 
-Fuzzy semantic-duplicate signals are advisory only.
+- protocol status locked;
+- qualification/FREEZE.json matches frozen surfaces;
+- evaluator sensitivity can detect declared known-bad policy mutants;
+- locked holdouts run only inside strong isolated workspaces;
+- endpoints, critical failures, thresholds, budgets, randomization and stopping rules are preregistered;
+- graders are calibrated before release evidence is interpreted.
 
-## Candidate identity
+## Stable qualification gate
 
-A candidate is identified by:
+2.0.0 Stable requires a real immutable qualification round whose summary is PASS under the frozen qualification fingerprint.
 
-1. semantic prerelease version;
-2. canonical source state in Git;
-3. compiler-generated runtime identity;
-4. deterministic release ZIP SHA-256;
-5. successful CI for the release-relevant HEAD.
+Required non-compensatory gates: evaluator validity; no disqualifying critical safety regression; core-task non-inferiority; positive governance uplift versus no-Skill and attention-control; positive cross-agent handoff recovery; trigger precision/recall within threshold; overhead within budget; cross-agent/project-profile generalization.
 
-Do not create self-referential audit loops that require a document to contain the run/commit created by editing itself.
+Zero observed critical failures must be reported with sample size and a confidence upper bound, never as proof of zero risk.
 
-## Stable behavioral gate
+## Evidence storage
 
-Stable remains blocked until empirical evaluation demonstrates:
+Large/private raw traces remain in controlled CI/artifact storage by default. Git keeps immutable manifests, content hashes, generated aggregates, and summaries. Completed qN rounds are never overwritten; a harness defect invalidates the round and creates qN+1.
 
-- trigger false-positive/false-negative behavior across supported agents;
-- fresh-context with-Skill vs no-Skill/previous-stable comparisons;
-- Agent A → Agent B handoff recovery;
-- zero critical unsafe-deletion, fabricated-evidence, false-completion, duplicate-truth, or ignored-validation failures;
-- acceptable context/token/latency overhead.
+## Promotion
 
-Any material behavioral finding creates a new RC and reruns deterministic + empirical gates.
-
-## Public release
-
-Before changing the private repository to Public:
-
-- verify history contains no unrelated private material/secrets;
-- confirm branch/repository protection available at publication tier;
-- verify README/version/tag/artifact checksum agree;
-- perform a clean install from the public repository;
-- publish the candidate/stable audit evidence.
+If RC5 passes and the behavioral fingerprint remains unchanged, release metadata may promote to 2.0.0 Stable without invalidating behavioral evidence. If qualification fails, Stable is blocked; thresholds are not moved after seeing results.
