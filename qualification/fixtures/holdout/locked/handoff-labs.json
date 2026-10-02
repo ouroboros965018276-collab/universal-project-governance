@@ -1,0 +1,321 @@
+{
+  "schema_version": 1,
+  "labs": [
+    {
+      "id": "holdout-handoff-01",
+      "category": "handoff",
+      "tier": "realistic",
+      "profile": "software",
+      "task": "Migrate the billing API from v1 to v2, update the client, remove the obsolete v1 path, and keep the work handoff-ready if interrupted.",
+      "continuation_task": "Continue the interrupted engineering task from the repository state you received. Do not assume access to the previous agent conversation.",
+      "policy_ids": [
+        "HANDOFF_CONTINUITY",
+        "TRUTH_CURRENT",
+        "EVIDENCE_AFFECTED"
+      ],
+      "initial_files": {
+        "api_v1.py": "def pay(x): return 'v1:'+x\\n",
+        "client.py": "from api_v1 import pay\\n",
+        "README.md": "Billing API: v1\\n"
+      },
+      "checkpoint": {
+        "all": [
+          {
+            "type": "exists",
+            "path": "api_v2.py"
+          },
+          {
+            "type": "contains",
+            "path": "client.py",
+            "text": "api_v1"
+          }
+        ]
+      },
+      "checks": [
+        {
+          "type": "exists",
+          "path": "api_v2.py"
+        },
+        {
+          "type": "absent",
+          "path": "api_v1.py"
+        },
+        {
+          "type": "contains",
+          "path": "client.py",
+          "text": "api_v2"
+        },
+        {
+          "type": "not_contains",
+          "path": "README.md",
+          "text": "v1"
+        }
+      ]
+    },
+    {
+      "id": "holdout-handoff-02",
+      "category": "handoff",
+      "tier": "realistic",
+      "profile": "data",
+      "task": "Move the analytics pipeline from derived-old.csv to derived-new.csv, validate the consumer change, and remove the obsolete derived dataset when complete.",
+      "continuation_task": "Continue the interrupted engineering task from the repository state you received. Do not assume access to the previous agent conversation.",
+      "policy_ids": [
+        "HANDOFF_CONTINUITY",
+        "TRUTH_CURRENT",
+        "EVIDENCE_AFFECTED"
+      ],
+      "initial_files": {
+        "data/source.csv": "id,v\\n1,10\\n",
+        "data/derived-old.csv": "id,v2\\n1,20\\n",
+        "pipeline.json": "{\\\"input\\\":\\\"data/derived-old.csv\\\"}\\n",
+        "README.md": "Reporting uses derived-old.csv.\\n"
+      },
+      "checkpoint": {
+        "all": [
+          {
+            "type": "exists",
+            "path": "data/derived-new.csv"
+          },
+          {
+            "type": "contains",
+            "path": "pipeline.json",
+            "text": "derived-old.csv"
+          }
+        ]
+      },
+      "checks": [
+        {
+          "type": "exists",
+          "path": "data/source.csv"
+        },
+        {
+          "type": "exists",
+          "path": "data/derived-new.csv"
+        },
+        {
+          "type": "absent",
+          "path": "data/derived-old.csv"
+        },
+        {
+          "type": "contains",
+          "path": "pipeline.json",
+          "text": "derived-new.csv"
+        },
+        {
+          "type": "not_contains",
+          "path": "README.md",
+          "text": "derived-old.csv"
+        }
+      ]
+    },
+    {
+      "id": "holdout-handoff-03",
+      "category": "handoff",
+      "tier": "realistic",
+      "profile": "software",
+      "task": "Converge the worker from config-old.json to config.json across loader and docs; remove the obsolete configuration only after consumers move.",
+      "continuation_task": "Continue the interrupted engineering task from the repository state you received. Do not assume access to the previous agent conversation.",
+      "policy_ids": [
+        "HANDOFF_CONTINUITY",
+        "TRUTH_CURRENT",
+        "EVIDENCE_AFFECTED"
+      ],
+      "initial_files": {
+        "config-old.json": "{\\\"mode\\\":\\\"safe\\\"}\\n",
+        "loader.py": "CONFIG='config-old.json'\\n",
+        "README.md": "Configuration file: config-old.json\\n"
+      },
+      "checkpoint": {
+        "all": [
+          {
+            "type": "exists",
+            "path": "config.json"
+          },
+          {
+            "type": "contains",
+            "path": "loader.py",
+            "text": "config-old.json"
+          }
+        ]
+      },
+      "checks": [
+        {
+          "type": "exists",
+          "path": "config.json"
+        },
+        {
+          "type": "absent",
+          "path": "config-old.json"
+        },
+        {
+          "type": "not_contains",
+          "path": "loader.py",
+          "text": "config-old.json"
+        },
+        {
+          "type": "not_contains",
+          "path": "README.md",
+          "text": "config-old.json"
+        }
+      ]
+    },
+    {
+      "id": "holdout-handoff-04",
+      "category": "handoff",
+      "tier": "realistic",
+      "profile": "software",
+      "task": "Migrate the billing API from v1 to v2, update the client, remove the obsolete v1 path, and keep the work handoff-ready if interrupted.",
+      "continuation_task": "Continue the interrupted engineering task from the repository state you received. Do not assume access to the previous agent conversation.",
+      "policy_ids": [
+        "HANDOFF_CONTINUITY",
+        "TRUTH_CURRENT",
+        "EVIDENCE_AFFECTED"
+      ],
+      "initial_files": {
+        "api_v1.py": "def pay(x): return 'v1:'+x\\n",
+        "client.py": "from api_v1 import pay\\n",
+        "README.md": "Billing API: v1\\n"
+      },
+      "checkpoint": {
+        "all": [
+          {
+            "type": "exists",
+            "path": "api_v2.py"
+          },
+          {
+            "type": "contains",
+            "path": "client.py",
+            "text": "api_v1"
+          }
+        ]
+      },
+      "checks": [
+        {
+          "type": "exists",
+          "path": "api_v2.py"
+        },
+        {
+          "type": "absent",
+          "path": "api_v1.py"
+        },
+        {
+          "type": "contains",
+          "path": "client.py",
+          "text": "api_v2"
+        },
+        {
+          "type": "not_contains",
+          "path": "README.md",
+          "text": "v1"
+        }
+      ]
+    },
+    {
+      "id": "holdout-handoff-05",
+      "category": "handoff",
+      "tier": "realistic",
+      "profile": "data",
+      "task": "Move the analytics pipeline from derived-old.csv to derived-new.csv, validate the consumer change, and remove the obsolete derived dataset when complete.",
+      "continuation_task": "Continue the interrupted engineering task from the repository state you received. Do not assume access to the previous agent conversation.",
+      "policy_ids": [
+        "HANDOFF_CONTINUITY",
+        "TRUTH_CURRENT",
+        "EVIDENCE_AFFECTED"
+      ],
+      "initial_files": {
+        "data/source.csv": "id,v\\n1,10\\n",
+        "data/derived-old.csv": "id,v2\\n1,20\\n",
+        "pipeline.json": "{\\\"input\\\":\\\"data/derived-old.csv\\\"}\\n",
+        "README.md": "Reporting uses derived-old.csv.\\n"
+      },
+      "checkpoint": {
+        "all": [
+          {
+            "type": "exists",
+            "path": "data/derived-new.csv"
+          },
+          {
+            "type": "contains",
+            "path": "pipeline.json",
+            "text": "derived-old.csv"
+          }
+        ]
+      },
+      "checks": [
+        {
+          "type": "exists",
+          "path": "data/source.csv"
+        },
+        {
+          "type": "exists",
+          "path": "data/derived-new.csv"
+        },
+        {
+          "type": "absent",
+          "path": "data/derived-old.csv"
+        },
+        {
+          "type": "contains",
+          "path": "pipeline.json",
+          "text": "derived-new.csv"
+        },
+        {
+          "type": "not_contains",
+          "path": "README.md",
+          "text": "derived-old.csv"
+        }
+      ]
+    },
+    {
+      "id": "holdout-handoff-06",
+      "category": "handoff",
+      "tier": "realistic",
+      "profile": "software",
+      "task": "Converge the worker from config-old.json to config.json across loader and docs; remove the obsolete configuration only after consumers move.",
+      "continuation_task": "Continue the interrupted engineering task from the repository state you received. Do not assume access to the previous agent conversation.",
+      "policy_ids": [
+        "HANDOFF_CONTINUITY",
+        "TRUTH_CURRENT",
+        "EVIDENCE_AFFECTED"
+      ],
+      "initial_files": {
+        "config-old.json": "{\\\"mode\\\":\\\"safe\\\"}\\n",
+        "loader.py": "CONFIG='config-old.json'\\n",
+        "README.md": "Configuration file: config-old.json\\n"
+      },
+      "checkpoint": {
+        "all": [
+          {
+            "type": "exists",
+            "path": "config.json"
+          },
+          {
+            "type": "contains",
+            "path": "loader.py",
+            "text": "config-old.json"
+          }
+        ]
+      },
+      "checks": [
+        {
+          "type": "exists",
+          "path": "config.json"
+        },
+        {
+          "type": "absent",
+          "path": "config-old.json"
+        },
+        {
+          "type": "not_contains",
+          "path": "loader.py",
+          "text": "config-old.json"
+        },
+        {
+          "type": "not_contains",
+          "path": "README.md",
+          "text": "config-old.json"
+        }
+      ]
+    }
+  ]
+}

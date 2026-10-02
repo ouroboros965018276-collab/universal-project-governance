@@ -57,7 +57,7 @@ def main():
         trial={
           "trial_id":str(uuid.uuid4()),"pair_id":args.pair_id,"scenario_id":lab["id"],"kind":args.kind,"arm":args.arm,
           "agent":adapter.config.get("agent",{}),
-          "environment":{"sandboxed":adapter.config.get("sandboxed",False),"workspace_isolation":adapter.config.get("workspace_isolation"),"capabilities":adapter.config.get("capabilities",[])},
+          "environment":{"sandboxed":adapter.config.get("sandboxed",False),"workspace_isolation":adapter.config.get("workspace_isolation"),"capabilities":adapter.config.get("capabilities",[]),"project_profile":lab.get("profile")},
           "fingerprints":{"behavioral":freeze.get("behavioral_fingerprint"),"qualification":freeze.get("qualification_fingerprint")},
           "outcome":outcome,"usage":result["usage"],
           "evidence":dict(result["evidence"],before_sha256=grade["before_sha256"],after_sha256=grade["after_sha256"],events=result.get("events",{}))
