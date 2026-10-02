@@ -66,8 +66,8 @@
     },
     {
       "name": "private GitHub default-branch install",
-      "result": "pending",
-      "evidence": "RC4 promoted to main; final default-branch remote-install validation requested on this audit-state commit"
+      "result": "pass",
+      "evidence": "main validation Run #37: skills@1.7.0 cloned private default branch, installed the compiled Skill into a clean Codex target, and installed-copy integrity passed"
     },
     {
       "name": "deterministic release package",
