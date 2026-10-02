@@ -1,34 +1,37 @@
 # Agent Execution Audit
 
-Date:
+> Evidence-oriented execution record. Do not include private chain-of-thought.
 
-Agent:
+**Date / Time:**
 
-Model:
+**Agent / Model (if known):**
 
-Task:
+**Task:**
+
+**Observability Mode:** evaluation / explicit audit
 
 ## Intent
 
-
 ## Actions Taken
-
 
 ## Cleanup Performed
 
+## Removed / Superseded
 
-## Preserved Elements
+## Preserved Intentionally
 
-
-## Documentation Updated
-
+## Documentation / Current Truth Updated
 
 ## Validation Evidence
 
-
 ## Unexpected Findings
 
+## Handoff Impact
 
-## Governance Improvement Candidates
+## Governance Feedback Signals
 
+- None.
 
+## Unresolved Exceptions / Verification Gaps
+
+- None.

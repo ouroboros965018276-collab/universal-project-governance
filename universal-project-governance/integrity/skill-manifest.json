@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "name": "universal-project-governance",
+  "version_source": "SKILL.md:metadata.version",
+  "expected_version": "2.0.0-rc.3",
+  "integrity_model": "tamper-evident-protect-all",
+  "hash_algorithm": "sha256",
+  "checksums_file": "integrity/checksums.json",
+  "protected_files_policy": "integrity/protected-files.json",
+  "external_anchor_recommended": true,
+  "note": "Local integrity checks catch accidental drift; VCS/CI/release SHA-256 remain external trust anchors."
+}
