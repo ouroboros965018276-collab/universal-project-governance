@@ -80,7 +80,7 @@ def compile_runtime(repo: Path, output: Path):
     write_text(output / "VERSION.md", "# Version\n\nGenerated runtime: **%s**. Canonical version source: governance-src/model/governance-model.json.\n" % model["version"])
     write_text(output / "INTEGRITY.md",
         "# Runtime Integrity\n\nThis directory is compiler-generated. Do not edit it during normal project work. "
-        "Run python3 scripts/validate_integrity.py . . Governance upgrades change canonical governance-src, "
+        "Run python3 scripts/validate_integrity.py . Governance upgrades change canonical governance-src, "
         "then regenerate the runtime and rerun the complete release gates. The local manifest is tamper-evident, "
         "not an authorization boundary; VCS/CI/release digests remain external trust anchors.\n"
     )
