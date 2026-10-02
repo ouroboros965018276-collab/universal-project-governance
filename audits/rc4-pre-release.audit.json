@@ -2,47 +2,77 @@
   "created_at": "2026-10-03",
   "version": "2.0.0-rc.4",
   "candidate": "Compiled Governance Architecture",
-  "artifact_sha256": "PENDING_FINAL_CI",
+  "artifact_sha256": "0b50c639cf2d17c52b5d533f3e154e7cbadfc8a4af21e36f18fce9af7640427f",
   "gates": [
     {
       "name": "canonical-source/compiler architecture",
       "result": "pass",
-      "evidence": "source model, compiler, generated runtime and drift check implemented"
+      "evidence": "governance-src is canonical; compiler --check reports exact source/runtime synchronization"
     },
     {
       "name": "governance complexity/static analysis",
       "result": "pass",
-      "evidence": "rule graph lint and hard complexity budgets implemented"
+      "evidence": "15 policies, 7 hot-path invariants, default closure 3, 0 advisory warnings"
     },
     {
-      "name": "runtime Skill size",
+      "name": "runtime cognitive-size budget",
       "result": "pass",
-      "evidence": "generated SKILL.md is 82 lines (budget 120)"
+      "evidence": "generated SKILL.md 82 lines; runtime has 3 Markdown files; no references/ or assets/ tree"
     },
     {
-      "name": "schema-first state and compaction",
+      "name": "rule-graph integrity",
       "result": "pass",
-      "evidence": "typed schemas + state_tool validation/render/compact/export implemented"
+      "evidence": "0 duplicate IDs, 0 missing refs, 0 cycles, 0 orphans, 0 conflicting closures"
+    },
+    {
+      "name": "schema-first governance state",
+      "result": "pass",
+      "evidence": "handoff/execution/feedback/audit schemas plus validate/render/compact/export tests"
+    },
+    {
+      "name": "runtime integrity",
+      "result": "pass",
+      "evidence": "14 generated runtime files verified by compiler-produced SHA-256 manifest; mutation negative test passes"
+    },
+    {
+      "name": "security static audit",
+      "result": "pass",
+      "evidence": "no governed network imports, shell=True, dangerous dynamic execution, symlink-following, or secret-like token patterns"
+    },
+    {
+      "name": "Python 3.8",
+      "result": "pass",
+      "evidence": "12/12 tests; deterministic package SHA-256 matches other runtimes"
+    },
+    {
+      "name": "Python 3.11",
+      "result": "pass",
+      "evidence": "12/12 tests; deterministic package SHA-256 matches other runtimes"
+    },
+    {
+      "name": "Python 3.13",
+      "result": "pass",
+      "evidence": "12/12 tests; deterministic package SHA-256 matches other runtimes"
     },
     {
       "name": "upstream Agent Skills validation",
-      "result": "pending",
-      "evidence": "must pass on final RC4 HEAD"
+      "result": "pass",
+      "evidence": "skills-ref==0.1.1 validation passed on compiled runtime"
     },
     {
-      "name": "Python 3.8/3.11/3.13",
-      "result": "pending",
-      "evidence": "must pass on final RC4 HEAD"
+      "name": "Skills CLI local discovery/install",
+      "result": "pass",
+      "evidence": "skills@1.7.0 installed compiled Skill into a clean Codex target; installed-copy integrity passed"
     },
     {
-      "name": "Skills CLI local/default-branch install",
+      "name": "private GitHub default-branch install",
       "result": "pending",
-      "evidence": "must pass on final RC4 main"
+      "evidence": "runs only after RC4 is advanced to main"
     },
     {
-      "name": "deterministic package",
-      "result": "pending",
-      "evidence": "final SHA-256 recorded after final CI"
+      "name": "deterministic release package",
+      "result": "pass",
+      "evidence": "Python 3.8/3.11/3.13 all produced SHA-256 0b50c639cf2d17c52b5d533f3e154e7cbadfc8a4af21e36f18fce9af7640427f"
     }
   ],
   "blockers": [
