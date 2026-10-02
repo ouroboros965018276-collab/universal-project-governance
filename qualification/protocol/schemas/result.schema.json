@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "qualification_fingerprint",
+    "trials"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "qualification_fingerprint": {
+      "type": "string"
+    },
+    "trials": {
+      "type": "array",
+      "items": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "trial_id",
+          "pair_id",
+          "scenario_id",
+          "kind",
+          "arm",
+          "agent",
+          "environment",
+          "fingerprints",
+          "outcome",
+          "usage",
+          "evidence"
+        ],
+        "properties": {
+          "trial_id": {
+            "type": "string"
+          },
+          "pair_id": {
+            "type": "string"
+          },
+          "scenario_id": {
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "behavioral",
+              "handoff",
+              "trigger",
+              "mutation",
+              "ablation"
+            ]
+          },
+          "arm": {
+            "enum": [
+              "A0",
+              "A1",
+              "A2",
+              "K"
+            ]
+          },
+          "agent": {
+            "type": "object"
+          },
+          "environment": {
+            "type": "object"
+          },
+          "fingerprints": {
+            "type": "object"
+          },
+          "outcome": {
+            "type": "object"
+          },
+          "usage": {
+            "type": "object"
+          },
+          "evidence": {
+            "type": "object"
+          },
+          "started_at": {
+            "type": "string"
+          },
+          "finished_at": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "generated_from": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

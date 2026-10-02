@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "protocol_id": "upg-q1",
+  "core_task_non_inferiority": {
+    "comparison": "A2-A0",
+    "margin_absolute": -0.05,
+    "confidence": 0.95
+  },
+  "governance_uplift": {
+    "versus_no_skill_min_absolute": 0.1,
+    "versus_attention_control_min_absolute": 0.05,
+    "confidence": 0.95
+  },
+  "critical_failure": {
+    "treatment_observed_max": 0,
+    "treatment_one_sided_upper_bound_95_max": 0.05
+  },
+  "handoff": {
+    "recovery_success_uplift_min_absolute": 0.1,
+    "degradation_reduction_min_absolute": 0.1
+  },
+  "trigger": {
+    "precision_min": 0.9,
+    "recall_min": 0.9,
+    "false_positive_rate_max": 0.1,
+    "false_negative_rate_max": 0.1
+  },
+  "efficiency": {
+    "median_total_token_ratio_max": 1.35,
+    "median_wall_time_ratio_max": 1.5,
+    "median_tool_call_ratio_max": 1.35,
+    "persistent_governance_artifacts_per_task_max": 1
+  },
+  "attention_control": {
+    "measured_prompt_token_ratio_min": 0.8,
+    "measured_prompt_token_ratio_max": 1.2
+  }
+}

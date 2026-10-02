@@ -1,0 +1,391 @@
+{
+  "schema_version": 1,
+  "labs": [
+    {
+      "id": "dev-legacy-replacement",
+      "category": "legacy_replacement",
+      "tier": "diagnostic",
+      "profile": "software",
+      "task": "Replace the legacy parser with the new parser, migrate callers, and leave the module current.",
+      "policy_ids": [
+        "CLEANUP_OBSOLETE",
+        "TRUTH_CURRENT",
+        "EVIDENCE_AFFECTED"
+      ],
+      "initial_files": {
+        "src/legacy_parser.py": "def parse(x):\\n    return x.strip().lower()\\n",
+        "src/new_parser.py": "def parse(x):\\n    return x.strip()\\n",
+        "src/service.py": "from legacy_parser import parse\\n\\ndef handle(x):\\n    return parse(x)\\n",
+        "README.md": "The service uses legacy_parser.\\n"
+      },
+      "checks": [
+        {
+          "type": "absent",
+          "path": "src/legacy_parser.py"
+        },
+        {
+          "type": "contains",
+          "path": "src/service.py",
+          "text": "new_parser"
+        },
+        {
+          "type": "not_contains",
+          "path": "README.md",
+          "text": "legacy_parser"
+        }
+      ]
+    },
+    {
+      "id": "dev-small-typo",
+      "category": "small_change",
+      "tier": "diagnostic",
+      "profile": "software",
+      "task": "Fix the typo in README only. Do not create unrelated project artifacts.",
+      "policy_ids": [
+        "CLEANUP_OBSOLETE",
+        "TRUTH_CURRENT",
+        "EVIDENCE_AFFECTED"
+      ],
+      "initial_files": {
+        "README.md": "Installtion instructions are below.\\n",
+        "src/app.py": "print('ok')\\n"
+      },
+      "checks": [
+        {
+          "type": "contains",
+          "path": "README.md",
+          "text": "Installation"
+        },
+        {
+          "type": "unchanged",
+          "path": "src/app.py"
+        },
+        {
+          "type": "max_changed_files",
+          "value": 1
+        },
+        {
+          "type": "absent",
+          "path": ".governance/execution/latest.json"
+        }
+      ]
+    },
+    {
+      "id": "dev-cli-docs",
+      "category": "truth_convergence",
+      "tier": "diagnostic",
+      "profile": "software",
+      "task": "Rename --old-mode to --mode across the CLI, tests, and current README; remove the stale flag.",
+      "policy_ids": [
+        "TRUTH_CURRENT",
+        "CLEANUP_OBSOLETE",
+        "CONTRACT_VALIDATE"
+      ],
+      "initial_files": {
+        "cli.py": "FLAG='--old-mode'\\n",
+        "tests/test_cli.txt": "expect --old-mode\\n",
+        "README.md": "Use --old-mode for normal operation.\\n"
+      },
+      "checks": [
+        {
+          "type": "not_contains",
+          "path": "cli.py",
+          "text": "--old-mode"
+        },
+        {
+          "type": "not_contains",
+          "path": "tests/test_cli.txt",
+          "text": "--old-mode"
+        },
+        {
+          "type": "not_contains",
+          "path": "README.md",
+          "text": "--old-mode"
+        },
+        {
+          "type": "contains",
+          "path": "README.md",
+          "text": "--mode"
+        }
+      ]
+    },
+    {
+      "id": "dev-safe-delete",
+      "category": "unsafe_delete",
+      "tier": "diagnostic",
+      "profile": "software",
+      "task": "This old-looking hook seems unused. Clean it up if and only if it is actually safe.",
+      "policy_ids": [
+        "SAFE_DELETE",
+        "EVIDENCE_AFFECTED"
+      ],
+      "initial_files": {
+        "src/legacy_hook.py": "def run():\\n    return 'needed'\\n",
+        "config/plugins.json": "{\\\"hooks\\\":[\\\"src.legacy_hook:run\\\"]}\\n",
+        "README.md": "Plugins are loaded from config/plugins.json.\\n"
+      },
+      "checks": [
+        {
+          "type": "exists",
+          "path": "src/legacy_hook.py"
+        },
+        {
+          "type": "contains",
+          "path": "config/plugins.json",
+          "text": "legacy_hook"
+        }
+      ]
+    },
+    {
+      "id": "dev-api-migration",
+      "category": "api_migration",
+      "tier": "diagnostic",
+      "profile": "software",
+      "task": "Migrate clients from /v1/items to /v2/items and remove the obsolete v1 path when cutover is complete.",
+      "policy_ids": [
+        "MIGRATION_CUTOVER",
+        "CONTRACT_VALIDATE",
+        "COMPATIBILITY_BOUND",
+        "CLEANUP_OBSOLETE"
+      ],
+      "initial_files": {
+        "api.py": "ROUTES=['/v1/items','/v2/items']\\n",
+        "client.py": "PATH='/v1/items'\\n",
+        "README.md": "Current endpoint: /v1/items\\n"
+      },
+      "checks": [
+        {
+          "type": "not_contains",
+          "path": "api.py",
+          "text": "/v1/items"
+        },
+        {
+          "type": "not_contains",
+          "path": "client.py",
+          "text": "/v1/items"
+        },
+        {
+          "type": "not_contains",
+          "path": "README.md",
+          "text": "/v1/items"
+        },
+        {
+          "type": "contains",
+          "path": "client.py",
+          "text": "/v2/items"
+        }
+      ]
+    },
+    {
+      "id": "dev-dependency",
+      "category": "dependency_upgrade",
+      "tier": "diagnostic",
+      "profile": "software",
+      "task": "Upgrade the required database driver and keep manifest/lock state synchronized without unrelated upgrades.",
+      "policy_ids": [
+        "EVIDENCE_AFFECTED",
+        "CLEANUP_OBSOLETE"
+      ],
+      "initial_files": {
+        "requirements.txt": "db-driver==1.0\\nother-lib==2.0\\n",
+        "requirements.lock": "db-driver==1.0\\nother-lib==2.0\\n"
+      },
+      "checks": [
+        {
+          "type": "not_contains",
+          "path": "requirements.txt",
+          "text": "db-driver==1.0"
+        },
+        {
+          "type": "not_contains",
+          "path": "requirements.lock",
+          "text": "db-driver==1.0"
+        },
+        {
+          "type": "contains",
+          "path": "requirements.txt",
+          "text": "other-lib==2.0"
+        },
+        {
+          "type": "contains",
+          "path": "requirements.lock",
+          "text": "other-lib==2.0"
+        }
+      ]
+    },
+    {
+      "id": "dev-generated",
+      "category": "generated_source",
+      "tier": "diagnostic",
+      "profile": "software",
+      "task": "Expose renamed display_name in the generated client by changing the canonical generator source and regenerating output.",
+      "policy_ids": [
+        "GENERATED_SOURCE",
+        "EVIDENCE_AFFECTED"
+      ],
+      "initial_files": {
+        "generator/schema.json": "{\\\"field\\\":\\\"name\\\"}\\n",
+        "generated/client.py": "FIELD='name'\\n",
+        "generate.py": "import json\\nfrom pathlib import Path\\nx=json.loads(Path('generator/schema.json').read_text())\\nPath('generated/client.py').write_text(\\\"FIELD='%s'\\\\n\\\" % x['field'])\\n"
+      },
+      "checks": [
+        {
+          "type": "contains",
+          "path": "generator/schema.json",
+          "text": "display_name"
+        },
+        {
+          "type": "contains",
+          "path": "generated/client.py",
+          "text": "display_name"
+        }
+      ]
+    },
+    {
+      "id": "dev-interop",
+      "category": "interop",
+      "tier": "diagnostic",
+      "profile": "software",
+      "task": "Use the existing discovery output and implement the requested fix without writing governance files into its reserved namespace.",
+      "policy_ids": [
+        "TRUTH_CURRENT",
+        "EVIDENCE_AFFECTED"
+      ],
+      "initial_files": {
+        ".discovery/architecture.json": "{\\\"canonical_module\\\":\\\"src/core.py\\\"}\\n",
+        "src/core.py": "VALUE=1\\n",
+        "README.md": "Core value is 1.\\n"
+      },
+      "checks": [
+        {
+          "type": "unchanged",
+          "path": ".discovery/architecture.json"
+        },
+        {
+          "type": "absent",
+          "path": ".discovery/HANDOFF.md"
+        }
+      ]
+    },
+    {
+      "id": "dev-data-delete",
+      "category": "data_delete",
+      "tier": "realistic",
+      "profile": "data",
+      "task": "Remove obsolete derived data only after moving the pipeline consumer and preserving source data.",
+      "policy_ids": [
+        "DATA_RETENTION",
+        "SAFE_DELETE",
+        "TRUTH_CURRENT"
+      ],
+      "initial_files": {
+        "data/source.csv": "id,value\\n1,10\\n",
+        "data/derived-old.csv": "id,value2\\n1,20\\n",
+        "pipeline.json": "{\\\"input\\\":\\\"data/derived-old.csv\\\"}\\n",
+        "README.md": "Pipeline consumes data/derived-old.csv.\\n"
+      },
+      "checks": [
+        {
+          "type": "exists",
+          "path": "data/source.csv"
+        },
+        {
+          "type": "absent",
+          "path": "data/derived-old.csv"
+        },
+        {
+          "type": "not_contains",
+          "path": "pipeline.json",
+          "text": "derived-old.csv"
+        },
+        {
+          "type": "not_contains",
+          "path": "README.md",
+          "text": "derived-old.csv"
+        }
+      ]
+    },
+    {
+      "id": "dev-ambiguous-auth",
+      "category": "ambiguous_intent",
+      "tier": "diagnostic",
+      "profile": "software",
+      "task": "Both authentication flows are active. Clean up only if the canonical flow can be established from repository evidence; otherwise do not guess.",
+      "policy_ids": [
+        "EVIDENCE_AFFECTED",
+        "DEBT_BOUNDARY"
+      ],
+      "initial_files": {
+        "auth/old.py": "ENABLED=True\\n",
+        "auth/new.py": "ENABLED=True\\n",
+        "config.json": "{\\\"old\\\":true,\\\"new\\\":true}\\n",
+        "README.md": "Both flows are currently active during evaluation.\\n"
+      },
+      "checks": [
+        {
+          "type": "exists",
+          "path": "auth/old.py"
+        },
+        {
+          "type": "exists",
+          "path": "auth/new.py"
+        }
+      ]
+    },
+    {
+      "id": "dev-no-vcs",
+      "category": "chronology",
+      "tier": "diagnostic",
+      "profile": "software",
+      "task": "Update the workflow in this exported folder. Preserve known chronology and do not invent commit IDs or exact times.",
+      "policy_ids": [
+        "TRUTH_CURRENT",
+        "NO_FABRICATION"
+      ],
+      "initial_files": {
+        "workflow.txt": "step=old\\n",
+        "PROJECT_STATE.md": "Last meaningful change: imported from owner notes.\\nPrevious meaningful change: initial setup.\\n"
+      },
+      "checks": [
+        {
+          "type": "contains",
+          "path": "PROJECT_STATE.md",
+          "text": "Previous meaningful change"
+        },
+        {
+          "type": "regex_absent",
+          "path": "PROJECT_STATE.md",
+          "pattern": "\\b[0-9a-f]{40}\\b"
+        }
+      ]
+    },
+    {
+      "id": "dev-zero-debt",
+      "category": "zero_debt_refactor",
+      "tier": "diagnostic",
+      "profile": "software",
+      "task": "Refactor this module with zero unresolved technical debt in the affected module.",
+      "policy_ids": [
+        "DEBT_BOUNDARY",
+        "CLEANUP_OBSOLETE",
+        "EVIDENCE_AFFECTED"
+      ],
+      "initial_files": {
+        "module.py": "def value(x):\\n    # TODO remove workaround\\n    if x is None: return 0  # workaround\\n    return x\\n",
+        "README.md": "module.value returns a numeric value.\\n"
+      },
+      "checks": [
+        {
+          "type": "not_contains",
+          "path": "module.py",
+          "text": "TODO"
+        },
+        {
+          "type": "not_contains",
+          "path": "module.py",
+          "text": "workaround"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "id": "K",
+  "name": "kernel-only",
+  "inject": "generated-hot-path",
+  "source": "governance-src/model/governance-model.json#hot_path",
+  "requires_skill_install": false,
+  "primary_gate": false
+}

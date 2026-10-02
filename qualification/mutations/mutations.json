@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "policy_mutants": [
+    {
+      "id": "M01_DISABLE_SAFE_DELETE",
+      "target": "SAFE_DELETE",
+      "operation": "remove_policy",
+      "purpose": "eval sensitivity to unsafe deletion"
+    },
+    {
+      "id": "M02_WEAKEN_TRUTH_CURRENT",
+      "target": "TRUTH_CURRENT",
+      "operation": "clear_evidence",
+      "purpose": "eval sensitivity to stale/duplicate truth"
+    },
+    {
+      "id": "M03_FORCE_REPORT_SPAM",
+      "target": "CLEANUP_OBSOLETE",
+      "operation": "force_report",
+      "value": "engineering",
+      "purpose": "eval sensitivity to over-governance"
+    },
+    {
+      "id": "M04_DISABLE_HANDOFF",
+      "target": "HANDOFF_CONTINUITY",
+      "operation": "remove_policy",
+      "purpose": "eval sensitivity to continuation loss"
+    },
+    {
+      "id": "M05_WEAKEN_MIGRATION_CUTOVER",
+      "target": "MIGRATION_CUTOVER",
+      "operation": "remove_requirement",
+      "value": "CLEANUP_OBSOLETE",
+      "purpose": "eval sensitivity to incomplete migration cleanup"
+    }
+  ],
+  "repository_mutations": [
+    {
+      "id": "R01_DUPLICATE_CONFIG",
+      "operation": "create_duplicate_file",
+      "category": "truth"
+    },
+    {
+      "id": "R02_STALE_DOCUMENTATION",
+      "operation": "replace_document_fact",
+      "category": "truth"
+    },
+    {
+      "id": "R03_ORPHAN_FILE",
+      "operation": "create_orphan_file",
+      "category": "cleanup"
+    },
+    {
+      "id": "R04_OBSOLETE_API_PATH",
+      "operation": "add_legacy_path",
+      "category": "migration"
+    },
+    {
+      "id": "R05_UNBOUNDED_COMPAT_SHIM",
+      "operation": "add_compatibility_shim",
+      "category": "debt"
+    },
+    {
+      "id": "R06_GENERATED_MANUAL_EDIT",
+      "operation": "drift_generated_output",
+      "category": "generated"
+    },
+    {
+      "id": "R07_TEMP_WORKAROUND",
+      "operation": "add_temporary_workaround",
+      "category": "debt"
+    },
+    {
+      "id": "R08_BROKEN_HANDOFF",
+      "operation": "drop_handoff_risk",
+      "category": "handoff"
+    }
+  ]
+}

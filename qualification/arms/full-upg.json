@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "id": "A2",
+  "name": "full-upg",
+  "inject": "host-skill",
+  "skill_path": "universal-project-governance",
+  "requires_skill_install": true
+}

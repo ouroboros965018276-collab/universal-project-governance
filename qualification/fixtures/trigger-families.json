@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "objects": [
+    {
+      "id": "parser",
+      "en": "payment parser",
+      "zh": "支付解析器"
+    },
+    {
+      "id": "api",
+      "en": "API field migration",
+      "zh": "API 字段迁移"
+    },
+    {
+      "id": "driver",
+      "en": "database driver",
+      "zh": "数据库驱动"
+    },
+    {
+      "id": "config",
+      "en": "duplicate configuration",
+      "zh": "重复配置"
+    },
+    {
+      "id": "cli",
+      "en": "CLI command syntax",
+      "zh": "CLI 命令语法"
+    },
+    {
+      "id": "pipeline",
+      "en": "data pipeline",
+      "zh": "数据流水线"
+    },
+    {
+      "id": "terraform",
+      "en": "Terraform module",
+      "zh": "Terraform 模块"
+    },
+    {
+      "id": "prompt",
+      "en": "prompt-processing workflow",
+      "zh": "提示词处理工作流"
+    },
+    {
+      "id": "tokens",
+      "en": "design-system tokens",
+      "zh": "设计系统令牌"
+    },
+    {
+      "id": "auth",
+      "en": "authentication flow",
+      "zh": "认证流程"
+    },
+    {
+      "id": "generator",
+      "en": "generated API client",
+      "zh": "生成式 API 客户端"
+    },
+    {
+      "id": "refactor",
+      "en": "validation module",
+      "zh": "校验模块"
+    }
+  ],
+  "positive_templates_en": [
+    "Replace the legacy {object} in this maintained project and update affected consumers.",
+    "Modify this repository to retire the old {object}, migrate dependents, and clean up stale project state.",
+    "Implement the {object} change across code, tests, and current documentation.",
+    "Please update the maintained {object} and reconcile any obsolete path it supersedes."
+  ],
+  "positive_templates_zh": [
+    "请在这个持续维护的项目中替换旧的{object}，迁移受影响的调用方并清理过时内容。",
+    "直接修改仓库中的{object}，同时同步测试、当前文档和受影响的项目状态。"
+  ],
+  "negative_templates_en": [
+    "Explain what the {object} does. Do not change files.",
+    "Review the {object} and list risks only; make no repository changes.",
+    "Plan a possible future replacement of the {object}; do not implement anything yet.",
+    "Summarize the current documentation about the {object} without editing the project."
+  ],
+  "negative_templates_zh": [
+    "解释{object}现在做什么，不要修改任何文件。",
+    "只评审{object}并列出风险；现在不要改仓库。"
+  ]
+}

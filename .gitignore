@@ -13,3 +13,8 @@ build/
 eval-workspaces/
 *.zip
 *.zip.sha256
+qualification/workspaces/
+qualification/results/*/raw/
+qualification/results/*/traces/
+qualification/results/*/artifacts/
+qualification/.cache/

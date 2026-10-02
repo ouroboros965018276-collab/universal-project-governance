@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "id": "A1",
+  "name": "attention-control",
+  "inject": "qualification/arms/attention-control.md",
+  "requires_skill_install": false
+}

@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "id": "A0",
+  "name": "no-skill",
+  "inject": "none",
+  "requires_skill_install": false
+}

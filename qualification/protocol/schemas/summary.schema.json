@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "qualification_fingerprint",
+    "status",
+    "gates",
+    "sample_sizes",
+    "effects"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "qualification_fingerprint": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "PASS",
+        "FAIL",
+        "MORE_DATA"
+      ]
+    },
+    "gates": {
+      "type": "object"
+    },
+    "sample_sizes": {
+      "type": "object"
+    },
+    "effects": {
+      "type": "object"
+    },
+    "notes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}
