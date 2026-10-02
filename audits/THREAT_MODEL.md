@@ -1,43 +1,40 @@
-# Threat Model — RC4 Compiled Governance
+# Threat Model — RC5 Causal Qualification & Protocol Freeze
 
 ## Assets
 
-- canonical governance model and schemas;
-- compiler/static-analysis correctness;
-- generated runtime identity;
-- project governance state/evidence;
-- release/audit provenance.
+Frozen governance semantics and behavioral fingerprint; qualification protocol/thresholds; locked holdout tasks/oracles; adapter/grader integrity; raw Agent traces; immutable result rounds.
 
 ## Threats and controls
 
-### T1 — Hand-edited generated runtime
-**Risk:** source/runtime divergence or hidden weakening.  
-**Controls:** compiler `--check`, generated-runtime integrity manifest, CODEOWNERS, CI.
+### T1 — Runtime semantic drift during qualification
+Control: RC4→RC5 freeze validator + behavioral fingerprint + generated runtime integrity.
 
-### T2 — Policy graph corruption
-**Risk:** missing dependencies, cycles, orphan rules, conflicting blocking obligations.  
-**Controls:** deterministic Governance Linter hard failures.
+### T2 — Benchmark leakage
+Control: materialize only project fixture into Agent workspace; locked runs require external sandbox/container/VM isolation.
 
-### T3 — Governance meta-complexity
-**Risk:** runtime/context size grows with every feature until agents stop following it.  
-**Controls:** hard SKILL/hot-path/default-closure/Markdown budgets; source/runtime separation.
+### T3 — Treatment leakage to blind judge
+Control: normalized outcome bundles strip experimental arm and Agent identity where feasible.
 
-### T4 — DSL creep
-**Risk:** Policy IR gains executable conditions/loops/plugins and becomes another programming language.  
-**Controls:** finite schema fields and enums only; decision logic remains in compiler code.
+### T4 — Evaluator blindness
+Control: known-bad policy mutants and repository mutations must be detectable before qualification evidence is trusted.
 
-### T5 — Integrity-manifest substitution
-**Risk:** a privileged writer alters runtime and manifest together.  
-**Controls:** do not claim local manifest as authorization; external VCS/CI/release digest anchors remain required.
+### T5 — LLM judge overrides reality
+Control: deterministic repository/executable evidence has higher authority and is non-overridable.
 
-### T6 — Evidence leakage
-**Risk:** reports copy secrets/source/private data unnecessarily.  
-**Controls:** schema-first minimal evidence; export tool selects governance-state files only; security guidance prohibits secret duplication.
+### T6 — p-hacking / moving gates
+Control: locked protocol, preregistered endpoints, randomization, budgets and stopping rules are bound into qualification fingerprint.
 
-### T7 — Over-governance
-**Risk:** trivial work triggers large reports or unnecessary handoff artifacts.  
-**Controls:** risk-adaptive planner; low-risk `none/change-note`; one current handoff/execution record; deterministic compaction.
+### T7 — Raw evidence leakage / evidence debt
+Control: raw traces ignored by default; controlled artifact storage; Git keeps hashes, aggregates and summaries.
 
-### T8 — Semantic duplication
-**Risk:** multiple policies restate the same intent under different IDs.  
-**Controls:** one-definition rule; structural fingerprint advisory; human review for fuzzy semantic similarity until deterministic methods are trustworthy.
+### T8 — False zero-risk claim
+Control: report sample size and confidence upper bound.
+
+### T9 — Provider/time drift
+Control: paired tasks, blocked randomization, temporal interleaving, recorded model/scaffold identity.
+
+### T10 — Destructive over-governance
+Control: CF10 critical-failure class and executable outcome checks.
+
+### T11 — Result rewriting
+Control: completed qN rounds are immutable; corrections invalidate and create qN+1.

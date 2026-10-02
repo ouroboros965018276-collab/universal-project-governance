@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "version": "2.0.0-rc.5",
+  "candidate": "Causal Qualification & Protocol Freeze",
+  "status": "qualification-infrastructure-under-validation",
+  "claims": {
+    "governance_runtime_engineering_validated": true,
+    "runtime_semantics_changed_from_rc4": false,
+    "real_agent_causal_benefit_proven": false,
+    "stable_ready": false
+  },
+  "deterministic_gates": [
+    {
+      "name": "RC4-to-RC5 semantic freeze",
+      "result": "pending",
+      "evidence": "final CI"
+    },
+    {
+      "name": "qualification protocol/schema",
+      "result": "pending",
+      "evidence": "final CI"
+    },
+    {
+      "name": "executable dev/holdout labs",
+      "result": "pending",
+      "evidence": "final CI"
+    },
+    {
+      "name": "metamorphic trigger suite",
+      "result": "pending",
+      "evidence": "144 generated cases expected"
+    },
+    {
+      "name": "mutation/evaluator-sensitivity harness",
+      "result": "pending",
+      "evidence": "infrastructure only; real mutant Agent runs pending"
+    },
+    {
+      "name": "multi-runtime regression",
+      "result": "pending",
+      "evidence": "final CI"
+    },
+    {
+      "name": "upstream Agent Skills + Skills CLI",
+      "result": "pending",
+      "evidence": "final CI"
+    },
+    {
+      "name": "qualification FREEZE identity",
+      "result": "pending",
+      "evidence": "generated after infrastructure stabilizes"
+    }
+  ],
+  "stable_blockers": [
+    "real paired A0/A1/A2 behavioral trials",
+    "real policy-mutant evaluator-sensitivity trials",
+    "real trigger activation traces",
+    "real controlled cross-agent handoff trials",
+    "real overhead telemetry",
+    "minimum agent-family and project-profile generalization",
+    "locked qualification-summary PASS"
+  ]
+}

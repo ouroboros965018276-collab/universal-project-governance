@@ -2,44 +2,28 @@
 
 ## Repository contract
 
-This repository uses a **compiled governance architecture**.
+This repository is in RC5 Protocol Freeze.
 
-### Canonical source
+### Governance behavior is frozen
 
-Edit governance semantics only under:
+Governance semantics live under governance-src/. The installable universal-project-governance/ directory is generated.
+During RC5 qualification do not add or alter Policy IDs, Hot Path semantics, risk semantics, handoff/report semantics, compiler contract, or runtime capabilities unless the owner explicitly accepts invalidating the freeze.
 
-```text
-governance-src/
-```
+### Qualification work
 
-Do **not** hand-edit:
+Repository-only empirical infrastructure lives under qualification/ and must not ship in the Skill.
+Formal locked experiments require fresh isolated workspaces. Do not expose holdout oracles, graders, expected answers, or qualification sources to the Agent under test.
+Do not create fake empty result files. Result rounds exist only after real evidence is generated.
+Do not request or store private chain-of-thought; keep observable tool/file/test/outcome evidence and usage metadata.
 
-```text
-universal-project-governance/
-```
+### Required deterministic checks
 
-That directory is generated output.
+    python compiler/compile_governance.py --check
+    python tools/governance_lint.py .
+    python tools/validate_freeze_delta.py
+    python tools/validate_qualification.py .
+    python tools/validate_repository.py .
+    python -m unittest discover -s tests -v
 
-### Required workflow after source changes
-
-```bash
-python compiler/compile_governance.py --write --confirm-generated-runtime-update
-python compiler/compile_governance.py --check
-python tools/governance_lint.py .
-python tools/validate_repository.py .
-python -m unittest discover -s tests -v
-```
-
-Then run the complete CI/release gate before claiming completion.
-
-### Invariants
-
-- one semantic rule, one canonical definition;
-- profiles activate policies but never redefine them;
-- Policy IR stays declarative and non-executable;
-- complexity budgets are release blockers, not suggestions;
-- schema-first JSON is canonical for governance state; rendered Markdown is a view;
-- generated runtime integrity is tamper-evident, not an access-control claim;
-- current-state docs describe the present project; release audits may remain historical/frozen.
-
-If a requested change would weaken these invariants, require explicit owner intent and document the design decision/version impact.
+After qualification/FREEZE.json exists, also run tools/qualification_freeze.py --check.
+If real qualification finds a core governance defect, report failure honestly. Version-number preference never overrides evidence.

@@ -1,22 +1,25 @@
 # Security
 
-Universal Project Governance is an Agent Skill and inherits the host agent's permissions. Install Skills only from trusted sources and review repository/release provenance before use in privileged environments.
+Universal Project Governance inherits host Agent permissions. Install only from trusted sources and review repository/release provenance before privileged use.
 
-## RC4 security model
+## Runtime
 
-- the installable runtime is compiler-generated;
-- its SHA-256 manifest detects accidental drift and partial mutation;
-- compiler/runtime helpers use the Python standard library and do not require network access;
-- governance evidence export selects only structured `.governance/` state, not arbitrary project source;
-- policy IR is data and cannot execute embedded expressions/code;
-- release trust additionally depends on VCS, CI provenance, repository controls, and artifact SHA-256.
+The Skill remains compiler-generated and SHA-256 integrity checked. The manifest is tamper-evident, not an authorization boundary; VCS/CI/release identity remains the external trust anchor.
 
-The runtime integrity manifest is **tamper-evident, not tamper-proof**.
+## RC5 qualification security
 
-## Sensitive evidence
+Formal locked experiments require strong workspace isolation. A subprocess current directory alone is not sufficient holdout isolation.
 
-Do not place secrets, credentials, raw private data, or unnecessary source contents into governance handoff/execution/feedback/audit state. Evidence should identify checks and outcomes, not duplicate sensitive material.
+Do not expose to an Agent under test locked oracle/expected-state files, hidden grader logic, other experimental-arm workspaces, or prior-trial reports/handoffs.
 
-## Vulnerability reporting
+## Evidence privacy
 
-Before public release, configure GitHub private vulnerability reporting or another documented private security contact. Do not disclose exploitable vulnerabilities or credentials in public issues.
+Qualification does not require private chain-of-thought. Raw traces may contain repository source, paths, command output, credentials accidentally printed by tools, or provider metadata. Keep raw traces in controlled artifact storage by default. Commit only reviewed manifests, hashes, aggregates, and summaries.
+
+Do not place secrets, credentials, raw private datasets, or unnecessary source contents into handoff/evaluation evidence.
+
+## Adapter trust
+
+Provider adapters and external harnesses are part of the qualification trust boundary. Record adapter/scaffold/model/environment identity in each formal qualification round.
+
+Before public release, configure a documented private vulnerability-reporting channel.

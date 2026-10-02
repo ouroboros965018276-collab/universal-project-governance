@@ -1,34 +1,29 @@
 # Contributing
 
-Contributions should improve governance capability without linearly increasing runtime cognitive load.
+RC5 is a qualification/freeze release, not a feature-growth release.
 
-## Change canonical source, not runtime
+## Allowed contribution classes
 
-1. Modify `governance-src/model/`, profiles, schemas, template, or runtime-script source.
-2. Add/update plan cases and unit tests for observable behavior.
-3. Regenerate the installable runtime:
-   ```bash
-   python compiler/compile_governance.py --write --confirm-generated-runtime-update
-   ```
-4. Run compiler drift, governance lint, repository validation, tests, and package build.
-5. Update current-state/decision/changelog/audit surfaces when the change is meaningful.
+- non-semantic qualification runner fixes;
+- grader calibration and deterministic grader improvement;
+- new provider/agent adapters;
+- development eval expansion;
+- additional executable fixtures that do not rewrite completed evidence;
+- documentation corrections;
+- real qualification evidence;
+- security and compatibility fixes.
 
-Never hand-edit `universal-project-governance/`.
+## Frozen behavior
 
-## Policy additions
+Do not alter governance semantics, compiler contract, or runtime capability as an ordinary RC5 contribution.
+A behavior-affecting change must explicitly invalidate the freeze, change the behavioral fingerprint, invalidate dependent qualification evidence, and trigger a new release decision.
 
-Before adding a policy, prove it is not a restatement of an existing stable rule ID. Prefer extending dependency/activation relationships over creating synonymous rules.
+## Qualification rules
 
-New policies need:
-
-- stable ID;
-- finite triggers;
-- severity;
-- evidence contract;
-- applicable domains;
-- dependency/conflict relationships;
-- eval tags and tests.
-
-## Complexity
-
-A feature that violates the complexity budget must be redesigned, consolidated, or accompanied by an explicit evidence-backed budget decision. Do not convert a hard gate into a warning merely to land a feature.
+- never put holdout oracle material into an Agent workspace;
+- keep raw traces outside Git unless reviewed for sensitivity and size;
+- deterministic failures cannot be manually relabeled as pass;
+- do not move locked thresholds after seeing results;
+- never overwrite a completed result round;
+- do not create empty result placeholders;
+- prefer thin external-harness adapters to rebuilding Agent orchestration infrastructure.

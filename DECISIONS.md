@@ -1,65 +1,77 @@
 # Active Design Decisions
 
-## Compiled governance is the canonical architecture
-- **Status:** active
-- **Decision:** Governance semantics are maintained as typed data and compiled into the installable Skill.
-- **Why:** Capability growth must not linearly increase agent runtime cognitive load.
-- **Consequences:** Generated runtime is never manually maintained; source/runtime drift is a release failure.
-- **Applies to:** entire project.
-- **Revisit when:** Agent Skills gains a native typed policy/runtime mechanism that supersedes this compiler.
+## RC5 freezes governance behavior
 
-## Typed Policy IR is data, not a DSL
-- **Status:** active
-- **Decision:** Policy IR uses finite JSON fields, stable IDs, enumerations, dependency references, evidence contracts, and schemas. It has no embedded conditions, loops, code, expressions, or plugin language.
-- **Why:** Avoid creating a governance programming language that itself requires governance.
-- **Consequences:** Complex decision logic belongs in deterministic compiler/runtime code, not policy syntax.
-- **Revisit when:** a new requirement cannot be expressed without executable semantics; prefer compiler evolution before DSL expansion.
+- Status: active
+- Decision: RC5 changes prerelease version identity but does not add or alter governance semantics.
+- Why: the remaining uncertainty is empirical effectiveness, not missing governance features.
+- Consequence: CI compares RC5 normalized behavioral fingerprint against the RC4 baseline commit.
 
-## One semantic rule has one canonical definition
-- **Status:** active
-- **Decision:** A rule is defined once in the canonical model and referenced by stable ID elsewhere.
-- **Why:** Eliminate duplicated prose, drift, and contradictory definitions.
-- **Consequences:** Profiles/tests/plans refer to IDs; they do not restate rule semantics.
-- **Revisit when:** never, except if the canonical model itself is replaced by an equivalent single-source mechanism.
+## Qualification Plane is repository-only
 
-## Profiles activate; they do not redefine
-- **Status:** active
-- **Decision:** Project profiles only activate existing policy IDs.
-- **Why:** Preserve project agnosticism without spawning per-domain governance forks.
-- **Consequences:** data/ML/infra/etc. add context through activation, not duplicated rule sets.
-- **Revisit when:** a domain proves to require genuinely new semantics, which must first become canonical policies.
+- Status: active
+- Decision: RC5 experimental complexity lives under qualification/ and tools/tests; it does not ship in the Skill.
+- Why: proving governance value must not increase runtime cognitive load.
 
-## Risk-adaptive execution is based on observable facts
-- **Status:** active
-- **Decision:** Risk uses typed dimensions such as reversibility, security, data, external consumers, migration, contract change, unknowns, scope, and handoff. File/line counts are secondary heuristics.
-- **Why:** Change size is a weak proxy for impact.
-- **Consequences:** planner output controls report/handoff/evidence level; low-risk work remains lightweight.
-- **Revisit when:** empirical agent evaluations justify better deterministic risk features.
+## Primary comparison is paired counterfactual
 
-## Governance state is schema-first
-- **Status:** active
-- **Decision:** Handoff, execution evidence, feedback, and release audit are canonical structured JSON state; Markdown is an optional rendered view.
-- **Why:** Prevent template drift and support multiple future views (Markdown, IDE, API/MCP).
-- **Consequences:** do not hand-maintain Markdown and JSON copies as parallel truth.
-- **Revisit when:** a stronger portable structured format replaces JSON Schema.
+- Status: active
+- Decision: same task, fixture, agent, scaffold, tools and budget are paired across arms using fresh contexts.
+- Why: unpaired tasks confound Skill effect with task difficulty.
 
-## Complexity budgets are hard deterministic gates
-- **Status:** active
-- **Decision:** Runtime size, hot-path count, default policy closure, graph cycles/orphans/conflicts, and generated-runtime drift hard-fail CI.
-- **Why:** Governance must prevent its own meta-complexity from becoming debt.
-- **Consequences:** new capability must fit the budget, consolidate existing concepts, or explicitly revise the budget with evidence.
-- **Revisit when:** empirical data supports a different budget.
+## A0 / A1 / A2 with targeted K ablation
 
-## Semantic duplicate detection is advisory
-- **Status:** active
-- **Decision:** Deterministic structural duplicates can fail; fuzzy semantic similarity only warns.
-- **Why:** Embedding/LLM similarity can produce false positives and should not block releases without human review.
-- **Consequences:** future semantic fingerprints may improve advisory review but are not authority.
-- **Revisit when:** deterministic semantic equivalence becomes reliable enough for a hard gate.
+- Status: active
+- Decision: primary arms are no-Skill, attention-control, and Full UPG. Kernel-only is diagnostic.
+- Why: A1 separates governance benefit from generic extra attention; targeted K avoids combinatorial experiments.
 
-## Runtime integrity is tamper-evident, not authorization
-- **Status:** active
-- **Decision:** Generated runtime carries a SHA-256 manifest; repository permissions/VCS/CI/release artifact identity remain external trust anchors.
-- **Why:** A writer can theoretically alter content and a local manifest together.
-- **Consequences:** integrity claims remain bounded and technically accurate.
-- **Revisit when:** signed artifact/attestation infrastructure becomes part of distribution.
+## Outcome evidence outranks model self-description
+
+- Status: active
+- Decision: repository state, hidden tests, executable checks, and observable traces are primary evidence.
+- Consequence: deterministic failure cannot be overruled by a semantic judge.
+
+## Blind semantic grading is de-identified
+
+- Status: active
+- Decision: pairwise judges receive normalized outcomes without arm/model identity where feasible.
+- Why: reduce treatment, provider, verbosity, and position bias.
+
+## Critical failures are non-compensatory
+
+- Status: active
+- Decision: unsafe deletion, fabricated evidence/completion/chronology, duplicate truth, ignored validation, runtime self-modification, lost critical handoff risk, obsolete migration retention, and destructive over-governance are release blockers.
+
+## No magic aggregate score
+
+- Status: active
+- Decision: qualification uses lexicographic gates: evaluator validity → safety → non-inferiority → uplift → handoff → trigger → efficiency → generalization.
+
+## Zero observed failure is not zero risk
+
+- Status: active
+- Decision: safety reports sample size and confidence upper bounds.
+
+## Holdout isolation is mandatory
+
+- Status: active
+- Decision: locked oracle/tests never enter an Agent workspace; formal holdout runs require external sandbox/container/VM isolation.
+
+## Real result rounds are immutable
+
+- Status: active
+- Decision: q1/q2/... evidence is generated and never silently overwritten. Harness corrections invalidate and create a new round.
+
+## Behavioral and qualification fingerprints are distinct
+
+- Status: active
+- Decision: behavioral fingerprint identifies runtime behavior; qualification fingerprint additionally binds protocol, fixtures, graders, and adapter contract.
+
+## Provider-neutral protocol
+
+- Status: active
+- Decision: qualification is independent of any one Agent/eval harness. Thin adapters provide prepare/run/collect-equivalent behavior and declared capabilities.
+
+## RC4 architectural decisions remain active
+
+Compiled governance, typed non-executable Policy IR, one semantic rule/one definition, activation-only profiles, risk-adaptive execution, schema-first state, hard complexity budgets, advisory fuzzy semantic duplication, and tamper-evident runtime integrity remain unchanged.
