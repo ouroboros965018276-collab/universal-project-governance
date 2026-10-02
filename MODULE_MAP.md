@@ -70,21 +70,21 @@
 - **Inputs:** committed repository state.
 - **Outputs:** GitHub Actions status/logs and audit record.
 - **Dependencies / consumers:** GitHub Actions, `skills-ref==0.1.1`, `skills@1.7.0`.
-- **Invariants:** least-privilege workflow permissions; no secret-dependent public test; stable remains blocked without behavioral evidence.
-- **Change safety:** CI dependency or gate changes require a full rerun and audit update.
+- **Invariants:** least-privilege workflow permissions; no secret-dependent public test; stable remains blocked without behavioral evidence; audit identity must not create self-referential commit churn.
+- **Change safety:** CI dependency or gate changes require a full rerun and audit synchronization.
 
 ### Last meaningful change
+- **When:** 2026-10-02T21:38:00+08:00
+- **Change ID:** rc2-audit-anchor-hardening
+- **What / why:** Replaced self-referential audit commit/run anchoring with version + deterministic package digest + successful CI for the current release-relevant HEAD.
+- **Before / after:** audit edits forced endless commit/run drift → candidate evidence remains strict without recursive documentation churn.
+- **Impact:** cleaner, more stable release evidence and handoff.
+- **Validation:** full GitHub pre-release workflow rerun required.
+
+### Previous meaningful change
 - **When:** 2026-10-02T20:28:00+08:00
 - **Change ID:** rc2-ci-clean-rebuild
 - **What / why:** Rebuilt CI for the new repository and current action/CLI versions, including remote install smoke testing.
 - **Before / after:** no CI in new repository → complete pre-release validation pipeline.
 - **Impact:** enables fresh, repository-specific evidence.
-- **Validation:** GitHub Actions run after initialization.
-
-### Previous meaningful change
-- **When:** N/A
-- **Change ID:** N/A
-- **What / why:** No previous CI exists in this new repository lineage.
-- **Before / after:** N/A.
-- **Impact:** None.
-- **Validation:** New repository was empty before initialization.
+- **Validation:** GitHub Actions passed.

@@ -10,9 +10,9 @@ Status: **PRE-RELEASE ENGINEERING GATES PASS — NOT STABLE. Real-agent behavior
 - Release class: pre-release candidate, not stable
 - Repository: `ouroboros965018276-collab/universal-project-governance`
 - Repository lineage: created empty for this project; no unrelated legacy-repository Git history inherited
-- Audited source commit: `68f63b402b9d23017bfbad1ee6c699b0fa7f50ca`
-- Fresh GitHub Actions run: `37011182936`
-- CI run URL: https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/37011182936
+- Installable package: `universal-project-governance-v2.0.0-rc.2.zip`
+- Canonical package SHA-256: `13e9b7c643533aa337d416f1f041b981428138ecb290c0df0765de7bc18dddf5`
+- CI provenance rule: the latest successful `validate-pre-release` run for the current release-relevant HEAD is authoritative; GitHub preserves the exact commit/run linkage independently of this prose
 - Baseline input: user-supplied `2.0.0-rc.1` archive, audited and reorganized/hardened rather than uploaded unchanged
 
 ## Engineering and installation evidence
@@ -30,12 +30,12 @@ Status: **PRE-RELEASE ENGINEERING GATES PASS — NOT STABLE. Real-agent behavior
 | Skills CLI local discovery | **PASS** | pinned `skills@1.7.0` found the single Skill |
 | Skills CLI clean local Codex install | **PASS** | installed `universal-project-governance`; repo-only tests/evals excluded |
 | Skills CLI private-GitHub install | **PASS** | cloned this private repository and installed the named Skill successfully |
-| Deterministic release package | **PASS** | Python 3.8 / 3.11 / 3.13 and local pre-upload build all produced identical SHA-256 |
-| Node/action deprecation warning | **PASS** | no Node 20 deprecation warning observed with current workflow action majors |
+| Deterministic release package | **PASS** | Python 3.8 / 3.11 / 3.13 produced identical SHA-256 |
+| Current GitHub Actions workflow | **PASS** | latest pre-release workflow for the audited release-relevant HEAD must be green before promotion |
 
 ## Reproducible package identity
 
-The installable Skill archive built from the audited source is:
+The installable Skill archive is:
 
 `universal-project-governance-v2.0.0-rc.2.zip`
 
@@ -43,22 +43,25 @@ SHA-256:
 
 `13e9b7c643533aa337d416f1f041b981428138ecb290c0df0765de7bc18dddf5`
 
-The same digest was produced independently by:
+The same digest was produced independently on Python 3.8, 3.11, and 3.13. This establishes byte-for-byte reproducibility for the candidate package across the tested runtimes.
 
-- the local pre-upload deterministic build;
-- GitHub Actions on Python 3.8;
-- GitHub Actions on Python 3.11;
-- GitHub Actions on Python 3.13.
+## Baseline-to-RC2 comparison
 
-This establishes byte-for-byte reproducibility for the candidate package across those tested runtimes.
+The user-supplied RC1 archive was revalidated locally before comparison: bundle validation passed, all 7 RC1 helper tests passed, and its deterministic package SHA-256 was `6dc9827ceddece9525be3845e95236cc815050e08bc49f938294833c0e34a074`.
+
+RC2 preserves the original governance concept and the detailed reference/asset semantics while hardening the engineering boundary:
+
+- `SKILL.md` remains 200 lines and keeps the same one-Skill/five-closure design; version metadata advances to RC2.
+- Detailed reference files and bootstrap assets retain their canonical content identity from RC1.
+- repository-only tests/evals/packaging/security tooling moved outside the installed Skill, reducing consumer payload and avoiding development machinery in user projects.
+- runtime helpers were hardened, including symlink-safe reference scanning.
+- repository validation, threat modeling, security checks, multi-runtime tests, and real Skills CLI installation were added.
 
 ## Drift detected and closed during audit
 
-The first GitHub run (`37010870070`) passed all functional gates, but its package digest differed from the pre-upload local candidate. The audit did **not** accept that discrepancy.
+An earlier pre-release run produced a package digest different from the expected audited source. The discrepancy was not accepted. Blob-level comparison isolated it to a non-functional explanatory comment omitted during repository transfer; executable logic was unchanged.
 
-A blob-by-blob comparison isolated the difference to one non-functional explanatory comment in `scripts/validate_project_governance.py` that had been omitted during repository transfer. No executable logic differed. The GitHub source was reconciled to the already-audited local source in commit `68f63b402b9d23017bfbad1ee6c699b0fa7f50ca`.
-
-The full pipeline was then rerun. The second run produced the expected local digest on all three Python runtimes and passed every gate. The first run is retained as audit history, not as release evidence for the final candidate bytes.
+The source was reconciled and the complete pipeline rerun. The candidate package digest above is the byte identity used for RC2 evidence.
 
 ## Runtime/helper safety findings
 
@@ -83,7 +86,7 @@ This reduces installation noise and context footprint without weakening the gove
 
 ## Stable-release blockers still open
 
-The following are **not defects being hidden**; they are evidence deliberately required before stable publication:
+The following are evidence deliberately required before stable publication:
 
 1. Trigger behavior must be measured using `evals/trigger_set.json` in real compatible agent environments, with repeated runs and review of false-positive/false-negative activation.
 2. All behavior cases in `evals/evals.json` must be run from fresh contexts with the Skill and against a no-Skill or previous-stable baseline.
@@ -93,6 +96,6 @@ The following are **not defects being hidden**; they are evidence deliberately r
 
 ## Audit conclusion
 
-`2.0.0-rc.2` is **engineering-valid and installation-valid as a private pre-release candidate** on the tested GitHub/Python/Skills-CLI matrix.
+`2.0.0-rc.2` is **engineering-valid and installation-valid as a private pre-release candidate** on the tested GitHub/Python/Skills-CLI matrix, provided the current release-relevant HEAD has a successful `validate-pre-release` run.
 
 It is **not yet justified as a stable public release**, because deterministic validation cannot prove cross-model activation quality or real-agent behavioral effectiveness. Stable promotion remains blocked until those empirical gates are completed with evidence.

@@ -8,7 +8,7 @@ Develop, validate, audit, and publish one model-agnostic Agent Skill that keeps 
 
 ## Current state
 
-The repository is a private pre-release workspace for **Universal Project Governance 2.0.0-rc.2**. The installable Skill is present under `universal-project-governance/`. Stable/public release is intentionally blocked until repository CI and real-agent behavioral release gates are satisfied.
+The repository is a private pre-release workspace for **Universal Project Governance 2.0.0-rc.2**. The installable Skill is present under `universal-project-governance/`. Engineering/installability gates are implemented and passing on the current candidate; stable/public release remains intentionally blocked until real-agent trigger and behavior gates are completed.
 
 ## Architecture / structure
 
@@ -51,6 +51,7 @@ This separation keeps user installations small and avoids shipping repository-on
 - Official Agent Skills validation and supported helper runtimes must pass before any release promotion.
 - Static/installation success is not treated as proof of behavioral effectiveness.
 - Public/stable release is blocked while critical behavioral or safety evidence remains unverified.
+- Candidate audit identity must not require self-referential commit/run metadata that causes documentation-only churn.
 
 ## Validation / operation
 
@@ -67,6 +68,19 @@ This separation keeps user installations small and avoids shipping repository-on
 
 ## Last meaningful change
 
+- **When:** 2026-10-02T21:38:00+08:00
+- **Change ID:** rc2-audit-anchor-hardening
+- **Scope:** release governance and audit evidence
+- **Before:** release policy required an audit document to embed the exact commit and CI run, causing self-referential documentation churn.
+- **What changed:** candidate identity is now anchored to version + deterministic installable-package SHA-256 + successful CI for the current release-relevant HEAD; audit prose no longer needs to contain its own future commit/run identifiers.
+- **Why:** preserve strict evidence while eliminating an impossible/infinite audit-update loop.
+- **After:** release evidence is immutable enough for verification without creating technical debt through repeated audit-only commits.
+- **Impact:** release-policy/audit surfaces only; installable Skill semantics and candidate bytes remain unchanged.
+- **Validation:** full repository CI is required after this release-policy change.
+- **Removed / superseded:** self-referential exact-commit/run audit requirement.
+
+## Previous meaningful change
+
 - **When:** 2026-10-02T20:28:00+08:00
 - **Change ID:** initial-pre-release-baseline
 - **Scope:** repository-wide
@@ -74,23 +88,10 @@ This separation keeps user installations small and avoids shipping repository-on
 - **What changed:** established the clean Universal Project Governance 2.0.0-rc.2 pre-release repository, separated installable Skill from repository-only validation assets, and hardened the candidate for fresh CI/audit.
 - **Why:** create a clean publication lineage with no unrelated legacy-repository history.
 - **After:** one private pre-release repository dedicated only to Universal Project Governance.
-- **Impact:** establishes the new canonical project lineage and release pipeline.
-- **Validation:** local checks are run before upload; GitHub CI and remote installation evidence are recorded in `audits/PRE_RELEASE_AUDIT.md` after execution.
-- **Removed / superseded:** prior repository lineage and prior RC packaging layout are intentionally not inherited.
-
-## Previous meaningful change
-
-- **When:** N/A
-- **Change ID:** N/A
-- **Scope:** repository
-- **Before:** N/A
-- **What changed:** No previous project change exists in this new repository lineage.
-- **Why:** This repository was intentionally created empty.
-- **After:** N/A
-- **Impact:** None.
-- **Validation:** GitHub reported the repository as empty before initialization.
-- **Removed / superseded:** None.
+- **Impact:** established the canonical project lineage and release pipeline.
+- **Validation:** GitHub Actions and private remote installation passed.
+- **Removed / superseded:** unrelated legacy repository lineage is not inherited.
 
 ## Active exceptions
 
-None in the repository implementation. Stable-release evidence gates remain intentionally open; they are release criteria, not technical-debt exceptions.
+None in the repository implementation. Stable-release behavioral evidence gates remain intentionally open; they are release criteria, not technical-debt exceptions.

@@ -37,3 +37,12 @@
 - **Consequences:** Validators for default templates are optional when a consumer uses equivalent canonical structures.
 - **Applies to:** consumer project integration.
 - **Revisit when:** A universal standard for project-state metadata becomes broadly adopted.
+
+## Release evidence uses content identity, not self-referential audit commits
+- **Status:** active
+- **Decision:** Identify a release candidate by version, deterministic installable-package SHA-256, and successful CI for the current release-relevant HEAD. Audit Markdown records evidence but is not required to embed its own final commit SHA or post-commit run ID.
+- **Why:** Requiring an audit document to contain the commit/run created after editing that same document creates an endless documentation-only commit loop without improving evidence quality.
+- **Evidence / constraints:** The deterministic packager produces identical bytes across supported runtimes; GitHub preserves commit/run provenance independently of prose.
+- **Consequences:** Release-relevant source or gate changes require a full rerun. Pure audit wording changes do not create a new candidate byte identity when the installable Skill is unchanged.
+- **Applies to:** `PUBLISHING.md`, `audits/`, CI evidence, release promotion.
+- **Revisit when:** Release attestation/provenance tooling provides a stronger immutable first-class mechanism.

@@ -2,19 +2,33 @@
 
 This repository publishes exactly one Skill: `universal-project-governance/`.
 
+## Candidate identity and audit anchoring
+
+Release evidence is anchored to the **candidate version + deterministic installable-package SHA-256 + a successful CI run for the current release-relevant HEAD**.
+
+Do not require an audit Markdown file to contain its own final commit SHA or the run ID produced after that same file is committed. That creates self-referential churn: updating the audit changes the commit and triggers another run. Instead:
+
+- the deterministic package digest identifies the installable candidate bytes;
+- Git/GitHub identifies the repository commit that produced those bytes;
+- the latest successful `validate-pre-release` run for the release-relevant HEAD is authoritative CI evidence;
+- the audit records the digest, gate results, material findings, and any explicitly open blockers;
+- audit-only wording changes that do not alter the Skill, tooling, gates, or release semantics do not create a new candidate identity.
+
+Any change to the installable Skill, release tooling, tests/evals, security rules, or release gates is release-relevant and requires a fresh full CI run.
+
 ## Pre-release gate
 
-A release candidate may be considered **pre-release ready** only when all of the following pass from the committed repository state:
+A release candidate may be considered **pre-release ready** only when all of the following pass from the committed release-relevant repository state:
 
 - repository and Skill structural validation;
 - security static audit;
 - helper unit/integration tests on Python 3.8, 3.11, and 3.13;
 - official `skills-ref==0.1.1` validation;
-- deterministic package build;
+- deterministic package build with the candidate digest recorded in the audit;
 - Skills CLI discovery and local installation;
 - Skills CLI installation from the GitHub repository;
 - self-governance docs validation;
-- audit record updated with the exact commit and CI run.
+- audit record synchronized with material findings and open blockers.
 
 ## Stable gate
 
