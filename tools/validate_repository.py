@@ -14,6 +14,17 @@ REQUIRED_ROOT = {
     "CHANGELOG.md", "PUBLISHING.md", "SECURITY.md", "CONTRIBUTING.md", "LICENSE",
     ".gitignore", ".github/workflows/validate.yml", "evals/evals.json", "evals/trigger_set.json",
 }
+REQUIRED_RC3_SKILL = {
+    "SKILL.md", "INTEGRITY.md", "VERSION.md", "CHANGELOG.md", "LICENSE",
+    "integrity/protected-files.json", "integrity/skill-manifest.json", "integrity/checksums.json",
+    "references/report-lifecycle-policy.md", "references/feedback-loop.md", "references/version-policy.md",
+    "assets/templates/HANDOFF.md", "assets/templates/AGENT_EXECUTION_AUDIT.md",
+    "assets/templates/CHANGE_NOTE.md", "assets/templates/ENGINEERING_REPORT.md",
+    "assets/templates/GOVERNANCE_FEEDBACK.md", "assets/governance-config.example.json",
+    "scripts/validate_integrity.py", "scripts/refresh_integrity.py", "scripts/classify_report.py",
+    "scripts/validate_handoff.py", "scripts/validate_reports.py", "scripts/export_evidence_bundle.py",
+    "scripts/governance_check.py",
+}
 
 
 def skill_version(skill_md: Path):
@@ -30,12 +41,16 @@ def first_changelog_version(path: Path):
     return None
 
 
-def validate_evals(path: Path, version: str, errors: list) -> None:
+def load_json(path: Path, errors: list):
     try:
-        data = json.loads(path.read_text(encoding="utf-8"))
+        return json.loads(path.read_text(encoding="utf-8"))
     except Exception as exc:
-        errors.append(f"invalid evals JSON: {exc}")
-        return
+        errors.append(f"invalid JSON {path}: {exc}")
+        return {}
+
+
+def validate_evals(path: Path, errors: list) -> None:
+    data = load_json(path, errors)
     if data.get("skill_name") != SKILL_NAME:
         errors.append("evals/evals.json skill_name mismatch")
     cases = data.get("evals")
@@ -55,16 +70,14 @@ def validate_evals(path: Path, version: str, errors: list) -> None:
             if key not in case:
                 errors.append(f"behavior eval {i} missing {key}")
         assertions = case.get("assertions")
-        if not isinstance(assertions, list) or not assertions or any(not isinstance(x, str) or not x.strip() for x in assertions):
+        if not isinstance(assertions, list) or not assertions or any(
+            not isinstance(x, str) or not x.strip() for x in assertions
+        ):
             errors.append(f"behavior eval {i} has invalid assertions")
 
 
 def validate_triggers(path: Path, errors: list) -> None:
-    try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-    except Exception as exc:
-        errors.append(f"invalid trigger-set JSON: {exc}")
-        return
+    data = load_json(path, errors)
     if not isinstance(data, list) or len(data) < 20:
         errors.append("trigger_set must contain at least 20 queries")
         return
@@ -103,31 +116,61 @@ def main() -> int:
         if not (root / rel).exists():
             errors.append(f"missing repository file: {rel}")
 
+    for misplaced in ("integrity", "references"):
+        if (root / misplaced).exists():
+            errors.append(f"misplaced repository-root Skill content: {misplaced}/ (must live under {SKILL_NAME}/)")
+
     skills = [p for p in root.rglob("SKILL.md") if ".git" not in p.parts and "dist" not in p.parts]
+    version = None
+    skill_root = root / SKILL_NAME
     if len(skills) != 1:
         errors.append(f"repository must contain exactly one source SKILL.md; found {len(skills)}")
-        version = None
     else:
-        if skills[0].parent.name != SKILL_NAME:
+        if skills[0].parent != skill_root:
             errors.append(f"Skill directory must be {SKILL_NAME}")
         version = skill_version(skills[0])
         if not version:
             errors.append("Skill metadata.version missing")
 
-    if (root / "LICENSE").exists() and (root / SKILL_NAME / "LICENSE").exists():
-        if (root / "LICENSE").read_bytes() != (root / SKILL_NAME / "LICENSE").read_bytes():
+    for rel in REQUIRED_RC3_SKILL:
+        if not (skill_root / rel).is_file():
+            errors.append(f"missing RC3 distributed Skill file: {rel}")
+
+    if (root / "LICENSE").exists() and (skill_root / "LICENSE").exists():
+        if (root / "LICENSE").read_bytes() != (skill_root / "LICENSE").read_bytes():
             errors.append("repository LICENSE and distributed Skill LICENSE differ")
 
     if version:
-        changelog = first_changelog_version(root / "CHANGELOG.md") if (root / "CHANGELOG.md").exists() else None
-        if changelog != version:
-            errors.append(f"CHANGELOG latest version {changelog!r} != Skill version {version!r}")
-        readme = (root / "README.md").read_text(encoding="utf-8", errors="replace") if (root / "README.md").exists() else ""
+        root_changelog = first_changelog_version(root / "CHANGELOG.md")
+        skill_changelog = first_changelog_version(skill_root / "CHANGELOG.md")
+        if root_changelog != version:
+            errors.append(f"root CHANGELOG latest version {root_changelog!r} != Skill version {version!r}")
+        if skill_changelog != version:
+            errors.append(f"Skill CHANGELOG latest version {skill_changelog!r} != Skill version {version!r}")
+        readme = (root / "README.md").read_text(encoding="utf-8", errors="replace")
         if version not in readme:
             errors.append("README does not mention current Skill version")
 
+        manifest = load_json(skill_root / "integrity" / "skill-manifest.json", errors)
+        if manifest.get("expected_version") != version:
+            errors.append("integrity skill-manifest expected_version mismatch")
+        if manifest.get("name") != SKILL_NAME:
+            errors.append("integrity skill-manifest name mismatch")
+
+        ledger = load_json(skill_root / "integrity" / "checksums.json", errors)
+        if ledger.get("generated_for_version") != version:
+            errors.append("integrity checksum ledger version mismatch")
+        if not isinstance(ledger.get("files"), dict) or not ledger.get("files"):
+            errors.append("integrity checksum ledger must contain protected file hashes")
+
+        policy = load_json(skill_root / "integrity" / "protected-files.json", errors)
+        if policy.get("policy") != "protect-all":
+            errors.append("integrity policy must remain protect-all")
+        if "integrity/checksums.json" not in set(policy.get("exclude", [])):
+            errors.append("integrity policy must exclude only its generated checksum ledger from self-hashing")
+
     if (root / "evals/evals.json").exists():
-        validate_evals(root / "evals/evals.json", version or "", errors)
+        validate_evals(root / "evals/evals.json", errors)
     if (root / "evals/trigger_set.json").exists():
         validate_triggers(root / "evals/trigger_set.json", errors)
 
@@ -143,7 +186,10 @@ def main() -> int:
         print(f"error: {e}", file=sys.stderr)
     if errors:
         return 1
-    print(f"Repository check passed: {SKILL_NAME} {version} ({len(skills)} Skill, release/eval/license invariants satisfied).")
+    print(
+        f"Repository check passed: {SKILL_NAME} {version} "
+        f"({len(skills)} Skill, RC3 integrity/release/eval/license invariants satisfied)."
+    )
     return 0
 
 

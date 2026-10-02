@@ -2,89 +2,115 @@
 
 > Significant repository units only. Generated caches/build outputs are not modules.
 
-## Installable Skill
+## Installable Governance Skill
 - **Location:** `universal-project-governance/`
-- **Status:** release-candidate
-- **Function:** Provides the model-agnostic governance contract, detailed references, bootstrap assets, and optional deterministic helpers.
-- **Purpose:** Ensure maintained-project changes close implementation, cleanup, current truth, evidence, and continuity together.
-- **Rationale:** One Skill prevents maintenance/documentation responsibilities from drifting into separately installed or inconsistently triggered policies; progressive disclosure controls context cost.
-- **Scope:** Any maintained project state change; excludes read-only Q&A and unrelated one-off artifacts.
-- **Inputs:** User task, project state, project instructions, observable evidence.
-- **Outputs:** Governed project changes and durable project-state/handoff updates when applicable.
-- **Dependencies / consumers:** Agent Skills-compatible hosts; optional Python 3.8+ and Git for helpers.
-- **Invariants:** One Skill; model agnostic; evidence before destructive claims; no competing truth; current docs remain current.
-- **Change safety:** Behavioral contract changes require eval updates and pre-release rerun; helper changes require multi-runtime tests.
+- **Status:** 2.0.0-rc.3 release candidate
+- **Function:** Governs maintained-project changes across implementation, cleanup, debt, current truth, chronology, validation, handoff, integrity, and proportional evidence.
+- **Purpose:** Make each project change safe for the next AI/engineer without depending on hidden chat context.
+- **Rationale:** One Skill keeps maintenance and documentation responsibilities inseparable; progressive disclosure controls context cost.
+- **Scope:** Maintained project state changes; excludes read-only analysis and unrelated one-off artifacts.
+- **Inputs:** User task, project state, authoritative instructions, observable evidence.
+- **Outputs:** Governed project change, synchronized current truth, proportional evidence, and handoff state when required.
+- **Dependencies / consumers:** Agent Skills-compatible hosts; Python 3.8+ and Git only for optional helpers.
+- **Invariants:** One Skill; model agnostic; evidence before destructive claims; no competing truth; ordinary project work cannot modify the Skill.
+- **Change safety:** Any Skill behavior change requires explicit governance-upgrade authorization, version/eval impact review, checksum refresh, and release-gate rerun.
 
 ### Last meaningful change
-- **When:** 2026-10-02T20:28:00+08:00
-- **Change ID:** rc2-clean-baseline
-- **What / why:** Rebased the candidate into a clean repository layout and hardened helper safety without changing the core governance concept.
-- **Before / after:** monolithic release bundle baseline → dedicated installable Skill inside a clean development repository.
-- **Impact:** cleaner distribution and audit separation.
-- **Validation:** local bundle/helper/security tests plus GitHub CI after upload.
+- **When:** 2026-10-02T22:28:00+08:00
+- **Change ID:** rc3-self-protection-and-feedback
+- **What / why:** Added integrity protection, adaptive reporting, handoff snapshot, execution audit, feedback loop, bounded retention, and evidence export so the Skill can protect and prove its own governance behavior.
+- **Before / after:** project-governance protocol → tamper-evident, feedback-capable governance system.
+- **Impact:** stronger cross-agent continuity with lower reporting overhead for small work.
+- **Validation:** 19 tests × Python 3 runtimes, upstream spec, integrity, install, package reproducibility.
 
 ### Previous meaningful change
-- **When:** 2026-10-02T09:05:00+08:00
-- **Change ID:** rc1-local-candidate
-- **What / why:** Established the prior 2.0.0-rc.1 candidate and local release gates.
-- **Before / after:** draft v2 → release candidate.
-- **Impact:** supplied the audited baseline used for this clean rebuild.
-- **Validation:** prior local audit; this repository does not inherit its Git history.
+- **When:** 2026-10-02T20:28:00+08:00
+- **Change ID:** rc2-clean-baseline
+- **What / why:** Established clean repository/distribution separation and hardened helper safety.
+- **Before / after:** local candidate → dedicated installable Skill + repository engineering layer.
+- **Impact:** cleaner distribution and audit separation.
+- **Validation:** RC2 CI and private remote installation.
+
+## Skill Integrity and Evidence Layer
+- **Location:** `universal-project-governance/INTEGRITY.md`, `integrity/`, report/feedback references, templates, RC3 helper scripts
+- **Status:** active RC3
+- **Function:** Detects distributed Skill drift, classifies report level, validates handoff/report retention, exports governance-only review evidence, and gates authorized Skill evolution.
+- **Purpose:** Prevent accidental agent mutation and make governance observable without making every tiny edit expensive.
+- **Rationale:** Read-only instructions alone cannot reveal whether the installed Skill drifted; unlimited execution reports would create governance debt.
+- **Scope:** Distributed Skill integrity and optional consumer-project observability.
+- **Inputs:** Installed Skill bytes; observable task scale/risk; optional `.governance/` state.
+- **Outputs:** integrity PASS/FAIL, report classification, handoff/report validation, evidence bundle.
+- **Dependencies / consumers:** Python standard library; VCS is optional except frozen-audit diff checking.
+- **Invariants:** checksum refresh requires explicit upgrade confirmation; checksums never auto-refresh during validation; evidence export excludes project source by default; raw execution retention is bounded.
+- **Change safety:** Treat all files under the Skill root as protected except the generated checksum ledger itself.
+
+### Last meaningful change
+- **When:** 2026-10-02T22:28:00+08:00
+- **Change ID:** rc3-integrity-ledger
+- **What / why:** Introduced protect-all SHA-256 ledger generated on a clean runner and enforced it in CI and installed copies.
+- **Before / after:** policy-only self-protection → executable tamper-evident validation.
+- **Impact:** accidental or partial Skill edits become detectable before use/release.
+- **Validation:** tamper test fails as expected; authorized refresh test; installed Skill integrity PASS.
+
+### Previous meaningful change
+- **When:** 2026-10-02T21:38:00+08:00
+- **Change ID:** rc2-evidence-anchor
+- **What / why:** Anchored release identity to package digest and CI provenance.
+- **Before / after:** prose-oriented evidence → content-identity evidence.
+- **Impact:** supports RC3 external trust anchor.
 
 ## Validation and Evaluation Harness
 - **Location:** `tools/`, `tests/`, `evals/`
-- **Status:** active-pre-release
-- **Function:** Validates package structure, runtime helper behavior, security invariants, release reproducibility, triggers, and behavioral assertions.
-- **Purpose:** Prevent format correctness from being mistaken for real quality and make release claims evidence-based.
-- **Rationale:** Development/eval machinery is separated from the installed Skill to reduce user payload and avoid model-specific runtime coupling.
-- **Scope:** Repository development and release pipeline only.
-- **Inputs:** Skill source tree, fixtures, evaluation prompts.
-- **Outputs:** pass/fail evidence, deterministic release package, audit findings.
-- **Dependencies / consumers:** Python standard library locally; `skills-ref` and Skills CLI only in CI/release validation.
-- **Invariants:** Tests must include negative cases; failed critical assertions block stable release; no hidden network requirement in runtime helpers.
-- **Change safety:** Update corresponding tests/evals whenever observable governance behavior changes.
+- **Status:** active pre-release
+- **Function:** Validates structure, integrity prerequisites, runtime helper behavior, security invariants, reproducible packaging, trigger cases, and behavior assertions.
+- **Purpose:** Prevent static validity from being mistaken for real quality.
+- **Rationale:** Development/eval machinery stays outside the installed Skill.
+- **Scope:** Repository development and release only.
+- **Inputs:** Skill tree, fixtures, eval prompts.
+- **Outputs:** pass/fail evidence and deterministic package.
+- **Dependencies / consumers:** Python standard library; upstream `skills-ref` and Skills CLI in CI.
+- **Invariants:** negative tests included; critical behavior failure blocks stable; package validation includes integrity validation.
+- **Change safety:** Behavior changes require matching tests/evals.
 
 ### Last meaningful change
-- **When:** 2026-10-02T20:28:00+08:00
-- **Change ID:** rc2-harness-hardening
-- **What / why:** Moved evaluation/release tooling out of the installed Skill and added repository/security validation for cleaner distribution and stronger evidence.
-- **Before / after:** self-contained RC1 bundle → separated runtime and development surfaces.
-- **Impact:** smaller user-facing Skill and stronger release auditability.
-- **Validation:** unit tests, security audit, deterministic package, CI.
+- **When:** 2026-10-02T22:28:00+08:00
+- **Change ID:** rc3-test-expansion
+- **What / why:** Expanded suite from 11 to 19 tests with integrity tamper, refresh authorization, report policy, handoff, retention, and evidence-export cases.
+- **Before / after:** RC2 helper tests → RC3 governance-system tests.
+- **Impact:** new RC3 mechanisms are executable and regression-tested.
+- **Validation:** 19/19 on Python 3.8, 3.11, 3.13.
 
 ### Previous meaningful change
-- **When:** 2026-10-02T09:05:00+08:00
-- **Change ID:** rc1-eval-suite
-- **What / why:** Added 12 behavior eval cases and 20 trigger/near-miss cases.
-- **Before / after:** structural checks only → prepared behavioral evaluation harness.
-- **Impact:** stable promotion can be based on explicit assertions.
-- **Validation:** JSON/schema/shape checks.
+- **When:** 2026-10-02T20:28:00+08:00
+- **Change ID:** rc2-harness-hardening
+- **What / why:** Separated runtime and repository test surfaces.
+- **Before / after:** self-contained release bundle → lean installed Skill + external dev harness.
+- **Impact:** lower installation noise.
 
 ## CI and Release Pipeline
 - **Location:** `.github/workflows/validate.yml`, `PUBLISHING.md`, `audits/`
-- **Status:** active-pre-release
-- **Function:** Runs authoritative upstream validation, runtime matrix, CLI installation tests, security checks, packaging checks, and records release evidence.
-- **Purpose:** Make pre-release and stable claims reproducible and reviewable.
-- **Rationale:** GitHub-hosted CI provides a fresh networked environment unavailable to local sandbox-only checks.
+- **Status:** active pre-release
+- **Function:** Runs official spec, three Python runtimes, security/integrity checks, local install, deterministic package, and main-branch remote installation.
+- **Purpose:** Make release claims reproducible and attributable.
+- **Rationale:** Branch CI must validate the candidate bytes; default-branch remote installation can only truthfully be tested after merge.
 - **Scope:** Repository release engineering.
 - **Inputs:** committed repository state.
-- **Outputs:** GitHub Actions status/logs and audit record.
+- **Outputs:** GitHub Actions evidence and frozen release audits.
 - **Dependencies / consumers:** GitHub Actions, `skills-ref==0.1.1`, `skills@1.7.0`.
-- **Invariants:** least-privilege workflow permissions; no secret-dependent public test; stable remains blocked without behavioral evidence; audit identity must not create self-referential commit churn.
-- **Change safety:** CI dependency or gate changes require a full rerun and audit synchronization.
+- **Invariants:** least privilege; no automatic checksum refresh; remote GitHub install runs only on `main`; stable remains behavior-gated.
+- **Change safety:** gate changes require full rerun.
 
 ### Last meaningful change
-- **When:** 2026-10-02T21:38:00+08:00
-- **Change ID:** rc2-audit-anchor-hardening
-- **What / why:** Replaced self-referential audit commit/run anchoring with version + deterministic package digest + successful CI for the current release-relevant HEAD.
-- **Before / after:** audit edits forced endless commit/run drift → candidate evidence remains strict without recursive documentation churn.
-- **Impact:** cleaner, more stable release evidence and handoff.
-- **Validation:** full GitHub pre-release workflow rerun required.
+- **When:** 2026-10-02T22:28:00+08:00
+- **Change ID:** rc3-ci-integrity
+- **What / why:** Added installed-Skill integrity validation and corrected branch remote-install semantics.
+- **Before / after:** branch CI could accidentally test RC2 default branch as RC3 → branch validates local candidate, main validates real remote install.
+- **Impact:** CI evidence now corresponds to the bytes actually under test.
+- **Validation:** RC3 branch CI passes after correction.
 
 ### Previous meaningful change
-- **When:** 2026-10-02T20:28:00+08:00
-- **Change ID:** rc2-ci-clean-rebuild
-- **What / why:** Rebuilt CI for the new repository and current action/CLI versions, including remote install smoke testing.
-- **Before / after:** no CI in new repository → complete pre-release validation pipeline.
-- **Impact:** enables fresh, repository-specific evidence.
-- **Validation:** GitHub Actions passed.
+- **When:** 2026-10-02T21:38:00+08:00
+- **Change ID:** rc2-audit-anchor-hardening
+- **What / why:** Removed self-referential audit run/commit requirement.
+- **Before / after:** recursive audit churn → stable content-identity evidence.
+- **Impact:** cleaner release pipeline.

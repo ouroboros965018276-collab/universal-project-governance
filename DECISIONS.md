@@ -46,3 +46,31 @@
 - **Consequences:** Release-relevant source or gate changes require a full rerun. Pure audit wording changes do not create a new candidate byte identity when the installable Skill is unchanged.
 - **Applies to:** `PUBLISHING.md`, `audits/`, CI evidence, release promotion.
 - **Revisit when:** Release attestation/provenance tooling provides a stronger immutable first-class mechanism.
+
+## Installed Skill is protected by default
+- **Status:** active
+- **Decision:** Treat every distributed Skill file as read-only during ordinary project tasks. RC3 uses a protect-all SHA-256 ledger with explicit checksum refresh only during an authorized Skill-upgrade task.
+- **Why:** Agents commonly optimize files they encounter; allowing an unrelated task to rewrite its own governance contract creates silent policy drift.
+- **Evidence / constraints:** RC3 tamper tests detect protected-file edits and installed copies validate successfully after Skills CLI installation.
+- **Consequences:** A checksum mismatch invalidates trust in the local Skill until restored/reinstalled or deliberately upgraded. The mechanism is tamper-evident, not cryptographic authorization against an actor with full write access.
+- **Applies to:** all files distributed under `universal-project-governance/`.
+- **Revisit when:** signed Skill packages or host-enforced read-only installations become broadly available.
+
+## Reporting is adaptive, not mandatory bureaucracy
+- **Status:** active
+- **Decision:** Use minimal, standard, and evaluation observability modes. Trivial low-risk work does not create a standalone report by default; risk/scale/user intent can escalate to Engineering or Audit evidence.
+- **Why:** Mandatory reports for tiny edits waste tokens and create file/history debt, while high-risk work and testing still need reviewable evidence.
+- **Evidence / constraints:** RC3 report-classifier tests cover small changes, evaluation refactors, and releases.
+- **Consequences:** Current truth and safety obligations never weaken, but evidence format scales with need.
+- **Applies to:** consumer-project report generation and RC behavioral testing.
+- **Revisit when:** empirical behavior evals show under-reporting or excessive ceremony.
+
+## Handoff is current state; execution evidence is bounded
+- **Status:** active
+- **Decision:** Handoff Snapshot is overwritten at real continuation boundaries; Agent Execution Audits are generated only for evaluation/high-risk/explicit-audit cases and raw execution retention is bounded.
+- **Why:** The next agent needs one current continuation state, not an archaeological pile of handoff files. Testing evidence must be retained long enough to review but not forever by default.
+- **Evidence / constraints:** RC3 handoff and retention validators test empty snapshots and retention overflow.
+- **Consequences:** Durable decisions/facts move into canonical project state; stale raw execution evidence can be summarized/archived and removed subject to project retention obligations.
+- **Applies to:** `.governance/` observability and external audit workflow.
+- **Revisit when:** project-specific compliance requires stricter retention.
+
