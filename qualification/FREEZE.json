@@ -1,0 +1,40 @@
+{
+  "adapter_contract_sha256": "sha256:d964f8d3acb10f1a3a783fc875b4d8b9b830ae6c89433b4e94e76c04aba21dcb",
+  "allowed_post_freeze_changes": [
+    "qualification results",
+    "non-semantic runner bug fixes with qualification invalidation review",
+    "grader calibration in a new qualification round",
+    "new external agent adapters",
+    "development eval expansion",
+    "documentation corrections"
+  ],
+  "behavioral_fingerprint": "sha256:3d8f3255c228a7fe9a423d74cdd011e0a471a24e1c62c65435e14dc0dfa72161",
+  "compiler_sha256": "sha256:75cb6cc0bf3069d8803883b8ef18a29f039b77f7a0eb19c478363fa9da2e0bf4",
+  "fixture_set_sha256": "sha256:a810d6e819d1c1e0748f5d768ac8270b87173bd533d0b4fbca521696d4638f88",
+  "forbidden_post_freeze_changes": [
+    "new policy IDs",
+    "hot-path semantic changes",
+    "risk semantic changes",
+    "handoff semantic changes",
+    "report semantic changes",
+    "compiler contract changes",
+    "runtime capability expansion"
+  ],
+  "frozen_surfaces": [
+    "governance-src/model",
+    "governance-src/profiles",
+    "governance-src/runtime-scripts",
+    "governance-src/schemas",
+    "governance-src/templates",
+    "compiler",
+    "universal-project-governance"
+  ],
+  "governance_model_sha256": "sha256:ae0f0279333db306366b0096f6c112b7261ae27dae082263b02eeee4fed6d756",
+  "grader_sha256": "sha256:e14a7ce055430ef14775514d9a5de7331c63f0a3b117f3d69661b687803068c0",
+  "qualification_fingerprint": "sha256:b3e259b65b7e3e54122fa4b680a2ed8e89a346548d98b54121f45b38eafc5da8",
+  "qualification_protocol_sha256": "sha256:e29acf35602bb305e59e81c22d6bddae2ad19e3d8fea941fac87d9ad142f7cb6",
+  "runtime_tree_sha256": "sha256:f15e7b5e0dad6939a79ba84465b645ec19c8bd71ae8417a49760a94446f373be",
+  "schema_version": 1,
+  "state": "qualification-freeze",
+  "version": "2.0.0-rc.5"
+}
