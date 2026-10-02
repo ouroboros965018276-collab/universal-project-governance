@@ -1,35 +1,45 @@
-# Repository Instructions for AI / Agent Contributors
+# AGENTS.md
 
-This repository dogfoods **Universal Project Governance**.
+## Repository contract
 
-For every task that changes repository state, apply the governance semantics in
-`universal-project-governance/SKILL.md` to this repository itself.
+This repository uses a **compiled governance architecture**.
 
-## Protected Skill rule
+### Canonical source
 
-The distributed Skill is protected. During ordinary repository work, do **not** edit files under
-`universal-project-governance/` unless the user/task explicitly authorizes a Skill upgrade or repair.
+Edit governance semantics only under:
 
-If protected Skill files change:
+```text
+governance-src/
+```
 
-1. explain why the change is a governance change, not incidental cleanup;
-2. update version/changelog/evals as required;
-3. refresh checksums only with the explicit governance-upgrade command;
-4. rerun integrity, security, runtime, package, official-spec, and installation gates.
+Do **not** hand-edit:
 
-Never refresh checksums merely to make an unexpected integrity failure disappear.
+```text
+universal-project-governance/
+```
 
-## Repository governance
+That directory is generated output.
 
-- preserve one installable Skill named `universal-project-governance`;
-- do not duplicate canonical rules between repository docs and `SKILL.md`;
-- keep `PROJECT_STATE.md`, `MODULE_MAP.md`, active `DECISIONS.md`, `CHANGELOG.md`, and validation evidence current when affected;
-- remove superseded code/docs/tests/config in scope rather than leaving parallel residue;
-- never weaken evidence, safe-deletion, chronology, interoperability, integrity, or closure requirements to reduce test friction;
-- use proportional reporting: small edits should not create report bureaucracy;
-- treat `audits/` as frozen release evidence, not a second source of current truth;
-- keep model-specific evaluation harnesses outside the distributed Skill;
-- do not promote a release candidate to stable without the gates in `PUBLISHING.md`.
+### Required workflow after source changes
 
-`universal-project-governance/SKILL.md` is the canonical behavior contract for the distributed Skill.
-Repository documents describe this repository's current development/release state.
+```bash
+python compiler/compile_governance.py --write --confirm-generated-runtime-update
+python compiler/compile_governance.py --check
+python tools/governance_lint.py .
+python tools/validate_repository.py .
+python -m unittest discover -s tests -v
+```
+
+Then run the complete CI/release gate before claiming completion.
+
+### Invariants
+
+- one semantic rule, one canonical definition;
+- profiles activate policies but never redefine them;
+- Policy IR stays declarative and non-executable;
+- complexity budgets are release blockers, not suggestions;
+- schema-first JSON is canonical for governance state; rendered Markdown is a view;
+- generated runtime integrity is tamper-evident, not an access-control claim;
+- current-state docs describe the present project; release audits may remain historical/frozen.
+
+If a requested change would weaken these invariants, require explicit owner intent and document the design decision/version impact.

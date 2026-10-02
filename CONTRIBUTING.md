@@ -1,25 +1,34 @@
 # Contributing
 
-Contributions are welcome when they improve governance quality without turning the Skill into a vendor-specific prompt dump or a second documentation system.
+Contributions should improve governance capability without linearly increasing runtime cognitive load.
 
-## Rules
+## Change canonical source, not runtime
 
-- Keep this as **one Skill**.
-- `universal-project-governance/SKILL.md` is the canonical behavior contract.
-- Detailed policy belongs in a focused `references/` file only when the main router can state exactly when to load it.
-- Runtime helpers must be deterministic, network-free, conservative around secrets, and read-only by default.
-- Do not weaken safe deletion, evidence-before-claim, current-truth, chronology, interoperability, or closure gates to make tests pass.
-- Observable behavior changes require corresponding `evals/` updates.
-- Repository state changes must update current project governance docs when affected.
+1. Modify `governance-src/model/`, profiles, schemas, template, or runtime-script source.
+2. Add/update plan cases and unit tests for observable behavior.
+3. Regenerate the installable runtime:
+   ```bash
+   python compiler/compile_governance.py --write --confirm-generated-runtime-update
+   ```
+4. Run compiler drift, governance lint, repository validation, tests, and package build.
+5. Update current-state/decision/changelog/audit surfaces when the change is meaningful.
 
-## Local checks
+Never hand-edit `universal-project-governance/`.
 
-```bash
-python tools/validate_skill_bundle.py universal-project-governance
-python tools/validate_repository.py .
-python tools/security_audit.py .
-PYTHONDONTWRITEBYTECODE=1 python -m unittest discover -s tests -v
-python universal-project-governance/scripts/validate_project_governance.py .
-```
+## Policy additions
 
-Before release promotion, follow `PUBLISHING.md` and rerun the full GitHub Actions pipeline from a clean commit.
+Before adding a policy, prove it is not a restatement of an existing stable rule ID. Prefer extending dependency/activation relationships over creating synonymous rules.
+
+New policies need:
+
+- stable ID;
+- finite triggers;
+- severity;
+- evidence contract;
+- applicable domains;
+- dependency/conflict relationships;
+- eval tags and tests.
+
+## Complexity
+
+A feature that violates the complexity budget must be redesigned, consolidated, or accompanied by an explicit evidence-backed budget decision. Do not convert a hard gate into a warning merely to land a feature.

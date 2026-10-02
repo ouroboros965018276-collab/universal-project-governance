@@ -1,0 +1,54 @@
+{
+  "created_at": "2026-10-03",
+  "version": "2.0.0-rc.4",
+  "candidate": "Compiled Governance Architecture",
+  "artifact_sha256": "PENDING_FINAL_CI",
+  "gates": [
+    {
+      "name": "canonical-source/compiler architecture",
+      "result": "pass",
+      "evidence": "source model, compiler, generated runtime and drift check implemented"
+    },
+    {
+      "name": "governance complexity/static analysis",
+      "result": "pass",
+      "evidence": "rule graph lint and hard complexity budgets implemented"
+    },
+    {
+      "name": "runtime Skill size",
+      "result": "pass",
+      "evidence": "generated SKILL.md is 82 lines (budget 120)"
+    },
+    {
+      "name": "schema-first state and compaction",
+      "result": "pass",
+      "evidence": "typed schemas + state_tool validation/render/compact/export implemented"
+    },
+    {
+      "name": "upstream Agent Skills validation",
+      "result": "pending",
+      "evidence": "must pass on final RC4 HEAD"
+    },
+    {
+      "name": "Python 3.8/3.11/3.13",
+      "result": "pending",
+      "evidence": "must pass on final RC4 HEAD"
+    },
+    {
+      "name": "Skills CLI local/default-branch install",
+      "result": "pending",
+      "evidence": "must pass on final RC4 main"
+    },
+    {
+      "name": "deterministic package",
+      "result": "pending",
+      "evidence": "final SHA-256 recorded after final CI"
+    }
+  ],
+  "blockers": [
+    "real-agent trigger false-positive/false-negative qualification",
+    "fresh-context behavior comparison against no-Skill/previous baseline",
+    "cross-agent A-to-B handoff qualification",
+    "token/context/latency overhead qualification before stable"
+  ]
+}

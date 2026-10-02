@@ -1,22 +1,43 @@
-# Threat Model — Pre-release
+# Threat Model — RC4 Compiled Governance
 
-Scope: Universal Project Governance Skill and its shipped helper scripts.
+## Assets
 
-## Primary risks
+- canonical governance model and schemas;
+- compiler/static-analysis correctness;
+- generated runtime identity;
+- project governance state/evidence;
+- release/audit provenance.
 
-| Risk | Failure mode | Current mitigation | Evidence surface |
-|---|---|---|---|
-| Unsafe cleanup/deletion | Agent removes an artifact because a shallow search found no references | Evidence-before-claim + safe deletion protocol + consumer/retention checks | `SKILL.md`, maintenance reference, behavior evals |
-| Secret exposure by scanner | Helper reads or emits credentials/private keys | No network; secret-like filename/suffix exclusion; symlink avoidance; text/size bounds | unit tests + `tools/security_audit.py` |
-| Path escape via symlink | Scanner follows project symlink into external filesystem | Directory/file symlinks skipped | unit tests |
-| Command injection | Runtime helper constructs shell command from project data | `subprocess` uses argv arrays; `shell=True` prohibited by static audit | security audit |
-| Fabricated completion evidence | Agent claims validation/debt-free/migration completion without proof | Proof-carrying change and closure gates | validation reference + behavior evals |
-| Documentation duplication | Skill creates its own docs inside a mature project or another Skill namespace | One-source-of-truth + interoperability ownership rule | interoperability eval |
-| Over-triggering | Read-only questions cause invasive governance work | explicit negative activation boundary + 10 negative trigger cases | `SKILL.md` description + trigger set |
-| Under-triggering | Project-changing task bypasses governance | explicit positive activation boundary + 10 positive trigger cases | trigger set |
-| Prompt/repository injection | Untrusted project text attempts to override higher-priority instructions | conflict priority and project-instruction hierarchy; do not treat arbitrary docs as authority | `SKILL.md` + interoperability reference |
-| Supply-chain drift in release tests | Tooling updates invalidate assumptions | pinned `skills-ref==0.1.1`, pinned `skills@1.7.0`, explicit CI versions | GitHub Actions logs |
+## Threats and controls
 
-## Residual risk before stable
+### T1 — Hand-edited generated runtime
+**Risk:** source/runtime divergence or hidden weakening.  
+**Controls:** compiler `--check`, generated-runtime integrity manifest, CODEOWNERS, CI.
 
-The largest intentionally open risk is behavioral: deterministic tests cannot prove every AI host will activate the Skill correctly or follow its gates under pressure. Stable publication therefore remains blocked until trigger and behavior evals are run in fresh real-agent contexts and reviewed for false positives, false negatives, unsafe actions, and unreasonable overhead.
+### T2 — Policy graph corruption
+**Risk:** missing dependencies, cycles, orphan rules, conflicting blocking obligations.  
+**Controls:** deterministic Governance Linter hard failures.
+
+### T3 — Governance meta-complexity
+**Risk:** runtime/context size grows with every feature until agents stop following it.  
+**Controls:** hard SKILL/hot-path/default-closure/Markdown budgets; source/runtime separation.
+
+### T4 — DSL creep
+**Risk:** Policy IR gains executable conditions/loops/plugins and becomes another programming language.  
+**Controls:** finite schema fields and enums only; decision logic remains in compiler code.
+
+### T5 — Integrity-manifest substitution
+**Risk:** a privileged writer alters runtime and manifest together.  
+**Controls:** do not claim local manifest as authorization; external VCS/CI/release digest anchors remain required.
+
+### T6 — Evidence leakage
+**Risk:** reports copy secrets/source/private data unnecessarily.  
+**Controls:** schema-first minimal evidence; export tool selects governance-state files only; security guidance prohibits secret duplication.
+
+### T7 — Over-governance
+**Risk:** trivial work triggers large reports or unnecessary handoff artifacts.  
+**Controls:** risk-adaptive planner; low-risk `none/change-note`; one current handoff/execution record; deterministic compaction.
+
+### T8 — Semantic duplication
+**Risk:** multiple policies restate the same intent under different IDs.  
+**Controls:** one-definition rule; structural fingerprint advisory; human review for fuzzy semantic similarity until deterministic methods are trustworthy.
