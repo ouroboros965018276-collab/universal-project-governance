@@ -1,0 +1,19 @@
+{
+  "version": "2.0.0-rc.3",
+  "protected_files": [
+    "SKILL.md",
+    "INTEGRITY.md",
+    "references/core-principles.md",
+    "scripts/validate_governance.py"
+  ],
+  "modification_policy": {
+    "normal_task": "deny",
+    "explicit_upgrade_request": "allow_with_review",
+    "required_evidence": [
+      "reason",
+      "version_change",
+      "changelog_entry",
+      "validation_result"
+    ]
+  }
+}
