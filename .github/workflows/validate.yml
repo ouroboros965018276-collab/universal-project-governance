@@ -21,8 +21,8 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: '3.13'
-      - name: Print expected RC3 integrity ledger for bootstrap
-        run: python universal-project-governance/scripts/refresh_integrity.py universal-project-governance --confirm-governance-upgrade --stdout
+      - name: Validate installed Skill integrity ledger
+        run: python universal-project-governance/scripts/validate_integrity.py universal-project-governance
       - name: Validate installable Skill bundle
         run: python tools/validate_skill_bundle.py universal-project-governance
       - name: Validate repository release invariants
@@ -31,6 +31,8 @@ jobs:
         run: python tools/security_audit.py .
       - name: Validate repository self-governance state
         run: python universal-project-governance/scripts/validate_project_governance.py .
+      - name: Run integrated governance check
+        run: python universal-project-governance/scripts/governance_check.py . --skill-root universal-project-governance
       - name: Compile Python sources
         env:
           PYTHONDONTWRITEBYTECODE: '1'
@@ -102,6 +104,7 @@ jobs:
           cd "$work"
           npx -y skills@1.7.0 add "$GITHUB_WORKSPACE/universal-project-governance" --skill universal-project-governance -a codex --copy -y
           test -f .agents/skills/universal-project-governance/SKILL.md
+          python .agents/skills/universal-project-governance/scripts/validate_integrity.py .agents/skills/universal-project-governance
           test ! -e .agents/skills/universal-project-governance/tests
           test ! -e .agents/skills/universal-project-governance/evals
       - name: Install from this private GitHub repository
@@ -115,5 +118,6 @@ jobs:
           cd "$work"
           npx -y skills@1.7.0 add "${{ github.repository }}" --skill universal-project-governance -a codex --copy -y
           test -f .agents/skills/universal-project-governance/SKILL.md
+          python .agents/skills/universal-project-governance/scripts/validate_integrity.py .agents/skills/universal-project-governance
           test ! -e .agents/skills/universal-project-governance/tests
           test ! -e .agents/skills/universal-project-governance/evals
