@@ -1,0 +1,15 @@
+# Universal Project Governance protected governance ownership
+#
+# This file does not replace branch protection/rulesets. It provides the ownership map that
+# GitHub can enforce when required CODEOWNER review is enabled for the default branch.
+
+/universal-project-governance/SKILL.md @ouroboros965018276-collab
+/universal-project-governance/INTEGRITY.md @ouroboros965018276-collab
+/universal-project-governance/VERSION.md @ouroboros965018276-collab
+/universal-project-governance/CHANGELOG.md @ouroboros965018276-collab
+/universal-project-governance/integrity/ @ouroboros965018276-collab
+/universal-project-governance/references/ @ouroboros965018276-collab
+/universal-project-governance/scripts/ @ouroboros965018276-collab
+/universal-project-governance/assets/templates/ @ouroboros965018276-collab
+/.github/workflows/ @ouroboros965018276-collab
+/PUBLISHING.md @ouroboros965018276-collab
