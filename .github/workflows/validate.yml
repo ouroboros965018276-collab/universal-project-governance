@@ -17,6 +17,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v7
         with:
           python-version: '3.11'
@@ -24,6 +26,10 @@ jobs:
         run: python compiler/compile_governance.py --check
       - name: Enforce governance complexity and rule-graph invariants
         run: python tools/governance_lint.py .
+      - name: Verify RC4 to RC5 behavioral freeze
+        run: python tools/validate_freeze_delta.py
+      - name: Validate RC5 qualification infrastructure
+        run: python tools/validate_qualification.py .
       - name: Validate repository contract
         run: python tools/validate_repository.py .
       - name: Validate compiled Skill bundle
@@ -41,20 +47,61 @@ jobs:
         python-version: ['3.8','3.11','3.13']
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Run RC4 compiler/runtime/state tests
+      - name: Run RC5 runtime and qualification infrastructure tests
         run: PYTHONDONTWRITEBYTECODE=1 python -m unittest discover -s tests -v
       - name: Reconfirm compiler and package on this runtime
         run: |
           python compiler/compile_governance.py --check
           python tools/package_release.py universal-project-governance --output-dir /tmp/upg-dist
 
+
+  qualification-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+      - name: Validate locked qualification protocol and fixtures
+        run: python tools/validate_qualification.py .
+      - name: Verify behavior is frozen from RC4
+        run: python tools/validate_freeze_delta.py
+      - name: Build metamorphic trigger suite
+        run: |
+          python qualification/trigger_suite.py --output /tmp/trigger-suite.json
+          python - <<'PY'
+          import json
+          data=json.load(open('/tmp/trigger-suite.json'))
+          assert len(data['cases']) >= 100
+          print('Metamorphic trigger cases:', len(data['cases']))
+          PY
+      - name: Verify known-bad mutant runtime can be constructed and detected as behaviorally different
+        run: |
+          python qualification/mutations/build_mutant_runtime.py --mutant M01_DISABLE_SAFE_DELETE --output /tmp/upg-mutant
+          python /tmp/upg-mutant/scripts/validate_integrity.py /tmp/upg-mutant
+          python - <<'PY'
+          import pathlib,sys
+          sys.path.insert(0,'.')
+          from tools.qualification_freeze import behavioral_fingerprint
+          original=behavioral_fingerprint(pathlib.Path('universal-project-governance'))
+          mutant=behavioral_fingerprint(pathlib.Path('/tmp/upg-mutant'))
+          assert original != mutant
+          print('Mutant behavioral fingerprint differs as expected.')
+          PY
+
   upstream-agent-skills:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v7
         with:
           python-version: '3.11'
@@ -75,6 +122,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v7
         with:
           node-version: '24'
