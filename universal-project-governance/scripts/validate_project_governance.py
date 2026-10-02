@@ -63,6 +63,7 @@ def meaningful_lines(body: str) -> list[str]:
             continue
         if line.startswith("|") and line.endswith("|"):
             cells = [c.strip() for c in line.strip("|").split("|")]
+            # Drop known header-only rows and fully empty template rows.
             lowered = {c.lower() for c in cells}
             if not any(c for c in cells):
                 continue
