@@ -58,6 +58,7 @@
 - **What / why:** Anchored release identity to package digest and CI provenance.
 - **Before / after:** prose-oriented evidence → content-identity evidence.
 - **Impact:** supports RC3 external trust anchor.
+- **Validation:** RC2 deterministic package/CI provenance was independently verified before RC3 development.
 
 ## Validation and Evaluation Harness
 - **Location:** `tools/`, `tests/`, `evals/`
@@ -86,6 +87,7 @@
 - **What / why:** Separated runtime and repository test surfaces.
 - **Before / after:** self-contained release bundle → lean installed Skill + external dev harness.
 - **Impact:** lower installation noise.
+- **Validation:** RC2 helper, package, security, and installation gates passed on the clean repository baseline.
 
 ## CI and Release Pipeline
 - **Location:** `.github/workflows/validate.yml`, `PUBLISHING.md`, `audits/`
@@ -114,3 +116,4 @@
 - **What / why:** Removed self-referential audit run/commit requirement.
 - **Before / after:** recursive audit churn → stable content-identity evidence.
 - **Impact:** cleaner release pipeline.
+- **Validation:** RC2 pre-release workflow completed successfully with package and installation evidence.
