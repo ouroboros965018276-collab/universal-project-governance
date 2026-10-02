@@ -2,53 +2,114 @@
   "schema_version": 1,
   "version": "2.0.0-rc.5",
   "candidate": "Causal Qualification & Protocol Freeze",
-  "status": "qualification-infrastructure-under-validation",
+  "status": "framework-frozen-ready-for-real-agent-qualification",
+  "identities": {
+    "behavioral_fingerprint": "sha256:3d8f3255c228a7fe9a423d74cdd011e0a471a24e1c62c65435e14dc0dfa72161",
+    "qualification_fingerprint": "sha256:b3e259b65b7e3e54122fa4b680a2ed8e89a346548d98b54121f45b38eafc5da8",
+    "deterministic_package_sha256": "05bb1e11d91ff8d6a6478876218de04a01b8ef8964f77ad8aa81d7e445bdf2eb"
+  },
   "claims": {
     "governance_runtime_engineering_validated": true,
     "runtime_semantics_changed_from_rc4": false,
+    "qualification_framework_engineering_validated": true,
     "real_agent_causal_benefit_proven": false,
     "stable_ready": false
   },
   "deterministic_gates": [
     {
       "name": "RC4-to-RC5 semantic freeze",
-      "result": "pending",
-      "evidence": "final CI"
+      "result": "pass",
+      "evidence": "Run #52: version-only semantic delta; normalized behavioral fingerprint equals frozen RC4 behavior"
+    },
+    {
+      "name": "machine qualification freeze",
+      "result": "pass",
+      "evidence": "FREEZE.json matches qualification fingerprint b3e259b65b7e..."
     },
     {
       "name": "qualification protocol/schema",
-      "result": "pending",
-      "evidence": "final CI"
+      "result": "pass",
+      "evidence": "locked protocol, pre-registered thresholds, arms, critical-failure taxonomy, and result contracts validate"
     },
     {
       "name": "executable dev/holdout labs",
-      "result": "pending",
-      "evidence": "final CI"
+      "result": "pass",
+      "evidence": "12 dev + 12 locked behavioral labs; 3 dev + 6 locked handoff labs validate structurally"
     },
     {
       "name": "metamorphic trigger suite",
-      "result": "pending",
-      "evidence": "144 generated cases expected"
+      "result": "pass",
+      "evidence": "144 deterministic multilingual positive/negative cases generated"
     },
     {
       "name": "mutation/evaluator-sensitivity harness",
-      "result": "pending",
-      "evidence": "infrastructure only; real mutant Agent runs pending"
+      "result": "pass",
+      "evidence": "known-bad M01 runtime builds, remains integrity-valid, and produces a different behavioral fingerprint; real mutant Agent trials remain qualification work"
     },
     {
       "name": "multi-runtime regression",
-      "result": "pending",
-      "evidence": "final CI"
+      "result": "pass",
+      "evidence": "Python 3.8/3.11/3.13 each pass 26/26 tests"
     },
     {
-      "name": "upstream Agent Skills + Skills CLI",
-      "result": "pending",
-      "evidence": "final CI"
+      "name": "deterministic release package",
+      "result": "pass",
+      "evidence": "all three Python runtimes produced SHA-256 05bb1e11d91ff8d6a6478876218de04a01b8ef8964f77ad8aa81d7e445bdf2eb"
     },
     {
-      "name": "qualification FREEZE identity",
+      "name": "compiled runtime bounds",
+      "result": "pass",
+      "evidence": "SKILL.md 82 lines, 3 Markdown files, 15 policies, 7 hot-path invariants, 14 generated runtime files"
+    },
+    {
+      "name": "runtime integrity/security",
+      "result": "pass",
+      "evidence": "runtime integrity passes; security static audit reports no governed network imports, shell=True, dangerous dynamic execution, symlink-following, or secret-like token patterns"
+    },
+    {
+      "name": "upstream Agent Skills validation",
+      "result": "pass",
+      "evidence": "skills-ref==0.1.1 passed"
+    },
+    {
+      "name": "Skills CLI local clean install",
+      "result": "pass",
+      "evidence": "skills@1.7.0 clean Codex-target install passed; installed-copy integrity passed"
+    },
+    {
+      "name": "private GitHub default-branch install",
       "result": "pending",
-      "evidence": "generated after infrastructure stabilizes"
+      "evidence": "must run after RC5 is promoted to main"
+    }
+  ],
+  "real_qualification_gates": [
+    {
+      "name": "paired A0/A1/A2 behavioral qualification",
+      "result": "pending"
+    },
+    {
+      "name": "known-bad policy-mutant Agent sensitivity",
+      "result": "pending"
+    },
+    {
+      "name": "real trigger activation traces",
+      "result": "pending"
+    },
+    {
+      "name": "controlled cross-agent handoff qualification",
+      "result": "pending"
+    },
+    {
+      "name": "real overhead telemetry",
+      "result": "pending"
+    },
+    {
+      "name": "agent-family/project-profile generalization",
+      "result": "pending"
+    },
+    {
+      "name": "locked qualification-summary",
+      "result": "pending"
     }
   ],
   "stable_blockers": [
@@ -59,5 +120,6 @@
     "real overhead telemetry",
     "minimum agent-family and project-profile generalization",
     "locked qualification-summary PASS"
-  ]
+  ],
+  "conclusion": "RC5 framework is engineering-valid and machine-frozen. This does not yet prove that UPG improves real Agents. Stable promotion remains blocked on empirical qualification."
 }
