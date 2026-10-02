@@ -1,0 +1,22 @@
+{
+  "algorithm": "sha256",
+  "files": {
+    "INTEGRITY.md": "01e1e3eb772940fe8259b0cb125cd7712858c6f50d4f2fdcada420aa73d29ab5",
+    "LICENSE": "50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a",
+    "SKILL.md": "b0cde45cf9bd8e862afcd9175a87bb13d4fd413f7530378a2ad5b113ec7b40e3",
+    "VERSION.md": "68b2c083f32dd42992cb053e8a50ef2edf56417a8636cb7654fdf9a2277c246e",
+    "policy-index.json": "4073153850cd381146fef402e89a8648edbd2beebcc4a40d1d09c87bdb3f135c",
+    "schemas/audit.schema.json": "f62c8a197c6e721df109cfd9c7809cabda28ebdc49a77687ac7ea3d7d13a8e43",
+    "schemas/execution.schema.json": "c718df796eab2abe66ee5fb7d28c629e186c33a23543a100b6909764c3a04910",
+    "schemas/feedback.schema.json": "c851afed849389001268102fc64ac3e32a30058329b585ad6d1eabc5c0f80e45",
+    "schemas/governance-plan.schema.json": "68e0fffadb7ac317602978624e14b47f3e84b694744b97cd20a0e90882727e72",
+    "schemas/handoff.schema.json": "4f1b798256a57e9160ee9f9e3db8d9e3901e24c0d3a332a4d247ff1af983702d",
+    "schemas/task-context.schema.json": "9383b35fcfb199349b27fc53759413231653b090653f04b2192c4cf63dc174e9",
+    "scripts/plan_governance.py": "102fd116e5b5bede2a4621f558a02c56775b501b043851dd093c8d9f5b80c040",
+    "scripts/state_tool.py": "99227b02c6bcf552863a5075c6c5db8eb14c21290c0c2b6a06d94884c5a79082",
+    "scripts/validate_integrity.py": "cf09558e67b4488db88c5ce9836e9f1cf1c8bae97d6e1444bb9d2d80409157c0"
+  },
+  "generated_for_version": "2.0.0-rc.4",
+  "schema_version": 1,
+  "source_sha256": "ee84c171643fa956aaa13f62352e6ee5b2e5a4cc34193e203ff127cf0be9ff8a"
+}
