@@ -108,6 +108,7 @@ jobs:
           test ! -e .agents/skills/universal-project-governance/tests
           test ! -e .agents/skills/universal-project-governance/evals
       - name: Install from this private GitHub repository
+        if: github.ref == 'refs/heads/main'
         env:
           DISABLE_TELEMETRY: '1'
           GH_TOKEN: ${{ github.token }}
