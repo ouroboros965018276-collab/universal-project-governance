@@ -1,0 +1,43 @@
+name: rc5-freeze-bootstrap
+
+on:
+  push:
+    branches: [rc5-causal-qualification-freeze]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+
+jobs:
+  freeze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: rc5-causal-qualification-freeze
+          fetch-depth: 0
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+      - name: Reconfirm RC4 to RC5 semantic freeze
+        run: python tools/validate_freeze_delta.py
+      - name: Validate qualification plane before freezing
+        run: python tools/validate_qualification.py .
+      - name: Write machine freeze identity
+        run: python tools/qualification_freeze.py . --write --confirm-freeze
+      - name: Commit freeze identity when changed
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add qualification/FREEZE.json
+          if git diff --cached --quiet; then
+            echo "FREEZE.json already current."
+          else
+            git commit -m "chore: lock RC5 behavioral and qualification fingerprints"
+            git push origin HEAD:rc5-causal-qualification-freeze
+          fi
