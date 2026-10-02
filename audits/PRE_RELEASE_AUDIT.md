@@ -9,7 +9,7 @@ Status: **PRE-RELEASE ENGINEERING GATES PASS — NOT STABLE. Real-agent behavior
 - Version: `2.0.0-rc.2`
 - Release class: pre-release candidate, not stable
 - Repository: `ouroboros965018276-collab/universal-project-governance`
-- Repository lineage: created empty for this project; no Red-Dragon-Klauth Git history inherited
+- Repository lineage: created empty for this project; no unrelated legacy-repository Git history inherited
 - Audited source commit: `68f63b402b9d23017bfbad1ee6c699b0fa7f50ca`
 - Fresh GitHub Actions run: `37011182936`
 - CI run URL: https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/37011182936
