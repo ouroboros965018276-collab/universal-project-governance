@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "name",
+    "version",
+    "hot_path",
+    "risk_model",
+    "default_rules",
+    "policies",
+    "complexity_budget"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "name": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string"
+    },
+    "hot_path": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "statement"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "statement": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "default_rules": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "policies": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "severity",
+          "triggers",
+          "requires",
+          "conflicts_with",
+          "applies_to",
+          "closure",
+          "evidence",
+          "report",
+          "handoff",
+          "eval_tags"
+        ]
+      }
+    },
+    "complexity_budget": {
+      "type": "object"
+    }
+  }
+}

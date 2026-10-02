@@ -1,0 +1,731 @@
+{
+  "schema_version": 1,
+  "name": "universal-project-governance",
+  "version": "2.0.0-rc.4",
+  "architecture": "compiled-governance",
+  "principles": [
+    "ONE_SEMANTIC_RULE_ONE_CANONICAL_DEFINITION",
+    "CAPABILITY_GROWTH_MUST_NOT_LINEarly_INCREASE_RUNTIME_LOAD",
+    "COMPLEXITY_BELONGS_IN_COMPILER_NOT_AGENT_CONTEXT"
+  ],
+  "hot_path": [
+    {
+      "id": "ONE_CURRENT_TRUTH",
+      "statement": "Reuse one canonical source of truth; update or remove obsolete normative state instead of creating parallel truth."
+    },
+    {
+      "id": "PROPORTIONAL_CLEANUP",
+      "statement": "Every project change gets cleanup proportional to its affected neighborhood; remove replaced, duplicate, temporary, or stale residue when safe."
+    },
+    {
+      "id": "EVIDENCE_BEFORE_CLAIM",
+      "statement": "Deletion, migration, compatibility, validation, and debt/completion claims require evidence appropriate to the claim."
+    },
+    {
+      "id": "NO_FABRICATION",
+      "statement": "Unknown facts stay unknown; never invent history, timestamps, ownership, rationale, validation, deployment state, or consumer intent."
+    },
+    {
+      "id": "NO_UNMANAGED_DEBT",
+      "statement": "Safely fixable in-scope debt is fixed; externally blocked debt becomes a bounded exception with risk and removal/review condition."
+    },
+    {
+      "id": "VALIDATE_AFFECTED",
+      "statement": "Run the smallest sufficient checks that establish the affected behavior, cleanup, truth, and contract claims."
+    },
+    {
+      "id": "HANDOFF_IF_UNFINISHED",
+      "statement": "If work crosses an agent/session boundary or remains unfinished, persist current handoff state in the project rather than chat memory."
+    }
+  ],
+  "risk_model": {
+    "dimensions": {
+      "scope": {
+        "weight": 1,
+        "max": 2
+      },
+      "reversibility": {
+        "weight": 1,
+        "max": 2
+      },
+      "security": {
+        "weight": 2,
+        "max": 2
+      },
+      "data": {
+        "weight": 2,
+        "max": 2
+      },
+      "external_consumers": {
+        "weight": 2,
+        "max": 2
+      },
+      "migration": {
+        "weight": 2,
+        "max": 2
+      },
+      "contract_change": {
+        "weight": 2,
+        "max": 2
+      },
+      "unknowns": {
+        "weight": 1,
+        "max": 2
+      },
+      "handoff": {
+        "weight": 1,
+        "max": 2
+      }
+    },
+    "levels": [
+      {
+        "id": "trivial",
+        "min": 0,
+        "max": 1,
+        "report": "none"
+      },
+      {
+        "id": "low",
+        "min": 2,
+        "max": 3,
+        "report": "change-note"
+      },
+      {
+        "id": "medium",
+        "min": 4,
+        "max": 7,
+        "report": "engineering"
+      },
+      {
+        "id": "high",
+        "min": 8,
+        "max": 99,
+        "report": "engineering"
+      }
+    ],
+    "release_operation_forces": "audit"
+  },
+  "default_rules": [
+    "CLEANUP_OBSOLETE",
+    "TRUTH_CURRENT",
+    "EVIDENCE_AFFECTED"
+  ],
+  "policies": [
+    {
+      "id": "CLEANUP_OBSOLETE",
+      "kind": "closure",
+      "severity": "required",
+      "triggers": {
+        "operations": [
+          "edit",
+          "refactor",
+          "delete",
+          "migration",
+          "dependency",
+          "generated",
+          "architecture",
+          "security",
+          "data",
+          "docs"
+        ],
+        "domains": [],
+        "signals": []
+      },
+      "requires": [],
+      "conflicts_with": [],
+      "applies_to": [
+        "code",
+        "config",
+        "data",
+        "docs",
+        "infra",
+        "ml",
+        "automation",
+        "design"
+      ],
+      "closure": "Remove or justify replaced, duplicate, obsolete, temporary, generated-drift, stale-doc, and orphaned residue in the affected neighborhood.",
+      "evidence": [
+        "targeted residue/reference review"
+      ],
+      "report": "inherit",
+      "handoff": "inherit",
+      "eval_tags": [
+        "cleanup",
+        "debt"
+      ]
+    },
+    {
+      "id": "TRUTH_CURRENT",
+      "kind": "truth",
+      "severity": "required",
+      "triggers": {
+        "operations": [
+          "edit",
+          "refactor",
+          "migration",
+          "dependency",
+          "generated",
+          "architecture",
+          "security",
+          "data",
+          "docs",
+          "release"
+        ],
+        "domains": [],
+        "signals": [
+          "behavior_change",
+          "structure_change",
+          "contract_change"
+        ]
+      },
+      "requires": [],
+      "conflicts_with": [],
+      "applies_to": [
+        "code",
+        "config",
+        "data",
+        "docs",
+        "infra",
+        "ml",
+        "automation",
+        "design"
+      ],
+      "closure": "Synchronize existing canonical project documentation/state with what is true now; do not append a second independently editable truth.",
+      "evidence": [
+        "canonical source-of-truth review"
+      ],
+      "report": "inherit",
+      "handoff": "inherit",
+      "eval_tags": [
+        "truth",
+        "documentation"
+      ]
+    },
+    {
+      "id": "EVIDENCE_AFFECTED",
+      "kind": "evidence",
+      "severity": "blocking",
+      "triggers": {
+        "operations": [
+          "edit",
+          "refactor",
+          "delete",
+          "migration",
+          "dependency",
+          "generated",
+          "architecture",
+          "security",
+          "data",
+          "docs",
+          "release"
+        ],
+        "domains": [],
+        "signals": []
+      },
+      "requires": [],
+      "conflicts_with": [],
+      "applies_to": [
+        "code",
+        "config",
+        "data",
+        "docs",
+        "infra",
+        "ml",
+        "automation",
+        "design"
+      ],
+      "closure": "Validate the actual claims made by the change using the smallest sufficient checks; report any unverified surface explicitly.",
+      "evidence": [
+        "actual command/procedure and observed result"
+      ],
+      "report": "inherit",
+      "handoff": "inherit",
+      "eval_tags": [
+        "validation",
+        "evidence"
+      ]
+    },
+    {
+      "id": "SAFE_DELETE",
+      "kind": "evidence",
+      "severity": "blocking",
+      "triggers": {
+        "operations": [
+          "delete"
+        ],
+        "domains": [],
+        "signals": [
+          "deletion",
+          "replacement"
+        ]
+      },
+      "requires": [
+        "EVIDENCE_AFFECTED"
+      ],
+      "conflicts_with": [],
+      "applies_to": [
+        "code",
+        "config",
+        "data",
+        "docs",
+        "infra",
+        "ml",
+        "automation",
+        "design"
+      ],
+      "closure": "Before destructive removal, verify relevant consumers, runtime/build/test/generation dependencies, migration/rollback needs, and retention obligations.",
+      "evidence": [
+        "consumer/dependency evidence",
+        "retention evidence when applicable",
+        "post-delete validation"
+      ],
+      "report": "inherit",
+      "handoff": "inherit",
+      "eval_tags": [
+        "safe-delete",
+        "retention"
+      ]
+    },
+    {
+      "id": "CONTRACT_VALIDATE",
+      "kind": "evidence",
+      "severity": "blocking",
+      "triggers": {
+        "operations": [
+          "migration",
+          "architecture",
+          "security"
+        ],
+        "domains": [
+          "api",
+          "schema",
+          "config"
+        ],
+        "signals": [
+          "contract_change"
+        ]
+      },
+      "requires": [
+        "EVIDENCE_AFFECTED"
+      ],
+      "conflicts_with": [],
+      "applies_to": [
+        "code",
+        "config",
+        "data",
+        "infra",
+        "automation"
+      ],
+      "closure": "Identify producers/consumers and validate changed API, schema, event, config, or external behavior contracts.",
+      "evidence": [
+        "contract/schema/interface validation",
+        "consumer review"
+      ],
+      "report": "engineering",
+      "handoff": "inherit",
+      "eval_tags": [
+        "contract",
+        "compatibility"
+      ]
+    },
+    {
+      "id": "COMPATIBILITY_BOUND",
+      "kind": "lifecycle",
+      "severity": "required",
+      "triggers": {
+        "operations": [
+          "migration"
+        ],
+        "domains": [],
+        "signals": [
+          "compatibility",
+          "dual_path"
+        ]
+      },
+      "requires": [
+        "EVIDENCE_AFFECTED"
+      ],
+      "conflicts_with": [],
+      "applies_to": [
+        "code",
+        "config",
+        "data",
+        "infra",
+        "automation"
+      ],
+      "closure": "Keep compatibility/dual paths only with explicit rationale and a removal condition or documented permanent contract.",
+      "evidence": [
+        "compatibility rationale",
+        "removal/permanence condition"
+      ],
+      "report": "engineering",
+      "handoff": "inherit",
+      "eval_tags": [
+        "compatibility",
+        "migration"
+      ]
+    },
+    {
+      "id": "MIGRATION_CUTOVER",
+      "kind": "lifecycle",
+      "severity": "blocking",
+      "triggers": {
+        "operations": [
+          "migration"
+        ],
+        "domains": [],
+        "signals": []
+      },
+      "requires": [
+        "CONTRACT_VALIDATE",
+        "COMPATIBILITY_BOUND",
+        "CLEANUP_OBSOLETE",
+        "TRUTH_CURRENT"
+      ],
+      "conflicts_with": [],
+      "applies_to": [
+        "code",
+        "config",
+        "data",
+        "infra",
+        "automation"
+      ],
+      "closure": "Define source state, target state, cutover condition, cleanup condition, and prove completion beyond merely creating the new path.",
+      "evidence": [
+        "source/target state",
+        "cutover evidence",
+        "cleanup evidence"
+      ],
+      "report": "engineering",
+      "handoff": "if_unfinished",
+      "eval_tags": [
+        "migration",
+        "cutover"
+      ]
+    },
+    {
+      "id": "DEBT_BOUNDARY",
+      "kind": "debt",
+      "severity": "required",
+      "triggers": {
+        "operations": [
+          "refactor",
+          "architecture"
+        ],
+        "domains": [],
+        "signals": [
+          "legacy",
+          "workaround",
+          "known_debt",
+          "blocked_cleanup"
+        ]
+      },
+      "requires": [
+        "EVIDENCE_AFFECTED"
+      ],
+      "conflicts_with": [],
+      "applies_to": [
+        "code",
+        "config",
+        "data",
+        "docs",
+        "infra",
+        "ml",
+        "automation",
+        "design"
+      ],
+      "closure": "Fix safely resolvable in-scope debt; otherwise record a bounded exception with reason, risk, mitigation, owner if known, and removal/review condition.",
+      "evidence": [
+        "debt disposition evidence"
+      ],
+      "report": "inherit",
+      "handoff": "inherit",
+      "eval_tags": [
+        "debt",
+        "exception"
+      ]
+    },
+    {
+      "id": "GENERATED_SOURCE",
+      "kind": "source-control",
+      "severity": "blocking",
+      "triggers": {
+        "operations": [
+          "generated"
+        ],
+        "domains": [
+          "generated"
+        ],
+        "signals": [
+          "generated_artifact"
+        ]
+      },
+      "requires": [
+        "EVIDENCE_AFFECTED"
+      ],
+      "conflicts_with": [],
+      "applies_to": [
+        "code",
+        "docs",
+        "ml",
+        "design"
+      ],
+      "closure": "Change the canonical generator/source and regenerate output; do not make a hand-edited generated artifact the permanent source unless explicitly canonical.",
+      "evidence": [
+        "generator/source identification",
+        "regeneration evidence"
+      ],
+      "report": "inherit",
+      "handoff": "inherit",
+      "eval_tags": [
+        "generated",
+        "source-of-truth"
+      ]
+    },
+    {
+      "id": "DATA_RETENTION",
+      "kind": "safety",
+      "severity": "blocking",
+      "triggers": {
+        "operations": [
+          "delete",
+          "migration",
+          "data"
+        ],
+        "domains": [
+          "data",
+          "ml"
+        ],
+        "signals": [
+          "data_delete",
+          "retention"
+        ]
+      },
+      "requires": [
+        "SAFE_DELETE"
+      ],
+      "conflicts_with": [],
+      "applies_to": [
+        "data",
+        "ml"
+      ],
+      "closure": "Classify source/derived/cache/retained data, verify retention and downstream consumers, and validate schema/data integrity before deletion or migration.",
+      "evidence": [
+        "data role/lineage",
+        "retention check",
+        "data-quality/integrity check"
+      ],
+      "report": "engineering",
+      "handoff": "inherit",
+      "eval_tags": [
+        "data",
+        "retention"
+      ]
+    },
+    {
+      "id": "SECURITY_ASSURANCE",
+      "kind": "safety",
+      "severity": "blocking",
+      "triggers": {
+        "operations": [
+          "security"
+        ],
+        "domains": [
+          "security",
+          "infra"
+        ],
+        "signals": [
+          "permission_change",
+          "secret_boundary",
+          "security_sensitive"
+        ]
+      },
+      "requires": [
+        "EVIDENCE_AFFECTED",
+        "TRUTH_CURRENT"
+      ],
+      "conflicts_with": [],
+      "applies_to": [
+        "code",
+        "config",
+        "infra",
+        "automation"
+      ],
+      "closure": "Treat permission, secret-boundary, auth, and security-sensitive changes as high assurance work with explicit threat/contract validation and no secret leakage into evidence.",
+      "evidence": [
+        "security-focused validation",
+        "secret boundary review"
+      ],
+      "report": "engineering",
+      "handoff": "if_unfinished",
+      "eval_tags": [
+        "security",
+        "permissions"
+      ]
+    },
+    {
+      "id": "EXPLAIN_SIGNIFICANT_UNIT",
+      "kind": "continuity",
+      "severity": "required",
+      "triggers": {
+        "operations": [
+          "architecture",
+          "refactor"
+        ],
+        "domains": [],
+        "signals": [
+          "new_module",
+          "boundary_change"
+        ]
+      },
+      "requires": [
+        "TRUTH_CURRENT"
+      ],
+      "conflicts_with": [],
+      "applies_to": [
+        "code",
+        "data",
+        "infra",
+        "ml",
+        "automation",
+        "design"
+      ],
+      "closure": "Make significant unit function, purpose, boundaries, invariants, dependencies, and change-safety discoverable in an existing canonical project surface.",
+      "evidence": [
+        "canonical module/architecture state updated"
+      ],
+      "report": "inherit",
+      "handoff": "inherit",
+      "eval_tags": [
+        "explainability",
+        "handoff"
+      ]
+    },
+    {
+      "id": "HANDOFF_CONTINUITY",
+      "kind": "continuity",
+      "severity": "required",
+      "triggers": {
+        "operations": [],
+        "domains": [],
+        "signals": [
+          "handoff",
+          "unfinished"
+        ]
+      },
+      "requires": [
+        "TRUTH_CURRENT"
+      ],
+      "conflicts_with": [],
+      "applies_to": [
+        "code",
+        "config",
+        "data",
+        "docs",
+        "infra",
+        "ml",
+        "automation",
+        "design"
+      ],
+      "closure": "Persist only current continuation state needed by the next agent/human: goal, completed/in-progress work, constraints, risks, validation entry points, and next actions.",
+      "evidence": [
+        "handoff state validates against schema"
+      ],
+      "report": "inherit",
+      "handoff": "required",
+      "eval_tags": [
+        "handoff",
+        "continuity"
+      ]
+    },
+    {
+      "id": "RELEASE_AUDIT",
+      "kind": "release",
+      "severity": "blocking",
+      "triggers": {
+        "operations": [
+          "release"
+        ],
+        "domains": [],
+        "signals": [
+          "audit"
+        ]
+      },
+      "requires": [
+        "EVIDENCE_AFFECTED",
+        "TRUTH_CURRENT"
+      ],
+      "conflicts_with": [],
+      "applies_to": [
+        "code",
+        "config",
+        "data",
+        "docs",
+        "infra",
+        "ml",
+        "automation",
+        "design"
+      ],
+      "closure": "Freeze candidate/release evidence by version and deterministic artifact identity; keep unresolved blockers explicit and do not silently rewrite historical release evidence.",
+      "evidence": [
+        "release gates",
+        "artifact identity",
+        "open blocker list"
+      ],
+      "report": "audit",
+      "handoff": "inherit",
+      "eval_tags": [
+        "release",
+        "audit"
+      ]
+    },
+    {
+      "id": "GOVERNANCE_UPGRADE",
+      "kind": "self-governance",
+      "severity": "blocking",
+      "triggers": {
+        "operations": [
+          "governance_upgrade"
+        ],
+        "domains": [
+          "governance"
+        ],
+        "signals": []
+      },
+      "requires": [
+        "RELEASE_AUDIT"
+      ],
+      "conflicts_with": [],
+      "applies_to": [
+        "governance"
+      ],
+      "closure": "Change canonical governance source rather than generated runtime, bump candidate/version semantics, regenerate runtime, run complexity/static analysis, integrity, tests, install checks, and audit.",
+      "evidence": [
+        "source diff",
+        "compiler check",
+        "complexity gate",
+        "integrity validation",
+        "release audit"
+      ],
+      "report": "audit",
+      "handoff": "inherit",
+      "eval_tags": [
+        "integrity",
+        "self-governance"
+      ]
+    }
+  ],
+  "complexity_budget": {
+    "runtime_skill_max_lines": 120,
+    "hot_path_max": 8,
+    "default_active_policies_max": 5,
+    "runtime_markdown_files_max": 4,
+    "canonical_definition_per_rule": 1,
+    "orphan_policies_max": 0,
+    "dependency_cycles_max": 0,
+    "conflicting_blocking_rules_max": 0,
+    "unused_profile_activations_max": 0,
+    "persistent_current_handoffs_max": 1,
+    "persistent_current_execution_reports_max": 1
+  }
+}

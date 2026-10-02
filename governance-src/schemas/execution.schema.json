@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "updated_at",
+    "level",
+    "task",
+    "status",
+    "actions",
+    "cleanup",
+    "validation",
+    "findings",
+    "governance_feedback",
+    "retain_for_audit",
+    "durable_summary_recorded"
+  ],
+  "properties": {
+    "updated_at": {
+      "type": "string"
+    },
+    "level": {
+      "enum": [
+        "change-note",
+        "engineering",
+        "audit"
+      ]
+    },
+    "task": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "complete",
+        "in_progress",
+        "blocked"
+      ]
+    },
+    "actions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "cleanup": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "validation": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "governance_feedback": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "retain_for_audit": {
+      "type": "boolean"
+    },
+    "durable_summary_recorded": {
+      "type": "boolean"
+    }
+  }
+}

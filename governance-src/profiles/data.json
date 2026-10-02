@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "id": "data",
+  "description": "Data/analytics projects",
+  "activates": [
+    "DATA_RETENTION"
+  ]
+}

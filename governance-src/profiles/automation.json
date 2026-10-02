@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "id": "automation",
+  "description": "Automation/workflow/prompt projects",
+  "activates": [
+    "CONTRACT_VALIDATE"
+  ]
+}

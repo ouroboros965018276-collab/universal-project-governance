@@ -1,0 +1,6 @@
+{
+  "schema_version": 1,
+  "id": "mixed",
+  "description": "Mixed or monorepo projects",
+  "activates": []
+}

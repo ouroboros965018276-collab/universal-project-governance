@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "risk_level",
+    "risk_score",
+    "active_rules",
+    "required_closures",
+    "evidence",
+    "report",
+    "handoff"
+  ],
+  "properties": {
+    "version": {
+      "type": "string"
+    },
+    "risk_level": {
+      "enum": [
+        "trivial",
+        "low",
+        "medium",
+        "high",
+        "release"
+      ]
+    },
+    "risk_score": {
+      "type": "integer"
+    },
+    "active_rules": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "required_closures": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "report": {
+      "enum": [
+        "none",
+        "change-note",
+        "engineering",
+        "audit"
+      ]
+    },
+    "handoff": {
+      "enum": [
+        "not-required",
+        "required"
+      ]
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

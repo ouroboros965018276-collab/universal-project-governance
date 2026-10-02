@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "id": "design-system",
+  "description": "Design systems/assets",
+  "activates": [
+    "CONTRACT_VALIDATE"
+  ]
+}

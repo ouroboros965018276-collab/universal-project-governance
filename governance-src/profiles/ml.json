@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "id": "ml",
+  "description": "ML/AI projects",
+  "activates": [
+    "DATA_RETENTION",
+    "GENERATED_SOURCE"
+  ]
+}

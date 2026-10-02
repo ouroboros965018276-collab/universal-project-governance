@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "updated_at",
+    "items"
+  ],
+  "properties": {
+    "updated_at": {
+      "type": "string"
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "status",
+          "observation",
+          "evidence",
+          "consequence",
+          "scope"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "open",
+              "resolved"
+            ]
+          },
+          "observation": {
+            "type": "string"
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "consequence": {
+            "type": "string"
+          },
+          "scope": {
+            "enum": [
+              "project",
+              "skill"
+            ]
+          },
+          "proposed_improvement": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

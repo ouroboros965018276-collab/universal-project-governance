@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "id": "infrastructure",
+  "description": "Infrastructure/platform projects",
+  "activates": [
+    "SECURITY_ASSURANCE"
+  ]
+}
