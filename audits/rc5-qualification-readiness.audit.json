@@ -79,7 +79,7 @@
     {
       "name": "private GitHub default-branch install",
       "result": "pending",
-      "evidence": "must run after RC5 is promoted to main"
+      "evidence": "RC5 promoted to main; default-branch remote-install validation requested on this audit-state commit"
     }
   ],
   "real_qualification_gates": [
