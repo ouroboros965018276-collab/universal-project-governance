@@ -1,0 +1,14 @@
+{
+  "skill": "Universal Project Governance",
+  "version": "2.0.0-rc.3",
+  "purpose": "model-agnostic continuous project governance",
+  "protected_components": [
+    "core rules",
+    "validation policy",
+    "report lifecycle policy"
+  ],
+  "integrity_checks": [
+    "protected file verification",
+    "unexpected modification detection"
+  ]
+}
