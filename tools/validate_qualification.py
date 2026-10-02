@@ -12,7 +12,13 @@ def main():
     if protocol.get("status")!="locked": errors.append("qualification protocol must be locked")
     if set(protocol["arms"])!={"A0","A1","A2","K"}: errors.append("expected A0/A1/A2/K experimental arms")
     if len(protocol.get("critical_failure_classes",[]))<10: errors.append("critical failure taxonomy incomplete")
-    for rel,min_count in [("qualification/fixtures/dev/behavioral-labs.json",12),("qualification/fixtures/holdout/locked/behavioral-labs.json",12)]:
+    lab_requirements=[
+      ("qualification/fixtures/dev/behavioral-labs.json",12),
+      ("qualification/fixtures/holdout/locked/behavioral-labs.json",12),
+      ("qualification/fixtures/dev/handoff-labs.json",3),
+      ("qualification/fixtures/holdout/locked/handoff-labs.json",6)
+    ]
+    for rel,min_count in lab_requirements:
         labs=load(root/rel).get("labs",[])
         if len(labs)<min_count: errors.append("%s has %d labs; need >=%d"%(rel,len(labs),min_count))
         ids=[x.get("id") for x in labs]
@@ -24,10 +30,15 @@ def main():
     else:
         cases=json.loads(cp.stdout)["cases"]
         if len(cases)<int(protocol["sampling"]["trigger_cases_minimum"]): errors.append("trigger suite too small")
-        if not any(x["language"]=="zh" for x in cases): errors.append("trigger suite lacks multilingual coverage")
-    for p in list((root/"qualification").rglob("*.py"))+list((root/"tools").glob("qualification_*.py")):
+        if not any(x["language"]=="zh" for x in cases) or not any(x["language"]=="en" for x in cases): errors.append("trigger suite lacks multilingual coverage")
+        pos=sum(1 for x in cases if x["should_trigger"]); neg=len(cases)-pos
+        if pos==0 or neg==0: errors.append("trigger suite must contain positive and negative cases")
+    for p in list((root/"qualification").rglob("*.py"))+list((root/"tools").glob("qualification_*.py"))+list((root/"tools").glob("validate_freeze_delta.py")):
         try: ast.parse(p.read_text(encoding="utf-8"),filename=str(p))
         except SyntaxError as exc: errors.append("syntax error %s: %s"%(p.relative_to(root),exc))
+    skill=root/"universal-project-governance/SKILL.md"
+    if skill.is_file() and len(skill.read_text(encoding="utf-8").splitlines())>90:
+        errors.append("RC5 runtime SKILL.md exceeds freeze target of 90 lines")
     results=root/"qualification/results"
     if results.exists():
         for p in results.rglob("*.json"):
@@ -36,6 +47,6 @@ def main():
     if errors:
         for e in errors: print("error: "+e,file=sys.stderr)
         return 1
-    print("Qualification infrastructure check passed: locked protocol, 24 behavioral labs, >=100 metamorphic triggers, no fabricated result artifacts.")
+    print("Qualification infrastructure check passed: locked protocol, executable labs, >=100 multilingual triggers, bounded runtime, no fabricated result artifacts.")
     return 0
 if __name__=="__main__": raise SystemExit(main())
