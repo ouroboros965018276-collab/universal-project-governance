@@ -1,0 +1,30 @@
+name: rc4-generate-runtime
+
+on:
+  push:
+    branches: [rc4-compiled-governance]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+      - name: Compile canonical governance source
+        run: python compiler/compile_governance.py --write --confirm-generated-runtime-update
+      - name: Static governance lint
+        run: python tools/governance_lint.py .
+      - name: Verify generated runtime integrity
+        run: python universal-project-governance/scripts/validate_integrity.py universal-project-governance
+      - name: Upload compiled runtime
+        uses: actions/upload-artifact@v4
+        with:
+          name: rc4-compiled-runtime
+          path: universal-project-governance/
+          if-no-files-found: error
