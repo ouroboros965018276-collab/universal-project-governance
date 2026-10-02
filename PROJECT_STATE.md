@@ -72,7 +72,7 @@ This separation keeps user installations small and avoids shipping repository-on
 - **Scope:** repository-wide
 - **Before:** new empty repository
 - **What changed:** established the clean Universal Project Governance 2.0.0-rc.2 pre-release repository, separated installable Skill from repository-only validation assets, and hardened the candidate for fresh CI/audit.
-- **Why:** create a clean publication lineage with no inheritance from the retired Red-Dragon-Klauth repository.
+- **Why:** create a clean publication lineage with no unrelated legacy-repository history.
 - **After:** one private pre-release repository dedicated only to Universal Project Governance.
 - **Impact:** establishes the new canonical project lineage and release pipeline.
 - **Validation:** local checks are run before upload; GitHub CI and remote installation evidence are recorded in `audits/PRE_RELEASE_AUDIT.md` after execution.
