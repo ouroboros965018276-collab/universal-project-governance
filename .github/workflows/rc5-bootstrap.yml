@@ -1,0 +1,37 @@
+name: rc5-bootstrap-runtime
+
+on:
+  push:
+    branches: [rc5-causal-qualification-freeze]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: rc5-causal-qualification-freeze
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+      - name: Compile RC5 versioned runtime from frozen semantics
+        run: python compiler/compile_governance.py --write --confirm-generated-runtime-update
+      - name: Check complexity
+        run: python tools/governance_lint.py .
+      - name: Commit compiler-generated runtime when changed
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A universal-project-governance
+          if git diff --cached --quiet; then
+            echo "Runtime already current."
+          else
+            git commit -m "build: compile RC5 versioned runtime from frozen semantics"
+            git push origin HEAD:rc5-causal-qualification-freeze
+          fi
