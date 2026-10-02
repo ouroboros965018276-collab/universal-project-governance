@@ -1,0 +1,117 @@
+name: validate-pre-release
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-upg-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  repository-integrity:
+    name: repository-integrity-and-security
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - name: Validate installable Skill bundle
+        run: python tools/validate_skill_bundle.py universal-project-governance
+      - name: Validate repository release invariants
+        run: python tools/validate_repository.py .
+      - name: Run static security audit
+        run: python tools/security_audit.py .
+      - name: Validate repository self-governance state
+        run: python universal-project-governance/scripts/validate_project_governance.py .
+      - name: Compile Python sources
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python -m compileall -q tools tests universal-project-governance/scripts
+
+  helpers:
+    name: helper-tests-python-${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.8', '3.11', '3.13']
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Run executable helper and repository tests
+        run: python -m unittest discover -s tests -v
+      - name: Smoke-test read-only inspector
+        run: python universal-project-governance/scripts/inspect_project.py universal-project-governance --format json > /tmp/project-inspection.json
+      - name: Build deterministic release package
+        run: python tools/package_release.py universal-project-governance --output-dir /tmp/upg-dist
+
+  upstream-spec:
+    name: upstream-agent-skills-spec
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+      - name: Install pinned Agent Skills reference validator
+        run: python -m pip install --disable-pip-version-check skills-ref==0.1.1
+      - name: Run upstream Agent Skills validation
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from skills_ref import validate
+          path = Path('universal-project-governance')
+          errors = validate(path)
+          if errors:
+              raise SystemExit('\n'.join(map(str, errors)))
+          print('Upstream Agent Skills validation passed.')
+          PY
+
+  skills-cli-smoke:
+    name: skills-cli-discovery-and-install
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Discover local Skill with pinned CLI
+        env:
+          DISABLE_TELEMETRY: '1'
+        run: npx -y skills@1.7.0 add ./universal-project-governance --list
+      - name: Install local Skill into a clean Codex target
+        env:
+          DISABLE_TELEMETRY: '1'
+        shell: bash
+        run: |
+          set -euo pipefail
+          work="$(mktemp -d)"
+          cd "$work"
+          npx -y skills@1.7.0 add "$GITHUB_WORKSPACE/universal-project-governance" --skill universal-project-governance -a codex --copy -y
+          test -f .agents/skills/universal-project-governance/SKILL.md
+          test ! -e .agents/skills/universal-project-governance/tests
+          test ! -e .agents/skills/universal-project-governance/evals
+      - name: Install from this private GitHub repository
+        env:
+          DISABLE_TELEMETRY: '1'
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          work="$(mktemp -d)"
+          cd "$work"
+          npx -y skills@1.7.0 add "${{ github.repository }}" --skill universal-project-governance -a codex --copy -y
+          test -f .agents/skills/universal-project-governance/SKILL.md
+          test ! -e .agents/skills/universal-project-governance/tests
+          test ! -e .agents/skills/universal-project-governance/evals
