@@ -785,7 +785,7 @@
     "release_operation_forces": "audit"
   },
   "schema_version": 1,
-  "source_sha256": "ee84c171643fa956aaa13f62352e6ee5b2e5a4cc34193e203ff127cf0be9ff8a",
+  "source_sha256": "ad34e787525e46e0e2078ff2ae93333d5c3afec5e9cc5dd350a83cb9416b45e0",
   "task_contract": {
     "domains": [
       "code",
@@ -817,5 +817,5 @@
       "governance_upgrade"
     ]
   },
-  "version": "2.0.0-rc.4"
+  "version": "2.0.0-rc.5"
 }

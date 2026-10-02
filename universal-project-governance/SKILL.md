@@ -4,7 +4,7 @@ description: Govern maintained-project changes with a compiled, risk-adaptive pl
 license: Apache-2.0
 compatibility: Core kernel needs no runtime. Optional deterministic planner/state/integrity helpers use Python 3.8+.
 metadata:
-  version: "2.0.0-rc.4"
+  version: "2.0.0-rc.5"
   standard: "agentskills.io"
   maturity: "release-candidate"
   architecture: "compiled-governance"
