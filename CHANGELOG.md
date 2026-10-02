@@ -1,5 +1,18 @@
 # Changelog
 
+## 2.0.0-rc.3 — 2026-10-02
+
+Self-Protecting Governance + Feedback Driven Governance release candidate.
+
+- Adds protect-all tamper-evident integrity checks for the distributed Skill.
+- Adds explicit authorization/version/checksum gates for Skill evolution.
+- Adds adaptive report selection so trivial edits do not create report debt.
+- Adds Handoff Snapshot, Agent Execution Audit, and governance feedback semantics.
+- Adds bounded retention and evidence export for external audit.
+- Adds executable integrity, report, handoff, evidence-export, and orchestration helpers.
+- Keeps the original single-Skill, model-agnostic project-governance concept intact.
+- Stable promotion remains blocked pending real-agent trigger and behavior qualification.
+
 ## 2.0.0-rc.2 — 2026-10-02
 
 Clean-repository pre-release candidate. Core governance semantics remain unchanged from rc.1; this candidate hardens distribution, validation, and helper safety.

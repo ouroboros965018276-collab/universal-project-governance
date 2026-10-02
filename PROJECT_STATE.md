@@ -4,94 +4,112 @@
 
 ## Purpose
 
-Develop, validate, audit, and publish one model-agnostic Agent Skill that keeps maintained-project changes clean, current, evidenced, traceable, and handoff-ready.
+Develop, validate, audit, and publish one model-agnostic Agent Skill that keeps maintained-project
+changes clean, current, evidenced, traceable, handoff-ready, and protected from accidental governance drift.
 
 ## Current state
 
-The repository is a private pre-release workspace for **Universal Project Governance 2.0.0-rc.2**. The installable Skill is present under `universal-project-governance/`. Engineering/installability gates are implemented and passing on the current candidate; stable/public release remains intentionally blocked until real-agent trigger and behavior gates are completed.
+The repository is a private pre-release workspace for **Universal Project Governance 2.0.0-rc.3**.
+RC3 implements **Self-Protecting Governance + Feedback Driven Governance** while preserving the original
+single-Skill concept. Structural, integrity, security, helper, package, official-spec, and local-install
+gates pass on the RC3 branch. Stable/public release remains intentionally blocked until real-agent trigger
+and behavior qualification is completed.
 
 ## Architecture / structure
 
 The repository has two deliberate layers:
 
-- `universal-project-governance/`: the single installable Agent Skill and its runtime/reference assets;
-- repository-level development surfaces (`tools/`, `tests/`, `evals/`, `.github/`, `audits/`, and governance docs): validation, behavioral evaluation, release engineering, and evidence.
+- `universal-project-governance/`: the single installable Agent Skill, including integrity metadata,
+  adaptive evidence/report policy, handoff/audit templates, and deterministic helpers;
+- repository-level development surfaces (`tools/`, `tests/`, `evals/`, `.github/`, `audits/`,
+  and governance docs): validation, behavioral evaluation, release engineering, and release evidence.
 
-This separation keeps user installations small and avoids shipping repository-only CI/audit machinery as part of the Skill.
+Repository-only tests/evals/audits are not installed into consumer projects.
 
 ## Canonical sources of truth
 
 | Concern | Canonical source | Ownership / generation notes |
 |---|---|---|
 | Skill behavior contract | `universal-project-governance/SKILL.md` | Canonical normative Skill entry |
-| Detailed governance rules | `universal-project-governance/references/` | Loaded progressively from SKILL.md |
-| Project current state | `PROJECT_STATE.md` | Repository-level current truth |
-| Significant repository units | `MODULE_MAP.md` | Repository-level handoff map |
-| Active architectural decisions | `DECISIONS.md` | Only decisions still constraining current design |
+| Skill integrity policy | `universal-project-governance/INTEGRITY.md` + `integrity/` | Protect-all, tamper-evident |
+| Detailed governance rules | `universal-project-governance/references/` | Progressive disclosure |
+| Report/handoff templates | `universal-project-governance/assets/templates/` | Defaults; consumer equivalents may replace them |
+| Repository current state | `PROJECT_STATE.md` | Current truth |
+| Significant repository units | `MODULE_MAP.md` | Handoff map |
+| Active design decisions | `DECISIONS.md` | Only decisions still constraining current design |
 | Release gates | `PUBLISHING.md` | Stable/pre-release policy |
-| Observable release evidence | `audits/` + GitHub Actions | Audit evidence, not normative behavior |
-| Behavioral evaluation cases | `evals/` | Development/evaluation assets, not runtime Skill content |
+| Release evidence | `audits/` + GitHub Actions | Evidence, not normative behavior |
+| Behavior evaluation | `evals/` | Fresh-context qualification assets |
 
 ## Major capabilities
 
 | Capability | Current implementation | Status | Notes |
 |---|---|---|---|
-| Core governance lifecycle | `universal-project-governance/SKILL.md` | release candidate | Five closure gates + non-negotiable invariants |
-| Detailed domain rules | `universal-project-governance/references/` | release candidate | Progressive disclosure |
-| Deterministic evidence helpers | `universal-project-governance/scripts/` | release candidate | Read-only by default; Python 3.8+ target |
-| Structural/security validation | `tools/` + `tests/` | release candidate | Repository-side quality tooling |
-| Trigger/behavior evaluation | `evals/` | prepared | Requires real-agent execution before stable |
-| CI validation | `.github/workflows/validate.yml` | active | Runs on push/PR/manual dispatch |
+| Core governance lifecycle | `universal-project-governance/SKILL.md` | rc.3 | Original closure model retained + integrity closure |
+| Tamper-evident Skill protection | `INTEGRITY.md`, `integrity/`, integrity scripts | rc.3 | Protect-all SHA-256 ledger |
+| Adaptive reporting | report lifecycle reference + classifier | rc.3 | Minimal / standard / evaluation modes |
+| Handoff continuity | handoff template + validator | rc.3 | Generated only at real continuation boundaries |
+| Agent execution audit | execution audit template + policy | rc.3 | Evaluation/high-risk/explicit audit only |
+| Governance feedback loop | feedback reference + template | rc.3 | Evidence-bearing signals only |
+| Evidence export | `scripts/export_evidence_bundle.py` | rc.3 | Governance docs only; no source code by default |
+| Structural/security validation | `tools/` + `tests/` | active | Repository-side quality tooling |
+| Trigger/behavior evaluation | `evals/` | prepared | Real-agent runs still required before stable |
+| CI validation | `.github/workflows/validate.yml` | active | Push/PR/manual dispatch |
 
 ## Constraints and invariants
 
 - Exactly one installable Skill is maintained.
-- The Skill remains model/vendor agnostic; host-specific validation stays outside the installable Skill.
-- Current-state docs describe the present repository, not historical snapshots.
-- Official Agent Skills validation and supported helper runtimes must pass before any release promotion.
-- Static/installation success is not treated as proof of behavioral effectiveness.
-- Public/stable release is blocked while critical behavioral or safety evidence remains unverified.
-- Candidate audit identity must not require self-referential commit/run metadata that causes documentation-only churn.
+- The distributed Skill is model/vendor agnostic.
+- All distributed Skill files except the generated checksum ledger are protected by the integrity model.
+- Integrity is tamper-evident, not an authentication/security boundary against an actor with full write access.
+- Ordinary project work must not regenerate Skill checksums.
+- Reporting must be proportional; trivial changes must not create standalone report debt by default.
+- Handoff state is current-state evidence and is overwritten, not accumulated indefinitely.
+- Raw execution evidence is bounded; useful older evidence is summarized/archived before superseded raw records are removed.
+- Official Agent Skills validation and supported helper runtimes must pass before release promotion.
+- Static/install success is not proof of real-agent behavioral effectiveness.
 
 ## Validation / operation
 
 | Purpose | Command or procedure | Expected evidence |
 |---|---|---|
-| Skill structure | `python tools/validate_skill_bundle.py universal-project-governance` | PASS, no errors |
-| Repository integrity | `python tools/validate_repository.py .` | PASS, no errors |
-| Security static audit | `python tools/security_audit.py .` | PASS, no critical findings |
-| Helper behavior | `python -m unittest discover -s tests -v` | All tests pass |
-| Self-governance | `python universal-project-governance/scripts/validate_project_governance.py .` | Governance docs pass |
+| Skill integrity | `python universal-project-governance/scripts/validate_integrity.py universal-project-governance` | PASS |
+| Skill structure | `python tools/validate_skill_bundle.py universal-project-governance` | PASS |
+| Repository integrity | `python tools/validate_repository.py .` | PASS |
+| Security static audit | `python tools/security_audit.py .` | PASS |
+| Helper/RC3 behavior | `python -m unittest discover -s tests -v` | All tests pass |
+| Integrated governance | `python universal-project-governance/scripts/governance_check.py . --skill-root universal-project-governance` | PASS |
 | Release package | `python tools/package_release.py universal-project-governance --output-dir dist` | Deterministic ZIP + SHA-256 |
-| Upstream standard | GitHub CI `skills-ref==0.1.1` job | PASS |
-| Installation | GitHub CI Skills CLI smoke job | Local + repository install PASS |
+| Upstream standard | GitHub CI `skills-ref==0.1.1` | PASS |
+| Local installation | GitHub CI Skills CLI branch gate | Install + integrity PASS |
+| Remote GitHub installation | GitHub CI on `main` | Install default branch + integrity PASS |
 
 ## Last meaningful change
 
-- **When:** 2026-10-02T21:38:00+08:00
-- **Change ID:** rc2-audit-anchor-hardening
-- **Scope:** release governance and audit evidence
-- **Before:** release policy required an audit document to embed the exact commit and CI run, causing self-referential documentation churn.
-- **What changed:** candidate identity is now anchored to version + deterministic installable-package SHA-256 + successful CI for the current release-relevant HEAD; audit prose no longer needs to contain its own future commit/run identifiers.
-- **Why:** preserve strict evidence while eliminating an impossible/infinite audit-update loop.
-- **After:** release evidence is immutable enough for verification without creating technical debt through repeated audit-only commits.
-- **Impact:** release-policy/audit surfaces only; installable Skill semantics and candidate bytes remain unchanged.
-- **Validation:** full repository CI is required after this release-policy change.
-- **Removed / superseded:** self-referential exact-commit/run audit requirement.
+- **When:** 2026-10-02T22:28:00+08:00
+- **Change ID:** rc3-self-protecting-feedback-governance
+- **Scope:** installable Skill, integrity model, adaptive evidence/reporting, handoff, feedback, tests, release gates
+- **Before:** RC2 governed project changes but did not protect itself from accidental agent edits and did not provide a bounded adaptive feedback/report lifecycle.
+- **What changed:** added protect-all SHA-256 integrity, explicit Skill-upgrade authorization/version rules, minimal/standard/evaluation reporting, Handoff Snapshot, Agent Execution Audit, bounded retention, governance feedback, evidence export, validators, tests, and CI gates.
+- **Why:** make cross-agent continuity auditable without forcing every small task to generate expensive persistent reports, while preventing ordinary agents from silently rewriting the governance contract.
+- **After:** RC3 is self-protecting in the tamper-evident sense and can produce proportional review evidence without making the evidence system itself unbounded technical debt.
+- **Impact:** governance behavior and release engineering; original maintenance/documentation/technical-debt concept remains intact.
+- **Validation:** 19 tests pass on Python 3.8/3.11/3.13; upstream validator passes; integrity and local install checks pass; deterministic package digest is recorded in RC3 audit.
+- **Removed / superseded:** misplaced root-level RC3 draft structures and the completed `RC3_UPGRADE_PLAN.md`.
 
 ## Previous meaningful change
 
-- **When:** 2026-10-02T20:28:00+08:00
-- **Change ID:** initial-pre-release-baseline
-- **Scope:** repository-wide
-- **Before:** new empty repository
-- **What changed:** established the clean Universal Project Governance 2.0.0-rc.2 pre-release repository, separated installable Skill from repository-only validation assets, and hardened the candidate for fresh CI/audit.
-- **Why:** create a clean publication lineage with no unrelated legacy-repository history.
-- **After:** one private pre-release repository dedicated only to Universal Project Governance.
-- **Impact:** established the canonical project lineage and release pipeline.
-- **Validation:** GitHub Actions and private remote installation passed.
-- **Removed / superseded:** unrelated legacy repository lineage is not inherited.
+- **When:** 2026-10-02T21:38:00+08:00
+- **Change ID:** rc2-audit-anchor-hardening
+- **Scope:** release evidence
+- **Before:** audit prose risked self-referential commit/run churn.
+- **What changed:** release identity anchored to candidate version, deterministic package SHA-256, and successful CI provenance.
+- **Why:** keep evidence strict without creating documentation-only loops.
+- **After:** release audit can remain stable while GitHub preserves exact run/commit provenance.
+- **Impact:** release process.
+- **Validation:** RC2 full CI passed.
 
 ## Active exceptions
 
-None in the repository implementation. Stable-release behavioral evidence gates remain intentionally open; they are release criteria, not technical-debt exceptions.
+None in the RC3 implementation. Real-agent trigger/behavior qualification remains an intentional
+stable-release gate, not an implementation debt exception.
