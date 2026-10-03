@@ -6,6 +6,7 @@
     "default_active_policies_max": 5,
     "dependency_cycles_max": 0,
     "hot_path_max": 8,
+    "managed_project_files_max": 2,
     "orphan_policies_max": 0,
     "persistent_current_execution_reports_max": 1,
     "persistent_current_handoffs_max": 1,
@@ -49,7 +50,7 @@
     },
     {
       "id": "STRUCTURAL_INTEGRATION",
-      "statement": "Except for truly local low-risk edits, change the responsible canonical structure and remove superseded patch paths instead of stacking shims, duplicate branches, one-off flags, or detached fixes."
+      "statement": "Except for truly local low-risk edits, integrate at the smallest responsible canonical layer and remove superseded patch paths; structural mode never authorizes unrelated redesign, API change, migration, or cleanup outside task scope."
     }
   ],
   "name": "universal-project-governance",
@@ -358,7 +359,7 @@
         "design",
         "governance"
       ],
-      "closure": "For non-trivial work, identify the responsible canonical layer, integrate the change there, remove superseded patch/shim/duplicate paths when safe, and leave one coherent post-change structure rather than accumulating local fixes.",
+      "closure": "For non-trivial work, identify the smallest responsible canonical layer, integrate the requested change there, remove superseded patch/shim/duplicate paths when safe, and stop at the task boundary. Structural integration never authorizes unrelated redesign, API/contract change, architectural migration, or opportunistic refactoring.",
       "conflicts_with": [],
       "eval_tags": [
         "structural-integration",
@@ -367,9 +368,10 @@
         "debt"
       ],
       "evidence": [
-        "responsible canonical layer identified",
+        "smallest responsible canonical layer identified",
+        "task boundary and excluded unrelated surfaces identified",
         "superseded patch/path review",
-        "post-change structural/current-truth validation"
+        "post-change scope and structural/current-truth validation"
       ],
       "handoff": "inherit",
       "id": "STRUCTURAL_INTEGRATION",
@@ -777,6 +779,14 @@
       "schema_version": 1
     }
   },
+  "project_binding": {
+    "binding_file": ".governance/upg.json",
+    "field_report_file": ".governance/field-reports.json",
+    "field_test_reporting": true,
+    "managed_files_max": 2,
+    "max_reports": 200,
+    "schema_version": 1
+  },
   "risk_model": {
     "dimensions": {
       "contract_change": {
@@ -845,7 +855,7 @@
     "release_operation_forces": "audit"
   },
   "schema_version": 1,
-  "source_sha256": "a45797492811dcaaf546e922285143166656eb75a8e7f7a8ec3bbdc51aab1ff3",
+  "source_sha256": "0e8909ca502d63f9ac1d355554075eef81381a3120bc9b11ce881e9dc4a0c05a",
   "structural_integration": {
     "exempt_operations": [
       "release"
@@ -861,7 +871,8 @@
       "governance_upgrade"
     ],
     "minimum_risk_level": "medium",
-    "policy_id": "STRUCTURAL_INTEGRATION"
+    "policy_id": "STRUCTURAL_INTEGRATION",
+    "scope_guard": "task-bounded-responsible-layer"
   },
   "task_contract": {
     "domains": [
@@ -894,5 +905,5 @@
       "governance_upgrade"
     ]
   },
-  "version": "3.0.0-rc.6"
+  "version": "3.0.0-rc.7"
 }

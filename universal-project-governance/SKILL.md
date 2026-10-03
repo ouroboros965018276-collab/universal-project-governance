@@ -4,7 +4,7 @@ description: Govern maintained-project changes with a compiled, risk-adaptive pl
 license: Apache-2.0
 compatibility: Core kernel needs no runtime. Optional deterministic planner/state/integrity helpers use Python 3.8+.
 metadata:
-  version: "3.0.0-rc.6"
+  version: "3.0.0-rc.7"
   standard: "agentskills.io"
   maturity: "release-candidate"
   architecture: "compiled-governance"
@@ -18,6 +18,8 @@ A compiled governance runtime. The canonical governance model lives outside the 
 
 Use for any maintained-project state change. Do not activate for read-only explanation/review/research that makes no project change.
 
+At the first modifying activation in a project, resolve this installed Skill directory and run its `scripts/project_tool.py ensure <project-root>`. This idempotently installs/repairs the RC7 project binding. Files listed by that binding are managed UPG infrastructure: preserve them during ordinary cleanup and remove them only through the explicit uninstall path.
+
 ## Hot path
 
 1. **ONE_CURRENT_TRUTH** — Reuse one canonical source of truth; update or remove obsolete normative state instead of creating parallel truth.
@@ -27,13 +29,13 @@ Use for any maintained-project state change. Do not activate for read-only expla
 5. **NO_UNMANAGED_DEBT** — Safely fixable in-scope debt is fixed; externally blocked debt becomes a bounded exception with risk and removal/review condition.
 6. **VALIDATE_AFFECTED** — Run the smallest sufficient checks that establish the affected behavior, cleanup, truth, and contract claims.
 7. **HANDOFF_IF_UNFINISHED** — If work crosses an agent/session boundary or remains unfinished, persist current handoff state in the project rather than chat memory.
-8. **STRUCTURAL_INTEGRATION** — Except for truly local low-risk edits, change the responsible canonical structure and remove superseded patch paths instead of stacking shims, duplicate branches, one-off flags, or detached fixes.
+8. **STRUCTURAL_INTEGRATION** — Except for truly local low-risk edits, integrate at the smallest responsible canonical layer and remove superseded patch paths; structural mode never authorizes unrelated redesign, API change, migration, or cleanup outside task scope.
 
 ## Execution
 
 For a truly local low-risk edit, apply the hot path directly and keep evidence proportional. Do not manufacture architecture work for a typo or equivalent isolated correction.
 
-For non-trivial work, prefer structural integration at the responsible canonical layer over patch stacking. Remove superseded shims, duplicate branches, temporary compatibility paths, and detached fixes when safe.
+For non-trivial work, prefer structural integration at the smallest responsible canonical layer over patch stacking. Structural mode is task-bounded: it does **not** authorize unrelated redesign, API/contract changes, migrations, or opportunistic refactors. Remove superseded shims, duplicate branches, temporary compatibility paths, and detached fixes only inside the justified task surface.
 
 Create a typed task context and compile the task-specific plan:
 
@@ -41,7 +43,7 @@ Create a typed task context and compile the task-specific plan:
 python3 scripts/plan_governance.py --context /path/to/task-context.json
 ```
 
-The plan returns the change mode (`local` or `structural`), active rule closure, required evidence, report level, and whether handoff state is required. Execute that plan; do not load unrelated governance policy.
+The plan returns the change mode (`local` or `structural`), an explicit scope guard, active rule closure, required evidence, report level, and whether handoff state is required. Execute that plan; do not load unrelated governance policy.
 
 If helpers are unavailable, read `policy-index.json` and apply only rules matching the task operation/domains/signals plus their `requires` closure.
 
@@ -51,7 +53,7 @@ Use observable facts, not model confidence. Risk dimensions are scope, reversibi
 
 ## Evidence and reports
 
-Do not create a permanent report for every task.
+Do not create a permanent general-purpose governance report for every task. RC7 field testing is the one temporary exception: the project binding maintains a single bounded report ledger for empirical evaluation.
 
 - `none`: concise final response/VCS evidence is enough.
 - `change-note`: compact persistent note only if the project needs it.
@@ -61,6 +63,8 @@ Do not create a permanent report for every task.
 Schema-first governance state is canonical. Markdown is a rendered view, not a second editable truth. Use `scripts/state_tool.py` to validate/render/compact/export governance state.
 
 A current handoff is required only when work is unfinished or actually crosses an agent/session boundary. Keep at most one current handoff.
+
+When the project binding has `field_test_reporting=true`, every completed modifying workflow must append exactly one field-test report through `scripts/project_tool.py report <project-root> --input <report.json>` before completion is claimed. The ledger stores metadata/evidence summaries only, never source contents, secrets, or private chain-of-thought.
 
 ## Integrity
 
@@ -74,7 +78,9 @@ If integrity fails, stop treating the modified runtime as authoritative. Authori
 
 ## Completion
 
-A modifying task is complete only when applicable behavior, cleanup, truth, evidence, continuity, and integrity obligations in the compiled plan are satisfied. State unresolved blockers precisely; never expand a local review into a project-wide debt-free claim.
+A modifying task is complete only when applicable behavior, cleanup, truth, evidence, continuity, integrity, project-binding, and active field-test-report obligations are satisfied. State unresolved blockers precisely; never expand a local review into a project-wide debt-free claim.
+
+For uninstall, remove project-managed UPG state before removing the Skill. The repository convenience CLI performs both steps automatically; the runtime-safe fallback is `scripts/project_tool.py remove <project-root> --yes` followed by the host Skills CLI removal.
 
 ## Interoperability
 
