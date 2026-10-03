@@ -91,6 +91,7 @@ def expected(root):
         root / "qualification/trigger_suite.py",
         root / "qualification/analyze.py",
     ])
+    deployment_hash = hash_paths([root / "upg.py"])
     behavior = behavioral_fingerprint(runtime)
     qualification_payload = {
         "behavioral_fingerprint": behavior,
@@ -98,16 +99,15 @@ def expected(root):
         "fixture_set_sha256": fixture_hash,
         "evaluator_sha256": evaluator_hash,
         "runner_sha256": runner_hash,
+        "deployment_sha256": deployment_hash,
     }
 
     return {
-        "schema_version": 2,
+        "schema_version": 3,
         "version": model["version"],
-        "state": "qualification-freeze",
+        "state": "real-agent-test-freeze",
         "behavioral_fingerprint": behavior,
-        "qualification_fingerprint": "sha256:" + sha(
-            canonical(qualification_payload)
-        ),
+        "qualification_fingerprint": "sha256:" + sha(canonical(qualification_payload)),
         "governance_model_sha256": "sha256:" + sha(
             (root / "governance-src/model/governance-model.json").read_bytes()
         ),
@@ -119,10 +119,12 @@ def expected(root):
         "fixture_set_sha256": "sha256:" + fixture_hash,
         "evaluator_sha256": "sha256:" + evaluator_hash,
         "runner_sha256": "sha256:" + runner_hash,
+        "deployment_sha256": "sha256:" + deployment_hash,
         "frozen_surfaces": [
             "governance-src",
             "compiler",
             "universal-project-governance",
+            "upg.py",
             "qualification/protocol",
             "qualification/fixtures",
             "qualification/analysis",
@@ -139,10 +141,11 @@ def expected(root):
         "allowed_post_freeze_changes": [
             "immutable qualification result rounds",
             "documentation corrections that do not change frozen semantics",
+            "external adapter instances/configuration that satisfy the frozen adapter contract",
         ],
         "freeze_invalidation": (
-            "Any change to a frozen surface requires a new qualification "
-            "fingerprint and a new result round."
+            "Any change to a frozen surface requires a new qualification fingerprint "
+            "and invalidates unfinished/claimed evidence under the prior fingerprint."
         ),
     }
 
@@ -158,37 +161,24 @@ def main():
     root = pathlib.Path(args.root).resolve()
     path = root / "qualification/FREEZE.json"
     exp = expected(root)
-
     if args.write:
         if not args.confirm_freeze:
-            print(
-                "error: --write requires --confirm-freeze",
-                file=sys.stderr,
-            )
+            print("error: --write requires --confirm-freeze", file=sys.stderr)
             return 2
         path.write_text(
             json.dumps(exp, indent=2, sort_keys=True) + "\n",
             encoding="utf-8",
         )
-        print("Qualification freeze written.")
+        print("Real-agent test freeze written.")
         return 0
-
     if not path.is_file():
         print("error: qualification/FREEZE.json missing", file=sys.stderr)
         return 1
-
     got = json.loads(path.read_text(encoding="utf-8"))
     if got != exp:
-        print(
-            "error: qualification freeze drift detected",
-            file=sys.stderr,
-        )
+        print("error: qualification freeze drift detected", file=sys.stderr)
         return 1
-
-    print(
-        "Qualification freeze check passed: %s"
-        % exp["qualification_fingerprint"]
-    )
+    print("Real-agent test freeze check passed: %s" % exp["qualification_fingerprint"])
     return 0
 
 if __name__ == "__main__":

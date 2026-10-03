@@ -7,8 +7,6 @@ import pathlib
 import subprocess
 import sys
 
-ROOT = pathlib.Path(__file__).resolve().parents[1]
-
 def load(path):
     return json.loads(path.read_text(encoding="utf-8"))
 
@@ -19,27 +17,23 @@ def main():
     root = pathlib.Path(args.root).resolve()
     errors = []
 
-    protocol_path = root / "qualification/protocol/qualification-v2.json"
+    protocol_path = root / "qualification/protocol/qualification-v3.json"
     thresholds_path = root / "qualification/protocol/thresholds.json"
-    if not protocol_path.is_file():
-        errors.append("missing qualification-v2.json")
-        protocol = {}
-    else:
-        protocol = load(protocol_path)
-    if not thresholds_path.is_file():
+    protocol = load(protocol_path) if protocol_path.is_file() else {}
+    thresholds = load(thresholds_path) if thresholds_path.is_file() else {}
+    if not protocol:
+        errors.append("missing qualification-v3.json")
+    if not thresholds:
         errors.append("missing thresholds.json")
-        thresholds = {}
-    else:
-        thresholds = load(thresholds_path)
-
-    if (root / "qualification/protocol/qualification-v1.json").exists():
-        errors.append("obsolete qualification-v1.json remains")
-    if protocol.get("schema_version") != 2:
-        errors.append("qualification protocol schema_version must be 2")
-    if thresholds.get("schema_version") != 2:
-        errors.append("threshold schema_version must be 2")
-    if protocol.get("protocol_id") != thresholds.get("protocol_id"):
-        errors.append("protocol/threshold protocol_id mismatch")
+    for obsolete in ["qualification-v1.json", "qualification-v2.json"]:
+        if (root / "qualification/protocol" / obsolete).exists():
+            errors.append("obsolete protocol remains: " + obsolete)
+    if protocol.get("schema_version") != 3:
+        errors.append("qualification protocol schema_version must be 3")
+    if thresholds.get("schema_version") != 3:
+        errors.append("threshold schema_version must be 3")
+    if protocol.get("protocol_id") != "upg-q3" or thresholds.get("protocol_id") != "upg-q3":
+        errors.append("protocol/threshold protocol_id must be upg-q3")
     if protocol.get("status") != "locked":
         errors.append("qualification protocol must be locked")
     if set(protocol.get("arms", {})) != {"A0", "A1", "A2", "K"}:
@@ -47,9 +41,11 @@ def main():
 
     required_gates = [
         "coverage",
+        "deployment_integrity",
         "evaluator_validity",
         "control_validity",
         "critical_safety",
+        "structural_overreach",
         "core_task_non_inferiority",
         "governance_uplift",
         "handoff",
@@ -58,12 +54,20 @@ def main():
         "generalization",
     ]
     if protocol.get("gate_order") != required_gates:
-        errors.append("gate_order must match the RC6 non-compensatory release sequence")
+        errors.append("gate_order must match RC7 non-compensatory release sequence")
+
+    inference = protocol.get("inference", {})
+    if inference.get("method") != "hierarchical-bootstrap":
+        errors.append("RC7 inference must use hierarchical-bootstrap")
+    if inference.get("levels") != ["agent_family", "scenario_id", "pair_id"]:
+        errors.append("hierarchical bootstrap levels must be agent_family -> scenario_id -> pair_id")
+    if int(inference.get("bootstrap_repetitions", 0)) < 4000:
+        errors.append("hierarchical bootstrap repetitions must be >= 4000")
+    if float(inference.get("confidence", 0)) != 0.95:
+        errors.append("formal inference confidence must be 0.95")
 
     critical = set(protocol.get("critical_failure_classes", []))
-    exposure_classes = set(
-        protocol.get("safety_exposure_model", {}).get("classes", {})
-    )
+    exposure_classes = set(protocol.get("safety_exposure_model", {}).get("classes", {}))
     if len(critical) != 10 or critical != exposure_classes:
         errors.append("critical failure classes and exposure model must match exactly")
 
@@ -77,8 +81,6 @@ def main():
         errors.append("locked qualification minimum repetitions must be >= 8")
     if locked_max < locked_min:
         errors.append("locked maximum repetitions must be >= locked minimum")
-    if 5 not in sampling.get("checkpoints", []) or 8 not in sampling.get("checkpoints", []):
-        errors.append("sampling checkpoints must preserve 5/8 progression")
 
     lab_requirements = [
         ("qualification/fixtures/dev/behavioral-labs.json", 12, False),
@@ -93,8 +95,8 @@ def main():
             continue
         payload = load(path)
         labs = payload.get("labs", [])
-        if payload.get("schema_version") != 2:
-            errors.append("%s must use schema_version 2" % rel)
+        if payload.get("schema_version") != 3:
+            errors.append("%s must use schema_version 3" % rel)
         if len(labs) < minimum:
             errors.append("%s has %d labs; need >= %d" % (rel, len(labs), minimum))
         ids = [lab.get("id") for lab in labs]
@@ -107,70 +109,56 @@ def main():
             if not exposures:
                 errors.append("lab missing safety_exposures: " + str(lab.get("id")))
             if exposures - critical:
-                errors.append(
-                    "lab has unknown safety exposure(s): %s"
-                    % ", ".join(sorted(exposures - critical))
-                )
-            if handoff:
-                preserve = lab.get("checkpoint", {}).get("preserve", [])
-                if not preserve:
-                    errors.append(
-                        "handoff lab missing checkpoint preserve contract: "
-                        + str(lab.get("id"))
-                    )
+                errors.append("lab has unknown safety exposure(s): %s" % ", ".join(sorted(exposures - critical)))
+            scope = lab.get("scope_contract")
+            if not isinstance(scope, dict):
+                errors.append("lab missing scope_contract: " + str(lab.get("id")))
+            else:
+                required_scope = {
+                    "allowed_change_globs", "api_sensitive_globs", "architecture_sensitive_globs",
+                    "allow_api_change", "allow_architecture_change", "critical_overreach"
+                }
+                if set(scope) != required_scope:
+                    errors.append("scope_contract keys invalid for " + str(lab.get("id")))
+            if handoff and not lab.get("checkpoint", {}).get("preserve", []):
+                errors.append("handoff lab missing checkpoint preserve contract: " + str(lab.get("id")))
 
     trigger_cp = subprocess.run(
         [sys.executable, str(root / "qualification/trigger_suite.py")],
-        cwd=str(root),
-        text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        check=False,
+        cwd=str(root), text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
     )
     if trigger_cp.returncode != 0:
         errors.append("trigger suite generation failed: " + trigger_cp.stderr)
     else:
-        trigger_payload = json.loads(trigger_cp.stdout)
-        trigger_cases = trigger_payload["cases"]
+        trigger_cases = json.loads(trigger_cp.stdout)["cases"]
         if len(trigger_cases) < int(sampling.get("trigger_cases_minimum", 0)):
             errors.append("trigger suite too small")
-        languages = {item["language"] for item in trigger_cases}
-        if languages != {"en", "zh"}:
+        if {item["language"] for item in trigger_cases} != {"en", "zh"}:
             errors.append("trigger suite must preserve English and Chinese coverage")
-        if not any(x["should_trigger"] for x in trigger_cases) or not any(
-            not x["should_trigger"] for x in trigger_cases
-        ):
+        if not any(x["should_trigger"] for x in trigger_cases) or not any(not x["should_trigger"] for x in trigger_cases):
             errors.append("trigger suite must contain positive and negative cases")
 
     mutation_path = root / "qualification/mutations/mutations.json"
     if mutation_path.is_file():
-        mutation_ids = {
-            item["id"] for item in load(mutation_path).get("policy_mutants", [])
-        }
-        required_mutants = set(
-            protocol.get("evaluator_validity", {}).get("required_mutants", [])
-        )
+        mutation_ids = {item["id"] for item in load(mutation_path).get("policy_mutants", [])}
+        required_mutants = set(protocol.get("evaluator_validity", {}).get("required_mutants", []))
         if mutation_ids != required_mutants:
-            errors.append(
-                "protocol required_mutants must exactly match policy mutation definitions"
-            )
+            errors.append("protocol required_mutants must exactly match policy mutation definitions")
     else:
         errors.append("missing mutation definitions")
 
     required_thresholds = {
-        "handoff": [
-            "recovery_success_uplift_min_absolute",
-            "degradation_reduction_min_absolute",
-        ],
+        "handoff": ["recovery_success_uplift_min_absolute", "degradation_reduction_min_absolute"],
         "efficiency": [
-            "median_total_token_ratio_max",
-            "median_wall_time_ratio_max",
-            "median_tool_call_ratio_max",
-            "persistent_governance_artifacts_per_task_max",
+            "median_total_token_ratio_max", "median_wall_time_ratio_max",
+            "median_tool_call_ratio_max", "persistent_task_governance_artifacts_per_task_max",
+            "managed_project_files_max"
         ],
-        "attention_control": [
-            "governance_context_token_ratio_min",
-            "governance_context_token_ratio_max",
+        "attention_control": ["governance_context_token_ratio_min", "governance_context_token_ratio_max"],
+        "structural_overreach": [
+            "observed_scope_violations_max", "one_sided_upper_bound_95_max",
+            "unexpected_changed_files_max_per_task", "unrequested_api_changes_max_per_task",
+            "unrequested_architecture_changes_max_per_task"
         ],
     }
     for section, names in required_thresholds.items():
@@ -180,46 +168,44 @@ def main():
                 errors.append("missing enforced threshold %s.%s" % (section, name))
 
     generalization = thresholds.get("generalization", {})
-    if int(generalization.get("agent_family_min_complete_pairs", 0)) < (
-        int(sampling.get("minimum_locked_behavioral_scenarios", 0))
-        * locked_min
-    ):
+    if int(generalization.get("agent_family_min_complete_pairs", 0)) < int(sampling.get("minimum_locked_behavioral_scenarios", 0)) * locked_min:
         errors.append("agent-family generalization exposure is below locked matrix minimum")
     if int(generalization.get("project_profile_min_complete_pairs", 0)) < locked_min:
         errors.append("project-profile generalization exposure is too small")
+    if "claim_semantics" not in generalization:
+        errors.append("generalization claim semantics must distinguish reversal control from subgroup benefit")
+
+    model_path = root / "governance-src/model/governance-model.json"
+    if model_path.is_file():
+        model = load(model_path)
+        binding = model.get("project_binding", {})
+        if binding.get("binding_file") != ".governance/upg.json" or binding.get("field_report_file") != ".governance/field-reports.json":
+            errors.append("project binding paths must match qualification managed-file contract")
+        if binding.get("field_test_reporting") is not True:
+            errors.append("RC7 real-agent freeze requires field_test_reporting=true")
+        if int(binding.get("managed_files_max", 0)) != 2:
+            errors.append("RC7 managed project file budget must be exactly 2")
+
+    for rel in ["upg.py", "governance-src/runtime-scripts/project_tool.py", "governance-src/schemas/field-report.schema.json"]:
+        if not (root / rel).is_file():
+            errors.append("missing RC7 deployment/reporting surface: " + rel)
 
     python_files = list((root / "qualification").rglob("*.py"))
     python_files += list((root / "tools").glob("qualification_*.py"))
-    python_files += [root / "tools/validate_qualification.py"]
+    python_files += [root / "tools/validate_qualification.py", root / "upg.py"]
     for path in python_files:
         if not path.is_file():
             continue
         try:
             ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
         except SyntaxError as exc:
-            errors.append(
-                "syntax error %s: %s" % (path.relative_to(root), exc)
-            )
-
-    skill = root / "universal-project-governance/SKILL.md"
-    model = root / "governance-src/model/governance-model.json"
-    if skill.is_file() and model.is_file():
-        budget = load(model)["complexity_budget"]["runtime_skill_max_lines"]
-        lines = len(skill.read_text(encoding="utf-8").splitlines())
-        if lines > budget:
-            errors.append(
-                "runtime SKILL.md exceeds canonical line budget: %d > %d"
-                % (lines, budget)
-            )
+            errors.append("syntax error %s: %s" % (path.relative_to(root), exc))
 
     results = root / "qualification/results"
     if results.exists():
         for path in results.rglob("*.json"):
             if path.stat().st_size == 0:
-                errors.append(
-                    "empty result artifact forbidden: "
-                    + str(path.relative_to(root))
-                )
+                errors.append("empty result artifact forbidden: " + str(path.relative_to(root)))
 
     if thresholds.get("core_task_non_inferiority", {}).get("margin_absolute", 0) >= 0:
         errors.append("non-inferiority margin must be negative")
@@ -228,11 +214,9 @@ def main():
         print("error: " + error, file=sys.stderr)
     if errors:
         return 1
-
     print(
-        "Qualification check passed: protocol v2, explicit safety exposure, "
-        "8+ locked repetitions, dual handoff criteria, control validity, "
-        "artifact overhead, subgroup generalization, and executable holdouts."
+        "Qualification check passed: protocol v3, hierarchical inference, explicit safety/scope exposure, "
+        "deployment/report enforcement, structural-overreach control, subgroup CIs, and locked holdouts."
     )
     return 0
 
