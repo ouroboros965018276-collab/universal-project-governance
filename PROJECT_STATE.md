@@ -2,7 +2,7 @@
 
 Current candidate: **3.0.0-rc.9 — Evidence and Continuity Hardening**.
 
-RC9 repairs the audited evidence and continuity gaps. The latest task-bounded integration makes `qualification/lib/contracts.py` the canonical authority for frozen identity, live surface verification and finite JSON analysis settings. Registration planning, locked execution and evidence admission consume that authority; analysis dispatches the admission gate rather than maintaining a separate configuration rejection path. No real Agent/dev-smoke/locked qualification round has run. Stable remains blocked pending the separate real-agent phase.
+RC9 repairs the audited evidence and continuity gaps. The latest task-bounded integration makes `qualification/lib/contracts.py` the canonical authority for frozen identity, live surface verification and finite JSON analysis settings. Registration planning, locked execution and evidence admission consume that authority; analysis dispatches the admission gate rather than maintaining a separate configuration rejection path. No formal dev-smoke/locked qualification round has run; bounded host micro-project checks below are separate. Stable remains blocked pending the separate real-agent phase.
 
 ## Current change and why
 
@@ -25,6 +25,16 @@ Maintained-project/model/host-agnostic Skill; canonical semantics in `governance
 | `2127d022d3bb0db636324b0355ef307993486371` | 2026-10-03T11:07:15Z | Audited RC8 baseline; Windows 44/47 established repair rationale. Earlier squash implementation detail is not invented. |
 
 RC8 documents stated checkpoints `2026-10-03T19:06:41+08:00` and `2026-10-03T18:54:06+08:00`; these are stated times, not independently observed code/commit times. RC9 active progress checkpoint was observed at `2026-10-03T12:51:59.340996Z`; original work-start is unknown. The readiness audit retains prior acceptance observations. Git preserves actual source commits and parents. Use causal references and monotonic ledger sequence for order; recording time is observation time.
+
+## Bounded runtime checks and factual limits
+
+Synchronization observation: 2026-10-03T17:44:40.802992Z (UTC), parent main `bc0890f41297f6ebc20185c383cdba663ac46b43`; this is an observation, not an invented test/work start. Prior current-truth closeout main passed Run #210: nine jobs including private default-branch installation. This synchronization changes current-state/audit metadata only; the frozen semantics and installed Skill bytes remain unchanged.
+
+The owner-authorized five micro-projects were delivered, locally adjusted, recovered in a fresh task context and actually checked. Current CLI, offline browser, SVG/PNG, pendulum and astronomical-window functions pass. CLI recovery found malformed JSON returned exit1 rather than the documented exit2; the existing argument boundary now rejects it and non-finite timeout values correctly. The external experiment completion helper now requires actual source/runtime/command-log receipts before commit, compares committed bytes before reporting, refuses overwritten completion input, and rejected 35 explicitly marked invalid receipt fixtures. These are project/experiment-tool corrections, not RC9 product semantic expansion.
+
+Strict original-workflow acceptance is NOT PASS. The pendulum adjustment originally described an overflow-input assertion as division by zero; the correction retains the original inaccurate record, so historical governance is FAIL. The other four workflows lack complete historical test-time source-tree evidence (astronomy also lacks a retained historical live-source response), so those historical checks remain BLOCKED. New current-version checks do not retroactively certify missing evidence. The readiness audit records full micro-project revisions and SHA-256 identities of operator-local retained evidence; the evidence itself and experiment source are not uploaded into this repository. Current functional PASS is not full five-workflow governance PASS or formal statistical qualification.
+
+Remote completed-branch cleanup remains pending because browser control requests fail despite observed Edge installation/permissions; no deletion is claimed. With a usable authenticated connection, verify each listed branch is contained in current main before removing its reference. Local merged branches were removed with commits preserved. The existing readiness audit is the canonical machine-readable outcome and pending-item record; no parallel history database is introduced.
 
 ## Handoff and next phase
 
