@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 from datetime import datetime, timezone
 import json
+import re
 from pathlib import Path
 import sys
 
@@ -44,7 +45,17 @@ def resolve(project, rel):
         raise ValueError("refusing to manage symlinked path: %s" % rel)
     return path
 
-def expected_binding():
+def _project_origin(project):
+    root = project_root(project)
+    for child in root.iterdir():
+        if child.name != ".governance":
+            return "existing"
+    gov = root / ".governance"
+    if gov.is_dir() and any(gov.iterdir()):
+        return "existing"
+    return "new"
+
+def expected_binding(project_origin="existing"):
     idx = index()
     cfg = idx["project_binding"]
     reporting = bool(cfg["field_test_reporting"])
@@ -52,13 +63,17 @@ def expected_binding():
     if reporting:
         managed_files.append(cfg["field_report_file"])
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "managed_by": idx["name"],
         "runtime_version": idx["version"],
         "field_test_reporting": reporting,
         "managed_files": managed_files,
         "field_report_file": cfg["field_report_file"] if reporting else None,
         "max_reports": int(cfg["max_reports"]) if reporting else 0,
+        "adoption_mode": cfg["adoption_mode"],
+        "continuity_mode": cfg["continuity_mode"],
+        "capability_handshake": cfg["capability_handshake"],
+        "project_origin": project_origin,
     }
 
 def _retirable_reporting_binding(value):
@@ -70,11 +85,27 @@ def _retirable_reporting_binding(value):
         and value.get("managed_files") == [cfg["binding_file"], cfg["field_report_file"]]
         and value.get("field_report_file") == cfg["field_report_file"]
     )
+
+def _upgradeable_binding(value):
+    cfg = config()
+    return (
+        isinstance(value, dict)
+        and value.get("schema_version") == 1
+        and value.get("managed_by") == index()["name"]
+        and value.get("managed_files") in (
+            [cfg["binding_file"]],
+            [cfg["binding_file"], cfg["field_report_file"]],
+        )
+    )
+
 def validate_binding(value):
-    expected = expected_binding()
+    origin = value.get("project_origin") if isinstance(value, dict) else "existing"
+    expected = expected_binding(origin)
     errors = []
     if not isinstance(value, dict):
         return ["binding must be an object"]
+    if value.get("schema_version") != 2:
+        errors.append("binding schema_version drift detected")
     if value.get("managed_by") != expected["managed_by"]:
         errors.append("binding is not owned by universal-project-governance")
     if value.get("field_test_reporting") != expected["field_test_reporting"]:
@@ -85,6 +116,11 @@ def validate_binding(value):
         errors.append("field_report_file drift detected")
     if value.get("max_reports") != expected["max_reports"]:
         errors.append("max_reports drift detected")
+    for key in ["adoption_mode", "continuity_mode", "capability_handshake"]:
+        if value.get(key) != expected[key]:
+            errors.append("%s drift detected" % key)
+    if value.get("project_origin") not in {"new", "existing"}:
+        errors.append("project_origin drift detected")
     return errors
 def ledger_default():
     return {"schema_version": 1, "runtime_version": index()["version"], "reports": []}
@@ -95,9 +131,14 @@ def ensure(project):
     report_path = resolve(project, cfg["field_report_file"])
     reporting = bool(cfg["field_test_reporting"])
     current = None
+    origin = _project_origin(project)
     if binding_path.exists():
         current = load_json(binding_path)
-        errors = validate_binding(current)
+        origin = current.get("project_origin", "existing") if isinstance(current, dict) else "existing"
+        if _upgradeable_binding(current):
+            errors = []
+        else:
+            errors = validate_binding(current)
         if errors:
             if not reporting and _retirable_reporting_binding(current):
                 if report_path.exists():
@@ -111,7 +152,7 @@ def ensure(project):
             else:
                 raise ValueError("; ".join(errors))
 
-    binding = expected_binding()
+    binding = expected_binding(origin)
     write_json_atomic(binding_path, binding)
     if not reporting:
         return {
@@ -163,6 +204,10 @@ def status(project):
         "field_test_reporting": reporting,
         "managed_files": binding.get("managed_files", []),
         "report_count": report_count,
+        "project_origin": binding.get("project_origin"),
+        "adoption_mode": binding.get("adoption_mode"),
+        "continuity_mode": binding.get("continuity_mode"),
+        "capability_handshake": binding.get("capability_handshake"),
     }
 def validate_report(report):
     encoded = json.dumps(report, ensure_ascii=False)
@@ -237,15 +282,19 @@ def validate_report(report):
                 string_values.extend(x for x in scope[key] if isinstance(x, str))
     if any(len(value) > 1000 for value in string_values):
         errors.append("field report metadata entries must be <= 1000 characters")
-    secret_markers = [
-        "-----BEGIN " + "PRIVATE KEY-----",
-        "-----BEGIN " + "OPENSSH PRIVATE KEY-----",
-        "g" + "hp_",
-        "github" + "_pat_",
-        "AK" + "IA",
+    sensitive_patterns = [
+        r"-----BEGIN (?:[A-Z0-9 ]+ )?PRIVATE KEY-----",
+        r"-----BEGIN OPENSSH PRIVATE KEY-----",
+        r"g" + r"hp_[A-Za-z0-9]{20,}",
+        r"github" + r"_pat_[A-Za-z0-9_]{20,}",
+        r"AK" + r"IA[0-9A-Z]{16}",
+        r"(?i)\\bBearer\\s+[A-Za-z0-9._~+/-]{16,}={0,2}",
+        r"\\beyJ[A-Za-z0-9_-]{8,}\\.[A-Za-z0-9_-]{8,}\\.[A-Za-z0-9_-]{8,}\\b",
+        r"(?i)\\b(?:password|passwd|pwd|secret|api[_-]?key|access[_-]?token|refresh[_-]?token)\\s*[:=]\\s*[^,;\\s]{6,}",
+        r"(?i)\\b(?:postgres(?:ql)?|mysql|mongodb(?:\\+srv)?|redis)://[^/\\s:@]+:[^@\\s]+@",
     ]
-    if any(marker in encoded for marker in secret_markers):
-        errors.append("field report appears to contain credential material")
+    if any(re.search(pattern, encoded) for pattern in sensitive_patterns):
+        errors.append("field report appears to contain credential or secret material")
     if errors:
         raise ValueError("; ".join(errors))
 
