@@ -125,11 +125,14 @@
         "field_report_file",
         "field_test_reporting",
         "max_reports",
-        "managed_files_max"
+        "managed_files_max",
+        "adoption_mode",
+        "continuity_mode",
+        "capability_handshake"
       ],
       "properties": {
         "schema_version": {
-          "const": 1
+          "const": 2
         },
         "binding_file": {
           "type": "string"
@@ -145,6 +148,21 @@
         },
         "managed_files_max": {
           "type": "integer"
+        },
+        "adoption_mode": {
+          "enum": [
+            "in-place"
+          ]
+        },
+        "continuity_mode": {
+          "enum": [
+            "handoff-or-reconstruct"
+          ]
+        },
+        "capability_handshake": {
+          "enum": [
+            "observe-before-assume"
+          ]
         }
       }
     }
