@@ -83,6 +83,12 @@
           "type": "string"
         }
       }
+    },
+    "tool_profile": {
+      "type": "string"
+    },
+    "budget_profile": {
+      "type": "string"
     }
   }
 }
