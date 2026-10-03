@@ -16,13 +16,13 @@ Governance semantics live in `governance-src/`. `universal-project-governance/` 
 
 ## Project binding
 
-On the first modifying activation, ensure the project binding using the installed runtime. `.governance/upg.json` and `.governance/field-reports.json` are UPG-managed infrastructure, not garbage.
+On the first modifying activation, ensure the project binding using the installed runtime. `.governance/upg.json` is always UPG-managed; `.governance/field-reports.json` is managed only while `field_test_reporting=true`. Managed UPG state is not garbage.
 
 Do not remove or rewrite them outside the explicit project-tool lifecycle.
 
 ## RC7 completion report
 
-While field-test reporting is enabled, every completed modifying workflow records exactly one field report before completion is claimed.
+While field-test reporting is enabled, every completed modifying workflow records exactly one field report before completion is claimed. If reporting is disabled in a future runtime, do not recreate the ledger or emit reports.
 
 Reports contain bounded metadata/evidence summaries only. Never copy source bodies, credentials, secrets, or private chain-of-thought into them.
 

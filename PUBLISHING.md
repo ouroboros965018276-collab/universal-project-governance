@@ -29,7 +29,7 @@ One immutable result round under the current qualification fingerprint must sati
 3. evaluator mutation sensitivity;
 4. attention-control validity;
 5. class-specific critical safety;
-6. structural-overreach control;
+6. scope-overreach control with independent `local_guard` and `structural_guard` exposure/confidence bounds;
 7. core-task non-inferiority;
 8. governance uplift;
 9. handoff recovery and degradation reduction;
@@ -47,7 +47,7 @@ Subgroup CI evidence is reported directly. Generalization PASS means the preregi
 
 Personal and friend gray testing may export `upg-field-test-reports.json`. These reports are diagnostic field evidence, not substitutes for locked qualification.
 
-Before Stable, the report capability receives an explicit retain/remove decision. If removed, removal happens in canonical source and generated runtime in one structural change.
+Before Stable, the report capability receives an explicit retain/remove decision. The disabled path is already executable: fresh binding creates no ledger and report/export operations are unavailable. Existing non-empty RC7 ledgers must be exported and purged before retirement; they are never silently discarded.
 
 ## Freeze rule
 

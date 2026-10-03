@@ -30,7 +30,7 @@ The planner returns `change_mode` and `scope_guard`.
 - `local / local-only`: truly local low-risk work.
 - `structural / task-bounded-responsible-layer`: non-trivial work changes the smallest responsible canonical layer and removes superseded patch paths, but does not authorize unrelated redesign, API/contract changes, architectural migration, or opportunistic refactoring.
 
-RC7 measures structural overreach independently from task correctness.
+RC7 measures scope overreach independently from task correctness and keeps two separate exposure populations: `local_guard` detects accidental structuralization of tasks that should stay local; `structural_guard` detects expansion beyond the smallest responsible canonical layer. Neither cohort can improve the other's confidence bound.
 
 ## Foolproof project lifecycle
 
@@ -60,7 +60,7 @@ While `field_test_reporting=true`, every completed modifying workflow must appen
 
 The ledger is fixed-cardinality: one file, at most 200 reports. Export it and upload the exported JSON for cross-project analysis.
 
-This reporting plane is deliberately isolated behind the canonical `project_binding.field_test_reporting` switch so it can be removed structurally before Stable if empirical testing shows no durable value.
+This reporting plane is deliberately isolated behind the canonical `project_binding.field_test_reporting` switch. When disabled, fresh project binding creates no report ledger and report/export operations refuse to run. Retirement of an existing non-empty RC7 ledger is blocked until it is exported and purged, preventing silent evidence loss.
 
 ## Qualification v3
 
@@ -91,7 +91,7 @@ Generalization distinguishes “severe reversal ruled out” from “positive su
 
 ## Current evidence status
 
-RC7 source/runtime/qualification engineering validation is complete and the real-Agent test identity is machine-frozen. No real Agent causal result is claimed yet and no `qualification/results/` placeholder exists.
+RC7 source/runtime/qualification engineering validation is complete on the final test-freeze branch and the real-Agent test identity is machine-frozen. No real Agent causal result is claimed yet and no `qualification/results/` placeholder exists.
 
 Stable remains blocked until immutable locked real-Agent evidence passes the frozen RC7 protocol.
 

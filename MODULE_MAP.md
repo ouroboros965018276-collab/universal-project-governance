@@ -15,7 +15,7 @@ Defines version, Hot Path, policies, risk model, task-bounded structural integra
 Source for generated deterministic helpers:
 
 - `plan_governance.py` — compiles task context into the smallest active policy closure, change mode, and scope guard.
-- `project_tool.py` — owns the bounded project lifecycle and field-report ledger.
+- `project_tool.py` — owns the bounded project lifecycle and conditional field-report ledger; the reporting-disabled path owns only the binding and refuses report/export operations.
 - `state_tool.py` — validates/renders/compacts existing schema-first governance state.
 - `validate_integrity.py` — verifies generated Skill integrity.
 
@@ -41,7 +41,7 @@ Single Skill template. It carries execution instructions without duplicating can
 
 **Function:** user-facing repository lifecycle wrapper.  
 **Why:** provide one-command Skill install/remove plus project binding without duplicating runtime ownership logic.  
-**Boundary:** delegates project-state semantics to generated `project_tool.py`.
+**Boundary:** delegates project-state semantics to generated `project_tool.py`; failed fresh installs attempt owned-state rollback and Skill rollback.
 
 ## qualification/
 
@@ -49,7 +49,7 @@ Single Skill template. It carries execution instructions without duplicating can
 
 ### protocol/
 
-Locked q3 preregistration: hierarchical inference, sampling, exposure populations, overreach, deployment, thresholds, stopping rules, and schemas.
+Locked q3 preregistration: hierarchical inference, sampling, safety exposure populations, separate local/structural overreach exposure cohorts, deployment, thresholds, stopping rules, and schemas.
 
 ### fixtures/
 

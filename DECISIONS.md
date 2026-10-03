@@ -10,7 +10,7 @@ Unrequested redesign, API/contract change, architecture migration, and opportuni
 
 Task success cannot compensate for scope violation. Locked A2 behavioral trials collect changed-file count, diff lines, unexpected changed files, unrequested API changes, unrequested architecture changes, and timing.
 
-The overreach gate is independent and non-compensatory.
+The overreach gate is independent and non-compensatory. It has two separately estimated exposure cohorts: `local_guard` for tasks that should remain local and `structural_guard` for tasks that legitimately exercise structural integration. Their zero-event confidence denominators are never pooled.
 
 ## Formal effect inference is hierarchical
 
@@ -34,13 +34,13 @@ Managed files are excluded from task change-count metrics but included in a sepa
 
 While the canonical flag is enabled, completion requires one report record. Reports are bounded metadata/evidence summaries and are exportable for cross-project analysis.
 
-The capability is isolated behind one canonical switch and one runtime tool so a Stable decision can either retain it intentionally or remove it structurally without orphaned paths.
+The capability is isolated behind one canonical switch and one runtime tool. When disabled, fresh binding owns only `.governance/upg.json`, creates no report ledger, and rejects report/export operations. A non-empty pre-existing field ledger blocks automatic retirement until export/purge, so removal cannot silently discard test evidence.
 
 ## Install and remove are explicit lifecycle operations
 
 `upg.py install` combines host Skill installation, installed-copy integrity validation, and project binding initialization.
 
-`upg.py remove` removes owned project state before invoking the host Skills CLI. Removal refuses drifted/unowned bindings and preserves unrelated project governance data.
+`upg.py remove` removes owned project state before invoking the host Skills CLI. Removal refuses drifted/unowned bindings and preserves unrelated project governance data. A failed fresh install attempts to roll back any newly created UPG-owned project state and then the newly installed Skill; pre-existing installations are never blindly removed.
 
 ## Frozen evidence includes deployment tooling
 

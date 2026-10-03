@@ -8,9 +8,9 @@ The Skill is compiler-generated and SHA-256 integrity checked. The manifest dete
 
 ## Project binding safety
 
-UPG owns only `.governance/upg.json` and `.governance/field-reports.json` during RC7.
+UPG owns `.governance/upg.json` and, only while RC7 field reporting is enabled, `.governance/field-reports.json`.
 
-Project lifecycle tooling refuses symlinked governance/managed paths, refuses removal of drifted/unowned binding state, writes managed JSON atomically, and preserves unrelated project governance files.
+Project lifecycle tooling refuses symlinked governance/managed paths, refuses removal of drifted/unowned binding state, writes managed JSON atomically, and preserves unrelated project governance files. Reporting retirement refuses to discard a non-empty ledger; failed fresh installs attempt owned-state rollback followed by Skill rollback.
 
 ## Field-report privacy
 
@@ -24,4 +24,4 @@ Locked trials require sandbox/container/VM isolation and oracle exclusion. Other
 
 ## Statistical integrity
 
-Formal confidence claims use preregistered hierarchical inference. Safety denominators remain exposure-specific. Structural overreach is measured independently so task success cannot hide scope abuse.
+Formal confidence claims use preregistered hierarchical inference. Safety denominators remain exposure-specific. Scope overreach uses separate local-guard and structural-guard exposure populations so one class cannot inflate confidence for the other.

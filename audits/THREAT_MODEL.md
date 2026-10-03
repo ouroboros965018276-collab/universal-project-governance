@@ -9,7 +9,7 @@ Canonical governance semantics, generated Skill integrity, task scope boundaries
 ### Structural overreach
 
 **Risk:** an Agent interprets structural integration as permission to redesign unrelated modules or contracts.  
-**Controls:** task-bounded scope guard, per-lab scope contract, changed-file/diff/API/architecture diagnostics, independent non-compensatory overreach gate.
+**Controls:** task-bounded scope guard, per-lab scope contract, changed-file/diff/API/architecture diagnostics, and independent non-compensatory `local_guard` / `structural_guard` exposure populations.
 
 ### Correlated observations
 
@@ -24,17 +24,22 @@ Canonical governance semantics, generated Skill integrity, task scope boundaries
 ### Project-state proliferation
 
 **Risk:** automatic governance creates accumulating report files.  
-**Control:** exactly two managed files and one bounded rolling report ledger.
+**Control:** exactly two managed files while field reporting is enabled; disabling reporting reduces fresh binding to one managed file and creates no ledger.
 
 ### Managed-state accidental cleanup
 
 **Risk:** an Agent treats UPG binding/report state as junk.  
 **Control:** generated Skill explicitly marks binding-owned paths as managed infrastructure; deployment gate detects their loss.
 
-### Unsafe uninstall
+### Reporting retirement data loss
 
-**Risk:** automated removal deletes project-owned governance data or follows a symlink outside the project.  
-**Control:** exact ownership validation, two-path removal allowlist, symlink refusal, empty-directory cleanup only.
+**Risk:** Stable disables field reporting and silently deletes unexported gray-test evidence.  
+**Control:** retirement of a non-empty existing ledger is rejected until explicit export/purge.
+
+### Unsafe uninstall / failed install
+
+**Risk:** automated lifecycle deletes project-owned governance data, follows a symlink outside the project, or leaves a fresh half-install.  
+**Control:** exact ownership validation, managed-path removal, symlink refusal, empty-directory cleanup only, and best-effort rollback of newly created UPG-owned state plus newly installed Skill on fresh-install failure.
 
 ### Field-report leakage
 

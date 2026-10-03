@@ -37,7 +37,7 @@ Coverage/generalization does not automatically claim statistically significant b
 
 Behavioral labs define a scope contract. Locked A2 trials measure unexpected changed files, unrequested API/architecture changes, changed-file count, diff lines, and latency.
 
-The overreach gate is independent from task success.
+The overreach gate is independent from task success and has two non-pooled populations: `local_guard` detects unnecessary structuralization of local tasks; `structural_guard` detects structural work escaping its smallest justified canonical layer.
 
 ## Project deployment
 

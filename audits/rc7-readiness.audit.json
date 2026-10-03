@@ -2,91 +2,88 @@
   "schema_version": 3,
   "version": "3.0.0-rc.7",
   "candidate": "Real-Agent Test Freeze",
-  "updated_at": "2026-10-03T15:46:56+08:00",
-  "status": "engineering-valid-frozen-ready-for-real-agent-testing",
+  "updated_at": "2026-10-03T17:13:53+08:00",
+  "status": "branch-engineering-valid-refrozen-awaiting-default-branch-validation",
   "claims": {
     "task_bounded_structural_integration": true,
     "hierarchical_inference_preregistered": true,
     "automated_project_lifecycle": true,
     "field_test_reporting_enabled": true,
     "real_agent_causal_benefit_proven": false,
-    "stable_ready": false
+    "stable_ready": false,
+    "overreach_exposure_cohorts": true,
+    "field_test_reporting_safe_disable_path": true
   },
   "engineering_gates": [
     {
       "name": "canonical source and compiler",
       "result": "pass",
-      "evidence": "Run #93 compiler drift and governance lint passed"
+      "evidence": "branch Run #107 compiler drift, governance lint, repository validation, runtime integrity and security audit passed"
     },
     {
       "name": "generated runtime and integrity",
       "result": "pass",
-      "evidence": "3.0.0-rc.7 generated runtime validated; 16 generated runtime files"
+      "evidence": "3.0.0-rc.7 generated runtime validated; SKILL.md remains 92 lines"
     },
     {
       "name": "project lifecycle install/status/export/remove",
       "result": "pass",
-      "evidence": "Run #93 one-command lifecycle test passed; unrelated project-owned governance file survived uninstall"
+      "evidence": "branch Run #107 one-command lifecycle and clean Codex-target install passed"
     },
     {
-      "name": "field-report contract and privacy bounds",
+      "name": "failed fresh-install rollback",
       "result": "pass",
-      "evidence": "valid report/export, incomplete-report rejection, credential-material rejection, bounded ledger tests passed"
+      "evidence": "deployment wrapper now rolls back newly owned project state before newly installed Skill; pre-existing installs are excluded from blind rollback"
     },
     {
-      "name": "qualification q3 static validation",
+      "name": "field-report contract and retirement path",
       "result": "pass",
-      "evidence": "hierarchical inference, scope exposure, deployment, overreach, subgroup CI and holdout contracts validated"
+      "evidence": "reporting-enabled path remains bounded; reporting-disabled test creates binding only, no ledger, and rejects report operations; non-empty legacy ledger retirement is blocked"
     },
     {
-      "name": "hierarchical/subgroup/overreach regression tests",
+      "name": "hierarchical inference and subgroup CI",
       "result": "pass",
-      "evidence": "41/41 deterministic tests passed"
+      "evidence": "q3 hierarchical Agent-family → scenario → repetition bootstrap and subgroup CI regression tests passed"
+    },
+    {
+      "name": "overreach exposure isolation",
+      "result": "pass",
+      "evidence": "local_guard and structural_guard have independent scenario minimums, denominators, zero-event bounds and failure states"
     },
     {
       "name": "Python 3.8/3.11/3.13",
       "result": "pass",
-      "evidence": "41/41 tests passed independently on all three runtimes"
+      "evidence": "43/43 tests passed independently on all three runtimes in branch Run #107"
     },
     {
       "name": "Agent Skills validator and Skills CLI",
       "result": "pass",
-      "evidence": "upstream Agent Skills validation and clean Codex-target install passed"
-    },
-    {
-      "name": "security audit",
-      "result": "pass",
-      "evidence": "no network runtime imports, shell=True, dangerous dynamic execution, symlink-following, or secret-like repository patterns"
+      "evidence": "upstream Agent Skills validation and clean local Codex-target install passed"
     },
     {
       "name": "deterministic package",
       "result": "pass",
-      "evidence": "all Python runtimes produced SHA-256 15024513eb5b9f9c8b4ed4c891d9eb934e1c143cd0830590f15526730dfcbe5f"
+      "evidence": "all Python runtimes produced SHA-256 794de7033d6ff4c556249499db1caff8033a7f1f746bd8d4f95c141109c54adf"
     },
     {
       "name": "real-agent test freeze identity",
       "result": "pass",
-      "evidence": "qualification fingerprint sha256:16d0dd363d59d87a4a87478c66940eae2e0bc5da2f75c8262fee369486ba69ec"
+      "evidence": "qualification fingerprint sha256:bc8727c209235d8a1a3b4bd2fe617753b82bdda7305ca8d6846f8081748757da"
     },
     {
       "name": "private default-branch install",
-      "result": "pass",
-      "evidence": "main Run #95 cloned the private default branch through skills@1.7.0, installed one Skill, and installed-copy integrity passed with 16 generated runtime files"
-    },
-    {
-      "name": "main current-tree validation",
-      "result": "pass",
-      "evidence": "main Run #95 completed successfully with all 7 jobs passing"
+      "result": "pending",
+      "evidence": "requires promotion of this exact frozen tree to main"
     }
   ],
   "real_test_blockers": [
     "immutable real-Agent qN evidence"
   ],
-  "conclusion": "RC7 is engineering-valid on the private default branch and machine-frozen for real-Agent/gray testing. No causal benefit or Stable claim exists yet; Stable remains blocked until locked real-Agent qualification passes.",
+  "conclusion": "The final RC7 branch is engineering-valid and machine-frozen. Default-branch private installation validation remains before real-Agent/gray testing; no causal benefit or Stable claim exists yet.",
   "identities": {
-    "behavioral_fingerprint": "sha256:4e52e3b9104e414d4601b6776dee8fe593d80dd2a8c121256e4f4540c1e791ee",
-    "qualification_fingerprint": "sha256:16d0dd363d59d87a4a87478c66940eae2e0bc5da2f75c8262fee369486ba69ec",
-    "runtime_tree_sha256": "sha256:9bc8660a9bce134b6c73cfc75cdcdf01634110d9357f274c13ff88e1d27f6508",
-    "deterministic_package_sha256": "15024513eb5b9f9c8b4ed4c891d9eb934e1c143cd0830590f15526730dfcbe5f"
+    "behavioral_fingerprint": "sha256:1b323ac1c0fb26915e73851b6691c4ed2b8df45c4b17a576a945f4528cc14819",
+    "qualification_fingerprint": "sha256:bc8727c209235d8a1a3b4bd2fe617753b82bdda7305ca8d6846f8081748757da",
+    "runtime_tree_sha256": "sha256:fd23154b6be4104de5a1896842dbf23821163539707def9d9c8ad7396577d2a8",
+    "deterministic_package_sha256": "794de7033d6ff4c556249499db1caff8033a7f1f746bd8d4f95c141109c54adf"
   }
 }
