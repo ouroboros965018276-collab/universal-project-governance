@@ -9,7 +9,8 @@
     "workspace_isolation",
     "capabilities",
     "command",
-    "agent"
+    "agent",
+    "host_tool"
   ],
   "properties": {
     "id": {
@@ -89,6 +90,24 @@
     },
     "budget_profile": {
       "type": "string"
+    },
+    "host_tool": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "version"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
     }
   }
 }
