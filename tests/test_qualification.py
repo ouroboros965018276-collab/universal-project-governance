@@ -234,7 +234,7 @@ class QualificationTests(unittest.TestCase):
                         common,
                         arm="A2",
                         outcome={
-                            "task_success": True,
+                            "task_success": not (subgroup_reversal and family == "agent-b"),
                             "governance_defect_free": governance_ok and not scope_violation and deployment_ok,
                             "critical_failures": failures,
                             "deployment": {

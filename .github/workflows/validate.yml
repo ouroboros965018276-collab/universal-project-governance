@@ -25,11 +25,11 @@ jobs:
           python-version: '3.11'
       - name: Verify canonical source compiles exactly to runtime
         run: python compiler/compile_governance.py --check
-      - name: Enforce governance graph and complexity budgets
+      - name: Enforce bounded governance and task-scope invariants
         run: python tools/governance_lint.py .
-      - name: Validate qualification v2 contract
+      - name: Validate qualification v3 contract
         run: python tools/validate_qualification.py .
-      - name: Validate machine qualification freeze
+      - name: Validate real-agent test freeze
         run: python tools/qualification_freeze.py . --check
       - name: Validate current repository contract
         run: python tools/validate_repository.py .
@@ -65,7 +65,7 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: '3.11'
-      - name: Validate protocol, fixtures, exposure model, and freeze
+      - name: Validate hierarchical protocol, scope contracts, deployment, and freeze
         run: |
           python tools/validate_qualification.py .
           python tools/qualification_freeze.py . --check
@@ -78,7 +78,7 @@ jobs:
           assert len(data['cases']) >= 100
           print('Metamorphic trigger cases:', len(data['cases']))
           PY
-      - name: Verify known-bad mutant runtime remains structurally valid but behaviorally distinct
+      - name: Verify known-bad mutant remains valid but behaviorally distinct
         run: |
           python qualification/mutations/build_mutant_runtime.py --mutant M01_DISABLE_SAFE_DELETE --output /tmp/upg-mutant
           python /tmp/upg-mutant/scripts/validate_integrity.py /tmp/upg-mutant
@@ -127,6 +127,23 @@ jobs:
         env:
           DISABLE_TELEMETRY: '1'
         run: npx -y skills@1.7.0 add ./universal-project-governance --list
+      - name: Verify one-command project install, binding, export, and remove
+        env:
+          DISABLE_TELEMETRY: '1'
+        shell: bash
+        run: |
+          set -euo pipefail
+          work="$(mktemp -d)"
+          python upg.py install --project "$work" --agent codex --source "$GITHUB_WORKSPACE"
+          test -f "$work/.governance/upg.json"
+          test -f "$work/.governance/field-reports.json"
+          python upg.py status --project "$work"
+          echo '{"project_owned":true}' > "$work/.governance/project-owned.json"
+          python upg.py export --project "$work" --output "$work/upg-field-test-export.json"
+          python upg.py remove --project "$work" --agent codex --yes
+          test ! -e "$work/.governance/upg.json"
+          test ! -e "$work/.governance/field-reports.json"
+          test -f "$work/.governance/project-owned.json"
       - name: Install compiled Skill into clean Codex target
         env:
           DISABLE_TELEMETRY: '1'

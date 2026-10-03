@@ -42,12 +42,16 @@ def main():
     if (root/"assets").exists(): errors.append("compiled runtime must not contain assets/")
     md_count=len([p for p in root.rglob("*.md") if p.is_file()])
     if md_count>4: errors.append("runtime Markdown budget exceeded: %d > 4" % md_count)
-    for req in ["policy-index.json","integrity/manifest.json","schemas/task-context.schema.json","schemas/governance-plan.schema.json","scripts/plan_governance.py","scripts/state_tool.py","scripts/validate_integrity.py"]:
+    for req in ["policy-index.json","integrity/manifest.json","schemas/task-context.schema.json","schemas/governance-plan.schema.json","schemas/field-report.schema.json","scripts/plan_governance.py","scripts/project_tool.py","scripts/state_tool.py","scripts/validate_integrity.py"]:
         if not (root/req).is_file(): errors.append("missing compiled runtime file: "+req)
     try:
         index=json.loads((root/"policy-index.json").read_text(encoding="utf-8"))
         if index.get("version")!=version: errors.append("policy-index version mismatch")
         if index.get("architecture")!="compiled-governance": errors.append("policy-index architecture mismatch")
+        binding=index.get("project_binding",{})
+        if binding.get("binding_file")!=".governance/upg.json": errors.append("policy-index binding path mismatch")
+        if binding.get("field_report_file")!=".governance/field-reports.json": errors.append("policy-index field-report path mismatch")
+        if binding.get("managed_files_max")!=2: errors.append("policy-index managed project file budget mismatch")
     except Exception as exc: errors.append("invalid policy-index.json: %s" % exc)
     for p in (root/"schemas").glob("*.json"):
         try: json.loads(p.read_text(encoding="utf-8"))

@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Deterministic static analysis and complexity gate for the canonical governance model."""
 from __future__ import annotations
-
 import argparse
 import json
 from pathlib import Path
@@ -10,10 +9,8 @@ import sys
 
 ID_RE = re.compile(r"^[A-Z][A-Z0-9_]*$")
 
-
 def load(path):
     return json.loads(path.read_text(encoding="utf-8"))
-
 
 def dependency_closure(start, by_id):
     seen = set()
@@ -27,7 +24,6 @@ def dependency_closure(start, by_id):
             stack.extend(by_id[item].get("requires", []))
     return seen
 
-
 def find_cycle(by_id):
     visiting, done = set(), set()
     path = []
@@ -37,24 +33,31 @@ def find_cycle(by_id):
             return path[i:] + [node]
         if node in done:
             return None
-        visiting.add(node); path.append(node)
+        visiting.add(node)
+        path.append(node)
         for dep in by_id[node].get("requires", []):
             if dep in by_id:
                 cycle = visit(dep)
-                if cycle: return cycle
-        path.pop(); visiting.remove(node); done.add(node)
+                if cycle:
+                    return cycle
+        path.pop()
+        visiting.remove(node)
+        done.add(node)
         return None
     for node in sorted(by_id):
         cycle = visit(node)
-        if cycle: return cycle
+        if cycle:
+            return cycle
     return None
 
-
-def main() -> int:
-    ap = argparse.ArgumentParser(); ap.add_argument("root", nargs="?", default="."); args = ap.parse_args()
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("root", nargs="?", default=".")
+    args = parser.parse_args()
     root = Path(args.root).resolve()
-    model = load(root / "governance-src" / "model" / "governance-model.json")
+    model = load(root / "governance-src/model/governance-model.json")
     errors, warnings = [], []
+
     policies = model.get("policies", [])
     ids = [p.get("id") for p in policies]
     if len(ids) != len(set(ids)):
@@ -63,17 +66,17 @@ def main() -> int:
     for pid in ids:
         if not isinstance(pid, str) or not ID_RE.fullmatch(pid):
             errors.append("G002 invalid stable policy ID: %r" % pid)
-    for p in policies:
-        for dep in p.get("requires", []):
+    for policy in policies:
+        for dep in policy.get("requires", []):
             if dep not in by_id:
-                errors.append("G003 %s requires unknown rule %s" % (p["id"], dep))
-        for other in p.get("conflicts_with", []):
+                errors.append("G003 %s requires unknown rule %s" % (policy["id"], dep))
+        for other in policy.get("conflicts_with", []):
             if other not in by_id:
-                errors.append("G004 %s conflicts with unknown rule %s" % (p["id"], other))
-        if p.get("severity") == "blocking" and not p.get("evidence"):
-            errors.append("G005 blocking rule %s has no evidence contract" % p["id"])
-        if not p.get("eval_tags"):
-            errors.append("G006 rule %s has no eval coverage tags" % p["id"])
+                errors.append("G004 %s conflicts with unknown rule %s" % (policy["id"], other))
+        if policy.get("severity") == "blocking" and not policy.get("evidence"):
+            errors.append("G005 blocking rule %s has no evidence contract" % policy["id"])
+        if not policy.get("eval_tags"):
+            errors.append("G006 rule %s has no eval coverage tags" % policy["id"])
 
     cycle = find_cycle(by_id)
     if cycle:
@@ -87,13 +90,34 @@ def main() -> int:
             errors.append("G017 structural integration references unknown rule %s" % structural_policy)
         else:
             entries.add(structural_policy)
-    if structural.get("minimum_risk_level") not in {"trivial","low","medium","high"}:
+    if structural.get("minimum_risk_level") not in {"trivial", "low", "medium", "high"}:
         errors.append("G018 invalid structural-integration minimum risk level")
-    for p in policies:
-        t = p.get("triggers", {})
-        if any(t.get(k) for k in ("operations","domains","signals")):
-            entries.add(p["id"])
-    profile_dir = root / "governance-src" / "profiles"
+    if structural.get("scope_guard") != "task-bounded-responsible-layer":
+        errors.append("G019 structural integration must be task-bounded")
+    force = set(structural.get("force_operations", []))
+    exempt = set(structural.get("exempt_operations", []))
+    if force & exempt:
+        errors.append("G020 structural force/exempt operations overlap")
+
+    binding = model.get("project_binding", {})
+    expected_managed = {".governance/upg.json", ".governance/field-reports.json"}
+    managed = {binding.get("binding_file"), binding.get("field_report_file")}
+    if managed != expected_managed:
+        errors.append("G021 project binding must use the two canonical managed paths")
+    if int(binding.get("managed_files_max", 0)) != 2:
+        errors.append("G022 project binding managed_files_max must be 2")
+    if int(model.get("complexity_budget", {}).get("managed_project_files_max", 0)) != 2:
+        errors.append("G023 complexity budget managed_project_files_max must be 2")
+    if binding.get("field_test_reporting") is not True:
+        errors.append("G024 RC7 test freeze requires field_test_reporting=true")
+    if int(binding.get("max_reports", 0)) <= 0:
+        errors.append("G025 field report ledger must have a positive finite cap")
+
+    for policy in policies:
+        triggers = policy.get("triggers", {})
+        if any(triggers.get(k) for k in ("operations", "domains", "signals")):
+            entries.add(policy["id"])
+    profile_dir = root / "governance-src/profiles"
     for path in sorted(profile_dir.glob("*.json")):
         profile = load(path)
         for rid in profile.get("activates", []):
@@ -101,6 +125,7 @@ def main() -> int:
                 errors.append("G008 profile %s references unknown rule %s" % (profile.get("id"), rid))
             else:
                 entries.add(rid)
+
     reachable = dependency_closure(entries, by_id)
     orphan = sorted(set(by_id) - reachable)
     if orphan:
@@ -113,24 +138,26 @@ def main() -> int:
     if len(default_closure) > budget["default_active_policies_max"]:
         errors.append("G011 default active-policy budget exceeded: %d > %d" % (len(default_closure), budget["default_active_policies_max"]))
 
-    for p in policies:
-        closure = dependency_closure([p["id"]], by_id)
+    for policy in policies:
+        closure = dependency_closure([policy["id"]], by_id)
         for rid in closure:
             conflicts = set(by_id[rid].get("conflicts_with", []))
             hit = conflicts & closure
             if hit:
-                errors.append("G012 conflicting rule closure for %s: %s" % (p["id"], ", ".join(sorted(hit))))
+                errors.append("G012 conflicting rule closure for %s: %s" % (policy["id"], ", ".join(sorted(hit))))
 
     fingerprints = {}
-    for p in policies:
+    for policy in policies:
         fp = json.dumps({
-            "kind":p.get("kind"),"requires":sorted(p.get("requires",[])),
-            "applies_to":sorted(p.get("applies_to",[])),"evidence":sorted(p.get("evidence",[])),
-            "closure":" ".join(p.get("closure","").lower().split())
-        },sort_keys=True)
+            "kind": policy.get("kind"),
+            "requires": sorted(policy.get("requires", [])),
+            "applies_to": sorted(policy.get("applies_to", [])),
+            "evidence": sorted(policy.get("evidence", [])),
+            "closure": " ".join(policy.get("closure", "").lower().split()),
+        }, sort_keys=True)
         if fp in fingerprints:
-            warnings.append("G101 semantic duplicate candidate: %s and %s" % (fingerprints[fp], p["id"]))
-        fingerprints[fp] = p["id"]
+            warnings.append("G101 semantic duplicate candidate: %s and %s" % (fingerprints[fp], policy["id"]))
+        fingerprints[fp] = policy["id"]
 
     runtime = root / "universal-project-governance"
     skill = runtime / "SKILL.md"
@@ -142,16 +169,23 @@ def main() -> int:
         if md_count > budget["runtime_markdown_files_max"]:
             errors.append("G014 runtime Markdown-file budget exceeded: %d > %d" % (md_count, budget["runtime_markdown_files_max"]))
         if (runtime / "references").exists():
-            errors.append("G015 compiled runtime must not contain references/ document tree")
+            errors.append("G015 compiled runtime must not contain references/")
         if (runtime / "assets").exists():
             errors.append("G016 compiled runtime must not contain Markdown/template assets")
 
-    for w in warnings: print("warning: " + w)
-    for e in errors: print("error: " + e, file=sys.stderr)
-    if errors: return 1
-    print("Governance lint passed: %d policies, %d hot-path invariants, default closure %d, %d advisory warning(s)." % (len(policies), len(model["hot_path"]), len(default_closure), len(warnings)))
+    for warning in warnings:
+        print("warning: " + warning)
+    for error in errors:
+        print("error: " + error, file=sys.stderr)
+    if errors:
+        return 1
+    print(
+        "Governance lint passed: %d policies, %d hot-path invariants, "
+        "task-bounded structural integration, 2 managed project files, "
+        "default closure %d, %d advisory warning(s)."
+        % (len(policies), len(model["hot_path"]), len(default_closure), len(warnings))
+    )
     return 0
-
 
 if __name__ == "__main__":
     raise SystemExit(main())
