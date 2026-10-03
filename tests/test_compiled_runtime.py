@@ -143,6 +143,11 @@ class CompiledRuntimeTests(unittest.TestCase):
             self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
             self.assertTrue((project / ".governance/upg.json").is_file())
             self.assertTrue((project / ".governance/field-reports.json").is_file())
+            binding = json.loads((project / ".governance/upg.json").read_text(encoding="utf-8"))
+            self.assertEqual(binding["schema_version"], 2)
+            self.assertEqual(binding["adoption_mode"], "in-place")
+            self.assertEqual(binding["continuity_mode"], "handoff-or-reconstruct")
+            self.assertEqual(binding["capability_handshake"], "observe-before-assume")
 
             report = {
                 "task": "Fix bounded defect",
@@ -195,6 +200,54 @@ class CompiledRuntimeTests(unittest.TestCase):
             self.assertFalse((project / ".governance/upg.json").exists())
             self.assertFalse((project / ".governance/field-reports.json").exists())
             self.assertTrue(keep.is_file())
+
+    def test_existing_project_is_adopted_in_place_without_rewriting_content(self):
+        with tempfile.TemporaryDirectory() as td:
+            project = pathlib.Path(td) / "legacy"
+            project.mkdir()
+            existing = project / "legacy-notes.txt"
+            existing.write_text("pre-UPG project truth\n", encoding="utf-8")
+            before = existing.read_bytes()
+            tool = RUNTIME / "scripts/project_tool.py"
+            cp = subprocess.run(
+                [PY, str(tool), "install", str(project)],
+                text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+            )
+            self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
+            self.assertEqual(existing.read_bytes(), before)
+            binding = json.loads((project / ".governance/upg.json").read_text(encoding="utf-8"))
+            self.assertEqual(binding["project_origin"], "existing")
+            self.assertEqual(binding["adoption_mode"], "in-place")
+
+    def test_rc7_binding_upgrades_without_losing_report_ledger(self):
+        with tempfile.TemporaryDirectory() as td:
+            project = pathlib.Path(td)
+            governance = project / ".governance"
+            governance.mkdir()
+            (governance / "upg.json").write_text(json.dumps({
+                "schema_version": 1,
+                "managed_by": "universal-project-governance",
+                "runtime_version": "3.0.0-rc.7",
+                "field_test_reporting": True,
+                "managed_files": [".governance/upg.json", ".governance/field-reports.json"],
+                "field_report_file": ".governance/field-reports.json",
+                "max_reports": 200,
+            }), encoding="utf-8")
+            (governance / "field-reports.json").write_text(json.dumps({
+                "schema_version": 1,
+                "runtime_version": "3.0.0-rc.7",
+                "reports": [{"sequence": 1, "task": "preserve-me"}],
+            }), encoding="utf-8")
+            tool = RUNTIME / "scripts/project_tool.py"
+            cp = subprocess.run(
+                [PY, str(tool), "ensure", str(project)],
+                text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+            )
+            self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
+            binding = json.loads((governance / "upg.json").read_text(encoding="utf-8"))
+            ledger = json.loads((governance / "field-reports.json").read_text(encoding="utf-8"))
+            self.assertEqual(binding["schema_version"], 2)
+            self.assertEqual(ledger["reports"][0]["task"], "preserve-me")
 
     def test_field_reporting_can_be_structurally_disabled_without_creating_ledger(self):
         with tempfile.TemporaryDirectory() as td:
@@ -282,6 +335,33 @@ class CompiledRuntimeTests(unittest.TestCase):
             )
             self.assertNotEqual(cp.returncode, 0)
             self.assertIn("credential material", cp.stderr)
+
+    def test_field_report_rejects_bearer_jwt_and_database_credentials(self):
+        with tempfile.TemporaryDirectory() as td:
+            project = pathlib.Path(td)
+            tool = RUNTIME / "scripts/project_tool.py"
+            cp = subprocess.run([PY, str(tool), "install", str(project)], text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
+            self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
+            base = {
+                "task": "safe summary", "status": "complete", "change_mode": "local",
+                "scope_guard": "local-only", "risk_level": "low", "active_rules": [],
+                "changed_files": [], "validation": [], "cleanup": [],
+                "structural_scope": {"canonical_layer": "none", "unrelated_changes": [], "api_changes": [], "architecture_changes": [], "overreach_concern": False},
+                "integrity": "pass", "handoff": "not-required", "feedback": [],
+            }
+            secrets = [
+                "Bearer abcdefghijklmnopqrstuvwxyz012345",
+                "eyJabcdefghijk.abcdefghijklmnop.abcdefghijklmnop",
+                "postgres://alice:supersecret@db.internal/app",
+                "api_key=abcdefghijklmnop",
+            ]
+            for i, value in enumerate(secrets):
+                report = dict(base)
+                report["task"] = value
+                payload = project / ("secret-%d.json" % i)
+                payload.write_text(json.dumps(report), encoding="utf-8")
+                cp = subprocess.run([PY, str(tool), "report", str(project), "--input", str(payload)], text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
+                self.assertNotEqual(cp.returncode, 0, value)
 
     def test_handoff_schema_validate_and_render(self):
         sample = {
