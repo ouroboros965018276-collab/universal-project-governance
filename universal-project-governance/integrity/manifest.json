@@ -5,7 +5,7 @@
     "LICENSE": "50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a",
     "SKILL.md": "a4ccf1c072085a3522e67087ccc15cb9b57eb9ced9a0695829fdd2ab64e682ea",
     "VERSION.md": "0cfd72c66a08cef602b1fa69c5af4ac13e106289cc21577121166fe319f92d98",
-    "policy-index.json": "aa7ad648aa1505f313e6d24164122ae79a8fd8d5484438f09df56ffca73b39f1",
+    "policy-index.json": "75d66e9ccc6d98228d5a86b0a3d6def8d2322922dfe15f7baf2e73e3a7a53853",
     "schemas/audit.schema.json": "f62c8a197c6e721df109cfd9c7809cabda28ebdc49a77687ac7ea3d7d13a8e43",
     "schemas/execution.schema.json": "c718df796eab2abe66ee5fb7d28c629e186c33a23543a100b6909764c3a04910",
     "schemas/feedback.schema.json": "c851afed849389001268102fc64ac3e32a30058329b585ad6d1eabc5c0f80e45",
@@ -14,11 +14,11 @@
     "schemas/handoff.schema.json": "4f1b798256a57e9160ee9f9e3db8d9e3901e24c0d3a332a4d247ff1af983702d",
     "schemas/task-context.schema.json": "2bca73ed899e836ba3f0a953382c13bf282044b4f6268016b57a877539f39082",
     "scripts/plan_governance.py": "19d2228a07cdcf32546599144e6900d2e29357b29fb1c5a377f327cbcd7652f7",
-    "scripts/project_tool.py": "2f6e41dc453323695e8f465e305a1b54ee17538afdd2190954017d3b3102c766",
+    "scripts/project_tool.py": "f6a4786cdaad2aa3fb35a1b814c62bedb826ec3d3557d374e27f4f1dbffa0ac5",
     "scripts/state_tool.py": "99227b02c6bcf552863a5075c6c5db8eb14c21290c0c2b6a06d94884c5a79082",
     "scripts/validate_integrity.py": "cf09558e67b4488db88c5ce9836e9f1cf1c8bae97d6e1444bb9d2d80409157c0"
   },
   "generated_for_version": "3.0.0-rc.8",
   "schema_version": 1,
-  "source_sha256": "cb5b2664d25588c2b992ab10dceba7991af6c9ab0ead9b3247aec4ede59a7ab2"
+  "source_sha256": "e337854f4397269df80fa8a838842222d5aec117dde018aa12eb38aa9b317249"
 }
