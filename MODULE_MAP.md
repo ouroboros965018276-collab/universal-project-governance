@@ -1,88 +1,104 @@
 # Module Map
 
+Current candidate: **3.0.0-rc.8**.
+
+This map describes the current tree only. Historical implementations belong in Git history.
+
 ## governance-src/
 
-**Function:** canonical governance and project-binding semantics.  
-**Why:** one editable source prevents rule/document/runtime divergence.  
-**Change impact:** semantic changes invalidate the behavioral and qualification freeze.
+**Function:** canonical governance, interoperability, project-binding, and field-report semantics.  
+**Why it exists:** one editable source prevents policy/runtime/document drift.  
+**Change rule:** semantic changes require regeneration, full validation, and a new qualification identity.
 
 ### model/governance-model.json
 
-Defines version, Hot Path, policies, risk model, task-bounded structural integration, project-binding/report configuration, and complexity budgets.
+**Function:** canonical version, Hot Path, policy graph, risk model, task-bounded structural integration, binding v2, and complexity budgets.  
+**Why:** runtime behavior must have one authoritative machine-readable definition.
+
+### profiles/
+
+**Function:** optional project-type activation hints.  
+**Why:** different maintained-project forms benefit from different policy emphasis without forking governance semantics.  
+**Current coverage:** software, data, infrastructure, ML/AI, automation, docs/knowledge, design systems, research/evidence, content/editorial, product/specification, operations/runbooks, and mixed projects.  
+**Boundary:** an unknown type still works through universal defaults and task/risk triggers; profiles are not an allowlist.
 
 ### runtime-scripts/
 
 Source for generated deterministic helpers:
 
-- `plan_governance.py` — compiles task context into the smallest active policy closure, change mode, and scope guard.
-- `project_tool.py` — owns the bounded project lifecycle and conditional field-report ledger; the reporting-disabled path owns only the binding and refuses report/export operations.
-- `state_tool.py` — validates/renders/compacts existing schema-first governance state.
-- `validate_integrity.py` — verifies generated Skill integrity.
+- `plan_governance.py` — compiles typed task context into the smallest active rule closure, risk, change mode, scope guard, evidence, report, and handoff obligations.
+- `project_tool.py` — owns bounded binding v2 lifecycle, non-destructive legacy adoption, RC7→RC8 owned-binding upgrade, status/report/export/purge/remove, and field-report secret hygiene.
+- `state_tool.py` — validates/renders/compacts/exports schema-first governance state.
+- `validate_integrity.py` — checks generated Skill integrity.
 
 ### schemas/
 
-Machine contracts for task plans, handoff/execution/feedback/audit state, and RC7 field reports.
+Machine contracts for task context/plans, handoff, execution, feedback, audit, and field reports.
 
 ### templates/
 
-Single Skill template. It carries execution instructions without duplicating canonical policy definitions.
+Single installable-Skill instruction template. It defines the Agent operating contract without duplicating canonical policy bodies.
 
 ## compiler/
 
-**Function:** deterministically compile canonical source into the installable runtime.  
-**Why:** generated output must never become an independently edited source.
+**Function:** deterministic canonical-source → installable-runtime compilation.  
+**Why:** `universal-project-governance/` must never become an independently edited truth.
 
 ## universal-project-governance/
 
-**Function:** generated Agent Skill consumed by coding Agents.  
-**Rule:** do not hand-edit. Integrity manifest covers the generated runtime.
+**Function:** compiler-generated Agent Skill consumed by host systems.  
+**Rule:** never hand-edit. Integrity manifest covers the generated runtime.
+
+The runtime uses capability negotiation rather than vendor-specific behavior and supports in-place adoption plus handoff-or-reconstruct continuity.
 
 ## upg.py
 
-**Function:** user-facing repository lifecycle wrapper.  
-**Why:** provide one-command Skill install/remove plus project binding without duplicating runtime ownership logic.  
-**Boundary:** delegates project-state semantics to generated `project_tool.py`; failed fresh installs attempt owned-state rollback and Skill rollback.
+**Function:** one-command project-scoped install/status/export/purge/remove wrapper.  
+**Why:** expose a simple lifecycle without duplicating ownership semantics.  
+**Boundary:** project state remains delegated to generated `project_tool.py`; failed fresh installs attempt owned-state and Skill rollback.
 
 ## qualification/
 
-**Function:** causal real-Agent qualification; never distributed as Skill runtime.
+**Function:** repository-only causal real-Agent qualification. Never shipped as runtime.
 
 ### protocol/
 
-Locked q3 preregistration: hierarchical inference, sampling, safety exposure populations, separate local/structural overreach exposure cohorts, deployment, thresholds, stopping rules, and schemas.
+Locked q3 preregistration for RC8: minimum three Agent families, hierarchical inference, safety exposures, structural-overreach cohorts, deployment/report rules, reproducibility identity, thresholds, and stopping rules.
 
 ### fixtures/
 
-Executable dev/locked labs. Behavioral and handoff labs carry explicit safety exposure and task scope contracts.
+Development and locked labs, including cross-domain trigger cases and handoff tasks. Fixtures carry explicit scope and safety contracts.
 
 ### analysis/
 
-- `metrics.py` — statistical primitives and hierarchical bootstrap.
-- `coverage.py` — complete locked matrices.
-- `gates.py` — one implementation per release criterion.
+- `metrics.py` — pairing/statistical primitives and hierarchical bootstrap.
+- `coverage.py` — locked matrix completeness plus adapter/host identity requirements.
+- `gates.py` — one non-compensatory implementation per release criterion, including exactly-one completion reporting.
 - `analyze.py` — orchestration only.
 
 ### adapters/
 
-Provider-neutral real-Agent bridge with declared Agent/model/scaffold/tool/budget/isolation identity.
+**Function:** provider/host-neutral bridge to real Agents.  
+**Identity:** Agent/model/scaffold, adapter config SHA-256, adapter runtime SHA-256, host-tool name/version, capabilities, tool profile, budget profile, and isolation.  
+**Cross-Agent handoff:** source and receiving execution identities are both preserved.
 
 ### mutations/
 
-Known-bad policy variants for evaluator sensitivity.
+Known-bad policy variants used to prove evaluator sensitivity.
 
 ### results/
 
-Absent until real execution. Completed qN rounds are immutable.
+Absent until real execution. Completed locked rounds are immutable.
 
 ## tests/
 
-**Function:** deterministic preflight regression for compiler/runtime/lifecycle/qualification contracts.  
-**Why:** cheap engineering failures should be caught before expensive Agent trials.
+**Function:** deterministic preflight regression for compiler/runtime, binding/adoption, privacy hygiene, qualification contracts, statistics, and lifecycle.  
+**Why:** cheap engineering defects must be found before expensive or user-facing trials.
 
 ## audits/
 
-**Function:** current threat model and current RC7 readiness evidence only.
+**Function:** current threat model and current RC8 readiness evidence only. Superseded readiness audits do not stay in the current tree.
 
 ## tools/
 
-Repository lint, qualification/repository validation, freeze identity, security audit, bundle validation, and deterministic packaging.
+Repository/governance/qualification validation, freeze identity, security audit, bundle validation, and deterministic packaging.
