@@ -6,9 +6,9 @@
   "time_source": "local UTC acceptance checkpoint; not commit or original modification time",
   "base_revision": "2127d022d3bb0db636324b0355ef307993486371",
   "previous_event": "RC8 audit/HANDOFF.md; historical checkpoint timestamps remain stated, not observed work times",
-  "qualification_fingerprint": "sha256:e78fbfa881b3e44061442feede226ced8208c01d27bc3ae35b8ccde841b590d7",
+  "qualification_fingerprint": "sha256:f6b01ea1d233759b1626d94cdf478537f6798ee4b6112d13be55a03b067ac95a",
   "behavioral_fingerprint": "sha256:2883028e85e060af2d12e54e938ce7c52df074e66b9a1ef2b59f09a588afd796",
-  "status": "engineering-accepted-awaiting-separate-real-agent-phase",
+  "status": "configuration-identity-remediation-local-pass-final-ci-required",
   "real_agent_execution": false,
   "stable_promoted": false,
   "scope": {
@@ -92,7 +92,6 @@
     "parent_revision": "31896578b73ae0207d2a1bf8d35ad8ff5608b4a7"
   },
   "final_observed_at": "2026-10-03T13:25:19.218054Z",
-  "verified_frozen_revision": "cf81a667722ce8edcfaec4c1dd07666b32e6a4e8",
   "candidate_ci": {
     "run": 191,
     "id": 37125887444,
@@ -131,5 +130,25 @@
     "time_source": "local UTC record observation; not commit time",
     "parent_revision": "cf81a667722ce8edcfaec4c1dd07666b32e6a4e8",
     "frozen_surfaces_changed": false
+  },
+  "configuration_identity": {
+    "observation_time": "2026-10-03T13:38:06.967238Z",
+    "time_source": "local UTC review checkpoint; original edit-start unknown",
+    "function": "frozen protocol/threshold identity at production analysis entry",
+    "before": "external custom analysis settings could be supplied under the candidate fingerprint",
+    "after": "production rejects changed protocol/threshold values before inference; identical copied configurations remain valid",
+    "why": "close the same F01 evidence identity class during final independent review",
+    "source": "production analyzer signature and negative engineering regression",
+    "parent_revision": "8e7d3516392f85765cd243a0742fd010eb77153a",
+    "real_agent_execution": false
+  },
+  "previous_main_ci": {
+    "run": 194,
+    "id": 37126215201,
+    "url": "https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/37126215201",
+    "revision": "8e7d3516392f85765cd243a0742fd010eb77153a",
+    "run_result": "success",
+    "private_default_branch_install": "PASS",
+    "note": "job collection lagged Linux 3.11; downloaded log and all detailed steps confirm tests/packaging/cleanup PASS. The new fingerprint still needs new CI."
   }
 }

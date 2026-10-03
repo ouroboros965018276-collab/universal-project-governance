@@ -26,6 +26,7 @@ from qualification.round_manifest import build_manifest
 from tools.qualification_freeze import expected
 from registration_fixture import registered_fixture, freeze, change
 import test_qualification as legacy
+from qualification.analyze import analyze as release_analyze, configuration_errors
 
 def report(workflow='test-workflow', parent=None):
     metadata = change(); metadata['parent_event_id'] = parent
@@ -68,6 +69,13 @@ class RC9Tests(unittest.TestCase):
     def test_admission_requires_manifest_and_correct_fingerprint(self):
         rows, manifest = self.registered()
         self.assertEqual(self.admission(rows, None)['state'], 'FAIL')
+        formal=legacy.load_protocol(full_inference=True); thresholds=legacy.load_thresholds()
+        self.assertEqual(configuration_errors(thresholds,formal),[])
+        relaxed=copy.deepcopy(thresholds); relaxed['core_task_non_inferiority']['margin_absolute']=-1.0
+        result=release_analyze(rows,relaxed,formal,freeze()['qualification_fingerprint'],manifest)
+        self.assertEqual(result['status'],'FAIL')
+        self.assertTrue(any('thresholds' in x for x in result['gates']['evidence_admission']['errors']))
+        self.assertTrue(configuration_errors(thresholds,legacy.load_protocol()))
         self.assertEqual(self.admission(rows, manifest, 'sha256:'+'0'*64)['state'], 'FAIL')
         with patch('tools.qualification_freeze.expected',return_value={}):
             self.assertEqual(self.admission(rows,manifest)['state'],'FAIL')
