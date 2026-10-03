@@ -85,7 +85,20 @@ def risk(index: dict, ctx: dict):
 def compile_plan(index: dict, ctx: dict) -> dict:
     validate_context(ctx, index)
     policies = {p["id"]: p for p in index["policies"]}
+    risk_level, risk_score, report = risk(index, ctx)
     active = set(index["default_rules"])
+
+    structural = index["structural_integration"]
+    risk_rank = {"trivial": 0, "low": 1, "medium": 2, "high": 3, "release": 4}
+    structural_required = (
+        ctx["operation"] not in set(structural.get("exempt_operations", []))
+        and (
+            ctx["operation"] in set(structural.get("force_operations", []))
+            or risk_rank[risk_level] >= risk_rank[structural["minimum_risk_level"]]
+        )
+    )
+    if structural_required:
+        active.add(structural["policy_id"])
 
     for p in index["policies"]:
         if trigger_matches(p, ctx):
@@ -110,7 +123,6 @@ def compile_plan(index: dict, ctx: dict) -> dict:
                 active.add(dep)
                 stack.append(dep)
 
-    risk_level, risk_score, report = risk(index, ctx)
     handoff = "required" if ctx.get("unfinished") else "not-required"
     evidence = []
     closures = []
@@ -138,6 +150,7 @@ def compile_plan(index: dict, ctx: dict) -> dict:
 
     return {
         "version": index["version"],
+        "change_mode": "structural" if structural["policy_id"] in active else "local",
         "risk_level": risk_level,
         "risk_score": risk_score,
         "active_rules": sorted(active),
@@ -154,6 +167,7 @@ def render_markdown(plan: dict) -> str:
         "# Governance Plan",
         "",
         "- **Risk:** %s (%s)" % (plan["risk_level"], plan["risk_score"]),
+        "- **Change mode:** %s" % plan["change_mode"],
         "- **Report:** %s" % plan["report"],
         "- **Handoff:** %s" % plan["handoff"],
         "",

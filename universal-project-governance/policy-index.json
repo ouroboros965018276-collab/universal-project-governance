@@ -46,6 +46,10 @@
     {
       "id": "HANDOFF_IF_UNFINISHED",
       "statement": "If work crosses an agent/session boundary or remains unfinished, persist current handoff state in the project rather than chat memory."
+    },
+    {
+      "id": "STRUCTURAL_INTEGRATION",
+      "statement": "Except for truly local low-risk edits, change the responsible canonical structure and remove superseded patch paths instead of stacking shims, duplicate branches, one-off flags, or detached fixes."
     }
   ],
   "name": "universal-project-governance",
@@ -351,6 +355,61 @@
         "infra",
         "ml",
         "automation",
+        "design",
+        "governance"
+      ],
+      "closure": "For non-trivial work, identify the responsible canonical layer, integrate the change there, remove superseded patch/shim/duplicate paths when safe, and leave one coherent post-change structure rather than accumulating local fixes.",
+      "conflicts_with": [],
+      "eval_tags": [
+        "structural-integration",
+        "cleanup",
+        "architecture",
+        "debt"
+      ],
+      "evidence": [
+        "responsible canonical layer identified",
+        "superseded patch/path review",
+        "post-change structural/current-truth validation"
+      ],
+      "handoff": "inherit",
+      "id": "STRUCTURAL_INTEGRATION",
+      "kind": "architecture",
+      "report": "inherit",
+      "requires": [
+        "CLEANUP_OBSOLETE",
+        "TRUTH_CURRENT",
+        "EVIDENCE_AFFECTED"
+      ],
+      "severity": "required",
+      "triggers": {
+        "domains": [],
+        "operations": [
+          "refactor",
+          "migration",
+          "dependency",
+          "generated",
+          "architecture",
+          "security",
+          "data",
+          "governance_upgrade"
+        ],
+        "signals": [
+          "structure_change",
+          "boundary_change",
+          "legacy",
+          "workaround"
+        ]
+      }
+    },
+    {
+      "applies_to": [
+        "code",
+        "config",
+        "data",
+        "docs",
+        "infra",
+        "ml",
+        "automation",
         "design"
       ],
       "closure": "Fix safely resolvable in-scope debt; otherwise record a bounded exception with reason, risk, mitigation, owner if known, and removal/review condition.",
@@ -640,7 +699,8 @@
       "kind": "self-governance",
       "report": "audit",
       "requires": [
-        "RELEASE_AUDIT"
+        "RELEASE_AUDIT",
+        "STRUCTURAL_INTEGRATION"
       ],
       "severity": "blocking",
       "triggers": {
@@ -785,7 +845,24 @@
     "release_operation_forces": "audit"
   },
   "schema_version": 1,
-  "source_sha256": "ad34e787525e46e0e2078ff2ae93333d5c3afec5e9cc5dd350a83cb9416b45e0",
+  "source_sha256": "a45797492811dcaaf546e922285143166656eb75a8e7f7a8ec3bbdc51aab1ff3",
+  "structural_integration": {
+    "exempt_operations": [
+      "release"
+    ],
+    "force_operations": [
+      "refactor",
+      "migration",
+      "dependency",
+      "generated",
+      "architecture",
+      "security",
+      "data",
+      "governance_upgrade"
+    ],
+    "minimum_risk_level": "medium",
+    "policy_id": "STRUCTURAL_INTEGRATION"
+  },
   "task_contract": {
     "domains": [
       "code",
@@ -817,5 +894,5 @@
       "governance_upgrade"
     ]
   },
-  "version": "2.0.0-rc.5"
+  "version": "3.0.0-rc.6"
 }

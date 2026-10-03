@@ -3,20 +3,20 @@
   "files": {
     "INTEGRITY.md": "01e1e3eb772940fe8259b0cb125cd7712858c6f50d4f2fdcada420aa73d29ab5",
     "LICENSE": "50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a",
-    "SKILL.md": "7b9669997435a42a2074ad10cde395e1a00bd08ec2b34b94442e3b3d4341d6d7",
-    "VERSION.md": "a2627193db27634be5dd49da4d2d462f1f4a70e2cf8ee4b7e64d5714d60d37f7",
-    "policy-index.json": "eceb7198be3f90f471d5d38c3b740feb235c27c88a5f3d3b720256c2fed27d55",
+    "SKILL.md": "7f3819f70ff9ab69343dda1bd464a974cc70637a3c76994838b22672f1b5367e",
+    "VERSION.md": "8e7dbc72a766a2421a0ddd6302ffbad754a563d520edcb337306bf418fe9b13c",
+    "policy-index.json": "8067b33b2760d8572fd95fa59aef5c845f764c6624b7e75b292cb6b9b2069e1b",
     "schemas/audit.schema.json": "f62c8a197c6e721df109cfd9c7809cabda28ebdc49a77687ac7ea3d7d13a8e43",
     "schemas/execution.schema.json": "c718df796eab2abe66ee5fb7d28c629e186c33a23543a100b6909764c3a04910",
     "schemas/feedback.schema.json": "c851afed849389001268102fc64ac3e32a30058329b585ad6d1eabc5c0f80e45",
-    "schemas/governance-plan.schema.json": "68e0fffadb7ac317602978624e14b47f3e84b694744b97cd20a0e90882727e72",
+    "schemas/governance-plan.schema.json": "14c543793eb9543321bb1167d78ea023812ae1a6e24208b60cef0a84c0bfeb5e",
     "schemas/handoff.schema.json": "4f1b798256a57e9160ee9f9e3db8d9e3901e24c0d3a332a4d247ff1af983702d",
     "schemas/task-context.schema.json": "9383b35fcfb199349b27fc53759413231653b090653f04b2192c4cf63dc174e9",
-    "scripts/plan_governance.py": "102fd116e5b5bede2a4621f558a02c56775b501b043851dd093c8d9f5b80c040",
+    "scripts/plan_governance.py": "30539bb0d3534cc7f0f513caa1fac7f7c97912161ea7cc5b46ded1b7f621915a",
     "scripts/state_tool.py": "99227b02c6bcf552863a5075c6c5db8eb14c21290c0c2b6a06d94884c5a79082",
     "scripts/validate_integrity.py": "cf09558e67b4488db88c5ce9836e9f1cf1c8bae97d6e1444bb9d2d80409157c0"
   },
-  "generated_for_version": "2.0.0-rc.5",
+  "generated_for_version": "3.0.0-rc.6",
   "schema_version": 1,
-  "source_sha256": "ad34e787525e46e0e2078ff2ae93333d5c3afec5e9cc5dd350a83cb9416b45e0"
+  "source_sha256": "a45797492811dcaaf546e922285143166656eb75a8e7f7a8ec3bbdc51aab1ff3"
 }

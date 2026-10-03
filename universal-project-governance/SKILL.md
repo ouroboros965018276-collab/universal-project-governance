@@ -1,10 +1,10 @@
 ---
 name: universal-project-governance
-description: Govern maintained-project changes with a compiled, risk-adaptive plan that couples implementation, proportional cleanup, current truth, evidence, technical-debt control, and handoff continuity. Use for changes to code, config, data, docs, infrastructure, workflows, schemas, dependencies, migrations, generated sources, or project structure. Do not use for read-only Q&A or unrelated one-off artifacts.
+description: Govern maintained-project changes with a compiled, risk-adaptive plan that couples structural integration, proportional cleanup, current truth, evidence, technical-debt control, and handoff continuity. Use for changes to code, config, data, docs, infrastructure, workflows, schemas, dependencies, migrations, generated sources, or project structure. Do not use for read-only Q&A or unrelated one-off artifacts.
 license: Apache-2.0
 compatibility: Core kernel needs no runtime. Optional deterministic planner/state/integrity helpers use Python 3.8+.
 metadata:
-  version: "2.0.0-rc.5"
+  version: "3.0.0-rc.6"
   standard: "agentskills.io"
   maturity: "release-candidate"
   architecture: "compiled-governance"
@@ -27,18 +27,21 @@ Use for any maintained-project state change. Do not activate for read-only expla
 5. **NO_UNMANAGED_DEBT** — Safely fixable in-scope debt is fixed; externally blocked debt becomes a bounded exception with risk and removal/review condition.
 6. **VALIDATE_AFFECTED** — Run the smallest sufficient checks that establish the affected behavior, cleanup, truth, and contract claims.
 7. **HANDOFF_IF_UNFINISHED** — If work crosses an agent/session boundary or remains unfinished, persist current handoff state in the project rather than chat memory.
+8. **STRUCTURAL_INTEGRATION** — Except for truly local low-risk edits, change the responsible canonical structure and remove superseded patch paths instead of stacking shims, duplicate branches, one-off flags, or detached fixes.
 
 ## Execution
 
-For a tiny, low-risk edit, apply the hot path directly and keep evidence proportional.
+For a truly local low-risk edit, apply the hot path directly and keep evidence proportional. Do not manufacture architecture work for a typo or equivalent isolated correction.
 
-For non-trivial work, create a typed task context and compile the task-specific plan:
+For non-trivial work, prefer structural integration at the responsible canonical layer over patch stacking. Remove superseded shims, duplicate branches, temporary compatibility paths, and detached fixes when safe.
+
+Create a typed task context and compile the task-specific plan:
 
 ```bash
 python3 scripts/plan_governance.py --context /path/to/task-context.json
 ```
 
-The plan returns only the active rule closure, required evidence, report level, and whether handoff state is required. Execute that plan; do not load unrelated governance policy.
+The plan returns the change mode (`local` or `structural`), active rule closure, required evidence, report level, and whether handoff state is required. Execute that plan; do not load unrelated governance policy.
 
 If helpers are unavailable, read `policy-index.json` and apply only rules matching the task operation/domains/signals plus their `requires` closure.
 
