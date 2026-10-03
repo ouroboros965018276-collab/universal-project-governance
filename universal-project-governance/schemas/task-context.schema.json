@@ -40,7 +40,11 @@
           "automation",
           "design",
           "generated",
-          "governance"
+          "governance",
+          "research",
+          "content",
+          "product",
+          "operations"
         ]
       }
     },
@@ -70,6 +74,25 @@
         "type": "integer",
         "minimum": 0,
         "maximum": 2
+      }
+    },
+    "project_type": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "agent_mode": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "capabilities": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 100
       }
     }
   }
