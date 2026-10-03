@@ -182,6 +182,8 @@ jobs:
           python-version: '3.11'
       - name: Compile RC8 generated runtime from canonical source
         run: python compiler/compile_governance.py --write --confirm-generated-runtime-update
+      - name: Generate RC8 qualification identity
+        run: python tools/qualification_freeze.py . --write --confirm-freeze
       - name: Upload generated runtime for canonical synchronization
         uses: actions/upload-artifact@v4
         with:
