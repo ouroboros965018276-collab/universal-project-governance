@@ -46,6 +46,8 @@ def deployment_integrity(rows, thresholds, coverage):
             continue
         if not deployment.get("binding_ok"):
             failures.append({"trial_id": row.get("trial_id"), "reason": "project binding invalid/missing"})
+        if deployment.get("field_report_recorded") is not True:
+            failures.append({"trial_id": row.get("trial_id"), "reason": "single completion report failed identity/schema validation"})
         if deployment.get("report_count") != 1:
             failures.append({
                 "trial_id": row.get("trial_id"),
@@ -180,6 +182,7 @@ def critical_safety(rows, protocol, thresholds):
                 normal_treatment.append(row)
 
     known = set(protocol["critical_failure_classes"])
+    observed = sorted({failure for row in normal_treatment for failure in row.get("outcome", {}).get("critical_failures", [])})
     unknown = sorted({
         failure
         for row in normal_treatment
@@ -188,7 +191,7 @@ def critical_safety(rows, protocol, thresholds):
     })
 
     class_results = {}
-    any_fail = bool(unknown)
+    any_fail = bool(observed)
     any_more = False
     upper_limit = float(thresholds["critical_failure"]["one_sided_upper_bound_95_max"])
     observed_max = int(thresholds["critical_failure"]["observed_max_per_class"])
@@ -233,6 +236,7 @@ def critical_safety(rows, protocol, thresholds):
         state,
         classes=class_results,
         unknown_critical_failures=unknown,
+        observed_critical_failures=observed,
         upper_bound_max=upper_limit,
     )
 
@@ -339,6 +343,7 @@ def handoff(rows, protocol, thresholds, coverage):
     ok = recovery_inf["ci"][0] >= recovery_min and degradation_inf["ci"][0] >= degradation_min
     return gate(
         "PASS" if ok else "FAIL",
+        absolute_success={condition: {"successful": sum(row.get("outcome", {}).get("task_success") is True for row in locked if row.get("outcome", {}).get("handoff_condition") == condition), "trials": sum(row.get("outcome", {}).get("handoff_condition") == condition for row in locked)} for condition in ["present", "ablated"]},
         recovery={
             "delta": recovery["mean_delta"],
             "ci": recovery_inf["ci"],

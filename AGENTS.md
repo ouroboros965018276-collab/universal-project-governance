@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Current candidate: **3.0.0-rc.8 — Universal Continuity Real-Agent Test Freeze**.
+Current candidate: **3.0.0-rc.9 — Evidence and Continuity Hardening**.
 
 ## First modifying activation
 
@@ -28,7 +28,7 @@ Governance semantics live in `governance-src/`. `universal-project-governance/` 
 
 `.governance/upg.json` is always UPG-managed. `.governance/field-reports.json` is managed only while field-test reporting is enabled. Managed UPG state is infrastructure, not cleanup residue.
 
-RC8 binding v2 records in-place adoption, handoff-or-reconstruct continuity, capability handshake, and whether the project existed before adoption. Never rewrite these paths outside the project-tool lifecycle.
+RC9 binding v2 records in-place adoption, handoff-or-reconstruct continuity, capability handshake, and whether the project existed before adoption. Never rewrite these paths outside the project-tool lifecycle.
 
 ## Completion report
 

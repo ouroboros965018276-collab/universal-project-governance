@@ -1,59 +1,35 @@
 # Project State
 
-Updated at: **2026-10-03T19:06:41+08:00**
+Current candidate: **3.0.0-rc.9 — Evidence and Continuity Hardening**.
 
-## Purpose
+Engineering acceptance is complete for frozen revision `cf81a667722ce8edcfaec4c1dd07666b32e6a4e8`. This final checkpoint updates documentation only. No real Agent/dev-smoke/locked round ran; Stable remains blocked.
 
-Develop and empirically qualify one bounded, model/host/project-type-agnostic Agent Skill that improves maintained-project governance without making governance itself a source of technical debt.
+## Function and bounded architecture
 
-## Current candidate
+One maintained-project/model/host-agnostic Skill; canonical semantics in `governance-src/`, deterministic compiler, generated `universal-project-governance/`, repository-only qualification. The unchanged bounds are 16 policies, 8 Hot Path invariants, 102 Skill lines and at most two persistent owned project files. Existing Git/project truth supplies history; no parallel chronology database or new domain profiles were added.
 
-**3.0.0-rc.8 — Universal Continuity Real-Agent Test Freeze**
+## Latest meaningful checkpoint
 
-RC8 is the candidate being sealed for personal/friend/professional gray testing and locked real-Agent qualification. Stable causal benefit is not claimed before immutable locked evidence exists.
+- Event: finalize RC9 engineering acceptance and current handoff truth.
+- Observation time: 2026-10-03T13:25:19.218054Z. Source: local UTC record observation. Original documentation-edit start is unknown; Git records its separate eventual commit time.
+- Function: readiness, installation and next-phase boundary.
+- Before/after: a prior checkpoint awaited new Windows CI; now Run #191 has all 9 jobs successful and final local installed-runtime lifecycle acceptance passes.
+- Why/how: update existing current-state and readiness records from observed CI/installation, retain the failed-run cause, and preserve the frozen product/evaluator bytes.
+- Previous revision/parent: `cf81a667722ce8edcfaec4c1dd07666b32e6a4e8`; tested frozen state uses this full revision, the machine fingerprint and package digest below. The Git commit containing this document is its source revision; no guessed self-referential SHA is embedded.
+- Validation: [Run #191](https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/37125887444), 69 tests across Linux Python 3.8/3.11/3.13 and Windows 3.11/3.13; source/qualification, upstream Agent Skills and Skills CLI gates pass. Local Codex generated files equal the tested candidate; integrity/binding/report retry/export/remove acceptance passes and preserves project-owned truth.
+- Qualification fingerprint: `sha256:e78fbfa881b3e44061442feede226ced8208c01d27bc3ae35b8ccde841b590d7`.
+- Package SHA-256: `39d91d2f21cc390c08f4d630a64aca48134a4feddd604cc9d718f2a8d3cbf37e`.
+- Promotion: branch/PR and eventual main CI remain inspectable in GitHub. Private default-branch installation runs only on main; do not relabel a branch's skipped step as a default-branch PASS.
 
-## Current architecture
+## Previous meaningful change and why
 
-- `governance-src/` — one canonical definition of governance, continuity, interoperability, project-binding, and report semantics.
-- `compiler/` — deterministic source-to-runtime compiler.
-- `universal-project-governance/` — generated installable Skill; never hand-edit.
-- `upg.py` — automated project-scoped Skill lifecycle.
-- `qualification/` — repository-only causal evidence system with real execution identity.
-- `tests/` — deterministic runtime, adoption, privacy, lifecycle, statistics, and qualification regression tests.
-- `audits/` — current threat model plus current RC8 readiness evidence only.
+- `cf81a667722ce8edcfaec4c1dd07666b32e6a4e8`, GitHub commit time `2026-10-03T13:21:13Z`: Run #189 exposed cp1252 stdout errors for Chinese trigger JSON on Windows. The repair transports JSON as ASCII escapes without changing decoded Chinese values, adds the regression and verifies live frozen surfaces before locked execution/inference. Run #191 validates it.
+- Parent `31896578b73ae0207d2a1bf8d35ad8ff5608b4a7`, GitHub commit time `2026-10-03T13:11:15Z`: RC9 repairs audited RC8 admission/identity, portable freeze, invalid initial fixtures, safety failure counting, factual chronology and workflow reporting at their responsible canonical layers. Local acceptance passed; Run #189 passed seven jobs and exposed the two Windows failures above.
+- Audit base `2127d022d3bb0db636324b0355ef307993486371`, GitHub time `2026-10-03T11:07:15Z`: RC8 chronology documentation alignment. Its Windows audit was 44/47 and established the remediation rationale. RC8 implementation squash details are not invented.
+- Prior RC8 document stated `2026-10-03T19:06:41+08:00` and `2026-10-03T18:54:06+08:00` as meaningful checkpoints. These remain stated times, not independently observed code/commit times. RC9's active progress checkpoint was observed at `2026-10-03T12:51:59.340996Z`; the original work-start time is unknown.
 
-## Current invariants
+## Next phase and trust boundaries
 
-1. One semantic rule has one canonical definition.
-2. Runtime capability growth does not linearly increase Agent context; complexity stays in source/compiler/tooling.
-3. Non-trivial work integrates at the smallest responsible canonical layer and never authorizes unrelated scope expansion.
-4. Planned unfinished work uses one current handoff when possible; abrupt interruption is recoverable without a handoff through observable project-state reconstruction.
-5. Missing prior intent is marked unknown, never invented.
-6. Pre-UPG projects are adopted in place and governed immediately; installation does not require project-wide migration or rewrite.
-7. Agent interoperability is based on observed capabilities, not vendor/model/class allowlists.
-8. Named project profiles are optional hints; unknown project types remain governed by universal defaults and task/risk triggers.
-9. RC8 binding schema v2 records in-place adoption, handoff-or-reconstruct continuity, capability handshake, and project origin.
-10. UPG owns at most two persistent project files while field-test reporting is enabled.
-11. Every completed modifying workflow records exactly one bounded report; formal deployment evidence requires `report_count == 1`.
-12. Reports contain bounded summaries rather than source bodies or private chain-of-thought and reject common secret-like patterns.
-13. Formal primary effect CIs remain hierarchical Agent-family → scenario → repetition/pair.
-14. Locked cross-family qualification requires at least three Agent families; cross-family generalization is not overstated.
-15. Locked trial identity binds Agent/model/scaffold plus adapter config/runtime hashes and host-tool identity; handoff trials bind both source and receiver.
-16. Stable gates use locked real-Agent evidence only; engineering tests cannot prove causal benefit.
+This phase ends with engineering acceptance and local installation. Next phase must verify actual adapters, externally enforced isolation, model/family independence, budgets, externally sealed preregistration and execution order before running the frozen protocol. Real results belong to immutable `results/qN/` only after actual execution. Current locked software/data tasks do not prove efficacy in every runtime domain; default handoff plans are same-family unless separately registered and reviewed.
 
-## Latest meaningful change
-
-- **Time:** 2026-10-03T19:06:41+08:00.
-- **Change:** default-branch RC8 freeze validation chronology sealed.
-- **Why:** the squash-merged RC8 candidate had completed branch/PR validation, and default-branch Run #184 subsequently validated the exact merged tree.
-- **What changed:** documentation/audit chronology only. No frozen governance source, compiler, generated runtime, deployment wrapper, qualification protocol/fixtures/analyzers/adapters/runners, or machine identity changed.
-- **Validation state:** main Run #184 completed successfully with all 7 formal jobs passing. Python 3.8/3.11/3.13 each pass 47/47 tests; Skills CLI and upstream Agent Skills validation pass; deterministic package SHA-256 is `a64aed9c991989f197a8e7ef2581d4c5864ecfdac368bbccffefdcec5e6c3544`; qualification fingerprint remains `sha256:63afa5d1e4cd109987f70c9ddac9223b805c5442a1829bbffee21e77bae414b4`.
-- **Next safe action:** begin personal/friend/professional gray testing and locked real-Agent qualification without modifying frozen surfaces.
-
-## Previous meaningful change
-
-- **Time:** 2026-10-03T18:54:06+08:00.
-- **Change:** RC8 universal-continuity and interoperability hardening before any real-Agent result round.
-- **Why:** gray-test reviewers identified abrupt interruption without formal handoff, legacy-project adoption, cross-project/cross-Agent universality, and reproducibility/report-contract gaps.
-- **What changed:** reconstructable continuity; in-place binding v2 adoption including RC7-owned-state upgrade; capability-negotiated Agent interoperability; broader project domains/profiles; minimum three Agent families; exact-one report release gate; adapter/host identity hashes; cross-Agent handoff source/receiver identity; stronger report secret rejection.
-- **Structural constraint:** managed project state remains capped at two files; policy count remains 16; Hot Path remains 8; no parallel governance framework or recovery database was added.
+Use causal parents and monotonic sequence for order. Occurrence times require sources; recording time is not work or commit time. Reconcile actual project truth and active checkpoints after interruption. Preserve verified exports before bounded epoch rotation. Inspect stale transient lock/temp residue before recovery. Unknown history/intent stays unknown; never manufacture validation or overwrite a changed responsible workflow.

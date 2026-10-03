@@ -1,6 +1,6 @@
 # Qualification Adapter Contract
 
-Adapters connect the provider/host-neutral RC8 protocol to real Agents. They are qualification infrastructure, not part of the installable Skill.
+Adapters connect the provider/host-neutral RC9 protocol to real Agents. They are qualification infrastructure, not part of the installable Skill.
 
 ## Required behavior
 
@@ -54,3 +54,5 @@ Adapters may emit:
 - `critical_failures` — externally observed failure-class identifiers when the harness has direct evidence.
 
 Deterministic repository checks remain authoritative over Agent self-description.
+
+Locked adapter instances supply `isolation_attestation` with issuer, reference, and SHA-256 of an operator-reviewed external isolation record. The host must actually enforce mounts/network/credentials and oracle exclusion. Config booleans are insufficient; admission also matches the registered identity. Source handoff records model/scaffold and adapter runtime as well as config/host identity.

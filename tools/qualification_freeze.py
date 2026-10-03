@@ -18,21 +18,21 @@ def canonical(obj):
 def sha(data):
     return hashlib.sha256(data).hexdigest()
 
-def hash_paths(paths):
+def hash_paths(paths, root):
     parts = []
-    for raw in sorted(pathlib.Path(p) for p in paths):
+    for raw in sorted((pathlib.Path(p) for p in paths), key=lambda p: p.relative_to(root).as_posix()):
         if raw.is_dir():
-            files = sorted(x for x in raw.rglob("*") if x.is_file())
+            files = sorted((x for x in raw.rglob("*") if x.is_file() and "__pycache__" not in x.parts and x.suffix not in {".pyc", ".pyo"}), key=lambda p: p.relative_to(root).as_posix())
         else:
             files = [raw]
         for path in files:
-            parts.append(path.as_posix().encode() + b"\0" + path.read_bytes() + b"\0")
+            parts.append(path.relative_to(root).as_posix().encode("utf-8") + b"\0" + path.read_bytes() + b"\0")
     return sha(b"".join(parts))
 
 def file_tree_hash(root):
     root = pathlib.Path(root)
     parts = []
-    for path in sorted(x for x in root.rglob("*") if x.is_file()):
+    for path in sorted((x for x in root.rglob("*") if x.is_file() and "__pycache__" not in x.parts and x.suffix not in {".pyc", ".pyo"}), key=lambda p: p.relative_to(root).as_posix()):
         rel = path.relative_to(root).as_posix()
         parts.append(rel.encode() + b"\0" + path.read_bytes() + b"\0")
     return sha(b"".join(parts))
@@ -48,7 +48,7 @@ def normalize_skill(text):
 def behavioral_payload(runtime):
     runtime = pathlib.Path(runtime)
     payload = {}
-    for path in sorted(x for x in runtime.rglob("*") if x.is_file()):
+    for path in sorted((x for x in runtime.rglob("*") if x.is_file() and "__pycache__" not in x.parts and x.suffix not in {".pyc", ".pyo"}), key=lambda p: p.relative_to(runtime).as_posix()):
         rel = path.relative_to(runtime).as_posix()
         if rel in RUNTIME_EXCLUDE or rel in ROOT_NAMES:
             continue
@@ -75,14 +75,14 @@ def expected(root):
     )
     runtime = root / "universal-project-governance"
 
-    protocol_hash = hash_paths([root / "qualification/protocol"])
-    fixture_hash = hash_paths([root / "qualification/fixtures"])
+    protocol_hash = hash_paths([root / "qualification/protocol"], root)
+    fixture_hash = hash_paths([root / "qualification/fixtures"], root)
     evaluator_hash = hash_paths([
         root / "qualification/analysis",
         root / "qualification/graders",
         root / "qualification/lib",
         root / "qualification/mutations",
-    ])
+    ], root)
     runner_hash = hash_paths([
         root / "qualification/adapters",
         root / "qualification/run_trial.py",
@@ -90,10 +90,15 @@ def expected(root):
         root / "qualification/run_trigger_trial.py",
         root / "qualification/trigger_suite.py",
         root / "qualification/analyze.py",
-    ])
-    deployment_hash = hash_paths([root / "upg.py"])
+        root / "qualification/round_manifest.py",
+    ], root)
+    deployment_hash = hash_paths([root / "upg.py"], root)
     behavior = behavioral_fingerprint(runtime)
     qualification_payload = {
+        "hash_algorithm_revision": "repo-relative-posix-v2",
+        "identity_tool_sha256": sha(pathlib.Path(__file__).read_bytes()),
+        "canonical_source_sha256": file_tree_hash(root / "governance-src"),
+        "compiler_sha256": sha((root / "compiler/compile_governance.py").read_bytes()),
         "behavioral_fingerprint": behavior,
         "protocol_sha256": protocol_hash,
         "fixture_set_sha256": fixture_hash,
@@ -104,6 +109,7 @@ def expected(root):
 
     return {
         "schema_version": 3,
+        "hash_algorithm_revision": "repo-relative-posix-v2",
         "version": model["version"],
         "state": "real-agent-test-freeze",
         "behavioral_fingerprint": behavior,
@@ -137,6 +143,7 @@ def expected(root):
             "qualification/run_trigger_trial.py",
             "qualification/trigger_suite.py",
             "qualification/analyze.py",
+            "qualification/round_manifest.py",
         ],
         "allowed_post_freeze_changes": [
             "immutable qualification result rounds",
@@ -165,10 +172,7 @@ def main():
         if not args.confirm_freeze:
             print("error: --write requires --confirm-freeze", file=sys.stderr)
             return 2
-        path.write_text(
-            json.dumps(exp, indent=2, sort_keys=True) + "\n",
-            encoding="utf-8",
-        )
+        path.write_bytes((json.dumps(exp, indent=2, sort_keys=True) + "\n").encode("utf-8"))
         print("Real-agent test freeze written.")
         return 0
     if not path.is_file():

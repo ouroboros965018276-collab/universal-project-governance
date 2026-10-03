@@ -8,8 +8,44 @@ import json
 import re
 from pathlib import Path
 import sys
+import hashlib
+import functools
+from contextlib import contextmanager
+import threading
+import time
+from state_tool import validate_node
 
 ROOT = Path(__file__).resolve().parents[1]
+_locks = threading.local()
+
+def serialized(fn):
+    @functools.wraps(fn)
+    def wrapped(project, *args, **kwargs):
+        root = project_root(project)
+        key = str(root)
+        held = getattr(_locks, "held", set())
+        if key in held:
+            return fn(project, *args, **kwargs)
+        gov = root / ".governance"
+        gov.mkdir(parents=True, exist_ok=True)
+        lock = gov / ".upg-write-lock"
+        for attempt in range(100):
+            try:
+                lock.mkdir()
+                break
+            except FileExistsError:
+                time.sleep(0.02)
+        else:
+            raise ValueError("project state writer busy; after abrupt stop inspect and explicitly remove only the stale .upg-write-lock directory")
+        held = set(held); held.add(key); _locks.held = held
+        try:
+            return fn(project, *args, **kwargs)
+        finally:
+            held.remove(key); _locks.held = held
+            lock.rmdir()
+            if not any(gov.iterdir()):
+                gov.rmdir()
+    return wrapped
 
 def load_json(path):
     return json.loads(Path(path).read_text(encoding="utf-8"))
@@ -51,7 +87,7 @@ def _project_origin(project):
         if child.name != ".governance":
             return "existing"
     gov = root / ".governance"
-    if gov.is_dir() and any(gov.iterdir()):
+    if gov.is_dir() and any(child.name != ".upg-write-lock" for child in gov.iterdir()):
         return "existing"
     return "new"
 
@@ -123,8 +159,9 @@ def validate_binding(value):
         errors.append("project_origin drift detected")
     return errors
 def ledger_default():
-    return {"schema_version": 1, "runtime_version": index()["version"], "reports": []}
+    return {"schema_version": 1, "runtime_version": index()["version"], "epoch": 0, "next_sequence": 1, "reports": []}
 
+@serialized
 def ensure(project):
     cfg = config()
     binding_path = resolve(project, cfg["binding_file"])
@@ -153,6 +190,10 @@ def ensure(project):
                 raise ValueError("; ".join(errors))
 
     binding = expected_binding(origin)
+    if isinstance(current, dict):
+        for key in ["active_workflow", "latest_change", "previous_change", "export_receipt"]:
+            if key in current:
+                binding[key] = current[key]
     write_json_atomic(binding_path, binding)
     if not reporting:
         return {
@@ -167,6 +208,11 @@ def ensure(project):
         if not isinstance(ledger, dict) or ledger.get("schema_version") != 1 or not isinstance(ledger.get("reports"), list):
             raise ValueError("field report ledger is invalid")
         ledger["runtime_version"] = index()["version"]
+        ledger.setdefault("epoch", 0)
+        ledger.setdefault("next_sequence", max([x.get("sequence", 0) for x in ledger["reports"] if isinstance(x, dict)] or [0]) + 1)
+        sequences = [x.get("sequence") for x in ledger["reports"] if isinstance(x, dict)]
+        if any(type(n) is not int or n < 1 for n in sequences) or type(ledger["epoch"]) is not int or ledger["epoch"] < 0 or type(ledger["next_sequence"]) is not int or ledger["next_sequence"] <= max(sequences or [0]):
+            raise ValueError("invalid ledger sequence/epoch; reconcile preserved evidence before writing")
     else:
         ledger = ledger_default()
     write_json_atomic(report_path, ledger)
@@ -208,6 +254,9 @@ def status(project):
         "adoption_mode": binding.get("adoption_mode"),
         "continuity_mode": binding.get("continuity_mode"),
         "capability_handshake": binding.get("capability_handshake"),
+        "active_workflow": binding.get("active_workflow"),
+        "latest_change": binding.get("latest_change"),
+        "previous_change": binding.get("previous_change"),
     }
 def validate_report(report):
     encoded = json.dumps(report, ensure_ascii=False)
@@ -229,6 +278,12 @@ def validate_report(report):
         "feedback": list,
     }
     errors = []
+    schema = load_json(ROOT / "schemas/field-report.schema.json")
+    candidate = dict(report, schema_version=1, sequence=1, epoch=0, event_id="validation", recorded_at="2000-01-01T00:00:00Z", runtime_version=index()["version"])
+    errors += validate_node(candidate, schema)
+    change = report.get("change", {})
+    if isinstance(change, dict) and change.get("occurred_at") is not None and change.get("time_source") in {"unknown", ""}:
+        errors.append("known occurrence time requires its observed source")
     for key, typ in required.items():
         if key not in report:
             errors.append("missing report field " + key)
@@ -297,29 +352,98 @@ def validate_report(report):
     if errors:
         raise ValueError("; ".join(errors))
 
+def _reconcile_completion(project, entry):
+    if entry["status"] != "complete":
+        return
+    binding_path = resolve(project, config()["binding_file"])
+    binding = load_json(binding_path)
+    latest = binding.get("latest_change", {})
+    if latest.get("event_id") != entry["event_id"] and entry["sequence"] > latest.get("sequence", 0):
+        if latest:
+            binding["previous_change"] = latest
+        binding["latest_change"] = {key: entry[key] for key in ["event_id", "workflow_id", "sequence", "epoch", "recorded_at", "change"]}
+    if binding.get("active_workflow", {}).get("workflow_id") == entry["workflow_id"]:
+        binding.pop("active_workflow", None)
+    write_json_atomic(binding_path, binding)
+
+@serialized
+def begin_workflow(project, input_path):
+    payload = load_json(input_path)
+    if not isinstance(payload, dict) or not isinstance(payload.get("workflow_id"), str) or not payload["workflow_id"]:
+        raise ValueError("workflow_id required")
+    # Validate the same change contract used at completion; no separate history database.
+    change_schema = load_json(ROOT / "schemas/field-report.schema.json")["properties"]["change"]
+    errors = validate_node(payload.get("change"), change_schema)
+    if errors:
+        raise ValueError("; ".join(errors))
+    ensure(project)
+    binding_path = resolve(project, config()["binding_file"])
+    binding = load_json(binding_path)
+    active = binding.get("active_workflow")
+    if active and active.get("workflow_id") != payload["workflow_id"]:
+        raise ValueError("another workflow is unfinished; reconstruct it before replacing its identity")
+    if active:
+        if {k: v for k, v in active.items() if k != "observed_at"} != payload:
+            raise ValueError("conflicting workflow start; preserve the original observed checkpoint")
+        return {"active_workflow": active, "idempotent": True}
+    parent = binding.get("latest_change", {}).get("event_id")
+    if parent and payload["change"].get("parent_event_id") != parent:
+        raise ValueError("new workflow must reference the latest completed event")
+    if payload["change"].get("occurred_at") is not None and payload["change"].get("time_source") in {"unknown", ""}:
+        raise ValueError("known occurrence time requires its observed source")
+    payload["observed_at"] = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    binding["active_workflow"] = payload
+    write_json_atomic(binding_path, binding)
+    return {"active_workflow": payload}
+
+@serialized
 def record_report(project, input_path):
     if not bool(config()["field_test_reporting"]):
         raise ValueError("field-test reporting is disabled for this runtime")
-    ensured = ensure(project)
-    cfg = config()
-    report_path = resolve(project, cfg["field_report_file"])
-    ledger = load_json(report_path)
-    if len(ledger["reports"]) >= int(cfg["max_reports"]):
-        raise ValueError("field report ledger is full; export and purge it before recording more reports")
     if input_path == "-":
         payload = json.load(sys.stdin)
     else:
         payload = load_json(input_path)
     validate_report(payload)
+    ensured = ensure(project)
+    cfg = config()
+    report_path = resolve(project, cfg["field_report_file"])
+    ledger = load_json(report_path)
+    binding = load_json(resolve(project, cfg["binding_file"]))
+    active = binding.get("active_workflow")
+    if active and active.get("workflow_id") != payload["workflow_id"]:
+        raise ValueError("completion does not match the active workflow")
+    event_id = "%d:%s:%s" % (ledger["epoch"], payload["workflow_id"], payload["status"])
+    auto_fields = {"schema_version", "sequence", "epoch", "event_id", "recorded_at", "runtime_version"}
+    for previous in ledger["reports"]:
+        if previous.get("event_id") == event_id:
+            old_payload = {k: v for k, v in previous.items() if k not in auto_fields}
+            if old_payload != payload:
+                raise ValueError("conflicting retry for workflow report identity")
+            _reconcile_completion(project, previous)
+            return {"sequence": previous["sequence"], "report_count": len(ledger["reports"]), "idempotent": True, "event_id": event_id}
+    parent = binding.get("latest_change", {}).get("event_id")
+    if parent and payload["change"].get("parent_event_id") != parent:
+        raise ValueError("completion must reference the latest completed event")
+    if len(ledger["reports"]) >= int(cfg["max_reports"]):
+        raise ValueError("field report ledger is full; export and purge it before recording more reports")
     entry = dict(payload)
     entry["schema_version"] = 1
-    entry["sequence"] = len(ledger["reports"]) + 1
+    entry["sequence"] = ledger["next_sequence"]
+    entry["epoch"] = ledger["epoch"]
+    entry["event_id"] = event_id
+    ledger["next_sequence"] += 1
     entry["recorded_at"] = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    previous_time = next((x.get("recorded_at") for x in reversed(ledger["reports"]) if isinstance(x, dict) and x.get("recorded_at")), None)
+    if previous_time and datetime.fromisoformat(entry["recorded_at"].replace("Z", "+00:00")) < datetime.fromisoformat(previous_time.replace("Z", "+00:00")):
+        raise ValueError("observed clock moved backwards; reconcile clock/source before recording")
     entry["runtime_version"] = index()["version"]
     ledger["runtime_version"] = index()["version"]
     ledger["reports"].append(entry)
     write_json_atomic(report_path, ledger)
+    _reconcile_completion(project, entry)
     return {"sequence": entry["sequence"], "report_count": len(ledger["reports"]), "path": str(report_path), "binding": ensured["binding"]}
+@serialized
 def export_reports(project, output):
     if not bool(config()["field_test_reporting"]):
         raise ValueError("field-test reporting is disabled for this runtime")
@@ -329,6 +453,9 @@ def export_reports(project, output):
     cfg = config()
     binding = load_json(resolve(project, cfg["binding_file"]))
     ledger = load_json(resolve(project, cfg["field_report_file"]))
+    destination = Path(output).resolve()
+    if destination in {resolve(project, cfg["binding_file"]).resolve(), resolve(project, cfg["field_report_file"]).resolve()}:
+        raise ValueError("export must not overwrite managed project state")
     payload = {
         "schema_version": 1,
         "export_type": "upg-field-test-reports",
@@ -339,8 +466,11 @@ def export_reports(project, output):
         },
         "reports": ledger["reports"],
     }
-    write_json_atomic(Path(output), payload)
+    write_json_atomic(destination, payload)
+    binding["export_receipt"] = {"epoch": ledger.get("epoch", 0), "ledger_sha256": hashlib.sha256(json.dumps(ledger, sort_keys=True).encode("utf-8")).hexdigest(), "output": str(destination), "output_sha256": hashlib.sha256(destination.read_bytes()).hexdigest()}
+    write_json_atomic(resolve(project, cfg["binding_file"]), binding)
     return {"output": str(Path(output).resolve()), "reports": len(ledger["reports"])}
+@serialized
 def purge_reports(project, yes):
     if not yes:
         raise ValueError("purge requires --yes")
@@ -354,8 +484,21 @@ def purge_reports(project, yes):
     if not state.get("ok"):
         raise ValueError("cannot purge: project binding is not healthy")
     ledger = ledger_default()
+    old = load_json(report_path)
+    ledger["next_sequence"] = old.get("next_sequence", max([x.get("sequence", 0) for x in old.get("reports", [])] or [0]) + 1)
+    ledger["epoch"] = old.get("epoch", 0) + 1
+    binding = load_json(resolve(project, cfg["binding_file"]))
+    if binding.get("active_workflow"):
+        raise ValueError("cannot rotate reporting epoch while a workflow is unfinished")
+    if old.get("reports"):
+        receipt = binding.get("export_receipt", {})
+        ledger_sha = hashlib.sha256(json.dumps(old, sort_keys=True).encode("utf-8")).hexdigest()
+        archive = Path(receipt.get("output", ""))
+        if receipt.get("ledger_sha256") != ledger_sha or not archive.is_file() or hashlib.sha256(archive.read_bytes()).hexdigest() != receipt.get("output_sha256"):
+            raise ValueError("export current evidence and preserve the verified export before rotating the reporting epoch")
     write_json_atomic(report_path, ledger)
     return {"purged": True, "path": str(report_path), "field_test_reporting": True}
+@serialized
 def remove(project, yes):
     if not yes:
         raise ValueError("remove requires --yes")
@@ -404,6 +547,9 @@ def main():
     report = sub.add_parser("report")
     report.add_argument("project", nargs="?", default=".")
     report.add_argument("--input", required=True)
+    workflow = sub.add_parser("begin")
+    workflow.add_argument("project", nargs="?", default=".")
+    workflow.add_argument("--input", required=True)
     export = sub.add_parser("export")
     export.add_argument("project", nargs="?", default=".")
     export.add_argument("--output", required=True)
@@ -424,6 +570,8 @@ def main():
                 return 1
         elif args.cmd == "report":
             result = record_report(args.project, args.input)
+        elif args.cmd == "begin":
+            result = begin_workflow(args.project, args.input)
         elif args.cmd == "export":
             result = export_reports(args.project, args.output)
         elif args.cmd == "purge-reports":

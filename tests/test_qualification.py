@@ -6,11 +6,18 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from qualification.analyze import analyze
+from qualification.analyze import analyze as production_analyze
+from registration_fixture import registered_fixture, freeze
+
+def analyze(rows, thresholds, protocol, fingerprint):
+    registered, manifest = registered_fixture(rows)
+    with patch("qualification.analysis.admission.verify_artifact", return_value=[]):
+        return production_analyze(registered, thresholds, protocol, freeze()["qualification_fingerprint"], manifest)
 from qualification.analysis.gates import critical_safety
 from qualification.analysis.metrics import hierarchical_bootstrap_delta, zero_event_upper_bound
 from qualification.lib.core import get_lab, grade_lab, materialize_lab, normalized_outcome
@@ -473,7 +480,7 @@ class QualificationTests(unittest.TestCase):
         )
         self.assertEqual(result["gates"]["structural_overreach"]["state"], "FAIL")
         self.assertGreater(
-            result["gates"]["structural_overreach"]["cohorts"]["local_guard"]["observed_scope_violations"],
+            result["gates"]["structural_overreach"]["cohorts"]["structural_guard"]["observed_scope_violations"],
             0,
         )
 

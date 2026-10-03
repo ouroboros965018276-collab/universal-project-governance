@@ -1,0 +1,135 @@
+{
+  "schema_version": 5,
+  "version": "3.0.0-rc.9",
+  "candidate": "Evidence and Continuity Hardening",
+  "observed_at": "2026-10-03T13:20:33.332472Z",
+  "time_source": "local UTC acceptance checkpoint; not commit or original modification time",
+  "base_revision": "2127d022d3bb0db636324b0355ef307993486371",
+  "previous_event": "RC8 audit/HANDOFF.md; historical checkpoint timestamps remain stated, not observed work times",
+  "qualification_fingerprint": "sha256:e78fbfa881b3e44061442feede226ced8208c01d27bc3ae35b8ccde841b590d7",
+  "behavioral_fingerprint": "sha256:2883028e85e060af2d12e54e938ce7c52df074e66b9a1ef2b59f09a588afd796",
+  "status": "engineering-accepted-awaiting-separate-real-agent-phase",
+  "real_agent_execution": false,
+  "stable_promoted": false,
+  "scope": {
+    "policy_count": 16,
+    "hot_path": 8,
+    "managed_project_files_max": 2,
+    "new_domain_profiles": 0
+  },
+  "external_trust_requirements": [
+    "operator-verified isolation and model/family independence",
+    "externally timestamped round registration and reviewed execution order",
+    "private retained evidence and immutable result archive"
+  ],
+  "known_claim_limits": [
+    "locked software/data task matrix does not establish efficacy across every runtime domain",
+    "no real locked/dev Agent tests in this release phase",
+    "explicit epoch rotation bounds report deduplication; sequence and verified exports persist",
+    "abrupt process death may leave transient lock/temp state; inspect before recovery"
+  ],
+  "local_checks": [
+    {
+      "name": "compiler/compile_governance.py",
+      "result": "PASS"
+    },
+    {
+      "name": "tools/governance_lint.py",
+      "result": "PASS"
+    },
+    {
+      "name": "tools/validate_qualification.py",
+      "result": "PASS"
+    },
+    {
+      "name": "tools/qualification_freeze.py",
+      "result": "PASS"
+    },
+    {
+      "name": "tools/validate_repository.py",
+      "result": "PASS"
+    },
+    {
+      "name": "tools/validate_skill_bundle.py",
+      "result": "PASS"
+    },
+    {
+      "name": "universal-project-governance/scripts/validate_integrity.py",
+      "result": "PASS"
+    },
+    {
+      "name": "tools/security_audit.py",
+      "result": "PASS"
+    },
+    {
+      "name": "tools/package_release.py",
+      "result": "PASS"
+    }
+  ],
+  "tests": {
+    "count": 69,
+    "environment": "Windows bundled Python 3.12; engineering fixtures only",
+    "result": "PASS",
+    "log": "audit/rc9-tests.log (local acceptance evidence, outside source tree)"
+  },
+  "package_sha256": "39d91d2f21cc390c08f4d630a64aca48134a4feddd604cc9d718f2a8d3cbf37e",
+  "previous_candidate_revision": "31896578b73ae0207d2a1bf8d35ad8ff5608b4a7",
+  "observed_remote_validation": {
+    "run": 189,
+    "url": "https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/37125355206",
+    "candidate": "31896578b73ae0207d2a1bf8d35ad8ff5608b4a7",
+    "results": "Linux 3.8/3.11/3.13, source/qualification, upstream Agent Skills and Skills CLI PASS; Windows 3.11/3.13 FAIL due cp1252 stdout",
+    "remediation": "ASCII JSON transport retains Chinese values; adds cp1252 trigger/planner regression. New candidate CI still required."
+  },
+  "latest_checkpoint": {
+    "observed_at": "2026-10-03T13:20:36.274819Z",
+    "time_source": "local UTC follow-up observation, not Git time",
+    "function": "multilingual JSON transport and frozen surface enforcement",
+    "before": "RC9 first candidate; Windows cp1252 trigger output failed",
+    "after": "ASCII JSON transport with preserved Unicode values; fail closed on live frozen-surface drift",
+    "why": "new Windows CI revealed a concrete compatibility failure; actual frozen files must match claimed identity",
+    "source": "Run #189 logs and candidate verification",
+    "parent_revision": "31896578b73ae0207d2a1bf8d35ad8ff5608b4a7"
+  },
+  "final_observed_at": "2026-10-03T13:25:19.218054Z",
+  "verified_frozen_revision": "cf81a667722ce8edcfaec4c1dd07666b32e6a4e8",
+  "candidate_ci": {
+    "run": 191,
+    "id": 37125887444,
+    "url": "https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/37125887444",
+    "result": "PASS",
+    "jobs": 9,
+    "linux_python": [
+      "3.8",
+      "3.11",
+      "3.13"
+    ],
+    "windows_python": [
+      "3.11",
+      "3.13"
+    ],
+    "upstream_agent_skills": "PASS",
+    "skills_cli_install_lifecycle": "PASS",
+    "default_branch_private_install": "must be checked on main after promotion"
+  },
+  "installed_skill": {
+    "host": "local Codex user Skills directory",
+    "version": "3.0.0-rc.9",
+    "generated_files_byte_equal_candidate": true,
+    "files": 16,
+    "integrity": "PASS",
+    "engineering_lifecycle": "PASS",
+    "source_revision": "cf81a667722ce8edcfaec4c1dd07666b32e6a4e8",
+    "scope": "runtime helpers in synthetic temporary project; no actual Agent execution",
+    "discovery": "new Skill catalog refresh at next task/session; no remote model-service-wide install claimed"
+  },
+  "final_documentation_change": {
+    "function": "current readiness and handoff truth",
+    "why": "replace pending-CI checkpoint with observed acceptance, preserving original failed-run evidence",
+    "source": "Run #191 and local installed-runtime acceptance",
+    "observed_at": "2026-10-03T13:25:19.218054Z",
+    "time_source": "local UTC record observation; not commit time",
+    "parent_revision": "cf81a667722ce8edcfaec4c1dd07666b32e6a4e8",
+    "frozen_surfaces_changed": false
+  }
+}

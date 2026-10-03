@@ -30,7 +30,8 @@ def main():
     ap=argparse.ArgumentParser(); ap.add_argument("--config",default="qualification/fixtures/trigger-families.json"); ap.add_argument("--output"); args=ap.parse_args()
     cfg=json.loads(pathlib.Path(args.config).read_text(encoding="utf-8")); cases=build(cfg)
     payload={"schema_version":1,"cases":cases,"sha256":hashlib.sha256(json.dumps(cases,sort_keys=True,separators=(",",":")).encode()).hexdigest()}
-    text=json.dumps(payload,indent=2,ensure_ascii=False)+"\n"
+    # ASCII JSON keeps Chinese samples intact through narrow Windows pipe encodings.
+    text=json.dumps(payload,indent=2,ensure_ascii=True)+"\n"
     if args.output: pathlib.Path(args.output).write_text(text,encoding="utf-8")
     else: print(text,end="")
     return 0

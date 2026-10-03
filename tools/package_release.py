@@ -17,7 +17,7 @@ def version(skill):
 
 def make_zip(skill,out):
     with zipfile.ZipFile(out,"w",compression=zipfile.ZIP_DEFLATED,compresslevel=9) as zf:
-        for p in sorted(x for x in skill.rglob("*") if x.is_file() and "__pycache__" not in x.parts and x.suffix not in {".pyc",".pyo"}):
+        for p in sorted((x for x in skill.rglob("*") if x.is_file() and "__pycache__" not in x.parts and x.suffix not in {".pyc",".pyo"}), key=lambda x: x.relative_to(skill).as_posix()):
             rel=p.relative_to(skill).as_posix()
             info=zipfile.ZipInfo(skill.name+"/"+rel,date_time=ZIP_TIME)
             info.compress_type=zipfile.ZIP_DEFLATED; info.create_system=3

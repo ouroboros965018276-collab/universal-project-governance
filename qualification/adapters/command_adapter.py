@@ -1,5 +1,6 @@
 from __future__ import annotations
-import hashlib,json,os,pathlib,subprocess,tempfile,time
+import hashlib,json,os,pathlib,re,subprocess,tempfile,time
+from qualification.lib.contracts import validate_node
 
 def _expand(items,values):
     return [str(x).format(**values) for x in items]
@@ -21,10 +22,17 @@ class CommandAdapter(object):
         }
     @classmethod
     def from_path(cls,path):
-        return cls(json.loads(pathlib.Path(path).read_text(encoding="utf-8")))
+        config=json.loads(pathlib.Path(path).read_text(encoding="utf-8"))
+        schema=json.loads(pathlib.Path(__file__).with_name("adapter.schema.json").read_text(encoding="utf-8"))
+        errors=validate_node(config,schema)
+        if errors: raise ValueError("; ".join(errors))
+        return cls(config)
     def require_locked_holdout(self):
-        if not self.config.get("sandboxed") or self.config.get("workspace_isolation") not in {"sandbox","container","vm"}:
+        if self.config.get("sandboxed") is not True or self.config.get("workspace_isolation") not in {"sandbox","container","vm"}:
             raise ValueError("locked holdout requires externally enforced sandbox/container/vm isolation")
+        attestation=self.config.get("isolation_attestation")
+        if not isinstance(attestation,dict) or not attestation.get("issuer") or not attestation.get("reference") or not re.fullmatch(r"sha256:[0-9a-f]{64}", str(attestation.get("sha256", ""))):
+            raise ValueError("locked execution requires an operator isolation attestation; booleans alone are insufficient")
     def supports(self,capability):
         return capability in set(self.config.get("capabilities",[]))
     def _execute(self,key,workspace,task,condition,skill_path=None,raw_dir=None,checkpoint=None,phase="single"):

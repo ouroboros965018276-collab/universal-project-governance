@@ -1,6 +1,6 @@
 # Qualification Plane
 
-Purpose: establish whether the frozen RC8 Skill causally improves maintained-project outcomes enough to justify its behavioral and operational cost.
+Purpose: establish whether the frozen RC9 Skill causally improves maintained-project outcomes enough to justify its behavioral and operational cost.
 
 This directory is repository-only and never ships as Agent runtime.
 
@@ -20,7 +20,7 @@ agent_family
     → pair_id / repetition
 ```
 
-RC8 requires at least three locked Agent families. Resampling 4,000 times cannot manufacture additional independent top-level clusters, so cross-family generalization is reported separately and is intentionally narrower than within-family precision.
+RC9 requires at least three locked Agent families. Resampling 4,000 times cannot manufacture additional independent top-level clusters, so cross-family generalization is reported separately and is intentionally narrower than within-family precision.
 
 ## Reproducible execution identity
 
@@ -62,7 +62,7 @@ The overreach gate is independent from task success and has two non-pooled popul
 
 ## Project deployment
 
-A2 behavioral evidence includes RC8 binding-v2 validity and completion-report cardinality. A completed modifying workflow passes deployment integration only when exactly one report was recorded.
+A2 behavioral evidence includes RC9 binding-v2 validity and completion-report cardinality. A completed modifying workflow passes deployment integration only when exactly one report was recorded.
 
 Fixed UPG managed files are counted separately from task governance artifacts.
 
@@ -73,3 +73,13 @@ Trigger fixtures cover English and Chinese modifying/read-only contrasts across 
 ## Results
 
 Real result rounds appear under `results/qN/` only after execution and are immutable. No fabricated empty result artifacts are permitted.
+
+## RC9 evidence admission
+
+`round_manifest.py` registers a seeded, temporally interleaved paired matrix without executing an Agent. Locked runners require `--round-manifest` and `--trial-id`. The analyzer requires the same manifest, current fingerprints, schema-valid trials, frozen scenario/exposure IDs, unique IDs, strong-isolation operator attestations, and saved artifact identities. Invalid inputs fail before statistics; missing registered trials remain MORE_DATA. Existing thresholds are unchanged.
+
+Before/after text snapshots and execution metadata are saved outside the Agent workspace before temporary cleanup; the analyzer reads the retained manifest and checks its digest and trial identity. Artifacts may contain sensitive test metadata; store privately and review before sharing. Hashes check supplied bytes, not a substitute for operator verification of the actual sandbox, family independence, execution order, and model versions. A declarative manifest cannot execute or enforce external isolation. Preserve the preregistration digest with an external timestamp/VCS authority before execution; a local editable JSON file is not that authority. Keep artifact paths available when analyzing an archived round.
+
+The default round builder registers same-family source/receiver handoffs. A separately reviewed manifest can register cross-family source/receiver identities; do not describe the default plan as evidence for every cross-family pairing. Report absolute success for both present and ablated handoff conditions as well as their difference. The locked task matrix presently represents software/data tasks, so trigger breadth and universal runtime design do not establish causal benefit in research, content or other unmeasured domains. Three family clusters and trial-level zero-event bounds require cautious interpretation of independence.
+
+No RC9 real-Agent round has run. This release phase contains engineering regression and installation acceptance only.

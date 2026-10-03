@@ -10,6 +10,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from qualification.adapters.command_adapter import CommandAdapter
+from qualification.lib.execution import registration, persist_evidence, now
 from qualification.lib.core import get_lab, grade_lab, materialize_lab, project_integration_status
 
 def arm_condition(arm):
@@ -55,6 +56,8 @@ def main():
     parser.add_argument("--output", required=True)
     parser.add_argument("--raw-dir")
     parser.add_argument("--locked-holdout", action="store_true")
+    parser.add_argument("--round-manifest")
+    parser.add_argument("--trial-id")
     args = parser.parse_args()
 
     if args.kind == "mutation" and (
@@ -83,6 +86,7 @@ def main():
         )
         return 2
 
+    registered = registration(args, adapter, args.kind, lab["id"], args.arm)
     freeze = load_freeze()
     skill_path = (
         pathlib.Path(args.skill_path).resolve()
@@ -134,9 +138,11 @@ def main():
             "persistent_task_governance_artifacts"
         ]
         usage["managed_project_files"] = grade["managed_project_files"]
+        artifact = persist_evidence(args, registered["trial_id"], workspace, lab, result)
         identity = adapter.identity()
         environment = {
             "qualification_set": "locked" if args.locked_holdout else "dev",
+            "isolation_attestation": adapter.config.get("isolation_attestation"),
             "adapter_config_sha256": identity["adapter_config_sha256"],
             "adapter_runtime_sha256": identity["adapter_runtime_sha256"],
             "host_tool_name": identity["host_tool_name"],
@@ -153,7 +159,11 @@ def main():
 
         trial = {
             "schema_version": 3,
-            "trial_id": str(uuid.uuid4()),
+            "round_id": registered["round_id"],
+            "repetition": registered["repetition"],
+            "started_at": registered["started_at"],
+            "completed_at": now(),
+            "trial_id": registered["trial_id"],
             "pair_id": args.pair_id,
             "scenario_id": lab["id"],
             "kind": args.kind,
@@ -173,6 +183,7 @@ def main():
             "usage": usage,
             "evidence": dict(
                 result["evidence"],
+                **artifact,
                 before_sha256=grade["before_sha256"],
                 after_sha256=grade["after_sha256"],
                 events=result.get("events", {}),

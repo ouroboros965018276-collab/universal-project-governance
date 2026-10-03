@@ -18,3 +18,6 @@ qualification/results/*/raw/
 qualification/results/*/traces/
 qualification/results/*/artifacts/
 qualification/.cache/
+
+# Local project adoption is not release source.
+.governance/

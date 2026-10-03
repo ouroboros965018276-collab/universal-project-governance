@@ -1,6 +1,6 @@
 # Contributing
 
-RC7 is the real-Agent test freeze.
+Current candidate: **3.0.0-rc.9 — Evidence and Continuity Hardening**. Real-Agent execution belongs to the next phase.
 
 ## Structural contribution rule
 

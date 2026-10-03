@@ -108,6 +108,28 @@
           "minLength": 1
         }
       }
+    },
+    "isolation_attestation": {
+      "type": "object",
+      "required": [
+        "issuer",
+        "reference",
+        "sha256"
+      ],
+      "properties": {
+        "issuer": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reference": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        }
+      }
     }
   }
 }

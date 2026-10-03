@@ -8,6 +8,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from qualification.analysis.coverage import behavioral_coverage, handoff_coverage, release_rows
+from qualification.analysis.admission import admit
 from qualification.analysis.gates import (
     control_validity,
     core_task,
@@ -30,12 +31,16 @@ def load_jsonl(paths):
                 rows.append(json.loads(line))
     return rows
 
-def analyze(rows, thresholds, protocol, fingerprint):
+def analyze(rows, thresholds, protocol, fingerprint, manifest=None):
+    admission = admit(rows, fingerprint, protocol, manifest)
+    if admission["state"] == "FAIL":
+        return {"schema_version": 3, "qualification_fingerprint": fingerprint, "status": "FAIL", "gates": {"evidence_admission": admission}, "sample_sizes": {"rows_total": len(rows)}, "effects": {}, "notes": ["Evidence rejected before inference."]}
     coverage = behavioral_coverage(rows, protocol)
     handoff_cov = handoff_coverage(rows, protocol)
     control = control_validity(rows, thresholds, coverage)
 
     gates = {
+        "evidence_admission": admission,
         "coverage": coverage,
         "deployment_integrity": deployment_integrity(rows, thresholds, coverage),
         "evaluator_validity": evaluator_validity(rows, protocol),
@@ -91,19 +96,21 @@ def main():
     parser.add_argument("--protocol", default="qualification/protocol/qualification-v3.json")
     parser.add_argument("--fingerprint", required=True)
     parser.add_argument("--output")
+    parser.add_argument("--round-manifest", required=True)
     args = parser.parse_args()
     result = analyze(
         load_jsonl(args.inputs),
         json.loads(pathlib.Path(args.thresholds).read_text(encoding="utf-8")),
         json.loads(pathlib.Path(args.protocol).read_text(encoding="utf-8")),
         args.fingerprint,
+        json.loads(pathlib.Path(args.round_manifest).read_text(encoding="utf-8")),
     )
     text = json.dumps(result, indent=2, sort_keys=True) + "\n"
     if args.output:
         pathlib.Path(args.output).write_text(text, encoding="utf-8")
     else:
         print(text, end="")
-    return 0
+    return 0 if result["status"] == "PASS" else (1 if result["status"] == "FAIL" else 2)
 
 if __name__ == "__main__":
     raise SystemExit(main())

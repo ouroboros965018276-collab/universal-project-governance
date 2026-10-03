@@ -7,6 +7,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from registration_fixture import report_identity
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 PY = sys.executable
@@ -171,7 +172,7 @@ class CompiledRuntimeTests(unittest.TestCase):
                 "feedback": [],
             }
             input_path = project / "report-input.json"
-            input_path.write_text(json.dumps(report), encoding="utf-8")
+            input_path.write_text(json.dumps(report_identity(report)), encoding="utf-8")
             cp = subprocess.run(
                 [PY, str(tool), "report", str(project), "--input", str(input_path)],
                 text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
@@ -328,7 +329,7 @@ class CompiledRuntimeTests(unittest.TestCase):
                 "feedback": [],
             }
             payload = project / "credential-report.json"
-            payload.write_text(json.dumps(report), encoding="utf-8")
+            payload.write_text(json.dumps(report_identity(report)), encoding="utf-8")
             cp = subprocess.run(
                 [PY, str(tool), "report", str(project), "--input", str(payload)],
                 text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
@@ -359,7 +360,7 @@ class CompiledRuntimeTests(unittest.TestCase):
                 report = dict(base)
                 report["task"] = value
                 payload = project / ("secret-%d.json" % i)
-                payload.write_text(json.dumps(report), encoding="utf-8")
+                payload.write_text(json.dumps(report_identity(report)), encoding="utf-8")
                 cp = subprocess.run([PY, str(tool), "report", str(project), "--input", str(payload)], text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
                 self.assertNotEqual(cp.returncode, 0, value)
 

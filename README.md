@@ -1,10 +1,10 @@
 # 通用项目治理 | Universal Project Governance
 
-Current candidate: **3.0.0-rc.8 — Universal Continuity Real-Agent Test Freeze**
+Current candidate: **3.0.0-rc.9 — Evidence and Continuity Hardening**
 
 Universal Project Governance is a model-agnostic, host-agnostic Agent Skill for maintained-project governance across software, data, infrastructure, research, content, product/specification, operations, design systems, automation, ML/AI, documentation, and mixed projects.
 
-RC8 keeps the bounded compiled architecture while adding reconstructable continuity after abrupt Agent interruption, non-destructive in-place adoption of legacy projects, capability-negotiated interoperability across different Agent classes/vendors, stricter real-Agent evidence identity, exact-one completion reporting, and stronger field-report secret hygiene.
+RC9 preserves RC8's bounded architecture, in-place adoption and capability-based interoperability. It repairs evidence admission, portable freeze identity, invalid fixtures, critical-failure counting, chronology grading and workflow reporting. It introduces no new domain profiles or policy expansion.
 
 ## Architecture
 
@@ -25,7 +25,7 @@ Qualification code never ships as Agent runtime.
 
 ## Universal continuity
 
-A planned unfinished transition should use one current handoff. RC8 does not assume that a previous actor had time to create one.
+A planned unfinished transition should use one current handoff. RC9 does not assume that a previous actor had time to create one.
 
 After quota exhaustion, crash, session loss, tool failure, or another abrupt stop, the next actor reconstructs before modifying: it reads current canonical project truth, observable worktree/VCS or equivalent state, existing validation/evidence, UPG state, and unresolved artifacts. Recovered facts are separated from possibilities; unavailable prior intent stays explicitly unknown. Recovery never requires private chat memory or chain-of-thought.
 
@@ -33,18 +33,18 @@ After quota exhaustion, crash, session loss, tool failure, or another abrupt sto
 
 The first modifying activation runs the idempotent project `ensure` operation.
 
-RC8 adopts pre-UPG projects **in place**. Installation adds only UPG-owned state and does not restructure, rewrite, or demand project-wide migration of existing content. Existing artifacts are evidence rather than automatically trusted design; governance applies to the current task immediately while preserving observed contracts and current canonical sources.
+RC9 adopts pre-UPG projects **in place**. Installation adds only UPG-owned state and does not restructure, rewrite, or demand project-wide migration of existing content. Existing artifacts are evidence rather than automatically trusted design; governance applies to the current task immediately while preserving observed contracts and current canonical sources.
 
 Owned field-test state remains bounded to:
 
 - `.governance/upg.json`
 - `.governance/field-reports.json`
 
-An owned RC7 binding can upgrade to RC8 binding schema v2 without discarding its existing report ledger.
+An owned RC7 binding can upgrade to RC9 binding schema v2 without discarding its existing report ledger.
 
 ## Agent interoperability
 
-RC8 does not maintain a vendor/model allowlist. Before modifying state, the Agent observes available capabilities such as filesystem, VCS, search, build/test, browser, application, or other tools, and governs with what actually exists.
+RC9 does not maintain a vendor/model allowlist. Before modifying state, the Agent observes available capabilities such as filesystem, VCS, search, build/test, browser, application, or other tools, and governs with what actually exists.
 
 The same contract therefore applies to conversational Agents, coding Agents, workspace/computer-use Agents, IDE/CLI Agents, and other tool-using systems. Missing capabilities reduce what can be verified; they never authorize fabricated validation.
 
@@ -80,7 +80,7 @@ While `field_test_reporting=true`, every completed modifying workflow must appen
 
 Reports contain metadata/evidence summaries rather than source bodies or private chain-of-thought. The ledger is one bounded file with at most 200 entries. Report validation rejects common private-key/token patterns, Bearer/JWT-like credentials, assignment-style secrets, and credential-bearing database URLs. This is defense-in-depth rather than a claim of general DLP; participants should still review exports before sharing.
 
-## Qualification v3 / RC8 identity
+## Qualification v3 / RC9 identity
 
 Formal primary confidence intervals use hierarchical bootstrap:
 
@@ -90,7 +90,7 @@ Agent family
     → repetition / pair
 ```
 
-RC8 requires at least **3 Agent families** for the locked matrix. Bootstrap repetitions cannot create independent top-level information, so cross-family generalization is reported separately and remains deliberately narrower than within-family precision.
+RC9 requires at least **3 Agent families** for the locked matrix. Bootstrap repetitions cannot create independent top-level information, so cross-family generalization is reported separately and remains deliberately narrower than within-family precision.
 
 Locked evidence also binds the actual execution condition through:
 
@@ -105,8 +105,8 @@ Release gates remain non-compensatory for coverage, deployment, evaluator/contro
 
 ## Current evidence status
 
-RC8 is an engineering candidate being sealed for real-Agent and gray testing. Engineering validation does not itself prove causal benefit.
+RC9 is an engineering candidate being sealed for real-Agent and gray testing. Engineering validation does not itself prove causal benefit.
 
-Stable remains blocked until immutable locked real-Agent evidence passes the final RC8 machine-frozen identity and protocol.
+Stable remains blocked until immutable locked real-Agent evidence passes the final RC9 machine-frozen identity and protocol.
 
 License: Apache-2.0.

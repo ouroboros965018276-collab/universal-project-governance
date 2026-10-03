@@ -1,4 +1,4 @@
-# Threat Model — 3.0.0-rc.8
+# Threat Model — 3.0.0-rc.9
 
 ## Protected assets
 
@@ -85,3 +85,9 @@ Canonical governance semantics, generated Skill integrity, task-scope boundaries
 ### False zero-risk claim
 
 **Control:** observed counts plus one-sided zero-event confidence bounds; zero observed events never mean zero real risk.
+
+### RC9 evidence admission and chronology
+
+**Controls:** registered task/round identity, strict supported schema constraints, frozen fixture exposure/cohort matching, retained artifact digest verification, observed critical-failure precedence, monotonic report sequence and causal parent references. Idempotent retries recover after the report was saved but its binding summary was interrupted. Old retries cannot rewind current truth. Unknown historical time or intent stays unknown.
+
+**Trust limits:** isolation attestations, model/family declarations and preregistration require external operator verification; UPG cannot establish them from a self-declared boolean/hash. Local integrity manifests are not authorization signatures. The frozen locked matrix currently covers software/data behavior, not every runtime domain. The transient writer lock and atomic-write temp file may remain after abrupt process death: inspect current ledger/binding first, then explicitly recover only verified stale owned residue. Never infer that an old lock proves a live writer is absent. Explicit reporting epoch rotation bounds duplicate detection; preserve the verified export.

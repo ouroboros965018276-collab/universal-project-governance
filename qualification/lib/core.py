@@ -6,6 +6,7 @@ import json
 import pathlib
 import re
 import subprocess
+from qualification.lib.contracts import validate_node, ROOT
 
 MANAGED_PROJECT_FILES = {
     ".governance/upg.json",
@@ -104,6 +105,15 @@ def evaluate_check(check, workspace, before, after):
     elif typ == "regex_present":
         ok = p.is_file() and re.search(check["pattern"], _read(workspace, rel)) is not None
         detail = "required pattern present"
+    elif typ == "chronology":
+        text = _read(workspace, rel).strip() if p.is_file() else ""
+        try:
+            data = json.loads(text.removeprefix("```json").removesuffix("```").strip()) if hasattr(text, "removeprefix") else json.loads(text[7:-3].strip() if text.startswith("```json") and text.endswith("```") else text)
+            expected = {"previous_event_id": "owner-import", "function": "workflow", "before": "step=previous", "after": "step=current", "rationale": "user-requested workflow update", "source": "task and owner notes", "prior_occurred_at": None, "prior_commit": None, "validation": "workflow.txt contains step=current"}
+            ok = data == expected and "step=current" in _read(workspace, "workflow.txt")
+        except (ValueError, TypeError):
+            ok = False
+        detail = "known chronology matches trusted owner event; prior time/commit remain unknown"
     elif typ == "unchanged":
         ok = rel in before and before.get(rel) == after.get(rel)
         detail = "hash unchanged"
@@ -208,7 +218,17 @@ def project_integration_status(workspace, expected_version=None):
     reports = ledger.get("reports") if isinstance(ledger, dict) else None
     result["binding_ok"] = bool(binding_ok)
     result["report_count"] = len(reports) if isinstance(reports, list) else 0
-    result["field_report_recorded"] = result["report_count"] == 1
+    schema = json.loads((ROOT / "universal-project-governance/schemas/field-report.schema.json").read_text(encoding="utf-8"))
+    result["field_report_recorded"] = (
+        result["report_count"] == 1 and isinstance(reports[0], dict)
+        and not validate_node(reports[0], schema)
+        and reports[0].get("status") == "complete"
+        and (expected_version is None or reports[0].get("runtime_version") == expected_version)
+        and reports[0].get("event_id") == "%s:%s:complete" % (reports[0].get("epoch"), reports[0].get("workflow_id"))
+        and ledger.get("next_sequence", 0) > reports[0].get("sequence", 0)
+        and binding.get("latest_change", {}).get("event_id") == reports[0].get("event_id")
+        and not binding.get("active_workflow")
+    )
     result["managed_project_files"] = sum(
         1 for rel in MANAGED_PROJECT_FILES if (root / rel).is_file()
     )

@@ -1,6 +1,6 @@
 ---
 name: universal-project-governance
-description: Govern maintained-project changes with a compiled, risk-adaptive plan that couples structural integration, proportional cleanup, current truth, evidence, technical-debt control, and handoff continuity. Use for changes to code, config, data, docs, infrastructure, workflows, schemas, dependencies, migrations, generated sources, or project structure. Do not use for read-only Q&A or unrelated one-off artifacts.
+description: Govern maintained-project changes with task-bounded integration, proportional cleanup, evidence, factual chronology, debt control, and recoverable handoffs across project types and tool-using hosts. Use when modifying maintained project state; exclude read-only Q&A and unrelated one-off artifacts.
 license: Apache-2.0
 compatibility: Core kernel needs no runtime. Optional deterministic planner/state/integrity helpers use Python 3.8+.
 metadata:
@@ -19,7 +19,7 @@ A compiled governance runtime. The canonical governance model lives outside the 
 
 Use for any maintained-project state change. Do not activate for read-only explanation/review/research that makes no project change.
 
-At the first modifying activation in any maintained project, resolve this installed Skill directory and run its `scripts/project_tool.py ensure <project-root>`. This idempotently adopts both new and pre-existing projects in place: it adds only UPG-owned state and does not restructure legacy project content. Files listed by that binding are managed UPG infrastructure: preserve them during ordinary cleanup and remove them only through the explicit uninstall path.
+At the first modifying activation, resolve this installed Skill and run `scripts/project_tool.py ensure <project-root>` when filesystem and Python are available. Otherwise apply the same rules through existing host/project state and explicitly report unavailable binding/report verification; do not fabricate files or block unrelated authorized work merely to install tooling. This idempotently adopts both new and pre-existing projects in place: it adds only UPG-owned state and does not restructure legacy project content. Files listed by that binding are managed UPG infrastructure: preserve them during ordinary cleanup and remove them only through the explicit uninstall path.
 
 Before changing project state, perform a capability handshake from observable host facts: identify available filesystem/VCS/search/test/build/browser/app tools and unavailable capabilities. Govern the task with what exists; never assume a specific vendor, model, interface, or tool class, and never fabricate a validation that the current host cannot perform.
 
@@ -41,7 +41,7 @@ Create a typed task context and compile the task-specific plan:
 python3 scripts/plan_governance.py --context /path/to/task-context.json
 ```
 
-The plan returns the change mode (`local` or `structural`), an explicit scope guard, active rule closure, required evidence, report level, and whether handoff state is required. Execute that plan; do not load unrelated governance policy.
+Unknown profile hints fall back to universal task/risk rules; profiles never exclude a project. The plan returns the change mode (`local` or `structural`), an explicit scope guard, active rule closure, required evidence, report level, and whether handoff state is required. Execute that plan; do not load unrelated governance policy.
 
 If helpers are unavailable, read `policy-index.json` and apply only rules matching the task operation/domains/signals plus their `requires` closure.
 
@@ -51,12 +51,14 @@ Use observable facts, not model confidence. Risk dimensions are scope, reversibi
 
 ## Evidence and reports
 
-Do not create a permanent general-purpose governance report for every task. RC8 field testing is the one temporary exception: the project binding maintains a single bounded report ledger for empirical evaluation.
+Do not create a permanent general-purpose governance report for every task. RC9 field testing is the one temporary exception: the project binding maintains a single bounded report ledger for empirical evaluation.
 
 - `none`: concise final response/VCS evidence is enough.
 - `change-note`: compact persistent note only if the project needs it.
 - `engineering`: maintain `.governance/execution/latest.json`.
 - `audit`: use a frozen release/audit record.
+
+For non-trivial or cross-session work, record a stable workflow ID and the minimal active checkpoint with `scripts/project_tool.py begin <project-root> --input <workflow.json>` when available. Use the report schema change contract for function, before/after, rationale/source, base/result/validated revision, known occurrence time/source and parent event; unknown values stay explicit. Reuse existing project evidence, not a new history database.
 
 Schema-first governance state is canonical. Markdown is a rendered view, not a second editable truth. Use `scripts/state_tool.py` to validate/render/compact/export governance state.
 
@@ -64,7 +66,9 @@ A current handoff is required when work is unfinished or deliberately crosses an
 
 Abrupt interruption is a supported continuity mode, not an exceptional assumption. If a prior actor disappeared before writing a handoff, the next actor must reconstruct before modifying: inspect canonical project truth, VCS/worktree or equivalent observable changes, existing validation/evidence, current UPG state, and unresolved artifacts. Separate observed facts from inferred possibilities, mark prior intent that cannot be recovered as unknown, then continue from the smallest safe next action. Never require private chat memory or chain-of-thought for recovery.
 
-When the project binding has `field_test_reporting=true`, every completed modifying workflow must append exactly one field-test report through `scripts/project_tool.py report <project-root> --input <report.json>` before completion is claimed. The ledger stores metadata/evidence summaries only, never source contents, secrets, or private chain-of-thought.
+Use causal parent/revision references and persistent sequence for order. Tool `recorded_at` is observation time, never invented work/commit time. Preserve the previous change and tie validation to the actually tested state; a stale handoff is evidence to reconcile, not authority to overwrite current truth.
+
+When the project binding has `field_test_reporting=true`, every completed modifying workflow must append exactly one field-test report through `scripts/project_tool.py report <project-root> --input <report.json>` before completion is claimed. Include `workflow_id` and `change` metadata. Identical retries are idempotent; conflicting retries fail. Export and verify evidence before explicit epoch rotation; sequence never resets, and task IDs are unique within the declared retention epoch. The ledger stores metadata/evidence summaries only, never source contents, secrets, or private chain-of-thought.
 
 ## Integrity
 

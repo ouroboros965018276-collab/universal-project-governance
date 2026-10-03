@@ -17,7 +17,8 @@
   ],
   "properties": {
     "updated_at": {
-      "type": "string"
+      "type": "string",
+      "format": "date-time"
     },
     "goal": {
       "type": "string"

@@ -4,9 +4,10 @@ ROOT=pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
 from qualification.adapters.command_adapter import CommandAdapter
 from qualification.trigger_suite import build
+from qualification.lib.execution import registration, persist_evidence, now
 
 def main():
-    ap=argparse.ArgumentParser(); ap.add_argument("--adapter",required=True); ap.add_argument("--case-id",required=True); ap.add_argument("--pair-id",required=True); ap.add_argument("--output",required=True); ap.add_argument("--locked-holdout",action="store_true"); args=ap.parse_args()
+    ap=argparse.ArgumentParser(); ap.add_argument("--adapter",required=True); ap.add_argument("--case-id",required=True); ap.add_argument("--pair-id",required=True); ap.add_argument("--output",required=True); ap.add_argument("--locked-holdout",action="store_true"); ap.add_argument("--round-manifest"); ap.add_argument("--trial-id"); args=ap.parse_args()
     adapter=CommandAdapter.from_path(args.adapter)
     if args.locked_holdout: adapter.require_locked_holdout()
     if not adapter.supports("skill_injection") or not adapter.supports("activation_trace"):
@@ -16,10 +17,13 @@ def main():
     if case is None: print("error: unknown trigger case",file=sys.stderr); return 2
     freeze=json.loads((ROOT/"qualification/FREEZE.json").read_text(encoding="utf-8"))
     identity=adapter.identity()
+    registered=registration(args,adapter,"trigger",case["id"],"A2")
     with tempfile.TemporaryDirectory(prefix="upg-trigger-") as td:
         result=adapter.run(pathlib.Path(td),case["query"],"",skill_path=ROOT/"universal-project-governance")
+        artifact=persist_evidence(args,registered["trial_id"],td,result=result)
     if "skill_activated" not in result["events"]:
         print("error: adapter did not provide skill_activated event",file=sys.stderr); return 2
     trial={"schema_version":3,"trial_id":str(uuid.uuid4()),"pair_id":args.pair_id,"scenario_id":case["id"],"kind":"trigger","arm":"A2","agent":adapter.config.get("agent",{}),"environment":{"qualification_set":"locked" if args.locked_holdout else "dev","adapter_config_sha256":identity["adapter_config_sha256"],"adapter_runtime_sha256":identity["adapter_runtime_sha256"],"host_tool_name":identity["host_tool_name"],"host_tool_version":identity["host_tool_version"],"sandboxed":adapter.config.get("sandboxed"),"workspace_isolation":adapter.config.get("workspace_isolation"),"language":case["language"],"object_id":case["object_id"],"tool_profile":adapter.config.get("tool_profile"),"budget_profile":adapter.config.get("budget_profile")},"fingerprints":{"behavioral":freeze["behavioral_fingerprint"],"qualification":freeze["qualification_fingerprint"]},"safety_exposures":[],"outcome":{"should_trigger":case["should_trigger"],"triggered":bool(result["events"]["skill_activated"]),"critical_failures":[]},"usage":result["usage"],"evidence":result["evidence"]}
-    pathlib.Path(args.output).write_text(json.dumps(trial,indent=2,sort_keys=True)+"\n",encoding="utf-8"); return 0
+    trial.update(registered); trial["completed_at"]=now(); trial["evidence"].update(artifact); trial["environment"]["isolation_attestation"]=adapter.config.get("isolation_attestation")
+    pathlib.Path(args.output).write_bytes((json.dumps(trial,indent=2,sort_keys=True)+"\n").encode("utf-8")); return 0
 if __name__=="__main__": raise SystemExit(main())

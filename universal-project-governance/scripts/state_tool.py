@@ -6,6 +6,9 @@ import argparse
 import json
 from pathlib import Path
 import sys
+import re
+import math
+from datetime import datetime
 
 
 def load(path: Path):
@@ -18,7 +21,14 @@ def schema_root() -> Path:
 
 def validate_node(value, schema, where="$"):
     errors = []
+    if "const" in schema and (value != schema["const"] or isinstance(value, bool) != isinstance(schema["const"], bool)):
+        errors.append("%s must equal %r" % (where, schema["const"]))
     typ = schema.get("type")
+    if isinstance(typ, list):
+        alternatives = [validate_node(value, dict(schema, type=t), where) for t in typ]
+        return [] if any(not e for e in alternatives) else ["%s has no permitted type" % where]
+    if typ == "null":
+        return errors if value is None else ["%s must be null" % where]
     if typ == "object":
         if not isinstance(value, dict):
             return ["%s must be object" % where]
@@ -42,13 +52,38 @@ def validate_node(value, schema, where="$"):
     elif typ == "string":
         if not isinstance(value, str):
             errors.append("%s must be string" % where)
+        else:
+            if len(value) < schema.get("minLength", 0) or len(value) > schema.get("maxLength", len(value)):
+                errors.append("%s string length out of bounds" % where)
+            if "pattern" in schema and re.search(schema["pattern"], value) is None:
+                errors.append("%s pattern mismatch" % where)
+            if schema.get("format") == "date-time":
+                try:
+                    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})", value):
+                        raise ValueError("RFC3339 timezone required")
+                    datetime.fromisoformat(value.replace("Z", "+00:00"))
+                except ValueError:
+                    errors.append("%s must be RFC3339 date-time" % where)
     elif typ == "boolean":
         if not isinstance(value, bool):
             errors.append("%s must be boolean" % where)
     elif typ == "integer":
         if not isinstance(value, int) or isinstance(value, bool):
             errors.append("%s must be integer" % where)
-    if "enum" in schema and value not in schema["enum"]:
+    elif typ == "number":
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            errors.append("%s must be number" % where)
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        if not math.isfinite(value):
+            errors.append("%s must be finite" % where)
+        if value < schema.get("minimum", value) or value > schema.get("maximum", value):
+            errors.append("%s number out of bounds" % where)
+    if isinstance(value, list):
+        if len(value) < schema.get("minItems", 0) or len(value) > schema.get("maxItems", len(value)):
+            errors.append("%s array length out of bounds" % where)
+        if schema.get("uniqueItems") and len({json.dumps(x, sort_keys=True) for x in value}) != len(value):
+            errors.append("%s duplicate items" % where)
+    if "enum" in schema and not any(value == item and isinstance(value, bool) == isinstance(item, bool) for item in schema["enum"]):
         errors.append("%s must be one of %r" % (where, schema["enum"]))
     return errors
 
