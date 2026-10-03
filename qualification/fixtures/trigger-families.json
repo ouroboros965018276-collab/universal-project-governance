@@ -60,6 +60,26 @@
       "id": "refactor",
       "en": "validation module",
       "zh": "校验模块"
+    },
+    {
+      "id": "research",
+      "en": "research evidence corpus",
+      "zh": "研究证据资料库"
+    },
+    {
+      "id": "content",
+      "en": "maintained content collection",
+      "zh": "持续维护的内容集合"
+    },
+    {
+      "id": "product",
+      "en": "product requirements set",
+      "zh": "产品需求集合"
+    },
+    {
+      "id": "operations",
+      "en": "operations runbook",
+      "zh": "运营运行手册"
     }
   ],
   "positive_templates_en": [
