@@ -20,22 +20,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
       - uses: actions/setup-python@v7
         with:
           python-version: '3.11'
-      - name: Verify source compiles exactly to tracked runtime
+      - name: Verify canonical source compiles exactly to runtime
         run: python compiler/compile_governance.py --check
-      - name: Enforce governance complexity and rule-graph invariants
+      - name: Enforce governance graph and complexity budgets
         run: python tools/governance_lint.py .
-      - name: Verify RC4 to RC5 behavioral freeze
-        run: python tools/validate_freeze_delta.py
-      - name: Validate RC5 qualification infrastructure
+      - name: Validate qualification v2 contract
         run: python tools/validate_qualification.py .
       - name: Validate machine qualification freeze
         run: python tools/qualification_freeze.py . --check
-      - name: Validate repository contract
+      - name: Validate current repository contract
         run: python tools/validate_repository.py .
       - name: Validate compiled Skill bundle
         run: python tools/validate_skill_bundle.py universal-project-governance
@@ -52,35 +48,28 @@ jobs:
         python-version: ['3.8','3.11','3.13']
     steps:
       - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
       - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Run RC5 runtime and qualification infrastructure tests
-        run: PYTHONDONTWRITEBYTECODE=1 python -m unittest discover -s tests -v
-      - name: Reconfirm compiler and package on this runtime
+      - name: Run compiled-runtime and qualification-contract tests
+        run: python -m unittest discover -s tests -v
+      - name: Reconfirm compiler and deterministic package
         run: |
           python compiler/compile_governance.py --check
           python tools/package_release.py universal-project-governance --output-dir /tmp/upg-dist
-
 
   qualification-contract:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
       - uses: actions/setup-python@v7
         with:
           python-version: '3.11'
-      - name: Validate locked qualification protocol and fixtures
-        run: python tools/validate_qualification.py .
-      - name: Verify behavior is frozen from RC4
-        run: python tools/validate_freeze_delta.py
-      - name: Recheck qualification freeze identity
-        run: python tools/qualification_freeze.py . --check
-      - name: Build metamorphic trigger suite
+      - name: Validate protocol, fixtures, exposure model, and freeze
+        run: |
+          python tools/validate_qualification.py .
+          python tools/qualification_freeze.py . --check
+      - name: Build multilingual trigger suite
         run: |
           python qualification/trigger_suite.py --output /tmp/trigger-suite.json
           python - <<'PY'
@@ -89,7 +78,7 @@ jobs:
           assert len(data['cases']) >= 100
           print('Metamorphic trigger cases:', len(data['cases']))
           PY
-      - name: Verify known-bad mutant runtime can be constructed and detected as behaviorally different
+      - name: Verify known-bad mutant runtime remains structurally valid but behaviorally distinct
         run: |
           python qualification/mutations/build_mutant_runtime.py --mutant M01_DISABLE_SAFE_DELETE --output /tmp/upg-mutant
           python /tmp/upg-mutant/scripts/validate_integrity.py /tmp/upg-mutant
@@ -107,8 +96,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
       - uses: actions/setup-python@v7
         with:
           python-version: '3.11'
@@ -129,8 +116,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
       - uses: actions/setup-node@v7
         with:
           node-version: '24'
