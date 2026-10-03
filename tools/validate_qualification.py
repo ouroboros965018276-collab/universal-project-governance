@@ -123,12 +123,13 @@ def main():
             else:
                 required_scope = {
                     "allowed_change_globs", "api_sensitive_globs", "architecture_sensitive_globs",
-                    "allow_api_change", "allow_architecture_change", "critical_overreach",
-                    "overreach_exposure"
+                    "allow_api_change", "allow_architecture_change", "critical_overreach"
                 }
+                if not handoff:
+                    required_scope.add("overreach_exposure")
                 if set(scope) != required_scope:
                     errors.append("scope_contract keys invalid for " + str(lab.get("id")))
-                if scope.get("overreach_exposure") not in {"local_guard", "structural_guard"}:
+                if not handoff and scope.get("overreach_exposure") not in {"local_guard", "structural_guard"}:
                     errors.append("invalid overreach_exposure for " + str(lab.get("id")))
             if handoff and not lab.get("checkpoint", {}).get("preserve", []):
                 errors.append("handoff lab missing checkpoint preserve contract: " + str(lab.get("id")))
