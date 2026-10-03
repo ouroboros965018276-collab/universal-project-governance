@@ -10,7 +10,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from qualification.adapters.command_adapter import CommandAdapter
-from qualification.lib.core import get_lab, grade_lab, materialize_lab
+from qualification.lib.core import get_lab, grade_lab, materialize_lab, project_integration_status
 
 def arm_condition(arm):
     if arm == "A0":
@@ -107,20 +107,33 @@ def main():
             if isinstance(item, str)
         ]
         critical = sorted(set(grade["critical_failures"] + external))
+        integration = project_integration_status(workspace, freeze.get("version"))
+        deployment_required = args.arm == "A2" and args.kind == "behavioral"
+        governance_ok = grade["governance_defect_free"]
+        if deployment_required and not (integration["binding_ok"] and integration["field_report_recorded"]):
+            governance_ok = False
         outcome = {
             "task_success": grade["task_success"],
-            "governance_defect_free": grade["governance_defect_free"],
+            "governance_defect_free": governance_ok,
             "critical_failures": critical,
             "checks": grade["checks"],
             "changed_files": grade["changed_files"],
+            "scope_metrics": grade["scope_metrics"],
+            "deployment": {
+                "required": deployment_required,
+                "binding_ok": integration["binding_ok"],
+                "field_report_recorded": integration["field_report_recorded"],
+                "report_count": integration["report_count"],
+            },
         }
         if args.kind == "mutation":
             outcome["eval_detected_regression"] = not grade["governance_defect_free"]
 
         usage = dict(result["usage"])
-        usage["persistent_governance_artifacts"] = grade[
-            "persistent_governance_artifacts"
+        usage["persistent_task_governance_artifacts"] = grade[
+            "persistent_task_governance_artifacts"
         ]
+        usage["managed_project_files"] = grade["managed_project_files"]
         environment = {
             "qualification_set": "locked" if args.locked_holdout else "dev",
             "sandboxed": adapter.config.get("sandboxed", False),
@@ -134,7 +147,7 @@ def main():
             environment["mutation_id"] = args.mutation_id
 
         trial = {
-            "schema_version": 2,
+            "schema_version": 3,
             "trial_id": str(uuid.uuid4()),
             "pair_id": args.pair_id,
             "scenario_id": lab["id"],

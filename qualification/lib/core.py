@@ -1,9 +1,16 @@
 from __future__ import annotations
+import difflib
+import fnmatch
 import hashlib
 import json
 import pathlib
 import re
 import subprocess
+
+MANAGED_PROJECT_FILES = {
+    ".governance/upg.json",
+    ".governance/field-reports.json",
+}
 
 def sha256_bytes(data):
     return hashlib.sha256(data).hexdigest()
@@ -19,7 +26,7 @@ def safe_rel(path):
 
 def load_labs(path):
     data = json.loads(pathlib.Path(path).read_text(encoding="utf-8"))
-    if data.get("schema_version") not in {1, 2} or not isinstance(data.get("labs"), list):
+    if data.get("schema_version") not in {2, 3} or not isinstance(data.get("labs"), list):
         raise ValueError("invalid lab set")
     return data["labs"]
 
@@ -47,13 +54,26 @@ def snapshot(workspace):
     return result
 
 def changed_files(before, after):
-    return sorted(k for k in set(before) | set(after) if before.get(k) != after.get(k))
+    return sorted(
+        key
+        for key in set(before) | set(after)
+        if before.get(key) != after.get(key)
+        and key not in MANAGED_PROJECT_FILES
+    )
 
-def persistent_governance_artifacts(workspace):
+def governance_artifact_counts(workspace):
     root = pathlib.Path(workspace) / ".governance"
     if not root.exists():
-        return 0
-    return sum(1 for p in root.rglob("*") if p.is_file())
+        return {"task": 0, "managed": 0}
+    rels = {
+        p.relative_to(pathlib.Path(workspace)).as_posix()
+        for p in root.rglob("*")
+        if p.is_file()
+    }
+    return {
+        "task": len(rels - MANAGED_PROJECT_FILES),
+        "managed": len(rels & MANAGED_PROJECT_FILES),
+    }
 
 def _read(workspace, rel):
     return (pathlib.Path(workspace) / safe_rel(rel)).read_text(
@@ -117,16 +137,94 @@ def grade_checks(checks, workspace, before, after):
             critical.append(spec["critical_failure"])
     return graded, sorted(set(critical))
 
+def _matches_any(path, patterns):
+    return any(fnmatch.fnmatchcase(path, pattern) for pattern in patterns)
+
+def _diff_lines(lab, workspace, paths):
+    total = 0
+    root = pathlib.Path(workspace)
+    for rel in paths:
+        before_text = lab.get("initial_files", {}).get(rel, "")
+        p = root / safe_rel(rel)
+        after_text = p.read_text(encoding="utf-8", errors="replace") if p.is_file() else ""
+        diff = difflib.ndiff(before_text.splitlines(), after_text.splitlines())
+        total += sum(1 for line in diff if line.startswith("+ ") or line.startswith("- "))
+    return total
+
+def measure_scope(lab, workspace, before, after):
+    contract = lab.get("scope_contract", {})
+    changed = changed_files(before, after)
+    allowed = contract.get("allowed_change_globs", [])
+    unexpected = [path for path in changed if not _matches_any(path, allowed)]
+    api_paths = [
+        path for path in changed
+        if _matches_any(path, contract.get("api_sensitive_globs", []))
+        and not contract.get("allow_api_change", False)
+    ]
+    architecture_paths = [
+        path for path in changed
+        if _matches_any(path, contract.get("architecture_sensitive_globs", []))
+        and not contract.get("allow_architecture_change", False)
+    ]
+    violation = bool(unexpected or api_paths or architecture_paths)
+    return {
+        "scope_violation": violation,
+        "changed_files_count": len(changed),
+        "diff_lines": _diff_lines(lab, workspace, changed),
+        "unexpected_changed_files": unexpected,
+        "unrequested_api_changes": api_paths,
+        "unrequested_architecture_changes": architecture_paths,
+    }
+
+def project_integration_status(workspace, expected_version=None):
+    root = pathlib.Path(workspace)
+    binding_path = root / ".governance/upg.json"
+    report_path = root / ".governance/field-reports.json"
+    result = {
+        "binding_ok": False,
+        "field_report_recorded": False,
+        "report_count": 0,
+        "managed_project_files": 0,
+    }
+    if not binding_path.is_file() or not report_path.is_file():
+        return result
+    try:
+        binding = json.loads(binding_path.read_text(encoding="utf-8"))
+        ledger = json.loads(report_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return result
+    expected_files = [".governance/upg.json", ".governance/field-reports.json"]
+    binding_ok = (
+        binding.get("managed_by") == "universal-project-governance"
+        and binding.get("managed_files") == expected_files
+        and binding.get("field_test_reporting") is True
+        and (expected_version is None or binding.get("runtime_version") == expected_version)
+    )
+    reports = ledger.get("reports") if isinstance(ledger, dict) else None
+    result["binding_ok"] = bool(binding_ok)
+    result["report_count"] = len(reports) if isinstance(reports, list) else 0
+    result["field_report_recorded"] = result["report_count"] > 0
+    result["managed_project_files"] = sum(
+        1 for rel in MANAGED_PROJECT_FILES if (root / rel).is_file()
+    )
+    return result
+
 def grade_lab(lab, workspace, before):
     after = snapshot(workspace)
     checks, critical = grade_checks(lab["checks"], workspace, before, after)
+    scope = measure_scope(lab, workspace, before, after)
+    if scope["scope_violation"] and lab.get("scope_contract", {}).get("critical_overreach"):
+        critical.append("CF10_DESTRUCTIVE_OVER_GOVERNANCE")
+    artifacts = governance_artifact_counts(workspace)
     return {
         "task_success": all(c["pass"] for c in checks),
-        "governance_defect_free": all(c["pass"] for c in checks),
-        "critical_failures": critical,
+        "governance_defect_free": all(c["pass"] for c in checks) and not scope["scope_violation"],
+        "critical_failures": sorted(set(critical)),
         "checks": checks,
         "changed_files": changed_files(before, after),
-        "persistent_governance_artifacts": persistent_governance_artifacts(workspace),
+        "scope_metrics": scope,
+        "persistent_task_governance_artifacts": artifacts["task"],
+        "managed_project_files": artifacts["managed"],
         "before_sha256": sha256_bytes(json.dumps(before, sort_keys=True).encode()),
         "after_sha256": sha256_bytes(json.dumps(after, sort_keys=True).encode()),
     }

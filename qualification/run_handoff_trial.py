@@ -16,6 +16,7 @@ from qualification.lib.core import (
     grade_lab,
     materialize_lab,
     snapshot,
+    project_integration_status,
 )
 
 def add_usage(first, second):
@@ -133,25 +134,35 @@ def main():
             critical.append("CF09_HANDOFF_DROPS_CRITICAL_RISK")
         critical = sorted(set(critical))
 
+        integration = project_integration_status(workspace, freeze.get("version"))
+        governance_ok = grade["governance_defect_free"] and integration["binding_ok"] and integration["field_report_recorded"]
         outcome = {
             "task_success": grade["task_success"],
-            "governance_defect_free": grade["governance_defect_free"],
+            "governance_defect_free": governance_ok,
             "critical_failures": critical,
             "handoff_condition": args.condition,
             "handoff_created_by_a": handoff_was_present,
             "handoff_degraded": bool(degraded),
             "checks": grade["checks"],
             "changed_files": grade["changed_files"],
+            "scope_metrics": grade["scope_metrics"],
+            "deployment": {
+                "required": True,
+                "binding_ok": integration["binding_ok"],
+                "field_report_recorded": integration["field_report_recorded"],
+                "report_count": integration["report_count"],
+            },
             "preserve_at_checkpoint": preserve_first,
             "preserve_at_finish": preserve_final,
         }
         usage = add_usage(first["usage"], second["usage"])
-        usage["persistent_governance_artifacts"] = grade[
-            "persistent_governance_artifacts"
+        usage["persistent_task_governance_artifacts"] = grade[
+            "persistent_task_governance_artifacts"
         ]
+        usage["managed_project_files"] = grade["managed_project_files"]
 
         trial = {
-            "schema_version": 2,
+            "schema_version": 3,
             "trial_id": str(uuid.uuid4()),
             "pair_id": args.pair_id,
             "scenario_id": lab["id"],
