@@ -2,7 +2,7 @@
   "schema_version": 4,
   "version": "3.0.0-rc.8",
   "candidate": "Universal Continuity Real-Agent Test Freeze",
-  "updated_at": "2026-10-03T19:03:34+08:00",
+  "updated_at": "2026-10-03T19:06:41+08:00",
   "status": "engineering-valid-frozen-ready-for-real-agent-testing",
   "claims": {
     "abrupt_interruption_reconstructable": true,
@@ -21,7 +21,7 @@
     {
       "name": "canonical/runtime architecture",
       "result": "pass",
-      "evidence": "compiler drift check, runtime integrity, repository validation, and machine freeze all passed on RC8 branch Run #180"
+      "evidence": "compiler drift check, runtime integrity, repository validation, and machine freeze passed on RC8 branch Run #180 and default-branch Run #184"
     },
     {
       "name": "abrupt interruption continuity",
@@ -61,12 +61,12 @@
     {
       "name": "privacy hygiene",
       "result": "pass",
-      "evidence": "expanded secret-pattern tests and static security audit passed on RC8 branch Run #180"
+      "evidence": "expanded secret-pattern tests and static security audit passed on RC8 branch Run #180 and default-branch Run #184"
     },
     {
-      "name": "pre-merge freeze validation",
+      "name": "freeze and default-branch validation",
       "result": "pass",
-      "evidence": "Run #180 completed with all 7 formal jobs passing; Python 3.8/3.11/3.13 each passed the 47-test suite"
+      "evidence": "Branch Run #180 and main Run #184 both completed with all 7 formal jobs passing; Python 3.8/3.11/3.13 each passed the 47-test suite"
     }
   ],
   "real_test_blockers": [],
@@ -81,5 +81,12 @@
     "runtime_tree_sha256": "sha256:6b0ad0e208114d8a25684290ed620517ffe66402d2c64a7401ff6cd6392e7d2e",
     "deterministic_package_sha256": "a64aed9c991989f197a8e7ef2581d4c5864ecfdac368bbccffefdcec5e6c3544"
   },
-  "release_notes": "RC8 is ready to begin gray/real-Agent testing under the frozen qualification identity. Stable remains blocked on immutable locked causal evidence, not engineering preflight."
+  "release_notes": "RC8 is ready to begin gray/real-Agent testing under the frozen qualification identity. Stable remains blocked on immutable locked causal evidence, not engineering preflight.",
+  "default_branch_validation": {
+    "run_number": 184,
+    "commit": "8f963843c65c7cf9df88bf1b301144daca51c0cd",
+    "result": "pass",
+    "jobs_passed": 7,
+    "jobs_total": 7
+  }
 }
