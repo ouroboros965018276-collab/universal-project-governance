@@ -196,6 +196,38 @@ class CompiledRuntimeTests(unittest.TestCase):
             self.assertFalse((project / ".governance/field-reports.json").exists())
             self.assertTrue(keep.is_file())
 
+    def test_field_reporting_can_be_structurally_disabled_without_creating_ledger(self):
+        with tempfile.TemporaryDirectory() as td:
+            runtime = pathlib.Path(td) / "runtime"
+            shutil.copytree(RUNTIME, runtime)
+            index_path = runtime / "policy-index.json"
+            index = json.loads(index_path.read_text(encoding="utf-8"))
+            index["project_binding"]["field_test_reporting"] = False
+            index_path.write_text(json.dumps(index, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+            project = pathlib.Path(td) / "project"
+            project.mkdir()
+            tool = runtime / "scripts/project_tool.py"
+            cp = subprocess.run(
+                [PY, str(tool), "install", str(project)],
+                text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+            )
+            self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
+            self.assertTrue((project / ".governance/upg.json").is_file())
+            self.assertFalse((project / ".governance/field-reports.json").exists())
+            binding = json.loads((project / ".governance/upg.json").read_text(encoding="utf-8"))
+            self.assertEqual(binding["managed_files"], [".governance/upg.json"])
+            self.assertFalse(binding["field_test_reporting"])
+
+            bad = project / "report.json"
+            bad.write_text("{}", encoding="utf-8")
+            cp = subprocess.run(
+                [PY, str(tool), "report", str(project), "--input", str(bad)],
+                text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+            )
+            self.assertNotEqual(cp.returncode, 0)
+            self.assertIn("disabled", cp.stderr)
+
     def test_field_report_contract_rejects_incomplete_report(self):
         with tempfile.TemporaryDirectory() as td:
             project = pathlib.Path(td)

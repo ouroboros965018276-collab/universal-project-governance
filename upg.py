@@ -46,21 +46,32 @@ def install(project, agent, source):
         "npx", "-y", SKILLS_CLI, "add", source,
         "--skill", SKILL_NAME, "-a", agent, "--copy", "-y",
     ]
+    preexisting = find_installed(project) is not None
     cp = run(command, project)
     if cp.returncode != 0:
         raise RuntimeError("Skill installation failed: " + cp.stderr[-2000:])
-    skill_dir = find_installed(project)
-    if skill_dir is None:
-        raise RuntimeError("Skill CLI completed but installed Skill could not be located")
-    integrity = run(
-        [sys.executable, str(skill_dir / "scripts/validate_integrity.py"), str(skill_dir)],
-        project,
-    )
-    if integrity.returncode != 0:
-        raise RuntimeError("installed Skill integrity failed: " + integrity.stderr[-2000:])
-    bound = project_tool(skill_dir, project, "install")
-    if bound.returncode != 0:
-        raise RuntimeError("project binding install failed: " + bound.stderr[-2000:])
+    try:
+        skill_dir = find_installed(project)
+        if skill_dir is None:
+            raise RuntimeError("Skill CLI completed but installed Skill could not be located")
+        integrity = run(
+            [sys.executable, str(skill_dir / "scripts/validate_integrity.py"), str(skill_dir)],
+            project,
+        )
+        if integrity.returncode != 0:
+            raise RuntimeError("installed Skill integrity failed: " + integrity.stderr[-2000:])
+        bound = project_tool(skill_dir, project, "install")
+        if bound.returncode != 0:
+            raise RuntimeError("project binding install failed: " + bound.stderr[-2000:])
+    except RuntimeError as exc:
+        if not preexisting:
+            rollback = run(
+                ["npx", "-y", SKILLS_CLI, "remove", SKILL_NAME, "-a", agent, "-y"],
+                project,
+            )
+            if rollback.returncode != 0:
+                raise RuntimeError("%s; automatic Skill rollback also failed: %s" % (exc, rollback.stderr[-1000:]))
+        raise
     print("UPG installed and project binding initialized.")
     return 0
 

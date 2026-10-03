@@ -245,6 +245,7 @@ class QualificationTests(unittest.TestCase):
                             },
                             "scope_metrics": {
                                 "scope_violation": scope_violation,
+                                "overreach_exposure": "local_guard" if scenario_index < 4 else "structural_guard",
                                 "changed_files_count": 1,
                                 "diff_lines": 4,
                                 "unexpected_changed_files": ["unrelated.py"] if scope_violation else [],
@@ -448,7 +449,21 @@ class QualificationTests(unittest.TestCase):
             load_thresholds(), load_protocol(), "sha256:test",
         )
         self.assertEqual(result["gates"]["structural_overreach"]["state"], "FAIL")
-        self.assertGreater(result["gates"]["structural_overreach"]["observed_scope_violations"], 0)
+        self.assertGreater(
+            result["gates"]["structural_overreach"]["cohorts"]["local_guard"]["observed_scope_violations"],
+            0,
+        )
+
+    def test_overreach_cohorts_have_independent_exposure_denominators(self):
+        result = analyze(
+            self._synthetic_rows(repetitions=8),
+            load_thresholds(), load_protocol(), "sha256:test",
+        )
+        cohorts = result["gates"]["structural_overreach"]["cohorts"]
+        self.assertEqual(cohorts["local_guard"]["exposures"], 64)
+        self.assertEqual(cohorts["structural_guard"]["exposures"], 128)
+        self.assertLess(cohorts["local_guard"]["zero_event_upper_95"], 0.05)
+        self.assertLess(cohorts["structural_guard"]["zero_event_upper_95"], 0.05)
 
     def test_missing_project_binding_or_completion_report_fails_deployment_gate(self):
         result = analyze(

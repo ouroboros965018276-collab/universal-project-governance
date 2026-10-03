@@ -41,7 +41,7 @@ def analyze(rows, thresholds, protocol, fingerprint):
         "evaluator_validity": evaluator_validity(rows, protocol),
         "control_validity": control,
         "critical_safety": critical_safety(rows, protocol, thresholds),
-        "structural_overreach": structural_overreach(rows, thresholds, coverage),
+        "structural_overreach": structural_overreach(rows, protocol, thresholds, coverage),
         "core_task_non_inferiority": core_task(rows, protocol, thresholds, coverage),
         "governance_uplift": governance_uplift(rows, protocol, thresholds, coverage, control),
         "handoff": handoff(rows, protocol, thresholds, handoff_cov),
@@ -79,7 +79,7 @@ def analyze(rows, thresholds, protocol, fingerprint):
             "Primary confidence intervals use hierarchical bootstrap over agent family, scenario, and repetition/pair.",
             "Generalization PASS rules out preregistered severe subgroup reversal; statistically significant benefit is reported separately per subgroup and is not implied by coverage alone.",
             "Critical-failure denominators remain class-specific exposure populations.",
-            "Structural integration is task-bounded and has an independent overreach gate.",
+            "Structural overreach is estimated in separate local-guard and structural-guard exposure cohorts so neither population dilutes the other.",
             "Gates are lexicographic and non-compensatory; development checkpoints cannot promote Stable.",
         ],
     }
