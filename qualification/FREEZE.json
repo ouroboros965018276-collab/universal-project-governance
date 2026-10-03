@@ -6,7 +6,7 @@
   ],
   "behavioral_fingerprint": "sha256:1b323ac1c0fb26915e73851b6691c4ed2b8df45c4b17a576a945f4528cc14819",
   "compiler_sha256": "sha256:a6f91b14b57c293bc3c4f77c654d8adaeedd6d5c48d7a207b0f550f30e040d28",
-  "deployment_sha256": "sha256:64d6e60101ff42f4bc07672b3f43dd41fc11ae0a690c2fb9dec6d9e0cc8c01e7",
+  "deployment_sha256": "sha256:c0ba0cfdffcc67b89054e68a469192a56487dc07ebce065de7c1b8ba71405118",
   "evaluator_sha256": "sha256:2d6002466a11bc911ed5a4a52a48da96f713af82cd027a70795366c10749cc45",
   "fixture_set_sha256": "sha256:a5123cbc62bb4fdaacd05b1ae88888bbb745ffa22de1a7fee84c792bae4c9877",
   "freeze_invalidation": "Any change to a frozen surface requires a new qualification fingerprint and invalidates unfinished/claimed evidence under the prior fingerprint.",
@@ -29,7 +29,7 @@
     "qualification/analyze.py"
   ],
   "governance_model_sha256": "sha256:a3f68ebc2485dec36a35f6035e31c27ce0bd52222bde7faf572ce7e712ea078c",
-  "qualification_fingerprint": "sha256:51f26b3da399e8e09ab91e628ddcec92747a6286330fd10f48cbb37ca83a7502",
+  "qualification_fingerprint": "sha256:bc8727c209235d8a1a3b4bd2fe617753b82bdda7305ca8d6846f8081748757da",
   "qualification_protocol_sha256": "sha256:34b337132aa1cc202db7bb2f9c9f7ebd54bdb1465aa050136f9cd22efeeb8031",
   "runner_sha256": "sha256:00968361f77873e292e841e18dbbf8530e632540f24593ed7e9f4f66a139bf54",
   "runtime_tree_sha256": "sha256:fd23154b6be4104de5a1896842dbf23821163539707def9d9c8ad7396577d2a8",
