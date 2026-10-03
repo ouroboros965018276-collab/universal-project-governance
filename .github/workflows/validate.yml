@@ -170,25 +170,3 @@ jobs:
           skill="$(find . -path '*/universal-project-governance/SKILL.md' -type f -print -quit)"
           test -n "$skill"
           python "$GITHUB_WORKSPACE/universal-project-governance/scripts/validate_integrity.py" "$(dirname "$skill")"
-
-
-  rc8-generate-runtime:
-    if: github.ref == 'refs/heads/rc8-universal-continuity-freeze'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
-        with:
-          python-version: '3.11'
-      - name: Compile RC8 generated runtime from canonical source
-        run: python compiler/compile_governance.py --write --confirm-generated-runtime-update
-      - name: Generate RC8 qualification identity
-        run: python tools/qualification_freeze.py . --write --confirm-freeze
-      - name: Upload generated runtime for canonical synchronization
-        uses: actions/upload-artifact@v4
-        with:
-          name: rc8-generated-runtime
-          path: |
-            universal-project-governance/
-            qualification/FREEZE.json
-          if-no-files-found: error
