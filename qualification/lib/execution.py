@@ -4,7 +4,7 @@ import json
 import pathlib
 import uuid
 from datetime import datetime, timezone
-from qualification.lib.contracts import ROOT
+from qualification.lib.contracts import frozen_candidate
 
 def now():
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
@@ -16,11 +16,9 @@ def registration(args, adapter, kind, scenario, arm, condition=None, source=None
     if not args.round_manifest or not args.trial_id:
         raise ValueError("locked trial requires --round-manifest and registered --trial-id")
     manifest = json.loads(pathlib.Path(args.round_manifest).read_text(encoding="utf-8"))
-    freeze = json.loads((ROOT / "qualification/FREEZE.json").read_text(encoding="utf-8"))
-    from tools.qualification_freeze import expected
-    if expected(ROOT) != freeze:
-        raise ValueError("frozen surfaces drifted; no locked execution permitted")
-    protocol = json.loads((ROOT / "qualification/protocol/qualification-v3.json").read_text(encoding="utf-8"))
+    candidate = frozen_candidate()
+    freeze = candidate["identity"]
+    protocol = candidate["protocol"]
     if manifest.get("qualification_fingerprint") != freeze["qualification_fingerprint"] or manifest.get("protocol_revision") != protocol["protocol_revision"]:
         raise ValueError("round candidate fingerprint mismatch")
     slots = [x for x in manifest.get("trials", []) if x.get("trial_id") == args.trial_id]

@@ -67,7 +67,7 @@ Locked q3 preregistration for RC9: minimum three Agent families, hierarchical in
 
 ### fixtures/
 
-Development and locked labs, including cross-domain trigger cases and handoff tasks. Fixtures carry explicit scope and safety contracts.
+Development and locked labs, including cross-domain trigger cases and handoff tasks. Fixtures carry explicit scope and safety contracts. `qualification/lib/contracts.py` supplies the canonical frozen candidate and settings contract to round planning, locked execution and evidence admission; the analyzer dispatches that admission gate.
 
 ### analysis/
 

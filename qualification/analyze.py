@@ -31,24 +31,8 @@ def load_jsonl(paths):
                 rows.append(json.loads(line))
     return rows
 
-def configuration_errors(thresholds, protocol):
-    """The claimed frozen identity cannot authorize relaxed external analysis settings."""
-    errors = []
-    for name, value, filename in [("thresholds", thresholds, "thresholds.json"), ("protocol", protocol, "qualification-v3.json")]:
-        expected = json.loads((ROOT / "qualification/protocol" / filename).read_text(encoding="utf-8"))
-        try:
-            canonical = lambda data: json.dumps(data, sort_keys=True, separators=(",", ":"), allow_nan=False)
-            if canonical(value) != canonical(expected):
-                errors.append(name + " differs from frozen candidate configuration")
-        except (ValueError, TypeError):
-            errors.append(name + " is not a finite JSON configuration")
-    return errors
-
 def analyze(rows, thresholds, protocol, fingerprint, manifest=None):
-    errors = configuration_errors(thresholds, protocol)
-    if errors:
-        return {"schema_version": 3, "qualification_fingerprint": fingerprint, "status": "FAIL", "gates": {"evidence_admission": {"state": "FAIL", "errors": errors, "accepted": 0}}, "sample_sizes": {"rows_total": len(rows)}, "effects": {}, "notes": ["Configuration rejected before inference."]}
-    admission = admit(rows, fingerprint, protocol, manifest)
+    admission = admit(rows, fingerprint, protocol, manifest, thresholds=thresholds)
     if admission["state"] == "FAIL":
         return {"schema_version": 3, "qualification_fingerprint": fingerprint, "status": "FAIL", "gates": {"evidence_admission": admission}, "sample_sizes": {"rows_total": len(rows)}, "effects": {}, "notes": ["Evidence rejected before inference."]}
     coverage = behavioral_coverage(rows, protocol)
