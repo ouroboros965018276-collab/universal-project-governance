@@ -91,7 +91,7 @@ Generalization distinguishes “severe reversal ruled out” from “positive su
 
 ## Current evidence status
 
-RC7 source/runtime/qualification engineering validation is in progress. No real Agent causal result is claimed yet and no `qualification/results/` placeholder exists.
+RC7 source/runtime/qualification engineering validation is complete and the real-Agent test identity is machine-frozen. No real Agent causal result is claimed yet and no `qualification/results/` placeholder exists.
 
 Stable remains blocked until immutable locked real-Agent evidence passes the frozen RC7 protocol.
 

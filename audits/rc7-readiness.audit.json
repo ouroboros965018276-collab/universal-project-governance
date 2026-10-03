@@ -2,8 +2,8 @@
   "schema_version": 3,
   "version": "3.0.0-rc.7",
   "candidate": "Real-Agent Test Freeze",
-  "updated_at": "2026-10-03T15:38:07+08:00",
-  "status": "engineering-validation-in-progress",
+  "updated_at": "2026-10-03T15:43:54+08:00",
+  "status": "engineering-valid-frozen-ready-for-real-agent-testing",
   "claims": {
     "task_bounded_structural_integration": true,
     "hierarchical_inference_preregistered": true,
@@ -15,49 +15,68 @@
   "engineering_gates": [
     {
       "name": "canonical source and compiler",
-      "result": "pending"
+      "result": "pass",
+      "evidence": "Run #93 compiler drift and governance lint passed"
     },
     {
       "name": "generated runtime and integrity",
-      "result": "pending"
+      "result": "pass",
+      "evidence": "3.0.0-rc.7 generated runtime validated; 16 generated runtime files"
     },
     {
       "name": "project lifecycle install/status/export/remove",
-      "result": "pending"
+      "result": "pass",
+      "evidence": "Run #93 one-command lifecycle test passed; unrelated project-owned governance file survived uninstall"
     },
     {
       "name": "field-report contract and privacy bounds",
-      "result": "pending"
+      "result": "pass",
+      "evidence": "valid report/export, incomplete-report rejection, credential-material rejection, bounded ledger tests passed"
     },
     {
       "name": "qualification q3 static validation",
-      "result": "pending"
+      "result": "pass",
+      "evidence": "hierarchical inference, scope exposure, deployment, overreach, subgroup CI and holdout contracts validated"
     },
     {
       "name": "hierarchical/subgroup/overreach regression tests",
-      "result": "pending"
+      "result": "pass",
+      "evidence": "41/41 deterministic tests passed"
     },
     {
       "name": "Python 3.8/3.11/3.13",
-      "result": "pending"
+      "result": "pass",
+      "evidence": "41/41 tests passed independently on all three runtimes"
     },
     {
       "name": "Agent Skills validator and Skills CLI",
-      "result": "pending"
+      "result": "pass",
+      "evidence": "upstream Agent Skills validation and clean Codex-target install passed"
     },
     {
       "name": "security audit",
-      "result": "pending"
+      "result": "pass",
+      "evidence": "no network runtime imports, shell=True, dangerous dynamic execution, symlink-following, or secret-like repository patterns"
+    },
+    {
+      "name": "deterministic package",
+      "result": "pass",
+      "evidence": "all Python runtimes produced SHA-256 15024513eb5b9f9c8b4ed4c891d9eb934e1c143cd0830590f15526730dfcbe5f"
     },
     {
       "name": "real-agent test freeze identity",
-      "result": "pending"
+      "result": "pass",
+      "evidence": "qualification fingerprint sha256:16d0dd363d59d87a4a87478c66940eae2e0bc5da2f75c8262fee369486ba69ec"
     }
   ],
   "real_test_blockers": [
-    "final RC7 generated runtime/freeze",
-    "all engineering CI green",
     "immutable real-Agent qN evidence"
   ],
-  "conclusion": "RC7 is not ready for real locked testing until all engineering gates pass; Stable remains blocked until real locked qualification passes."
+  "conclusion": "RC7 engineering is valid and frozen for real-Agent/gray testing. No causal benefit or Stable claim exists yet; Stable remains blocked until locked real-Agent qualification passes.",
+  "identities": {
+    "behavioral_fingerprint": "sha256:4e52e3b9104e414d4601b6776dee8fe593d80dd2a8c121256e4f4540c1e791ee",
+    "qualification_fingerprint": "sha256:16d0dd363d59d87a4a87478c66940eae2e0bc5da2f75c8262fee369486ba69ec",
+    "runtime_tree_sha256": "sha256:9bc8660a9bce134b6c73cfc75cdcdf01634110d9357f274c13ff88e1d27f6508",
+    "deterministic_package_sha256": "15024513eb5b9f9c8b4ed4c891d9eb934e1c143cd0830590f15526730dfcbe5f"
+  }
 }
