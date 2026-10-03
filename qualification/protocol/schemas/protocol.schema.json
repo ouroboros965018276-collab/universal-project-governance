@@ -15,11 +15,13 @@
     "evaluator_validity",
     "grading",
     "holdout",
-    "stopping"
+    "stopping",
+    "inference",
+    "structural_overreach"
   ],
   "properties": {
     "schema_version": {
-      "const": 2
+      "const": 3
     },
     "protocol_id": {
       "type": "string"
@@ -80,6 +82,12 @@
       "type": "object"
     },
     "stopping": {
+      "type": "object"
+    },
+    "inference": {
+      "type": "object"
+    },
+    "structural_overreach": {
       "type": "object"
     }
   }

@@ -7,20 +7,18 @@ import sys
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from qualification.analysis.coverage import (
-    behavioral_coverage,
-    handoff_coverage,
-    release_rows,
-)
+from qualification.analysis.coverage import behavioral_coverage, handoff_coverage, release_rows
 from qualification.analysis.gates import (
     control_validity,
     core_task,
     critical_safety,
+    deployment_integrity,
     efficiency,
     evaluator_validity,
     generalization,
     governance_uplift,
     handoff,
+    structural_overreach,
     trigger,
 )
 
@@ -39,38 +37,26 @@ def analyze(rows, thresholds, protocol, fingerprint):
 
     gates = {
         "coverage": coverage,
+        "deployment_integrity": deployment_integrity(rows, thresholds, coverage),
         "evaluator_validity": evaluator_validity(rows, protocol),
         "control_validity": control,
         "critical_safety": critical_safety(rows, protocol, thresholds),
-        "core_task_non_inferiority": core_task(rows, thresholds, coverage),
-        "governance_uplift": governance_uplift(
-            rows, thresholds, coverage, control
-        ),
-        "handoff": handoff(rows, thresholds, handoff_cov),
+        "structural_overreach": structural_overreach(rows, thresholds, coverage),
+        "core_task_non_inferiority": core_task(rows, protocol, thresholds, coverage),
+        "governance_uplift": governance_uplift(rows, protocol, thresholds, coverage, control),
+        "handoff": handoff(rows, protocol, thresholds, handoff_cov),
         "trigger": trigger(rows, protocol, thresholds),
         "efficiency": efficiency(rows, thresholds, coverage),
-        "generalization": generalization(
-            rows, protocol, thresholds, coverage
-        ),
+        "generalization": generalization(rows, protocol, thresholds, coverage),
     }
 
-    ordered = {}
-    for name in protocol["gate_order"]:
-        ordered[name] = gates[name]
-
+    ordered = {name: gates[name] for name in protocol["gate_order"]}
     states = [item["state"] for item in ordered.values()]
-    status = (
-        "FAIL"
-        if "FAIL" in states
-        else ("MORE_DATA" if "MORE_DATA" in states else "PASS")
-    )
+    status = "FAIL" if "FAIL" in states else ("MORE_DATA" if "MORE_DATA" in states else "PASS")
+    locked = [row for row in rows if row.get("environment", {}).get("qualification_set") == "locked"]
 
-    locked = [
-        row for row in rows
-        if row.get("environment", {}).get("qualification_set") == "locked"
-    ]
     return {
-        "schema_version": 2,
+        "schema_version": 3,
         "qualification_fingerprint": fingerprint,
         "status": status,
         "gates": ordered,
@@ -85,12 +71,15 @@ def analyze(rows, thresholds, protocol, fingerprint):
         "effects": {
             "governance_uplift": ordered["governance_uplift"],
             "handoff": ordered["handoff"],
-            "control_validity": ordered["control_validity"],
-            "critical_safety": ordered["critical_safety"],
+            "generalization": ordered["generalization"],
+            "structural_overreach": ordered["structural_overreach"],
         },
         "notes": [
             "Release qualification uses locked evidence only.",
-            "Critical-failure denominators are class-specific exposure populations; trigger and mutation trials never inflate safety exposure.",
+            "Primary confidence intervals use hierarchical bootstrap over agent family, scenario, and repetition/pair.",
+            "Generalization PASS rules out preregistered severe subgroup reversal; statistically significant benefit is reported separately per subgroup and is not implied by coverage alone.",
+            "Critical-failure denominators remain class-specific exposure populations.",
+            "Structural integration is task-bounded and has an independent overreach gate.",
             "Gates are lexicographic and non-compensatory; development checkpoints cannot promote Stable.",
         ],
     }
@@ -98,18 +87,11 @@ def analyze(rows, thresholds, protocol, fingerprint):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("inputs", nargs="+")
-    parser.add_argument(
-        "--thresholds",
-        default="qualification/protocol/thresholds.json",
-    )
-    parser.add_argument(
-        "--protocol",
-        default="qualification/protocol/qualification-v2.json",
-    )
+    parser.add_argument("--thresholds", default="qualification/protocol/thresholds.json")
+    parser.add_argument("--protocol", default="qualification/protocol/qualification-v3.json")
     parser.add_argument("--fingerprint", required=True)
     parser.add_argument("--output")
     args = parser.parse_args()
-
     result = analyze(
         load_jsonl(args.inputs),
         json.loads(pathlib.Path(args.thresholds).read_text(encoding="utf-8")),
