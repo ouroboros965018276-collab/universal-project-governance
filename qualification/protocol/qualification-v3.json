@@ -1,9 +1,9 @@
 {
   "schema_version": 3,
   "protocol_id": "upg-q3",
-  "title": "Universal Project Governance 3.0.0-rc.7 Real-Agent Test Freeze",
+  "title": "Universal Project Governance 3.0.0-rc.8 Universal Continuity Real-Agent Test Freeze",
   "status": "locked",
-  "runtime_semantics": "3.0.0-rc.7-bounded-structural-integration",
+  "runtime_semantics": "3.0.0-rc.8-universal-continuity-and-in-place-adoption",
   "design": {
     "paired_counterfactual": true,
     "fresh_context": true,
@@ -15,7 +15,12 @@
     "no_chain_of_thought_required": true,
     "hierarchical_inference": true,
     "field_test_reports_required": true,
-    "structural_overreach_observed": true
+    "structural_overreach_observed": true,
+    "abrupt_interruption_recovery": true,
+    "legacy_project_in_place_adoption": true,
+    "cross_agent_type_handoff": true,
+    "adapter_identity_bound": true,
+    "exactly_one_field_report": true
   },
   "arms": {
     "A0": {
@@ -68,6 +73,10 @@
       "agent_family",
       "model_id",
       "scaffold_version",
+      "adapter_config_sha256",
+      "adapter_runtime_sha256",
+      "host_tool_name",
+      "host_tool_version",
       "tool_profile",
       "budget_profile",
       "pair_id"
@@ -81,7 +90,7 @@
       10,
       12
     ],
-    "minimum_agent_families": 2,
+    "minimum_agent_families": 3,
     "minimum_project_profiles": 2,
     "minimum_locked_behavioral_scenarios": 12,
     "minimum_locked_handoff_scenarios": 6,
@@ -224,7 +233,8 @@
     ],
     "bootstrap_repetitions": 4000,
     "confidence": 0.95,
-    "seed": 1729
+    "seed": 1729,
+    "top_level_claim_guard": "minimum 3 agent families; cross-family generalization is reported separately from within-family precision"
   },
   "structural_overreach": {
     "requires_scope_contract": true,
