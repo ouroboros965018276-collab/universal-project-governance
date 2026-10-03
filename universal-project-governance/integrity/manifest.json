@@ -3,22 +3,22 @@
   "files": {
     "INTEGRITY.md": "01e1e3eb772940fe8259b0cb125cd7712858c6f50d4f2fdcada420aa73d29ab5",
     "LICENSE": "50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a",
-    "SKILL.md": "07b4bd16127c53cc70c80badfc52773da40ee0eb64287b0cd126e24d0f5e6a78",
-    "VERSION.md": "daccd25244ebf1fc8b4babcaf726a08e9d3a42d4005a90f41b756f82995ce9b3",
-    "policy-index.json": "cce1d72d3b2aebc3b548b2c0b36116c964a1aee8e00d15209134c3cc63da390b",
+    "SKILL.md": "a4ccf1c072085a3522e67087ccc15cb9b57eb9ced9a0695829fdd2ab64e682ea",
+    "VERSION.md": "0cfd72c66a08cef602b1fa69c5af4ac13e106289cc21577121166fe319f92d98",
+    "policy-index.json": "aa7ad648aa1505f313e6d24164122ae79a8fd8d5484438f09df56ffca73b39f1",
     "schemas/audit.schema.json": "f62c8a197c6e721df109cfd9c7809cabda28ebdc49a77687ac7ea3d7d13a8e43",
     "schemas/execution.schema.json": "c718df796eab2abe66ee5fb7d28c629e186c33a23543a100b6909764c3a04910",
     "schemas/feedback.schema.json": "c851afed849389001268102fc64ac3e32a30058329b585ad6d1eabc5c0f80e45",
     "schemas/field-report.schema.json": "fb2430097f95f7411ccef8bb1f83ce5b1dd70ff99efcf272feff05eef5a6c51b",
     "schemas/governance-plan.schema.json": "bab369769af52497c10a9cf02c0a7df4483a11452db4c6af1a98dfdb542f373d",
     "schemas/handoff.schema.json": "4f1b798256a57e9160ee9f9e3db8d9e3901e24c0d3a332a4d247ff1af983702d",
-    "schemas/task-context.schema.json": "9383b35fcfb199349b27fc53759413231653b090653f04b2192c4cf63dc174e9",
+    "schemas/task-context.schema.json": "2bca73ed899e836ba3f0a953382c13bf282044b4f6268016b57a877539f39082",
     "scripts/plan_governance.py": "19d2228a07cdcf32546599144e6900d2e29357b29fb1c5a377f327cbcd7652f7",
-    "scripts/project_tool.py": "496ef0123c941e59777e1a20e6afe65378c078c7a659abefd5e7da81f11a9eeb",
+    "scripts/project_tool.py": "2f6e41dc453323695e8f465e305a1b54ee17538afdd2190954017d3b3102c766",
     "scripts/state_tool.py": "99227b02c6bcf552863a5075c6c5db8eb14c21290c0c2b6a06d94884c5a79082",
     "scripts/validate_integrity.py": "cf09558e67b4488db88c5ce9836e9f1cf1c8bae97d6e1444bb9d2d80409157c0"
   },
-  "generated_for_version": "3.0.0-rc.7",
+  "generated_for_version": "3.0.0-rc.8",
   "schema_version": 1,
-  "source_sha256": "9832f194e352b6bc7af4e5a8bb6b2a99e04bfd74dfa86e2e44488c830eb587b6"
+  "source_sha256": "cb5b2664d25588c2b992ab10dceba7991af6c9ab0ead9b3247aec4ede59a7ab2"
 }
