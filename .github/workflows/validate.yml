@@ -188,5 +188,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: rc8-generated-runtime
-          path: universal-project-governance/
+          path: |
+            universal-project-governance/
+            qualification/FREEZE.json
           if-no-files-found: error
