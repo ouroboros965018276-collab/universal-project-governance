@@ -288,10 +288,10 @@ def validate_report(report):
         r"g" + r"hp_[A-Za-z0-9]{20,}",
         r"github" + r"_pat_[A-Za-z0-9_]{20,}",
         r"AK" + r"IA[0-9A-Z]{16}",
-        r"(?i)\\bBearer\\s+[A-Za-z0-9._~+/-]{16,}={0,2}",
-        r"\\beyJ[A-Za-z0-9_-]{8,}\\.[A-Za-z0-9_-]{8,}\\.[A-Za-z0-9_-]{8,}\\b",
-        r"(?i)\\b(?:password|passwd|pwd|secret|api[_-]?key|access[_-]?token|refresh[_-]?token)\\s*[:=]\\s*[^,;\\s]{6,}",
-        r"(?i)\\b(?:postgres(?:ql)?|mysql|mongodb(?:\\+srv)?|redis)://[^/\\s:@]+:[^@\\s]+@",
+        r"(?i)\bBearer\s+[A-Za-z0-9._~+/-]{16,}={0,2}",
+        r"\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\b",
+        r"(?i)\b(?:password|passwd|pwd|secret|api[_-]?key|access[_-]?token|refresh[_-]?token)\s*[:=]\s*[^,;\s]{6,}",
+        r"(?i)\b(?:postgres(?:ql)?|mysql|mongodb(?:\+srv)?|redis)://[^/\s:@]+:[^@\s]+@",
     ]
     if any(re.search(pattern, encoded) for pattern in sensitive_patterns):
         errors.append("field report appears to contain credential or secret material")
