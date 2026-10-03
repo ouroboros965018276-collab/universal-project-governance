@@ -17,7 +17,7 @@ from registration_fixture import registered_fixture, freeze
 def analyze(rows, thresholds, protocol, fingerprint):
     registered, manifest = registered_fixture(rows)
     # Synthetic engine tests deliberately use shorter bootstrap loops; production binds full settings.
-    with patch("qualification.analysis.admission.verify_artifact", return_value=[]), patch("qualification.analyze.configuration_errors", return_value=[]):
+    with patch("qualification.analysis.admission.verify_artifact", return_value=[]), patch("qualification.analysis.admission.configuration_errors", return_value=[]):
         return production_analyze(registered, thresholds, protocol, freeze()["qualification_fingerprint"], manifest)
 from qualification.analysis.gates import critical_safety
 from qualification.analysis.metrics import hierarchical_bootstrap_delta, zero_event_upper_bound

@@ -26,7 +26,10 @@ from qualification.round_manifest import build_manifest
 from tools.qualification_freeze import expected
 from registration_fixture import registered_fixture, freeze, change
 import test_qualification as legacy
-from qualification.analyze import analyze as release_analyze, configuration_errors
+from qualification.analyze import analyze as release_analyze
+from qualification.lib.contracts import configuration_errors
+from qualification.lib.execution import registration
+from types import SimpleNamespace
 
 def report(workflow='test-workflow', parent=None):
     metadata = change(); metadata['parent_event_id'] = parent
@@ -64,7 +67,7 @@ class RC9Tests(unittest.TestCase):
 
     def admission(self, rows, manifest, fingerprint=None):
         with patch('qualification.analysis.admission.verify_artifact', return_value=[]):
-            return admit(rows, fingerprint or freeze()['qualification_fingerprint'], legacy.load_protocol(), manifest)
+            return admit(rows, fingerprint or freeze()['qualification_fingerprint'], legacy.load_protocol(full_inference=True), manifest, thresholds=legacy.load_thresholds())
 
     def test_admission_requires_manifest_and_correct_fingerprint(self):
         rows, manifest = self.registered()
@@ -79,6 +82,14 @@ class RC9Tests(unittest.TestCase):
         self.assertEqual(self.admission(rows, manifest, 'sha256:'+'0'*64)['state'], 'FAIL')
         with patch('tools.qualification_freeze.expected',return_value={}):
             self.assertEqual(self.admission(rows,manifest)['state'],'FAIL')
+            self.assertEqual(release_analyze([], thresholds, formal, freeze()['qualification_fingerprint'])['status'], 'FAIL')
+            with self.assertRaises(ValueError):
+                build_manifest('drifted', [], 8, 1729)
+            with tempfile.TemporaryDirectory() as td:
+                path=write(pathlib.Path(td)/'round.json',manifest)
+                args=SimpleNamespace(locked_holdout=True,round_manifest=str(path),trial_id='unexecuted')
+                with self.assertRaises(ValueError):
+                    registration(args, None, 'behavioral', 'unused', 'A2')
         rows[0]['fingerprints']['qualification'] = 'sha256:'+'0'*64
         self.assertEqual(self.admission(rows, manifest)['state'], 'FAIL')
 

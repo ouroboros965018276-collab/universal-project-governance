@@ -4,7 +4,7 @@ import json
 import re
 from collections import Counter
 from datetime import datetime
-from qualification.lib.contracts import ROOT, validate_node
+from qualification.lib.contracts import ROOT, validate_node, frozen_candidate, configuration_errors
 
 def digest(value):
     return "sha256:" + hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")).hexdigest()
@@ -27,16 +27,19 @@ def verify_artifact(row):
     except (KeyError, OSError, ValueError, TypeError):
         return ["retained artifact unreadable or malformed"]
 
-def admit(rows, fingerprint, protocol, manifest=None):
-    if not rows:
-        return {"state": "MORE_DATA", "errors": [], "accepted": 0}
-    errors = []
-    freeze = json.loads((ROOT / "qualification/FREEZE.json").read_text(encoding="utf-8"))
-    from tools.qualification_freeze import expected
-    if expected(ROOT) != freeze:
-        errors.append("frozen source/runtime/evaluator drift detected")
+def admit(rows, fingerprint, protocol, manifest=None, *, thresholds):
+    try:
+        candidate = frozen_candidate()
+    except (OSError, ValueError):
+        return {"state": "FAIL", "errors": ["frozen candidate unavailable or drifted"], "accepted": 0}
+    freeze = candidate["identity"]
+    errors = configuration_errors(thresholds, protocol, candidate)
     if fingerprint != freeze["qualification_fingerprint"]:
         errors.append("requested fingerprint differs from candidate freeze")
+    if errors:
+        return {"state": "FAIL", "errors": errors, "accepted": 0}
+    if not rows:
+        return {"state": "MORE_DATA", "errors": [], "accepted": 0}
     if not isinstance(manifest, dict):
         return {"state": "FAIL", "errors": errors + ["registered round manifest required"], "accepted": 0}
     if manifest.get("qualification_fingerprint") != fingerprint or manifest.get("protocol_revision") != protocol.get("protocol_revision"):

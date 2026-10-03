@@ -6,7 +6,7 @@
   "time_source": "local UTC acceptance checkpoint; not commit or original modification time",
   "base_revision": "2127d022d3bb0db636324b0355ef307993486371",
   "previous_event": "RC8 audit/HANDOFF.md; historical checkpoint timestamps remain stated, not observed work times",
-  "qualification_fingerprint": "sha256:f6b01ea1d233759b1626d94cdf478537f6798ee4b6112d13be55a03b067ac95a",
+  "qualification_fingerprint": "sha256:054864a6c2675610f23dfed718416109346dfd4f3bb47bf38c6323b3de321b86",
   "behavioral_fingerprint": "sha256:2883028e85e060af2d12e54e938ce7c52df074e66b9a1ef2b59f09a588afd796",
   "status": "engineering-accepted-awaiting-separate-real-agent-phase",
   "real_agent_execution": false,
@@ -91,14 +91,14 @@
     "source": "Run #189 logs and candidate verification",
     "parent_revision": "31896578b73ae0207d2a1bf8d35ad8ff5608b4a7"
   },
-  "final_observed_at": "2026-10-03T13:44:14.480584Z",
+  "final_observed_at": "2026-10-03T14:08:34.960184Z",
   "candidate_ci": {
-    "run": 197,
-    "id": 37126953713,
-    "url": "https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/37126953713",
-    "revision": "b9bde7c20574c9e93cc983134c6c306ee29fba1e",
     "result": "PASS",
+    "run": 203,
+    "id": 37128361654,
     "jobs": 9,
+    "revision": "e3916a8aab43e23054127b65844916ce6aa50c8b",
+    "url": "https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/37128361654",
     "linux_python": [
       "3.8",
       "3.11",
@@ -110,7 +110,7 @@
     ],
     "upstream_agent_skills": "PASS",
     "skills_cli_install_lifecycle": "PASS",
-    "default_branch_private_install": "observe after this amendment reaches main"
+    "default_branch_private_install": "previous main Run #200 PASS; observe on new promoted main"
   },
   "installed_skill": {
     "host": "local Codex user Skills directory",
@@ -125,14 +125,13 @@
     "generated_runtime_identical_to_current_candidate": true
   },
   "final_documentation_change": {
-    "function": "record final configuration-identity acceptance and continuity",
-    "before": "final amendment local-pass/CI-required checkpoint",
-    "after": "Run #197 nine jobs PASS and production CLI negative acceptance PASS",
-    "why": "close pending verification with observed results, preserving separate change and observation times",
-    "source": "Run #197 and local production CLI acceptance",
-    "observed_at": "2026-10-03T13:44:14.480584Z",
-    "time_source": "local UTC record observation; original edit-start unknown, not Git commit time",
-    "parent_revision": "b9bde7c20574c9e93cc983134c6c306ee29fba1e",
+    "observed_at": "2026-10-03T14:08:34.960184Z",
+    "time_source": "local UTC acceptance observation; original edit-start unknown; Git commit time separate",
+    "parent_revision": "e3916a8aab43e23054127b65844916ce6aa50c8b",
+    "function": "seal observed canonical-contract engineering acceptance",
+    "before": "structural integration local pass awaiting CI",
+    "after": "Run #203 nine jobs PASS",
+    "why": "close pending validation with actual remote evidence",
     "frozen_surfaces_changed": false
   },
   "configuration_identity": {
@@ -155,7 +154,7 @@
     "private_default_branch_install": "PASS",
     "note": "job collection lagged Linux 3.11; downloaded log and all detailed steps confirm tests/packaging/cleanup PASS. The new fingerprint still needs new CI."
   },
-  "verified_frozen_revision": "b9bde7c20574c9e93cc983134c6c306ee29fba1e",
+  "verified_frozen_revision": "e3916a8aab43e23054127b65844916ce6aa50c8b",
   "previous_frozen_candidate_ci": {
     "run": 191,
     "id": 37125887444,
@@ -178,6 +177,48 @@
   "configuration_cli_acceptance": {
     "identical_copied_configuration_no_data": "MORE_DATA; exit 2",
     "relaxed_thresholds": "FAIL; exit 1",
+    "real_agent_execution": false
+  },
+  "previous_configuration_acceptance": {
+    "candidate_ci": {
+      "run": 197,
+      "id": 37126953713,
+      "url": "https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/37126953713",
+      "revision": "b9bde7c20574c9e93cc983134c6c306ee29fba1e",
+      "result": "PASS",
+      "jobs": 9,
+      "linux_python": [
+        "3.8",
+        "3.11",
+        "3.13"
+      ],
+      "windows_python": [
+        "3.11",
+        "3.13"
+      ],
+      "upstream_agent_skills": "PASS",
+      "skills_cli_install_lifecycle": "PASS",
+      "default_branch_private_install": "observe after this amendment reaches main"
+    },
+    "verified_frozen_revision": "b9bde7c20574c9e93cc983134c6c306ee29fba1e",
+    "final_observed_at": "2026-10-03T13:44:14.480584Z"
+  },
+  "structural_contract_integration": {
+    "observed_at": "2026-10-03T14:03:08.697711Z",
+    "time_source": "local UTC observation; edit-start unknown",
+    "parent_revision": "683b1ff0f85b36e9db38557d893051dcbc29ba50",
+    "canonical_layer": "qualification/lib/contracts.py",
+    "consumers": [
+      "round_manifest",
+      "lib/execution",
+      "analysis/admission"
+    ],
+    "removed": [
+      "duplicated freeze checks",
+      "analyzer-only configuration rejection"
+    ],
+    "reason": "owner structural integration instruction and audited configuration identity contract",
+    "tests": 69,
     "real_agent_execution": false
   }
 }

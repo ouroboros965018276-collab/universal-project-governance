@@ -11,10 +11,12 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from qualification.adapters.command_adapter import CommandAdapter
 from qualification.trigger_suite import build
+from qualification.lib.contracts import frozen_candidate
 
 def build_manifest(round_id, adapters, repetitions, seed):
-    protocol = json.loads((ROOT / "qualification/protocol/qualification-v3.json").read_text(encoding="utf-8"))
-    freeze = json.loads((ROOT / "qualification/FREEZE.json").read_text(encoding="utf-8"))
+    candidate = frozen_candidate()
+    protocol = candidate["protocol"]
+    freeze = candidate["identity"]
     if not round_id or not protocol["sampling"]["locked_repetitions_per_cell_min"] <= repetitions <= protocol["sampling"]["locked_repetitions_per_cell_max"]:
         raise ValueError("round ID and preregistered repetition range required")
     families = [a.config.get("agent", {}).get("family") for a in adapters]
