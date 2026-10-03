@@ -3,7 +3,7 @@
   "version": "3.0.0-rc.6",
   "candidate": "Structural Integration & Qualification Hardening",
   "updated_at": "2026-10-03T14:17:00+08:00",
-  "status": "engineering-validation-in-progress",
+  "status": "framework-engineering-valid-ready-for-main-promotion",
   "claims": {
     "structural_integration_canonical": true,
     "qualification_protocol_v2": true,
@@ -13,43 +13,58 @@
   "engineering_gates": [
     {
       "name": "canonical model + compiler",
-      "result": "pending"
+      "result": "pass",
+      "evidence": "branch Run #71"
     },
     {
       "name": "generated runtime drift",
-      "result": "pending"
+      "result": "pass",
+      "evidence": "compiler --check passed on generated 3.0.0-rc.6 runtime"
     },
     {
       "name": "qualification v2 static validation",
-      "result": "pending"
+      "result": "pass",
+      "evidence": "protocol v2, exposure model, locked sampling, thresholds and fixtures validated"
     },
     {
       "name": "coverage/safety/control/handoff/efficiency/generalization tests",
-      "result": "pending"
+      "result": "pass",
+      "evidence": "31/31 deterministic tests exercise all seven pre-qualification defects plus structural mode"
     },
     {
       "name": "Python 3.8/3.11/3.13",
-      "result": "pending"
+      "result": "pass",
+      "evidence": "31/31 tests passed independently on all three runtimes"
     },
     {
       "name": "upstream Agent Skills validator",
-      "result": "pending"
+      "result": "pass",
+      "evidence": "skills-ref==0.1.1 validation passed"
     },
     {
-      "name": "Skills CLI local/private install",
-      "result": "pending"
+      "name": "Skills CLI local install",
+      "result": "pass",
+      "evidence": "skills@1.7.0 clean Codex-target install and installed-copy integrity passed"
+    },
+    {
+      "name": "private default-branch install",
+      "result": "pending",
+      "evidence": "requires promotion to main"
     },
     {
       "name": "deterministic package",
-      "result": "pending"
+      "result": "pass",
+      "evidence": "all Python runtimes produced SHA-256 5b2996b1291b7c67636f5caa3d109c23bcce3da96d127c60d44195013dda7dc8"
     },
     {
       "name": "security audit",
-      "result": "pending"
+      "result": "pass",
+      "evidence": "branch Run #71 static security audit passed"
     },
     {
       "name": "machine qualification freeze",
-      "result": "pending"
+      "result": "pass",
+      "evidence": "qualification fingerprint sha256:468c5cd41d33c94d908778421d8b5bc74b067563777aa8a1deb1fd9305b5dcc3"
     }
   ],
   "qualification_blockers": [
@@ -61,5 +76,10 @@
     "subgroup generalization evidence",
     "immutable locked summary PASS"
   ],
-  "conclusion": "RC6 is not Stable until engineering gates and real locked qualification both pass."
+  "conclusion": "RC6 structural runtime and qualification v2 framework are engineering-valid and machine-frozen. Real locked Agent qualification is still pending; Stable remains blocked.",
+  "identities": {
+    "behavioral_fingerprint": "sha256:313f7d2107235494d6e16e21f23259a0136d518b1685845f67c92797d5b49460",
+    "qualification_fingerprint": "sha256:468c5cd41d33c94d908778421d8b5bc74b067563777aa8a1deb1fd9305b5dcc3",
+    "deterministic_package_sha256": "5b2996b1291b7c67636f5caa3d109c23bcce3da96d127c60d44195013dda7dc8"
+  }
 }
