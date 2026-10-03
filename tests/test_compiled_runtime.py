@@ -66,7 +66,7 @@ class CompiledRuntimeTests(unittest.TestCase):
 
     def test_plan_cases(self):
         data = json.loads(
-            (ROOT / "evals/governance_plan_cases.json").read_text(
+            (ROOT / "tests/fixtures/governance_plan_cases.json").read_text(
                 encoding="utf-8"
             )
         )
