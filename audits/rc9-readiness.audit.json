@@ -8,7 +8,7 @@
   "previous_event": "RC8 audit/HANDOFF.md; historical checkpoint timestamps remain stated, not observed work times",
   "qualification_fingerprint": "sha256:f6b01ea1d233759b1626d94cdf478537f6798ee4b6112d13be55a03b067ac95a",
   "behavioral_fingerprint": "sha256:2883028e85e060af2d12e54e938ce7c52df074e66b9a1ef2b59f09a588afd796",
-  "status": "configuration-identity-remediation-local-pass-final-ci-required",
+  "status": "engineering-accepted-awaiting-separate-real-agent-phase",
   "real_agent_execution": false,
   "stable_promoted": false,
   "scope": {
@@ -91,11 +91,12 @@
     "source": "Run #189 logs and candidate verification",
     "parent_revision": "31896578b73ae0207d2a1bf8d35ad8ff5608b4a7"
   },
-  "final_observed_at": "2026-10-03T13:25:19.218054Z",
+  "final_observed_at": "2026-10-03T13:44:14.480584Z",
   "candidate_ci": {
-    "run": 191,
-    "id": 37125887444,
-    "url": "https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/37125887444",
+    "run": 197,
+    "id": 37126953713,
+    "url": "https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/37126953713",
+    "revision": "b9bde7c20574c9e93cc983134c6c306ee29fba1e",
     "result": "PASS",
     "jobs": 9,
     "linux_python": [
@@ -109,7 +110,7 @@
     ],
     "upstream_agent_skills": "PASS",
     "skills_cli_install_lifecycle": "PASS",
-    "default_branch_private_install": "must be checked on main after promotion"
+    "default_branch_private_install": "observe after this amendment reaches main"
   },
   "installed_skill": {
     "host": "local Codex user Skills directory",
@@ -120,15 +121,18 @@
     "engineering_lifecycle": "PASS",
     "source_revision": "cf81a667722ce8edcfaec4c1dd07666b32e6a4e8",
     "scope": "runtime helpers in synthetic temporary project; no actual Agent execution",
-    "discovery": "new Skill catalog refresh at next task/session; no remote model-service-wide install claimed"
+    "discovery": "new Skill catalog refresh at next task/session; no remote model-service-wide install claimed",
+    "generated_runtime_identical_to_current_candidate": true
   },
   "final_documentation_change": {
-    "function": "current readiness and handoff truth",
-    "why": "replace pending-CI checkpoint with observed acceptance, preserving original failed-run evidence",
-    "source": "Run #191 and local installed-runtime acceptance",
-    "observed_at": "2026-10-03T13:25:19.218054Z",
-    "time_source": "local UTC record observation; not commit time",
-    "parent_revision": "cf81a667722ce8edcfaec4c1dd07666b32e6a4e8",
+    "function": "record final configuration-identity acceptance and continuity",
+    "before": "final amendment local-pass/CI-required checkpoint",
+    "after": "Run #197 nine jobs PASS and production CLI negative acceptance PASS",
+    "why": "close pending verification with observed results, preserving separate change and observation times",
+    "source": "Run #197 and local production CLI acceptance",
+    "observed_at": "2026-10-03T13:44:14.480584Z",
+    "time_source": "local UTC record observation; original edit-start unknown, not Git commit time",
+    "parent_revision": "b9bde7c20574c9e93cc983134c6c306ee29fba1e",
     "frozen_surfaces_changed": false
   },
   "configuration_identity": {
@@ -150,5 +154,30 @@
     "run_result": "success",
     "private_default_branch_install": "PASS",
     "note": "job collection lagged Linux 3.11; downloaded log and all detailed steps confirm tests/packaging/cleanup PASS. The new fingerprint still needs new CI."
+  },
+  "verified_frozen_revision": "b9bde7c20574c9e93cc983134c6c306ee29fba1e",
+  "previous_frozen_candidate_ci": {
+    "run": 191,
+    "id": 37125887444,
+    "url": "https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/37125887444",
+    "result": "PASS",
+    "jobs": 9,
+    "linux_python": [
+      "3.8",
+      "3.11",
+      "3.13"
+    ],
+    "windows_python": [
+      "3.11",
+      "3.13"
+    ],
+    "upstream_agent_skills": "PASS",
+    "skills_cli_install_lifecycle": "PASS",
+    "default_branch_private_install": "must be checked on main after promotion"
+  },
+  "configuration_cli_acceptance": {
+    "identical_copied_configuration_no_data": "MORE_DATA; exit 2",
+    "relaxed_thresholds": "FAIL; exit 1",
+    "real_agent_execution": false
   }
 }

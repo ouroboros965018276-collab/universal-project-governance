@@ -2,7 +2,7 @@
 
 Current candidate: **3.0.0-rc.9 — Evidence and Continuity Hardening**.
 
-The prior RC9 candidate passed engineering acceptance. The final configuration-identity amendment below requires new CI under its new qualification fingerprint. No real Agent/dev-smoke/locked round ran; Stable remains blocked.
+The final RC9 configuration-identity amendment passed Run #197 with nine successful jobs and 69 tests per Python runtime. This checkpoint seals observed acceptance; real Agent testing remains a separate phase. No real Agent/dev-smoke/locked round ran; Stable remains blocked.
 
 ## Function and bounded architecture
 
@@ -36,4 +36,8 @@ Use causal parents and monotonic sequence for order. Occurrence times require so
 
 ## Latest meaningful change: configuration identity amendment
 
-Observation 2026-10-03T13:38:06.967238Z (local UTC; original edit-start unknown). Prior main `8e7d3516392f85765cd243a0742fd010eb77153a` was committed `2026-10-03T13:26:59Z`; Run #194 succeeded, including private default-branch installation. Final independent review found that the analyzer accepted custom external thresholds/protocol while still labeling results with the candidate fingerprint. The responsible analyzer now rejects changed settings before inference; identical copied configuration remains allowed. A negative regression covers relaxed thresholds and shortened inference settings. This changes qualification identity to `sha256:f6b01ea1d233759b1626d94cdf478537f6798ee4b6112d13be55a03b067ac95a`; runtime/policies/installation bytes are unchanged, and the package digest remains the same. New CI is required before completing this amendment. No actual Agent evidence exists or is invalidated.
+Observation 2026-10-03T13:38:06.967238Z (local UTC; original edit-start unknown). Prior main `8e7d3516392f85765cd243a0742fd010eb77153a` was committed `2026-10-03T13:26:59Z`; Run #194 succeeded, including private default-branch installation. Final independent review found that the analyzer accepted custom external thresholds/protocol while still labeling results with the candidate fingerprint. The responsible analyzer now rejects changed settings before inference; identical copied configuration remains allowed. A negative regression covers relaxed thresholds and shortened inference settings. This changes qualification identity to `sha256:f6b01ea1d233759b1626d94cdf478537f6798ee4b6112d13be55a03b067ac95a`; runtime/policies/installation bytes are unchanged, and the package digest remains the same. Run #197 now validates this amendment with all nine jobs PASS; identical copied settings return MORE_DATA without data and relaxed thresholds FAIL at the production CLI. No actual Agent evidence exists or is invalidated.
+
+## Final acceptance observation
+
+At 2026-10-03T13:44:14.480584Z (local UTC record observation, not code/commit time), [Run #197](https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/37126953713) validated full frozen revision `b9bde7c20574c9e93cc983134c6c306ee29fba1e`. This documentation update records those observations without changing frozen bytes. The qualification fingerprint is the current value in `qualification/FREEZE.json`; the older fingerprint above belongs to the explicitly previous accepted checkpoint. Current main CI and private default-branch installation are read from GitHub checks on the actual promoted commit, rather than invented before promotion. Runtime/install/package bytes remain identical. The current readiness snapshot records which revision was verified and why the amendment followed the earlier accepted RC9 state.
