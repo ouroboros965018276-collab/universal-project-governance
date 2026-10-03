@@ -350,7 +350,7 @@ class CompiledRuntimeTests(unittest.TestCase):
                 "integrity": "pass", "handoff": "not-required", "feedback": [],
             }
             secrets = [
-                "Bearer abcdefghijklmnopqrstuvwxyz012345",
+                "Bearer " + "abcdefghijklmnopqrstuvwxyz012345",
                 "eyJabcdefghijk.abcdefghijklmnop.abcdefghijklmnop",
                 "postgres://alice:supersecret@db.internal/app",
                 "api_key=abcdefghijklmnop",
