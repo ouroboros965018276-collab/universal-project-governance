@@ -334,7 +334,7 @@ class CompiledRuntimeTests(unittest.TestCase):
                 text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
             )
             self.assertNotEqual(cp.returncode, 0)
-            self.assertIn("credential material", cp.stderr)
+            self.assertIn("credential or secret material", cp.stderr)
 
     def test_field_report_rejects_bearer_jwt_and_database_credentials(self):
         with tempfile.TemporaryDirectory() as td:
