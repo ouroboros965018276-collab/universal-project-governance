@@ -1,25 +1,27 @@
 # Security
 
-Universal Project Governance inherits host Agent permissions. Install only from trusted sources and review repository/release provenance before privileged use.
+Universal Project Governance inherits host Agent permissions. Treat repository provenance, Skill integrity, adapter execution, and qualification isolation as security boundaries.
 
-## Runtime
+## Runtime integrity
 
-The Skill remains compiler-generated and SHA-256 integrity checked. The manifest is tamper-evident, not an authorization boundary; VCS/CI/release identity remains the external trust anchor.
+The installable runtime is compiler-generated and SHA-256 integrity checked. The manifest detects drift; it is not an authorization boundary. Git/CI/release identity remains the external trust anchor.
 
-## RC5 qualification security
+## Qualification isolation
 
-Formal locked experiments require strong workspace isolation. A subprocess current directory alone is not sufficient holdout isolation.
+Locked trials require externally enforced sandbox/container/VM isolation. A working-directory boundary is insufficient.
 
-Do not expose to an Agent under test locked oracle/expected-state files, hidden grader logic, other experimental-arm workspaces, or prior-trial reports/handoffs.
+Never expose locked oracle/check definitions, other experimental arms, prior-trial answers, or hidden graders to the Agent under test.
+
+## Safety measurement integrity
+
+Critical-failure confidence is computed from explicit exposure populations. Do not add non-exposing trigger/mutation/ablation rows to safety denominators.
 
 ## Evidence privacy
 
-Qualification does not require private chain-of-thought. Raw traces may contain repository source, paths, command output, credentials accidentally printed by tools, or provider metadata. Keep raw traces in controlled artifact storage by default. Commit only reviewed manifests, hashes, aggregates, and summaries.
+Private chain-of-thought is not required.
 
-Do not place secrets, credentials, raw private datasets, or unnecessary source contents into handoff/evaluation evidence.
+Raw traces can contain source code, command output, paths, provider metadata, or accidental credentials. Keep raw traces in controlled artifact storage; commit only reviewed evidence needed for audit.
 
 ## Adapter trust
 
-Provider adapters and external harnesses are part of the qualification trust boundary. Record adapter/scaffold/model/environment identity in each formal qualification round.
-
-Before public release, configure a documented private vulnerability-reporting channel.
+Record Agent family, model ID, scaffold version, tool profile, budget profile, isolation mode, and usage measurements for formal trials.

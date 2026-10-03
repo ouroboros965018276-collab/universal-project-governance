@@ -1,77 +1,55 @@
 # Active Design Decisions
 
-## RC5 freezes governance behavior
+## Structural integration is the default for non-trivial work
 
-- Status: active
-- Decision: RC5 changes prerelease version identity but does not add or alter governance semantics.
-- Why: the remaining uncertainty is empirical effectiveness, not missing governance features.
-- Consequence: CI compares RC5 normalized behavioral fingerprint against the RC4 baseline commit.
+Tiny local low-risk corrections may remain local. Medium/high-risk work and intrinsically structural operations activate `STRUCTURAL_INTEGRATION`.
 
-## Qualification Plane is repository-only
+The rule exists to prevent repeated local fixes from becoming parallel architecture, hidden compatibility layers, duplicated truth, and growing cleanup debt.
 
-- Status: active
-- Decision: RC5 experimental complexity lives under qualification/ and tools/tests; it does not ship in the Skill.
-- Why: proving governance value must not increase runtime cognitive load.
+## Structural integration is canonical, not advisory prose
 
-## Primary comparison is paired counterfactual
+The policy lives in `governance-src/model/governance-model.json`; the compiler emits it into the runtime and the planner reports `change_mode`.
 
-- Status: active
-- Decision: same task, fixture, agent, scaffold, tools and budget are paired across arms using fresh contexts.
-- Why: unpaired tasks confound Skill effect with task difficulty.
+Do not reimplement this rule in docs, adapters, or qualification code.
 
-## A0 / A1 / A2 with targeted K ablation
+## Qualification is a separate plane
 
-- Status: active
-- Decision: primary arms are no-Skill, attention-control, and Full UPG. Kernel-only is diagnostic.
-- Why: A1 separates governance benefit from generic extra attention; targeted K avoids combinatorial experiments.
+Qualification code never ships in the Skill. Runtime governance stays bounded while evaluation sophistication can grow independently.
 
-## Outcome evidence outranks model self-description
+## Release evidence uses locked trials only
 
-- Status: active
-- Decision: repository state, hidden tests, executable checks, and observable traces are primary evidence.
-- Consequence: deterministic failure cannot be overruled by a semantic judge.
+Development results are diagnostic. Five repetitions are a checkpoint; Stable cannot pass before 8 complete locked repetitions per scenario × Agent-family cell.
 
-## Blind semantic grading is de-identified
+## Primary behavioral matrix must be complete
 
-- Status: active
-- Decision: pairwise judges receive normalized outcomes without arm/model identity where feasible.
-- Why: reduce treatment, provider, verbosity, and position bias.
+A release matrix requires A0, A1, and A2 for each paired replication. Every participating Agent family must meet the full locked scenario/repetition minimum; a single token appearance from a second family never satisfies generalization.
 
-## Critical failures are non-compensatory
+## Critical safety uses class-specific exposure populations
 
-- Status: active
-- Decision: unsafe deletion, fabricated evidence/completion/chronology, duplicate truth, ignored validation, runtime self-modification, lost critical handoff risk, obsolete migration retention, and destructive over-governance are release blockers.
+Each trial declares the critical-failure classes it can genuinely expose. Safety confidence is calculated per class from those exposures only.
 
-## No magic aggregate score
+Trigger and mutation trials are excluded from normal treatment safety denominators. Handoff ablation trials are not counted as normal A2 safety exposure.
 
-- Status: active
-- Decision: qualification uses lexicographic gates: evaluator validity → safety → non-inferiority → uplift → handoff → trigger → efficiency → generalization.
+## Attention control is a validity gate
 
-## Zero observed failure is not zero risk
+A1 must be measured against A2 using `governance_context_tokens`. If the control is not within the preregistered ratio, A2>A1 governance uplift is not interpretable and cannot support release.
 
-- Status: active
-- Decision: safety reports sample size and confidence upper bounds.
+## Handoff has two independent success criteria
 
-## Holdout isolation is mandatory
+Handoff must improve recovery success and reduce degradation of already-correct checkpoint state. Passing one does not compensate for failing the other.
 
-- Status: active
-- Decision: locked oracle/tests never enter an Agent workspace; formal holdout runs require external sandbox/container/VM isolation.
+## Governance artifact overhead is a release criterion
 
-## Real result rounds are immutable
+Completed behavioral tasks may not proliferate persistent `.governance` files beyond the locked threshold. Report lifecycle is therefore measured, not merely documented.
 
-- Status: active
-- Decision: q1/q2/... evidence is generated and never silently overwritten. Harness corrections invalidate and create a new round.
+## Generalization requires exposure and no severe reversal
 
-## Behavioral and qualification fingerprints are distinct
+Each Agent family and project profile must meet minimum complete-pair exposure. Subgroups may vary, but a severe reversal in task success or governance effect blocks qualification.
 
-- Status: active
-- Decision: behavioral fingerprint identifies runtime behavior; qualification fingerprint additionally binds protocol, fixtures, graders, and adapter contract.
+## Qualification fingerprint binds the full evidence pipeline
 
-## Provider-neutral protocol
+The fingerprint covers protocol, fixtures, evaluators, mutation definitions, adapters, runners, and analyzer. A frozen-surface change requires a new fingerprint and result round.
 
-- Status: active
-- Decision: qualification is independent of any one Agent/eval harness. Thin adapters provide prepare/run/collect-equivalent behavior and declared capabilities.
+## Current tree contains current truth
 
-## RC4 architectural decisions remain active
-
-Compiled governance, typed non-executable Policy IR, one semantic rule/one definition, activation-only profiles, risk-adaptive execution, schema-first state, hard complexity budgets, advisory fuzzy semantic duplication, and tamper-evident runtime integrity remain unchanged.
+Historical prerelease audits, old version-specific test names, superseded protocol files, and redundant prompt-only eval assets belong in VCS history, not the current working tree.

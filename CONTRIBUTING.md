@@ -1,29 +1,33 @@
 # Contributing
 
-RC5 is a qualification/freeze release, not a feature-growth release.
+RC6 is a structural-integration and qualification-correctness release.
 
-## Allowed contribution classes
+## Change policy
 
-- non-semantic qualification runner fixes;
-- grader calibration and deterministic grader improvement;
-- new provider/agent adapters;
-- development eval expansion;
-- additional executable fixtures that do not rewrite completed evidence;
-- documentation corrections;
-- real qualification evidence;
-- security and compatibility fixes.
+Small, isolated, low-risk corrections may be narrow.
 
-## Frozen behavior
+Non-trivial changes should be structural: integrate into the responsible canonical module, remove the superseded path, and update tests/docs/contracts in the same change. Avoid additive patch layers.
 
-Do not alter governance semantics, compiler contract, or runtime capability as an ordinary RC5 contribution.
-A behavior-affecting change must explicitly invalidate the freeze, change the behavioral fingerprint, invalidate dependent qualification evidence, and trigger a new release decision.
+## Runtime evolution
 
-## Qualification rules
+Change `governance-src/`, not generated runtime. Regenerate the runtime, rerun complexity/static checks, regenerate qualification freeze identity when required, and preserve one canonical semantic definition.
 
-- never put holdout oracle material into an Agent workspace;
-- keep raw traces outside Git unless reviewed for sensitivity and size;
-- deterministic failures cannot be manually relabeled as pass;
-- do not move locked thresholds after seeing results;
-- never overwrite a completed result round;
-- do not create empty result placeholders;
-- prefer thin external-harness adapters to rebuilding Agent orchestration infrastructure.
+## Qualification changes
+
+Protocol, fixtures, evaluators, adapters, runners, and analyzer are frozen evidence surfaces after qualification freeze.
+
+A change to one of those surfaces requires:
+
+1. explicit reason;
+2. updated qualification fingerprint;
+3. invalidation/replacement of any dependent evidence round;
+4. full deterministic validation before new Agent trials.
+
+## Evidence rules
+
+- no empty result placeholders;
+- no moving locked thresholds after observing results;
+- no deterministic failure relabeling;
+- no holdout leakage;
+- no raw secret-bearing traces in Git;
+- no rewriting completed qN rounds.

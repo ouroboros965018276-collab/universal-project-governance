@@ -1,29 +1,50 @@
 # AGENTS.md
 
-## Repository contract
+## Project contract
 
-This repository is in RC5 Protocol Freeze.
+Current candidate: **3.0.0-rc.6**.
 
-### Governance behavior is frozen
+### Default change mode
 
-Governance semantics live under governance-src/. The installable universal-project-governance/ directory is generated.
-During RC5 qualification do not add or alter Policy IDs, Hot Path semantics, risk semantics, handoff/report semantics, compiler contract, or runtime capabilities unless the owner explicitly accepts invalidating the freeze.
+For a truly local low-risk correction, keep the change local and proportional.
 
-### Qualification work
+For everything non-trivial, default to **structural integration**:
 
-Repository-only empirical infrastructure lives under qualification/ and must not ship in the Skill.
-Formal locked experiments require fresh isolated workspaces. Do not expose holdout oracles, graders, expected answers, or qualification sources to the Agent under test.
-Do not create fake empty result files. Result rounds exist only after real evidence is generated.
-Do not request or store private chain-of-thought; keep observable tool/file/test/outcome evidence and usage metadata.
+1. identify the responsible canonical layer;
+2. change that layer instead of stacking a local workaround;
+3. migrate affected consumers/contracts;
+4. remove replaced shims, duplicate branches, stale docs, temporary files, compatibility paths, and obsolete artifacts when safe;
+5. validate the resulting coherent structure.
 
-### Required deterministic checks
+Do not satisfy a task by adding another patch file, wrapper, fallback, feature flag, duplicate config, or parallel truth when the project can be cleanly integrated instead.
 
-    python compiler/compile_governance.py --check
-    python tools/governance_lint.py .
-    python tools/validate_freeze_delta.py
-    python tools/validate_qualification.py .
-    python tools/validate_repository.py .
-    python -m unittest discover -s tests -v
+### Canonical source
 
-After qualification/FREEZE.json exists, also run tools/qualification_freeze.py --check.
-If real qualification finds a core governance defect, report failure honestly. Version-number preference never overrides evidence.
+Governance semantics live in `governance-src/`. The installable Skill is generated. Never hand-edit `universal-project-governance/` during normal work.
+
+### Qualification
+
+Qualification lives under `qualification/` and never ships in the Skill.
+
+Formal locked trials must use fresh isolated workspaces. Never expose holdout oracle/check definitions or prior-arm results to the Agent under test.
+
+Do not create result placeholders. Result files exist only after real evidence.
+
+Do not request private chain-of-thought.
+
+### Handoff
+
+If work stops unfinished, persist current factual state, decisions, risks, validation entry points, and next safe action. Do not rely on chat memory.
+
+### Current required checks
+
+```bash
+python compiler/compile_governance.py --check
+python tools/governance_lint.py .
+python tools/validate_qualification.py .
+python tools/qualification_freeze.py . --check
+python tools/validate_repository.py .
+python -m unittest discover -s tests -v
+```
+
+If evidence contradicts a desired release outcome, evidence wins.

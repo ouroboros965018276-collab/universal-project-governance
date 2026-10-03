@@ -1,40 +1,64 @@
-# Threat Model — RC5 Causal Qualification & Protocol Freeze
+# Threat Model — 3.0.0-rc.6
 
-## Assets
+## Protected assets
 
-Frozen governance semantics and behavioral fingerprint; qualification protocol/thresholds; locked holdout tasks/oracles; adapter/grader integrity; raw Agent traces; immutable result rounds.
+- canonical governance semantics;
+- generated runtime integrity;
+- structural-integration behavior;
+- locked qualification protocol/thresholds;
+- holdout oracles;
+- safety exposure metadata;
+- evaluator/runner identity;
+- raw evidence and immutable result rounds.
 
 ## Threats and controls
 
-### T1 — Runtime semantic drift during qualification
-Control: RC4→RC5 freeze validator + behavioral fingerprint + generated runtime integrity.
+### Patch accumulation
 
-### T2 — Benchmark leakage
-Control: materialize only project fixture into Agent workspace; locked runs require external sandbox/container/VM isolation.
+**Risk:** an Agent satisfies local metrics by adding wrappers, flags, fallbacks, duplicate configs, or parallel paths.  
+**Control:** canonical `STRUCTURAL_INTEGRATION` policy + planner change mode + cleanup/evidence rules.
 
-### T3 — Treatment leakage to blind judge
-Control: normalized outcome bundles strip experimental arm and Agent identity where feasible.
+### Safety-denominator contamination
 
-### T4 — Evaluator blindness
-Control: known-bad policy mutants and repository mutations must be detectable before qualification evidence is trusted.
+**Risk:** trigger/mutation/unrelated trials falsely increase safety confidence.  
+**Control:** explicit per-trial `safety_exposures`; normal locked A2 behavioral/present-handoff rows only; class-specific denominators.
 
-### T5 — LLM judge overrides reality
-Control: deterministic repository/executable evidence has higher authority and is non-overridable.
+### Incomplete matrix promoted as Stable
 
-### T6 — p-hacking / moving gates
-Control: locked protocol, preregistered endpoints, randomization, budgets and stopping rules are bound into qualification fingerprint.
+**Risk:** a few easy scenarios or one dominant Agent family create apparent uplift.  
+**Control:** 12 locked scenarios × 8 repetitions × complete A0/A1/A2 × each participating Agent family.
 
-### T7 — Raw evidence leakage / evidence debt
-Control: raw traces ignored by default; controlled artifact storage; Git keeps hashes, aggregates and summaries.
+### Invalid attention control
 
-### T8 — False zero-risk claim
-Control: report sample size and confidence upper bound.
+**Risk:** A1 is much smaller than A2, making A2>A1 uninterpretable.  
+**Control:** measured governance-context-token validity gate before uplift.
 
-### T9 — Provider/time drift
-Control: paired tasks, blocked randomization, temporal interleaving, recorded model/scaffold identity.
+### Weak handoff metric
 
-### T10 — Destructive over-governance
-Control: CF10 critical-failure class and executable outcome checks.
+**Risk:** final task success hides regression of already-correct checkpoint state.  
+**Control:** independent recovery and degradation-reduction gates.
 
-### T11 — Result rewriting
-Control: completed qN rounds are immutable; corrections invalidate and create qN+1.
+### Governance artifact proliferation
+
+**Risk:** the Skill creates persistent report/handoff debris per task.  
+**Control:** runner-measured artifact count is a release efficiency criterion.
+
+### Subgroup reversal
+
+**Risk:** aggregate benefit hides severe harm to one Agent family or project profile.  
+**Control:** subgroup minimum exposure and reversal floors.
+
+### Benchmark leakage
+
+**Risk:** Agent sees holdout oracle/graders.  
+**Control:** strong sandboxing and oracle exclusion.
+
+### Frozen-evidence drift
+
+**Risk:** protocol/evaluator/runner changes without invalidating results.  
+**Control:** qualification fingerprint binds the full evidence pipeline.
+
+### False zero-risk claim
+
+**Risk:** zero observed failures is reported as zero real risk.  
+**Control:** per-class one-sided confidence upper bounds and explicit sample counts.

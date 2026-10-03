@@ -1,0 +1,65 @@
+{
+  "schema_version": 2,
+  "version": "3.0.0-rc.6",
+  "candidate": "Structural Integration & Qualification Hardening",
+  "updated_at": "2026-10-03T14:17:00+08:00",
+  "status": "engineering-validation-in-progress",
+  "claims": {
+    "structural_integration_canonical": true,
+    "qualification_protocol_v2": true,
+    "real_agent_causal_benefit_proven": false,
+    "stable_ready": false
+  },
+  "engineering_gates": [
+    {
+      "name": "canonical model + compiler",
+      "result": "pending"
+    },
+    {
+      "name": "generated runtime drift",
+      "result": "pending"
+    },
+    {
+      "name": "qualification v2 static validation",
+      "result": "pending"
+    },
+    {
+      "name": "coverage/safety/control/handoff/efficiency/generalization tests",
+      "result": "pending"
+    },
+    {
+      "name": "Python 3.8/3.11/3.13",
+      "result": "pending"
+    },
+    {
+      "name": "upstream Agent Skills validator",
+      "result": "pending"
+    },
+    {
+      "name": "Skills CLI local/private install",
+      "result": "pending"
+    },
+    {
+      "name": "deterministic package",
+      "result": "pending"
+    },
+    {
+      "name": "security audit",
+      "result": "pending"
+    },
+    {
+      "name": "machine qualification freeze",
+      "result": "pending"
+    }
+  ],
+  "qualification_blockers": [
+    "real locked A0/A1/A2 behavioral matrix",
+    "real known-bad mutant sensitivity evidence",
+    "real activation traces",
+    "real controlled handoff trials",
+    "real overhead measurements",
+    "subgroup generalization evidence",
+    "immutable locked summary PASS"
+  ],
+  "conclusion": "RC6 is not Stable until engineering gates and real locked qualification both pass."
+}

@@ -1,11 +1,32 @@
-# Governance Source
+# Canonical Governance Source
 
-This directory is the **only canonical source** for RC4 governance semantics.
+`governance-src/` is the only editable source of runtime governance semantics.
 
-- `model/governance-model.json` defines hot-path invariants, risk dimensions, policy rules, dependencies, evidence contracts, and complexity budgets.
-- `profiles/*.json` only activate existing policy IDs; profiles never redefine rules.
-- `schemas/*.json` define typed task, plan, handoff, execution, feedback, and audit contracts.
-- `templates/SKILL.template.md` is presentation only; semantic rule text comes from the model.
-- `runtime-scripts/` contains canonical helper source copied into the generated installable Skill.
+## Why this layer exists
 
-Never edit `universal-project-governance/` by hand. Use the compiler and validate generated-runtime drift in CI.
+The installable Skill is generated. Keeping one canonical typed source prevents documentation drift, duplicated rules, and hand-edited runtime patches.
+
+## RC6 structural-integration contract
+
+`model/governance-model.json` defines `STRUCTURAL_INTEGRATION` and the activation rule:
+
+- tiny/low-risk local work may remain local;
+- medium/high-risk work defaults to structural mode;
+- refactor, migration, dependency, generated-source, architecture, security, data, and governance upgrades force structural mode;
+- release bookkeeping itself is exempt.
+
+The planner emits `change_mode` so downstream Agents and audits can observe the decision.
+
+## Change safety
+
+A governance semantic change requires:
+
+1. canonical source edit;
+2. compiler regeneration;
+3. governance lint;
+4. runtime integrity;
+5. deterministic tests;
+6. qualification freeze regeneration;
+7. new empirical evidence if the behavioral fingerprint changes.
+
+Do not add a second source of the same rule elsewhere.

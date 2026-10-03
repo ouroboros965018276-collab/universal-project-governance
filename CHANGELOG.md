@@ -1,27 +1,22 @@
 # Changelog
 
-## 2.0.0-rc.5 — 2026-10-03
+## 3.0.0-rc.6 — 2026-10-03
 
-Causal Qualification & Protocol Freeze.
+Structural Integration & Qualification Hardening.
 
-- Freezes RC4 governance semantics; RC5 adds no Policy IDs, Hot Path rules, risk/handoff/report semantics, or governance DSL capability.
-- Bumps prerelease identity to rc.5 and regenerates equivalent normalized runtime behavior.
-- Adds behavioral fingerprinting and an RC4→RC5 semantic-freeze validator.
-- Adds a repository-only Qualification Plane with A0 no-Skill, A1 attention-control, A2 Full UPG, and targeted Kernel-only ablation.
-- Upgrades behavioral evaluation into executable repository labs with hidden/out-of-workspace outcome checks.
-- Adds locked holdout fixtures and strong-sandbox requirements.
-- Adds 144 deterministic multilingual metamorphic trigger cases.
-- Adds activation-trace and controlled cross-agent handoff runner contracts.
-- Adds policy mutants and mutant runtime construction for Eval-the-Eval sensitivity tests.
-- Adds blinded normalized outcome bundles that remove treatment/model identity.
-- Adds paired non-inferiority/uplift analysis, confidence intervals, critical-failure upper bounds, overhead ratios, and PASS/FAIL/MORE_DATA semantics.
-- Adds immutable result-round and protocol-freeze rules; fake empty result artifacts are prohibited.
-- Keeps expensive real-Agent qualification outside normal CI.
+- Adds canonical `STRUCTURAL_INTEGRATION` semantics and planner `change_mode = local | structural`.
+- Makes medium/high-risk and intrinsically structural operations default to canonical-layer integration instead of patch stacking.
+- Rebuilds qualification analysis into independent coverage, control-validity, safety, handoff, efficiency, and generalization gates.
+- Replaces one global critical-failure denominator with per-class explicit exposure populations.
+- Requires 12 locked behavioral scenarios, 8 complete repetitions per scenario × Agent-family cell, complete A0/A1/A2 arms, and balanced Agent-family coverage.
+- Strengthens subgroup generalization with minimum complete-pair exposure and severe-reversal checks.
+- Enforces both handoff recovery uplift and handoff degradation reduction.
+- Enforces persistent governance artifact overhead.
+- Enforces A1/A2 governance-context token matching before governance-uplift claims.
+- Keeps 5 repetitions as a development checkpoint; Stable requires at least 8 locked repetitions per cell.
+- Expands the qualification fingerprint to bind the full evaluator and runner pipeline.
+- Removes RC-version-named tests/evals, RC3/RC4/RC5 prerelease audit files, obsolete prompt-only eval layers, the RC5 protocol file, and the RC4→RC5 freeze-delta helper from the current tree.
 
-## 2.0.0-rc.4 — 2026-10-03
+## 2.0.0-rc.5 — previous meaningful state
 
-Compiled Governance Architecture. Introduced typed Policy IR, Rule Graph, compiler, schema-first state, bounded generated runtime, integrity, and hard complexity budgets.
-
-## 2.0.0-rc.3 — 2026-10-02
-
-Self-Protecting Governance + Feedback Driven Governance.
+RC5 froze the compiled runtime and introduced the repository-only causal Qualification Plane with A0/A1/A2/K arms, executable labs, trigger experiments, handoff experiments, mutation evaluation, and machine fingerprints. RC6 keeps that concept but fixes the statistical and structural enforcement gaps found before real locked qualification.

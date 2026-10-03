@@ -1,66 +1,88 @@
 # 通用项目治理 | Universal Project Governance
 
-Current candidate: **2.0.0-rc.5 — Causal Qualification & Protocol Freeze**
+Current candidate: **3.0.0-rc.6 — Structural Integration & Qualification Hardening**
 
-RC5 deliberately does not add new governance policy. RC4 established the compiled governance runtime; RC5 adds a repository-only empirical qualification plane that can prove or falsify whether the frozen runtime actually improves real coding agents.
+Universal Project Governance is a model-agnostic Agent Skill for maintained-project engineering governance.
 
-## RC5 architecture
+RC6 makes two structural changes:
 
-Frozen Governance Runtime → Real Agent + Real Task → Observable Repository Outcome → Qualification Plane.
+1. **Non-trivial work defaults to structural integration.** Tiny low-risk edits may remain local; larger work must modify the responsible canonical layer instead of stacking shims, duplicate branches, one-off flags, or detached fixes.
+2. **Qualification evidence is now exposure-aware and matrix-complete.** Stable qualification cannot pass from a few pairs, unbalanced subgroups, trigger-inflated safety denominators, invalid attention controls, incomplete handoff criteria, or unmeasured governance artifact overhead.
 
-The Qualification Plane covers paired counterfactual trials, no-Skill / attention-control / Full-UPG arms, targeted kernel/policy ablation, executable repository labs, trigger activation qualification, cross-agent handoff experiments, mutation-based evaluator sensitivity, deterministic and blinded grading, confidence intervals, and token/latency/tool overhead.
+## Runtime architecture
 
-## Runtime freeze
+```text
+governance-src/                canonical governance semantics
+        ↓ compiler/
+universal-project-governance/  generated installable Skill
+        ↓ real Agent work
+observable project outcome
+        ↓
+qualification/                 repository-only causal qualification
+```
 
-Runtime behavior is frozen from RC4. The only governance-runtime change in RC5 is prerelease version identity. CI verifies a normalized behavioral fingerprint against the RC4 baseline commit.
+The installed Skill remains bounded. Qualification complexity does not ship with it.
 
-The installable Skill remains bounded: 15 policies, 7 hot-path invariants, generated SKILL.md under the RC5 90-line freeze target, no runtime reference tree, and no new governance DSL.
+## Structural change mode
 
-## Experimental arms
+The compiled planner now returns:
 
-- A0 — No Skill baseline.
-- A1 — Attention Control: generic careful-engineering instructions to separate UPG benefit from generic extra attention.
-- A2 — Full UPG: real host Skill treatment.
-- K — Kernel Only: targeted diagnostic ablation, not a primary release arm.
+- `local` — truly local low-risk edits.
+- `structural` — medium/high-risk work or intrinsically structural operations such as refactor, migration, dependency, generated-source, architecture, security, data, and governance upgrades.
 
-Primary qualification uses fresh paired trials with the same task, fixture, model/agent scaffold, tools, and budgets. The experimental arm is the intended variable.
+`STRUCTURAL_INTEGRATION` is a canonical policy, not a prompt convention. It requires the Agent to identify the responsible canonical layer, integrate the change there, remove superseded patch paths when safe, and leave one coherent post-change structure.
 
-## Evidence authority
+## RC6 qualification gates
 
-Deterministic repository/test evidence outranks semantic judgment. LLM judges are only for aspects that cannot be mechanically established, operate on de-identified outcome bundles, and cannot overrule deterministic failure. Human review is reserved for disagreements, critical cases, and release spot checks.
+Stable evidence is non-compensatory and evaluated in this order:
 
-Private chain-of-thought is neither required nor part of the qualification contract.
+1. locked matrix coverage;
+2. evaluator validity;
+3. attention-control validity;
+4. class-specific critical-safety exposure;
+5. core-task non-inferiority;
+6. governance uplift;
+7. handoff recovery **and** degradation reduction;
+8. trigger precision/recall;
+9. token/time/tool/artifact efficiency;
+10. subgroup generalization.
 
-## Executable qualification assets
+Release qualification uses **locked evidence only**. Development checkpoints cannot promote Stable.
 
-- 12 development behavioral labs.
-- 12 locked behavioral holdout labs.
-- development and locked cross-agent handoff labs.
-- 144 generated multilingual metamorphic trigger cases.
-- policy mutants for Eval-the-Eval sensitivity testing.
-- repository mutation categories for governance-behavior testing.
+## Sampling
 
-Locked holdout oracle material is never copied into an Agent workspace. Formal holdout runs require strong external sandbox/container/VM isolation.
+Formal behavioral qualification requires at least:
 
-## No magic score
+- 12 distinct locked behavioral scenarios;
+- 8 complete A0/A1/A2 repetitions per scenario × Agent-family cell;
+- at least 2 Agent families;
+- at least 2 project profiles;
+- 6 locked handoff scenarios with 8 paired present/ablated repetitions per scenario × Agent-family cell;
+- 100+ trigger cases.
 
-RC5 uses non-compensatory gates: evaluator validity → critical safety → core-task non-inferiority → governance uplift → handoff uplift → trigger quality → efficiency → generalization. A severe failure cannot be averaged away by a better cleanup score.
+Five repetitions remain a development checkpoint, not a Stable threshold.
 
-## Results are evidence, not templates
+## Safety denominator
 
-There are intentionally no fake empty behavioral-results.json, handoff-results.json, or overhead-results.json files. Real qualification runs create immutable qN result rounds. Raw traces stay out of Git by default; Git keeps reviewed manifests, hashes, aggregates, and summaries.
+Critical failures use explicit exposure populations. Trigger and mutation trials never increase destructive-behavior safety denominators.
 
-## Current status
+Each trial carries `safety_exposures`; each critical-failure class receives its own observed-failure count and zero-event confidence bound.
 
-RC5 qualification infrastructure is under validation. The project is not yet empirically qualified and is not Stable. If locked qualification passes without changing the behavioral fingerprint, the intended next promotion is 2.0.0 Stable. If evidence exposes a core defect, Stable is blocked.
+## Current evidence status
 
-## Maintainer checks
+RC6 engineering and qualification infrastructure are being validated. No real Agent qualification result is claimed yet. `qualification/results/` is created only by real immutable evidence rounds.
 
-    python compiler/compile_governance.py --check
-    python tools/governance_lint.py .
-    python tools/validate_freeze_delta.py
-    python tools/validate_qualification.py .
-    python tools/validate_repository.py .
-    python -m unittest discover -s tests -v
+Stable remains blocked until a locked qualification round is **PASS** under the final RC6 qualification fingerprint.
+
+## Maintainer validation
+
+```bash
+python compiler/compile_governance.py --check
+python tools/governance_lint.py .
+python tools/validate_qualification.py .
+python tools/qualification_freeze.py . --check
+python tools/validate_repository.py .
+python -m unittest discover -s tests -v
+```
 
 License: Apache-2.0.
