@@ -1,5 +1,17 @@
 # Changelog
 
+## 3.0.0-rc.9 — 2026-10-03
+
+Evidence and Continuity Hardening. RC8 baseline: `2127d022d3bb0db636324b0355ef307993486371`.
+
+- Repairs fail-open evidence admission: frozen candidate/protocol, registered round/trial identity, schema constraints, fixture exposures/cohorts, model/adapter/host identities and retained artifact bytes are checked before inference.
+- Makes freeze and package ordering repository-relative and stable; compiler output uses LF on every platform. Adds Windows CI alongside Linux Python 3.8/3.11/3.13.
+- Repairs wrongly escaped initial fixtures and requires their Python/JSON files to parse. Strengthens the chronology lab with trusted owner facts, explicit unknown history and actual task completion.
+- Makes observed serious safety failures fatal even when an exposure tag is absent. A single invalid report cannot pass deployment.
+- Adds stable workflow/event IDs, causal parents, sourced occurrence times, preserved active/latest/previous checkpoints, idempotent/conflict-safe retries and crash recovery. Explicit verified export precedes epoch rotation; sequence never resets. Old retries cannot rewind current truth.
+- Preserves optional profile fallback and capability-based application with helpers unavailable. Rules remain 16, Hot Path 8, persistent managed files at most two; no new profiles or parallel history database.
+- Adds 21 engineering regression cases (68 tests total). No real Agent or locked qualification results were produced in this phase.
+
 ## 3.0.0-rc.8 — 2026-10-03
 
 Universal Continuity Real-Agent Test Freeze.

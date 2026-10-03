@@ -16,6 +16,27 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  windows-runtime:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.11', '3.13']
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Verify Windows runtime, portable freeze, and deterministic packaging
+        run: |
+          python -m unittest discover -s tests -v
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python compiler/compile_governance.py --check
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python tools/qualification_freeze.py . --check
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python tools/package_release.py universal-project-governance --output-dir "$env:RUNNER_TEMP/upg-dist"
+
   source-runtime-integrity:
     runs-on: ubuntu-latest
     steps:

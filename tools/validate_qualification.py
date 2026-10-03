@@ -40,6 +40,7 @@ def main():
         errors.append("expected A0/A1/A2/K experimental arms")
 
     required_gates = [
+        "evidence_admission",
         "coverage",
         "deployment_integrity",
         "evaluator_validity",
@@ -54,7 +55,7 @@ def main():
         "generalization",
     ]
     if protocol.get("gate_order") != required_gates:
-        errors.append("gate_order must match RC8 non-compensatory release sequence")
+        errors.append("gate_order must match RC9 non-compensatory release sequence")
 
     overreach_cohorts = protocol.get("structural_overreach", {}).get("exposure_cohorts", {})
     if set(overreach_cohorts) != {"local_guard", "structural_guard"}:
@@ -65,7 +66,7 @@ def main():
 
     inference = protocol.get("inference", {})
     if inference.get("method") != "hierarchical-bootstrap":
-        errors.append("RC8 inference must use hierarchical-bootstrap")
+        errors.append("RC9 inference must use hierarchical-bootstrap")
     if inference.get("levels") != ["agent_family", "scenario_id", "pair_id"]:
         errors.append("hierarchical bootstrap levels must be agent_family -> scenario_id -> pair_id")
     if "minimum 3 agent families" not in inference.get("top_level_claim_guard", ""):
@@ -91,7 +92,7 @@ def main():
     if locked_max < locked_min:
         errors.append("locked maximum repetitions must be >= locked minimum")
     if int(sampling.get("minimum_agent_families", 0)) < 3:
-        errors.append("RC8 universal cross-agent claim requires at least 3 locked agent families")
+        errors.append("RC9 universal cross-agent claim requires at least 3 locked agent families")
     required_pairing = {
         "adapter_config_sha256", "adapter_runtime_sha256",
         "host_tool_name", "host_tool_version",
@@ -120,6 +121,12 @@ def main():
         if len(ids) != len(set(ids)):
             errors.append("duplicate lab IDs in " + rel)
         for lab in labs:
+            for name, content in lab.get("initial_files", {}).items():
+                try:
+                    if name.endswith(".py"): ast.parse(content, filename=name)
+                    elif name.endswith(".json"): json.loads(content)
+                except (SyntaxError, ValueError) as exc:
+                    errors.append("invalid materialized fixture %s/%s: %s" % (lab.get("id"), name, exc))
             if not lab.get("policy_ids") or not lab.get("checks") or not lab.get("initial_files"):
                 errors.append("incomplete lab " + str(lab.get("id")))
             exposures = set(lab.get("safety_exposures", []))
@@ -213,13 +220,13 @@ def main():
         if binding.get("binding_file") != ".governance/upg.json" or binding.get("field_report_file") != ".governance/field-reports.json":
             errors.append("project binding paths must match qualification managed-file contract")
         if binding.get("field_test_reporting") is not True:
-            errors.append("RC8 real-agent freeze requires field_test_reporting=true")
+            errors.append("RC9 real-agent freeze requires field_test_reporting=true")
         if int(binding.get("managed_files_max", 0)) != 2:
-            errors.append("RC8 managed project file budget must be exactly 2")
+            errors.append("RC9 managed project file budget must be exactly 2")
 
     for rel in ["upg.py", "governance-src/runtime-scripts/project_tool.py", "governance-src/schemas/field-report.schema.json"]:
         if not (root / rel).is_file():
-            errors.append("missing RC8 deployment/reporting surface: " + rel)
+            errors.append("missing RC9 deployment/reporting surface: " + rel)
 
     python_files = list((root / "qualification").rglob("*.py"))
     python_files += list((root / "tools").glob("qualification_*.py"))

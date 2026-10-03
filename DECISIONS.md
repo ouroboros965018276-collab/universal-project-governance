@@ -1,6 +1,6 @@
 # Active Design Decisions
 
-Only current RC8 decisions are documented here.
+Only current RC9 decisions are documented here.
 
 ## Continuity is reconstructable, not handoff-dependent
 
@@ -14,7 +14,7 @@ UPG must become effective on a pre-existing maintained project without requiring
 
 Existing artifacts are evidence, not automatically authoritative architecture. Governance applies immediately to the current task while locating existing canonical truth and preserving observed contracts.
 
-Owned RC7 binding state may upgrade to RC8 schema v2 without silently losing a report ledger.
+Owned RC7 binding state may upgrade to RC9 schema v2 without silently losing a report ledger.
 
 ## Agent interoperability is capability-negotiated
 
@@ -38,7 +38,7 @@ Task success cannot compensate for scope violation. `local_guard` and `structura
 
 ## Formal effect inference remains hierarchical, with a stronger top-level claim guard
 
-Primary paired effects bootstrap Agent family → scenario → repetition/pair. RC8 requires at least three locked Agent families.
+Primary paired effects bootstrap Agent family → scenario → repetition/pair. RC9 requires at least three locked Agent families.
 
 Bootstrap repetition count does not manufacture independent top-level clusters. Cross-family generalization is therefore reported separately from within-family precision and subgroup claims remain deliberately narrow.
 
@@ -54,7 +54,7 @@ While field-test reporting is enabled, one completed modifying workflow must app
 
 ## Field-test reporting is bounded and privacy-conscious
 
-RC8 still owns at most two project files during gray testing. Reports store bounded metadata/evidence summaries, not source contents or private reasoning.
+RC9 still owns at most two project files during gray testing. Reports store bounded metadata/evidence summaries, not source contents or private reasoning.
 
 Secret-pattern rejection is defense-in-depth for common private keys, tokens, Bearer/JWT-like values, assignment-style credentials, and credential-bearing database URLs. It is not represented as full DLP; export review remains required.
 
@@ -65,3 +65,9 @@ Qualification identity binds the runtime, protocol, fixtures, evaluators, adapte
 ## Current tree contains current truth
 
 Superseded protocols, readiness audits, and obsolete implementation notes belong in Git history rather than coexisting as parallel current documentation.
+
+## RC9 chronology and reporting identity
+
+Workflow IDs bind retries, active checkpoints, completion evidence, and latest/previous change references. Event IDs combine reporting epoch, workflow ID, and status; sequence is monotonic across purge. Explicit export must remain hash-verifiable before epoch rotation. The bounded ledger does not promise duplicate detection beyond an explicitly rotated retention epoch; archival evidence preserves that boundary. Runtime serializes mutations with a transient lock directory; abrupt-stop lock residue fails closed until an operator inspects and removes the stale lock. No persistent third state file is introduced.
+
+Occurrence times require a source; unknown prior intent/time/commit remain unknown. Recorded timestamps do not establish causal order. Validate tested revision and reconcile current state before trusting an old handoff. When helpers are absent, the contract uses existing observable host state and reports its verification limits. Universal architecture is not a claim of empirically proven benefit across every domain.

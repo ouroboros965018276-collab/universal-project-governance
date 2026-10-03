@@ -28,3 +28,5 @@ The reporting switch is canonical so the capability can be intentionally retaine
 ## Change safety
 
 Any semantic change requires regeneration, lint, runtime integrity, deterministic tests, qualification-freeze regeneration, and new empirical evidence if a result round has already started.
+
+Validation uses the explicit schema subset implemented by state_tool.py (types/unions, object properties, required, const, enum, array bounds/uniqueness, string bounds/patterns/RFC3339, numeric bounds). New schema keywords require implementation and negative tests.

@@ -1,6 +1,6 @@
 # Publishing and Test-Freeze Gates
 
-Current candidate: **3.0.0-rc.7**
+Current candidate: **3.0.0-rc.9**
 
 ## Engineering gate before real-Agent testing
 
@@ -18,11 +18,13 @@ python tools/security_audit.py .
 python -m unittest discover -s tests -v
 ```
 
-CI must also pass Python 3.8/3.11/3.13, upstream Agent Skills validation, local lifecycle install/remove, clean Codex-target installation, deterministic packaging, and private default-branch installation after promotion.
+CI must also pass Linux Python 3.8/3.11/3.13, Windows Python 3.11/3.13, upstream Agent Skills validation, local lifecycle install/remove, clean Codex-target installation, deterministic packaging, and private default-branch installation after promotion.
 
 ## Real-Agent locked gate
 
 One immutable result round under the current qualification fingerprint must satisfy every non-compensatory gate:
+
+Evidence admission comes first: registered round, current frozen identity, schema-valid isolated executions, matched model/adapter/host conditions and retained artifact bytes. Rejected inputs never reach release inference. Analyzer exits 1 for FAIL and 2 for MORE_DATA; neither exit promotes Stable.
 
 1. complete locked scenario/Agent/arm coverage;
 2. project deployment integrity and completion reports;
@@ -43,7 +45,7 @@ Primary CIs use preregistered hierarchical bootstrap over Agent family → scena
 
 Subgroup CI evidence is reported directly. Generalization PASS means the preregistered severe-reversal criterion is established; it does not silently imply significant benefit in every subgroup.
 
-## RC7 field-test evidence
+## RC9 field-test evidence
 
 Personal and friend gray testing may export `upg-field-test-reports.json`. These reports are diagnostic field evidence, not substitutes for locked qualification.
 
@@ -51,4 +53,4 @@ Before Stable, the report capability receives an explicit retain/remove decision
 
 ## Freeze rule
 
-After `qualification/FREEZE.json` is regenerated for RC7, no frozen surface changes during a result round. Any such change invalidates the round and requires a new fingerprint.
+After `qualification/FREEZE.json` is regenerated for RC9, no frozen surface changes during a result round. Any such change invalidates the round and requires a new fingerprint.

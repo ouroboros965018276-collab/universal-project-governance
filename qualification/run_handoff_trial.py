@@ -10,6 +10,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from qualification.adapters.command_adapter import CommandAdapter
+from qualification.lib.execution import registration, persist_evidence, now
 from qualification.lib.core import (
     get_lab,
     grade_checks,
@@ -47,6 +48,8 @@ def main():
     parser.add_argument("--output", required=True)
     parser.add_argument("--raw-dir")
     parser.add_argument("--locked-holdout", action="store_true")
+    parser.add_argument("--round-manifest")
+    parser.add_argument("--trial-id")
     args = parser.parse_args()
 
     lab = get_lab(args.labs, args.scenario)
@@ -66,6 +69,7 @@ def main():
         print("error: continuation adapter requires skill_injection", file=sys.stderr)
         return 2
 
+    registered = registration(args, continuation, "handoff", lab["id"], "A2", args.condition, adapter)
     freeze = json.loads(
         (ROOT / "qualification/FREEZE.json").read_text(encoding="utf-8")
     )
@@ -167,11 +171,16 @@ def main():
         ]
         usage["managed_project_files"] = grade["managed_project_files"]
 
+        artifact = persist_evidence(args, registered["trial_id"], workspace, lab, {"source": first, "receiver": second})
         continuation_identity = continuation.identity()
         source_identity = adapter.identity()
         trial = {
             "schema_version": 3,
-            "trial_id": str(uuid.uuid4()),
+            "round_id": registered["round_id"],
+            "repetition": registered["repetition"],
+            "started_at": registered["started_at"],
+            "completed_at": now(),
+            "trial_id": registered["trial_id"],
             "pair_id": args.pair_id,
             "scenario_id": lab["id"],
             "kind": "handoff",
@@ -181,6 +190,11 @@ def main():
                 "qualification_set": (
                     "locked" if args.locked_holdout else "dev"
                 ),
+                "isolation_attestation": continuation.config.get("isolation_attestation"),
+                "source_isolation_attestation": adapter.config.get("isolation_attestation"),
+                "source_adapter_runtime_sha256": source_identity["adapter_runtime_sha256"],
+                "source_model_id": adapter.config.get("agent", {}).get("model_id"),
+                "source_scaffold_version": adapter.config.get("agent", {}).get("scaffold_version"),
                 "adapter_config_sha256": continuation_identity["adapter_config_sha256"],
                 "adapter_runtime_sha256": continuation_identity["adapter_runtime_sha256"],
                 "host_tool_name": continuation_identity["host_tool_name"],
@@ -206,6 +220,8 @@ def main():
             "outcome": outcome,
             "usage": usage,
             "evidence": {
+                **artifact,
+                "exit_code": second["exit_code"] if first["exit_code"] == 0 else first["exit_code"],
                 "agent_a": first["evidence"],
                 "agent_b": second["evidence"],
                 "before_sha256": grade["before_sha256"],

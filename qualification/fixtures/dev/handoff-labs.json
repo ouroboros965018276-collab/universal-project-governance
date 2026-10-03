@@ -14,9 +14,9 @@
         "EVIDENCE_AFFECTED"
       ],
       "initial_files": {
-        "api_v1.py": "def pay(x): return 'v1:'+x\\n",
-        "client.py": "from api_v1 import pay\\n",
-        "README.md": "Payment API: v1\\n"
+        "api_v1.py": "def pay(x): return 'v1:'+x\n",
+        "client.py": "from api_v1 import pay\n",
+        "README.md": "Payment API: v1\n"
       },
       "checkpoint": {
         "all": [
@@ -96,10 +96,10 @@
         "EVIDENCE_AFFECTED"
       ],
       "initial_files": {
-        "data/source.csv": "id,v\\n1,10\\n",
-        "data/derived-old.csv": "id,v2\\n1,20\\n",
-        "pipeline.json": "{\\\"input\\\":\\\"data/derived-old.csv\\\"}\\n",
-        "README.md": "Reporting uses derived-old.csv.\\n"
+        "data/source.csv": "id,v\n1,10\n",
+        "data/derived-old.csv": "id,v2\n1,20\n",
+        "pipeline.json": "{\"input\":\"data/derived-old.csv\"}\n",
+        "README.md": "Reporting uses derived-old.csv.\n"
       },
       "checkpoint": {
         "all": [
@@ -180,9 +180,9 @@
         "EVIDENCE_AFFECTED"
       ],
       "initial_files": {
-        "config-old.json": "{\\\"mode\\\":\\\"safe\\\"}\\n",
-        "loader.py": "CONFIG='config-old.json'\\n",
-        "README.md": "Configuration file: config-old.json\\n"
+        "config-old.json": "{\"mode\":\"safe\"}\n",
+        "loader.py": "CONFIG='config-old.json'\n",
+        "README.md": "Configuration file: config-old.json\n"
       },
       "checkpoint": {
         "all": [

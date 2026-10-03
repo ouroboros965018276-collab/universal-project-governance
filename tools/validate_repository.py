@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate current RC8 canonical source, generated runtime, test freeze, deployment, and release surfaces."""
+"""Validate current RC9 canonical source, generated runtime, test freeze, deployment, and release surfaces."""
 from __future__ import annotations
 import argparse
 import json
@@ -32,7 +32,7 @@ def main():
     required = [
         "README.md", "CHANGELOG.md", "PUBLISHING.md", "PROJECT_STATE.md",
         "MODULE_MAP.md", "DECISIONS.md", "AGENTS.md", "SECURITY.md",
-        "audits/rc8-readiness.audit.json",
+        "audits/rc9-readiness.audit.json",
         "governance-src/model/governance-model.json",
         "governance-src/schemas/field-report.schema.json",
         "governance-src/runtime-scripts/project_tool.py",
@@ -74,7 +74,7 @@ def main():
         if binding.get("field_test_reporting") is not True:
             errors.append("compiled runtime field-test reporting not enabled")
         if binding.get("schema_version") != 2:
-            errors.append("compiled runtime RC8 binding schema mismatch")
+            errors.append("compiled runtime RC9 binding schema mismatch")
         if binding.get("adoption_mode") != "in-place":
             errors.append("compiled runtime missing in-place legacy adoption")
         if binding.get("continuity_mode") != "handoff-or-reconstruct":
@@ -83,6 +83,10 @@ def main():
             errors.append("compiled runtime missing capability handshake")
     except Exception as exc:
         errors.append("invalid policy-index: %s" % exc)
+
+    for rel in ["AGENTS.md", "MODULE_MAP.md", "PUBLISHING.md", "CONTRIBUTING.md"]:
+        if version not in (root / rel).read_text(encoding="utf-8"):
+            errors.append(rel + " current candidate mismatch")
 
     readme = (root / "README.md").read_text(encoding="utf-8", errors="replace")
     if version not in readme:
@@ -98,6 +102,7 @@ def main():
         "audits/rc5-qualification-readiness.audit.json",
         "audits/rc6-readiness.audit.json",
         "audits/rc7-readiness.audit.json",
+        "audits/rc8-readiness.audit.json",
         "qualification/protocol/qualification-v1.json",
         "qualification/protocol/qualification-v2.json",
         "tools/validate_freeze_delta.py",
@@ -119,7 +124,7 @@ def main():
     ]
     for rel in expected_runtime:
         if not (root / SKILL / rel).is_file():
-            errors.append("compiled runtime missing RC8 surface: " + rel)
+            errors.append("compiled runtime missing RC9 surface: " + rel)
 
     checks = [
         ([sys.executable, "compiler/compile_governance.py", "--check"], "compiler drift"),

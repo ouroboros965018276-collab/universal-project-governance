@@ -13,6 +13,11 @@ SKILL_NAME = "universal-project-governance"
 SKILLS_CLI = "skills@1.7.0"
 
 def run(command, cwd):
+    if command and command[0] == "npx":
+        executable = shutil.which("npx")
+        if executable is None:
+            raise RuntimeError("npx is required for Skill installation/removal")
+        command = [executable] + command[1:]
     return subprocess.run(
         command,
         cwd=str(cwd),

@@ -54,7 +54,7 @@ def validate_context(ctx: dict, index: dict) -> None:
         raise ValueError("domains must be a list of known domain IDs")
     dims = index["risk_model"]["dimensions"]
     for key, value in ctx.get("risk", {}).items():
-        if key not in dims or not isinstance(value, int) or value < 0 or value > dims[key]["max"]:
+        if key not in dims or (not isinstance(value, int) or isinstance(value, bool)) or value < 0 or value > dims[key]["max"]:
             raise ValueError("invalid risk dimension/value: %s=%r" % (key, value))
 
 
@@ -107,7 +107,7 @@ def compile_plan(index: dict, ctx: dict) -> dict:
     for profile_id in ctx.get("profiles", []):
         profile = index["profiles"].get(profile_id)
         if profile is None:
-            raise ValueError("unknown profile: %s" % profile_id)
+            continue  # Unknown project hints retain the universal task/risk closure.
         active.update(profile.get("activates", []))
 
     if ctx.get("unfinished") or "handoff" in ctx.get("signals", []) or "unfinished" in ctx.get("signals", []):
@@ -127,6 +127,9 @@ def compile_plan(index: dict, ctx: dict) -> dict:
     evidence = []
     closures = []
     warnings = []
+    unknown_profiles = sorted(set(ctx.get("profiles", [])) - set(index["profiles"]))
+    if unknown_profiles:
+        warnings.append("unknown optional profiles use universal task/risk rules: " + ", ".join(unknown_profiles))
 
     for rule_id in sorted(active):
         p = policies[rule_id]

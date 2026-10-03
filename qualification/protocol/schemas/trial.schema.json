@@ -15,7 +15,11 @@
     "safety_exposures",
     "outcome",
     "usage",
-    "evidence"
+    "evidence",
+    "round_id",
+    "repetition",
+    "started_at",
+    "completed_at"
   ],
   "properties": {
     "schema_version": {
@@ -53,12 +57,33 @@
         "family",
         "model_id",
         "scaffold_version"
-      ]
+      ],
+      "properties": {
+        "family": {
+          "type": "string",
+          "minLength": 1
+        },
+        "model_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scaffold_version": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
     },
     "environment": {
       "type": "object",
       "required": [
-        "qualification_set"
+        "qualification_set",
+        "sandboxed",
+        "workspace_isolation",
+        "isolation_attestation",
+        "adapter_config_sha256",
+        "adapter_runtime_sha256",
+        "host_tool_name",
+        "host_tool_version"
       ],
       "properties": {
         "qualification_set": {
@@ -86,16 +111,20 @@
           ]
         },
         "adapter_config_sha256": {
-          "type": "string"
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
         },
         "adapter_runtime_sha256": {
-          "type": "string"
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
         },
         "host_tool_name": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "host_tool_version": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1
         },
         "source_agent_family": {
           "type": [
@@ -120,11 +149,57 @@
             "string",
             "null"
           ]
+        },
+        "sandboxed": {
+          "const": true
+        },
+        "workspace_isolation": {
+          "enum": [
+            "sandbox",
+            "container",
+            "vm"
+          ]
+        },
+        "isolation_attestation": {
+          "type": "object",
+          "required": [
+            "issuer",
+            "reference",
+            "sha256"
+          ],
+          "properties": {
+            "issuer": {
+              "type": "string",
+              "minLength": 1
+            },
+            "reference": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^sha256:[0-9a-f]{64}$"
+            }
+          }
         }
       }
     },
     "fingerprints": {
-      "type": "object"
+      "type": "object",
+      "required": [
+        "behavioral",
+        "qualification"
+      ],
+      "properties": {
+        "behavioral": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "qualification": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        }
+      }
     },
     "safety_exposures": {
       "type": "array",
@@ -134,13 +209,115 @@
       }
     },
     "outcome": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "task_success": {
+          "type": "boolean"
+        },
+        "governance_defect_free": {
+          "type": "boolean"
+        },
+        "handoff_degraded": {
+          "type": "boolean"
+        },
+        "eval_detected_regression": {
+          "type": "boolean"
+        },
+        "should_trigger": {
+          "type": "boolean"
+        },
+        "triggered": {
+          "type": "boolean"
+        },
+        "critical_failures": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "scope_metrics": {
+          "type": "object"
+        },
+        "deployment": {
+          "type": "object",
+          "properties": {
+            "binding_ok": {
+              "type": "boolean"
+            },
+            "report_count": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      }
     },
     "usage": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "total_tokens": {
+          "type": "number",
+          "minimum": 0
+        },
+        "wall_time_seconds": {
+          "type": "number",
+          "minimum": 0
+        },
+        "tool_calls": {
+          "type": "number",
+          "minimum": 0
+        },
+        "governance_context_tokens": {
+          "type": "number",
+          "minimum": 0
+        },
+        "persistent_task_governance_artifacts": {
+          "type": "number",
+          "minimum": 0
+        },
+        "managed_project_files": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
     },
     "evidence": {
-      "type": "object"
+      "type": "object",
+      "required": [
+        "exit_code",
+        "artifact_manifest",
+        "artifact_manifest_sha256"
+      ],
+      "properties": {
+        "exit_code": {
+          "type": "integer"
+        },
+        "artifact_manifest": {
+          "type": "string",
+          "minLength": 1
+        },
+        "artifact_manifest_sha256": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        }
+      }
+    },
+    "round_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "repetition": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time"
     }
   }
 }

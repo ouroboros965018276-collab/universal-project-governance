@@ -27,7 +27,7 @@ def sha256_bytes(data: bytes) -> str:
 
 def source_digest(src: Path) -> str:
     h = hashlib.sha256()
-    for p in sorted(x for x in src.rglob("*") if x.is_file()):
+    for p in sorted((x for x in src.rglob("*") if x.is_file() and "__pycache__" not in x.parts and x.suffix not in {".pyc", ".pyo"}), key=lambda p: p.relative_to(src).as_posix()):
         rel = str(p.relative_to(src)).replace("\\", "/")
         h.update(rel.encode("utf-8") + b"\0" + p.read_bytes() + b"\0")
     return h.hexdigest()
@@ -68,7 +68,7 @@ def compile_index(src: Path, model: dict) -> dict:
 
 def write_text(path: Path, text_value: str):
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(text_value, encoding="utf-8")
+    path.write_bytes(text_value.encode("utf-8"))
 
 
 def compile_runtime(repo: Path, output: Path):

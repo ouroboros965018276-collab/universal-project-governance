@@ -1,0 +1,76 @@
+{
+  "schema_version": 5,
+  "version": "3.0.0-rc.9",
+  "candidate": "Evidence and Continuity Hardening",
+  "observed_at": "2026-10-03T13:08:32.722539Z",
+  "time_source": "local UTC acceptance checkpoint; not commit or original modification time",
+  "base_revision": "2127d022d3bb0db636324b0355ef307993486371",
+  "previous_event": "RC8 audit/HANDOFF.md; historical checkpoint timestamps remain stated, not observed work times",
+  "qualification_fingerprint": "sha256:81e3b3a4883c3aeda9a078774bd0fd4ae55328126910051ee5d6b722c4bde1e8",
+  "behavioral_fingerprint": "sha256:97fef94ef0b4f47b75bd5d98c1f18984535cb7176fe0320d5b11d754ec258eb3",
+  "status": "local-engineering-pass-ci-not-yet-observed",
+  "real_agent_execution": false,
+  "stable_promoted": false,
+  "scope": {
+    "policy_count": 16,
+    "hot_path": 8,
+    "managed_project_files_max": 2,
+    "new_domain_profiles": 0
+  },
+  "external_trust_requirements": [
+    "operator-verified isolation and model/family independence",
+    "externally timestamped round registration and reviewed execution order",
+    "private retained evidence and immutable result archive"
+  ],
+  "known_claim_limits": [
+    "locked software/data task matrix does not establish efficacy across every runtime domain",
+    "no real locked/dev Agent tests in this release phase",
+    "explicit epoch rotation bounds report deduplication; sequence and verified exports persist",
+    "abrupt process death may leave transient lock/temp state; inspect before recovery"
+  ],
+  "local_checks": [
+    {
+      "name": "compiler/compile_governance.py",
+      "result": "PASS"
+    },
+    {
+      "name": "tools/governance_lint.py",
+      "result": "PASS"
+    },
+    {
+      "name": "tools/validate_qualification.py",
+      "result": "PASS"
+    },
+    {
+      "name": "tools/qualification_freeze.py",
+      "result": "PASS"
+    },
+    {
+      "name": "tools/validate_repository.py",
+      "result": "PASS"
+    },
+    {
+      "name": "tools/validate_skill_bundle.py",
+      "result": "PASS"
+    },
+    {
+      "name": "universal-project-governance/scripts/validate_integrity.py",
+      "result": "PASS"
+    },
+    {
+      "name": "tools/security_audit.py",
+      "result": "PASS"
+    },
+    {
+      "name": "tools/package_release.py",
+      "result": "PASS"
+    }
+  ],
+  "tests": {
+    "count": 68,
+    "environment": "Windows bundled Python 3.12; engineering fixtures only",
+    "result": "PASS",
+    "log": "audit/rc9-tests.log (local acceptance evidence, outside source tree)"
+  },
+  "package_sha256": "22210a00b60c3b234981b20b870ec535e8d747daeb595d35b662fd05f0c7c036"
+}
