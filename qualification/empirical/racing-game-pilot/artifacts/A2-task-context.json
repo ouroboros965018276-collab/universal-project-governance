@@ -1,0 +1,22 @@
+{
+  "operation": "edit",
+  "domains": ["code"],
+  "signals": ["new-feature", "self-contained-artifact", "no-external-consumers"],
+  "profiles": ["software"],
+  "project_type": "single-page browser game (vanilla HTML/CSS/JS + Canvas 2D)",
+  "agent_mode": "workspace-agent",
+  "capabilities": ["filesystem", "vcs", "search", "browser", "test", "python"],
+  "unfinished": false,
+  "explicit_audit": false,
+  "risk": {
+    "scope": 1,
+    "reversibility": 0,
+    "security": 0,
+    "data": 0,
+    "external_consumers": 0,
+    "migration": 0,
+    "contract_change": 0,
+    "unknowns": 0,
+    "handoff": 0
+  }
+}

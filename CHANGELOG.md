@@ -13,6 +13,8 @@ Evidence and Continuity Hardening. RC8 baseline: `2127d022d3bb0db636324b0355ef30
 - Preserves optional profile fallback and capability-based application with helpers unavailable. Rules remain 16, Hot Path 8, persistent managed files at most two; no new profiles or parallel history database.
 - Adds 22 engineering regression cases (69 tests total). No real Agent or locked qualification results were produced in this phase.
 
+> Later field-phase observation (added after the rc.9 engineering entry above; no version bump): real Agents did subsequently run the frozen rc.9 Skill on bounded host work. Five micro-projects were delivered and their **current** versions pass 5/5 functionally, while original-workflow governance acceptance remains 1 FAIL + 4 BLOCKED; a separate two-project reciprocal handoff exercise also completed. This makes rc.9 **field-tested**, but it is **not** formal dev smoke, **not** locked causal qualification, and **not** empirical qualification. The engineering-phase statement above describes only the engineering phase it was written for.
+
 ## 3.0.0-rc.8 — 2026-10-03
 
 Universal Continuity Real-Agent Test Freeze.

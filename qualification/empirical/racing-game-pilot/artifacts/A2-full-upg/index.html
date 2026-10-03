@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Top-Down Racer</title>
+<style>
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: #10131a;
+    color: #e8ecf5;
+    font-family: "Segoe UI", system-ui, sans-serif;
+    overflow: hidden;
+  }
+  #stage { display: flex; align-items: center; justify-content: center; height: 100%; }
+  #wrap { position: relative; }
+  canvas { display: block; border-radius: 10px; box-shadow: 0 12px 40px rgba(0,0,0,.55); }
+  #hud {
+    position: absolute; top: 14px; left: 14px;
+    background: rgba(9, 12, 20, .68);
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 8px; padding: 10px 14px;
+    font-variant-numeric: tabular-nums;
+    font-size: 14px; line-height: 1.65;
+    backdrop-filter: blur(4px);
+    pointer-events: none;
+  }
+  #hud b { color: #7fd1ff; font-weight: 600; }
+  #hud .lap { color: #ffd479; }
+  #overlay {
+    position: absolute; inset: 0;
+    display: none; align-items: center; justify-content: center;
+    background: rgba(8, 10, 16, .74);
+    border-radius: 10px; text-align: center;
+  }
+  #overlay.show { display: flex; }
+  #overlay .card {
+    background: rgba(20, 25, 36, .96);
+    border: 1px solid rgba(255,255,255,.14);
+    border-radius: 12px; padding: 26px 34px;
+  }
+  #overlay h1 { margin: 0 0 10px; font-size: 28px; color: #7fd1ff; }
+  #overlay p { margin: 4px 0; font-size: 15px; }
+  #hint {
+    position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
+    font-size: 12px; color: #8894ab; letter-spacing: .3px;
+  }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="wrap">
+    <canvas id="track" width="960" height="600"></canvas>
+    <div id="hud">
+      <div>Speed <b><span id="speed">0</span></b> km/h</div>
+      <div>Lap <b class="lap"><span id="lap">1</span> / <span id="totalLaps">3</span></b></div>
+      <div>Lap time <b><span id="lapTime">0.00</span></b> s</div>
+      <div>Best lap <b><span id="bestLap">--.--</span></b></div>
+    </div>
+    <div id="overlay"><div class="card">
+      <h1>Finished</h1>
+      <p>Total time: <b id="totalTime">0.00</b> s</p>
+      <p>Best lap: <b id="finalBest">--.--</b> s</p>
+      <p style="margin-top:12px;color:#8894ab">Press R to race again</p>
+    </div></div>
+    <div id="hint">Arrow keys or WASD to drive &nbsp;|&nbsp; P pause &nbsp;|&nbsp; R restart</div>
+  </div>
+</div>
+<script>
+"use strict";
+
+// ---------------------------------------------------------------------------
+// Track geometry: a rounded-rectangle centreline. The drivable band is the set
+// of points whose distance to that centreline is within TRACK_HALF_WIDTH.
+// We reuse one signed-distance field for drawing, collision and placement.
+// ---------------------------------------------------------------------------
+const CX = 480, CY = 300;      // centreline centre
+const HX = 348, HY = 188;      // centreline half extents
+const R  = 92;                 // corner radius of the centreline
+const TRACK_HALF_WIDTH = 42;   // half width of the drivable band
+const CAR_R = 9;               // car collision radius
+
+// Signed distance from p to the rounded-rectangle centreline boundary
+// (negative inside the centreline rectangle, zero on the centreline itself).
+function centrelineSdf(px, py) {
+  const qx = Math.abs(px - CX) - (HX - R);
+  const qy = Math.abs(py - CY) - (HY - R);
+  const ax = Math.max(qx, 0), ay = Math.max(qy, 0);
+  return Math.hypot(ax, ay) + Math.min(Math.max(qx, qy), 0) - R;
+}
+
+// Distance from p to the centreline *path* (0 on the line, grows outward).
+function distanceToCentreline(px, py) {
+  return Math.abs(centrelineSdf(px, py));
+}
+
+// ---------------------------------------------------------------------------
+// Lap validity gates. A lap only counts when the car crosses the finish gate
+// in the racing direction AFTER it has taken the far-side checkpoint. Reversing
+// over the line can therefore never farm laps.
+// ---------------------------------------------------------------------------
+const START_GATE = { x: CX, y0: CY - HY - TRACK_HALF_WIDTH, y1: CY - HY + TRACK_HALF_WIDTH, dir: +1 }; // top, travel +x
+const CHECKPOINT = { x: CX, y0: CY + HY - TRACK_HALF_WIDTH, y1: CY + HY + TRACK_HALF_WIDTH, dir: -1 }; // bottom, travel -x
+
+function crossesVerticalGate(gate, x0, y0, x1, y1) {
+  // The gate is the vertical segment x = gate.x between y0..y1.
+  if ((x0 - gate.x) * (x1 - gate.x) > 0) return 0;         // no straddle
+  if (x0 === x1) return 0;
+  const t = (gate.x - x0) / (x1 - x0);
+  if (t < 0 || t > 1) return 0;
+  const yAt = y0 + (y1 - y0) * t;
+  if (yAt < gate.y0 || yAt > gate.y1) return 0;
+  return (x1 - x0) > 0 ? +1 : -1;                          // travel direction in x
+}
+
+// ---------------------------------------------------------------------------
+// Car state. Deterministic start: stationary on the start line, heading +x.
+// ---------------------------------------------------------------------------
+const MAX_SPEED = 430;        // px/s
+const ACCEL = 540;            // px/s^2
+const BRAKE = 700;
+const REVERSE_MAX = 150;
+const DRAG = 0.55;            // per-second exponential decay factor
+const STEER_RATE = 2.7;       // rad/s at full steering authority
+const TOTAL_LAPS = 3;
+
+let car, keys, last, simTime, lapStart, bestLap, lap, armed, state, frame, finishTotal;
+
+function reset() {
+  car = {
+    x: CX - 60,
+    y: CY - HY,
+    heading: 0,
+    speed: 0
+  };
+  keys = Object.create(null);
+  simTime = 0;
+  lapStart = 0;
+  bestLap = null;
+  lap = 1;
+  armed = false;
+  state = "running";
+  frame = 0;
+  finishTotal = null;
+  last = performance.now();
+  document.getElementById("overlay").classList.remove("show");
+  document.getElementById("bestLap").textContent = "--.--";
+}
+
+// ---------------------------------------------------------------------------
+// Input
+// ---------------------------------------------------------------------------
+const KEY_ALIASES = {
+  ArrowUp: "up", KeyW: "up",
+  ArrowDown: "down", KeyS: "down",
+  ArrowLeft: "left", KeyA: "left",
+  ArrowRight: "right", KeyD: "right",
+  KeyR: "restart", KeyP: "pause", Escape: "pause"
+};
+
+window.addEventListener("keydown", (e) => {
+  const action = KEY_ALIASES[e.code];
+  if (!action) return;
+  e.preventDefault();
+  if (action === "restart") { reset(); return; }
+  if (action === "pause") {
+    if (state === "running") state = "paused";
+    else if (state === "paused") state = "running";
+    return;
+  }
+  keys[action] = true;
+});
+window.addEventListener("keyup", (e) => {
+  const action = KEY_ALIASES[e.code];
+  if (action) { e.preventDefault(); keys[action] = false; }
+});
+window.addEventListener("blur", () => { keys = Object.create(null); });
+
+// ---------------------------------------------------------------------------
+// Simulation
+// ---------------------------------------------------------------------------
+function step(dt) {
+  simTime += dt;
+
+  const throttle = keys.up ? 1 : 0;
+  const brake = keys.down ? 1 : 0;
+  const steer = (keys.left ? -1 : 0) + (keys.right ? 1 : 0);
+
+  if (throttle) car.speed += ACCEL * dt;
+  if (brake) {
+    if (car.speed > 0) car.speed -= BRAKE * dt;
+    else car.speed -= ACCEL * 0.6 * dt;
+  }
+  if (!throttle && !brake) {
+    car.speed *= Math.exp(-DRAG * dt);
+    if (Math.abs(car.speed) < 1) car.speed = 0;
+  }
+  car.speed = Math.max(-REVERSE_MAX, Math.min(MAX_SPEED, car.speed));
+
+  // Steering authority scales with speed so the car is not twitchy at rest,
+  // and inverts in reverse like a real vehicle.
+  if (Math.abs(car.speed) > 3) {
+    const authority = Math.min(1, Math.abs(car.speed) / 220);
+    const dir = car.speed >= 0 ? 1 : -1;
+    car.heading += steer * STEER_RATE * authority * dir * dt;
+  }
+
+  const px = car.x, py = car.y;
+  car.x += Math.cos(car.heading) * car.speed * dt;
+  car.y += Math.sin(car.heading) * car.speed * dt;
+
+  // --- wall collision against the drivable band -------------------------
+  const sdf = centrelineSdf(car.x, car.y);
+  const limit = TRACK_HALF_WIDTH - CAR_R;
+  if (Math.abs(sdf) > limit) {
+    // Numerical gradient of the SDF gives the push-out direction.
+    const e = 0.5;
+    const gx = (centrelineSdf(car.x + e, car.y) - centrelineSdf(car.x - e, car.y)) / (2 * e);
+    const gy = (centrelineSdf(car.x, car.y + e) - centrelineSdf(car.x, car.y - e)) / (2 * e);
+    const gl = Math.hypot(gx, gy) || 1;
+    const nx = gx / gl, ny = gy / gl;
+    const outward = sdf > 0 ? 1 : -1;
+    const overshoot = Math.abs(sdf) - limit;
+    car.x -= nx * outward * overshoot;
+    car.y -= ny * outward * overshoot;
+    // Kill the velocity component pushing into the wall; keep the rest.
+    const vx = Math.cos(car.heading) * car.speed;
+    const vy = Math.sin(car.heading) * car.speed;
+    const into = vx * nx * outward + vy * ny * outward;
+    if (into > 0) {
+      const nvx = vx - into * nx * outward;
+      const nvy = vy - into * ny * outward;
+      car.speed = Math.hypot(nvx, nvy) * (car.speed >= 0 ? 1 : -1);
+      car.heading = Math.atan2(nvy, nvx);
+    }
+    car.speed *= 0.35; // scraping the barrier costs speed
+  }
+
+  // --- lap logic -------------------------------------------------------
+  const crossStart = crossesVerticalGate(START_GATE, px, py, car.x, car.y);
+  const crossCheck = crossesVerticalGate(CHECKPOINT, px, py, car.x, car.y);
+  if (crossCheck === CHECKPOINT.dir) armed = true;
+  if (crossStart === START_GATE.dir && armed) {
+    armed = false;
+    const lapTime = simTime - lapStart;
+    if (bestLap === null || lapTime < bestLap) {
+      bestLap = lapTime;
+      document.getElementById("bestLap").textContent = lapTime.toFixed(2);
+    }
+    lapStart = simTime;
+    if (lap >= TOTAL_LAPS) {
+      state = "finished";
+      finishTotal = simTime;
+      document.getElementById("totalTime").textContent = simTime.toFixed(2);
+      document.getElementById("finalBest").textContent = (bestLap ?? lapTime).toFixed(2);
+      document.getElementById("overlay").classList.add("show");
+    } else {
+      lap += 1;
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Rendering
+// ---------------------------------------------------------------------------
+const canvas = document.getElementById("track");
+const ctx = canvas.getContext("2d");
+
+function roundedRectPath(c, hx, hy, rad) {
+  c.beginPath();
+  c.moveTo(CX - hx + rad, CY - hy);
+  c.lineTo(CX + hx - rad, CY - hy);
+  c.arcTo(CX + hx, CY - hy, CX + hx, CY - hy + rad, rad);
+  c.lineTo(CX + hx, CY + hy - rad);
+  c.arcTo(CX + hx, CY + hy, CX + hx - rad, CY + hy, rad);
+  c.lineTo(CX - hx + rad, CY + hy);
+  c.arcTo(CX - hx, CY + hy, CX - hx, CY + hy - rad, rad);
+  c.lineTo(CX - hx, CY - hy + rad);
+  c.arcTo(CX - hx, CY - hy, CX - hx + rad, CY - hy, rad);
+  c.closePath();
+}
+
+function draw() {
+  // grass
+  ctx.fillStyle = "#1d3b26";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // asphalt band = stroked centreline
+  ctx.lineJoin = "round";
+  ctx.strokeStyle = "#3a3f4a";
+  ctx.lineWidth = TRACK_HALF_WIDTH * 2;
+  roundedRectPath(ctx, HX, HY, R);
+  ctx.stroke();
+
+  // kerbs: outer and inner boundary lines
+  ctx.strokeStyle = "#e8ecf5";
+  ctx.lineWidth = 3;
+  roundedRectPath(ctx, HX + TRACK_HALF_WIDTH, HY + TRACK_HALF_WIDTH, R + TRACK_HALF_WIDTH);
+  ctx.stroke();
+  roundedRectPath(ctx, HX - TRACK_HALF_WIDTH, HY - TRACK_HALF_WIDTH, R - TRACK_HALF_WIDTH);
+  ctx.stroke();
+
+  // dashed centreline
+  ctx.save();
+  ctx.setLineDash([16, 18]);
+  ctx.strokeStyle = "rgba(255,255,255,.14)";
+  ctx.lineWidth = 2;
+  roundedRectPath(ctx, HX, HY, R);
+  ctx.stroke();
+  ctx.restore();
+
+  // start / finish gate
+  ctx.strokeStyle = "#f2f4f8";
+  ctx.lineWidth = 7;
+  ctx.beginPath();
+  ctx.moveTo(START_GATE.x, START_GATE.y0);
+  ctx.lineTo(START_GATE.x, START_GATE.y1);
+  ctx.stroke();
+  ctx.save();
+  ctx.setLineDash([6, 6]);
+  ctx.strokeStyle = "#20242c";
+  ctx.lineWidth = 7;
+  ctx.beginPath();
+  ctx.moveTo(START_GATE.x, START_GATE.y0);
+  ctx.lineTo(START_GATE.x, START_GATE.y1);
+  ctx.stroke();
+  ctx.restore();
+
+  // checkpoint marker (subtle)
+  ctx.strokeStyle = "rgba(127,209,255,.35)";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(CHECKPOINT.x, CHECKPOINT.y0);
+  ctx.lineTo(CHECKPOINT.x, CHECKPOINT.y1);
+  ctx.stroke();
+
+  // car
+  ctx.save();
+  ctx.translate(car.x, car.y);
+  ctx.rotate(car.heading);
+  ctx.fillStyle = "#ff5a5f";
+  ctx.strokeStyle = "#ffd0d1";
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.roundRect(-13, -7, 26, 14, 4);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "#1b1f27";
+  ctx.beginPath();
+  ctx.roundRect(-2, -5, 8, 10, 2);
+  ctx.fill();
+  ctx.fillStyle = "#ffd479";
+  ctx.fillRect(10, -5, 3, 3);
+  ctx.fillRect(10, 2, 3, 3);
+  ctx.restore();
+}
+
+function updateHud() {
+  document.getElementById("speed").textContent = Math.round(Math.abs(car.speed) * 0.62);
+  document.getElementById("lap").textContent = Math.min(lap, TOTAL_LAPS);
+  document.getElementById("lapTime").textContent = (simTime - lapStart).toFixed(2);
+}
+
+// ---------------------------------------------------------------------------
+// Main loop
+// ---------------------------------------------------------------------------
+function loop(now) {
+  const dt = Math.min(0.05, (now - last) / 1000);
+  last = now;
+  if (state === "running") {
+    // sub-step so fast movement cannot tunnel through a gate
+    const steps = Math.max(1, Math.ceil(Math.abs(car.speed) * dt / 6));
+    for (let i = 0; i < steps; i++) step(dt / steps);
+  }
+  draw();
+  updateHud();
+  frame += 1;
+  window.__racingDebug = {
+    frame, x: car.x, y: car.y, heading: car.heading,
+    speed: car.speed, lap, totalLaps: TOTAL_LAPS,
+    lapTime: simTime - lapStart, bestLap, state,
+    totalTime: finishTotal
+  };
+  requestAnimationFrame(loop);
+}
+
+reset();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
