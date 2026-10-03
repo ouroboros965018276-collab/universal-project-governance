@@ -222,14 +222,14 @@
     "real_agent_execution": false
   },
   "final_main_validation": {
-    "revision": "3f1f8379d0392fe19cff9ecef54130b187f0aad9",
-    "run": 206,
-    "id": 37128763928,
-    "url": "https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/37128763928",
+    "revision": "bc0890f41297f6ebc20185c383cdba663ac46b43",
+    "run": 210,
+    "id": 37131341404,
+    "url": "https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/37131341404",
     "jobs": "9/9 PASS",
     "private_default_branch_install": "PASS",
-    "observed_at": "2026-10-03T14:49:48.477273Z",
-    "time_source": "local UTC reconciliation from retained GitHub run/step evidence",
+    "observed_at": "2026-10-03T17:44:40.802992Z",
+    "time_source": "current reconciliation from retained observed GitHub job evidence; not future sync commit validation",
     "frozen_semantics_changed": false
   },
   "current_truth_reconciliation": {
@@ -241,5 +241,53 @@
     "after": "actual Run #206 9/9 and private default-branch install PASS",
     "time_source": "observation, separate from eventual Git time",
     "frozen_semantics_changed": false
+  },
+  "micro_project_runtime_acceptance": {
+    "observed_at": "2026-10-03T17:11:26.828683Z",
+    "sync_observed_at": "2026-10-03T17:44:40.802992Z",
+    "source_main_revision": "bc0890f41297f6ebc20185c383cdba663ac46b43",
+    "scope": "five bounded host micro-project checks; separate from formal qualification",
+    "current_functional": "5/5 PASS",
+    "current_test_receipt_checks": "PASS",
+    "invalid_receipt_cases_rejected": 35,
+    "strict_original_workflow_acceptance": "NOT PASS",
+    "historical_governance": {
+      "01-cli": "BLOCKED: historical tested-tree evidence missing",
+      "02-offline": "BLOCKED: historical tested-tree evidence missing",
+      "03-poster": "BLOCKED: historical tested-tree evidence missing",
+      "04-pendulum": "FAIL: original validation description contradicted retained failure log; correction does not erase original",
+      "05-astronomy": "BLOCKED: historical tested-tree and live source-response evidence missing"
+    },
+    "project_revisions": {
+      "01-cli": "da7337b1db4a503f8e4a117204f25a6d2b5eaf76",
+      "02-offline": "cbaa42fe38dee2970a7a4db7794b016a95d00616",
+      "03-poster": "521211a4cabce7e3f9f14c4c08e53e4a1ee986ab",
+      "04-pendulum": "df2389910a2f4ee4e56946e0af940e077d67e15f",
+      "05-astronomy": "2a2993bdba28d2ee69675db439bd9202ee6ec001"
+    },
+    "repairs": [
+      "CLI malformed JSON now exits2 at existing argument boundary; invalid finite timeout refused",
+      "external experiment completion helper now requires source/runtime/command-log receipt before commit and verifies committed bytes before report"
+    ],
+    "external_evidence": {
+      "availability": "operator-local retained archive, not uploaded source/log evidence",
+      "current_receipt_summary_sha256": "ecada6373b90e48553ea28ebca46a88116327fd520992a0f89e74e2a9b4d4c47",
+      "sealed_current_receipt_sha256": "3e5a3d30d01975f0ef52575b20243987331c59cec308739cd2b3687331ee5040",
+      "fresh_context_audit_sha256": "aa2d63cffb58d45cb5bbf43644da419350cdf4112bd3b6ce1a6cf75105696374"
+    },
+    "skill_bytes_changed": false,
+    "frozen_semantics_changed": false,
+    "formal_qualification_executed": false,
+    "remote_branch_hygiene": {
+      "status": "PENDING",
+      "reason": "browser control communication failed; do not confuse observed installation/permissions with successful control",
+      "branches": [
+        "rc9-evidence-continuity",
+        "rc9-config-identity",
+        "rc9-canonical-qualification-contract",
+        "rc9-current-truth-closeout"
+      ],
+      "removal_condition": "usable authenticated control, confirm contained in main then remove branch references; preserve commits"
+    }
   }
 }
