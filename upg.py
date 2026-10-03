@@ -65,12 +65,23 @@ def install(project, agent, source):
             raise RuntimeError("project binding install failed: " + bound.stderr[-2000:])
     except RuntimeError as exc:
         if not preexisting:
+            cleanup_error = ""
+            skill_dir = find_installed(project)
+            if skill_dir is not None:
+                cleanup = project_tool(skill_dir, project, "remove", "--yes")
+                if cleanup.returncode != 0:
+                    cleanup_error = "; project-state rollback was not completed: " + (cleanup.stderr[-1000:] or cleanup.stdout[-1000:])
             rollback = run(
                 ["npx", "-y", SKILLS_CLI, "remove", SKILL_NAME, "-a", agent, "-y"],
                 project,
             )
             if rollback.returncode != 0:
-                raise RuntimeError("%s; automatic Skill rollback also failed: %s" % (exc, rollback.stderr[-1000:]))
+                raise RuntimeError(
+                    "%s%s; automatic Skill rollback also failed: %s"
+                    % (exc, cleanup_error, rollback.stderr[-1000:])
+                )
+            if cleanup_error:
+                raise RuntimeError("%s%s; Skill rollback succeeded" % (exc, cleanup_error))
         raise
     print("UPG installed and project binding initialized.")
     return 0
