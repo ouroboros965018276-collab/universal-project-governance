@@ -46,7 +46,7 @@
     },
     {
       "id": "HANDOFF_IF_UNFINISHED",
-      "statement": "If work crosses an agent/session boundary or remains unfinished, persist current handoff state in the project rather than chat memory."
+      "statement": "If work crosses an agent/session boundary or remains unfinished, persist current handoff state when possible; if interruption prevented handoff, the next actor reconstructs from project truth and observable work state without inventing intent."
     },
     {
       "id": "STRUCTURAL_INTEGRATION",
@@ -612,14 +612,15 @@
         "automation",
         "design"
       ],
-      "closure": "Persist only current continuation state needed by the next agent/human: goal, completed/in-progress work, constraints, risks, validation entry points, and next actions.",
+      "closure": "Preserve continuity across humans, sessions, vendors, and agent types. Prefer one current handoff when it can be written; after abrupt interruption with no handoff, reconstruct from canonical project truth, VCS/worktree state, validation evidence, and explicit unknowns before changing anything. Never fabricate prior intent.",
       "conflicts_with": [],
       "eval_tags": [
         "handoff",
         "continuity"
       ],
       "evidence": [
-        "handoff state validates against schema"
+        "validated handoff when available or reconstruction evidence when absent",
+        "unknown prior intent explicitly bounded"
       ],
       "handoff": "required",
       "id": "HANDOFF_CONTINUITY",
@@ -634,7 +635,11 @@
         "operations": [],
         "signals": [
           "handoff",
-          "unfinished"
+          "unfinished",
+          "interrupted",
+          "resume",
+          "recovery",
+          "agent_change"
         ]
       }
     },
@@ -725,6 +730,15 @@
       "id": "automation",
       "schema_version": 1
     },
+    "content-project": {
+      "activates": [
+        "TRUTH_CURRENT",
+        "CLEANUP_OBSOLETE"
+      ],
+      "description": "Maintained content/editorial projects",
+      "id": "content-project",
+      "schema_version": 1
+    },
     "data": {
       "activates": [
         "DATA_RETENTION"
@@ -772,6 +786,33 @@
       "id": "ml",
       "schema_version": 1
     },
+    "operations": {
+      "activates": [
+        "TRUTH_CURRENT",
+        "EVIDENCE_AFFECTED"
+      ],
+      "description": "Operational/runbook/process projects",
+      "id": "operations",
+      "schema_version": 1
+    },
+    "product": {
+      "activates": [
+        "TRUTH_CURRENT",
+        "CONTRACT_VALIDATE"
+      ],
+      "description": "Product/specification projects",
+      "id": "product",
+      "schema_version": 1
+    },
+    "research": {
+      "activates": [
+        "TRUTH_CURRENT",
+        "EVIDENCE_AFFECTED"
+      ],
+      "description": "Research/evidence projects",
+      "id": "research",
+      "schema_version": 1
+    },
     "software": {
       "activates": [],
       "description": "General software/services",
@@ -780,12 +821,15 @@
     }
   },
   "project_binding": {
+    "adoption_mode": "in-place",
     "binding_file": ".governance/upg.json",
+    "capability_handshake": "observe-before-assume",
+    "continuity_mode": "handoff-or-reconstruct",
     "field_report_file": ".governance/field-reports.json",
     "field_test_reporting": true,
     "managed_files_max": 2,
     "max_reports": 200,
-    "schema_version": 1
+    "schema_version": 2
   },
   "risk_model": {
     "dimensions": {
@@ -855,7 +899,7 @@
     "release_operation_forces": "audit"
   },
   "schema_version": 1,
-  "source_sha256": "9832f194e352b6bc7af4e5a8bb6b2a99e04bfd74dfa86e2e44488c830eb587b6",
+  "source_sha256": "cb5b2664d25588c2b992ab10dceba7991af6c9ab0ead9b3247aec4ede59a7ab2",
   "structural_integration": {
     "exempt_operations": [
       "release"
@@ -888,7 +932,11 @@
       "automation",
       "design",
       "generated",
-      "governance"
+      "governance",
+      "research",
+      "content",
+      "product",
+      "operations"
     ],
     "operations": [
       "edit",
@@ -905,5 +953,5 @@
       "governance_upgrade"
     ]
   },
-  "version": "3.0.0-rc.7"
+  "version": "3.0.0-rc.8"
 }
