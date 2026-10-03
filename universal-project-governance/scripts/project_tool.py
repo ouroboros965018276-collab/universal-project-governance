@@ -47,16 +47,29 @@ def resolve(project, rel):
 def expected_binding():
     idx = index()
     cfg = idx["project_binding"]
+    reporting = bool(cfg["field_test_reporting"])
+    managed_files = [cfg["binding_file"]]
+    if reporting:
+        managed_files.append(cfg["field_report_file"])
     return {
         "schema_version": 1,
         "managed_by": idx["name"],
         "runtime_version": idx["version"],
-        "field_test_reporting": bool(cfg["field_test_reporting"]),
-        "managed_files": [cfg["binding_file"], cfg["field_report_file"]],
-        "field_report_file": cfg["field_report_file"],
-        "max_reports": int(cfg["max_reports"]),
+        "field_test_reporting": reporting,
+        "managed_files": managed_files,
+        "field_report_file": cfg["field_report_file"] if reporting else None,
+        "max_reports": int(cfg["max_reports"]) if reporting else 0,
     }
 
+def _retirable_reporting_binding(value):
+    cfg = config()
+    return (
+        isinstance(value, dict)
+        and value.get("managed_by") == index()["name"]
+        and value.get("field_test_reporting") is True
+        and value.get("managed_files") == [cfg["binding_file"], cfg["field_report_file"]]
+        and value.get("field_report_file") == cfg["field_report_file"]
+    )
 def validate_binding(value):
     expected = expected_binding()
     errors = []
@@ -64,15 +77,15 @@ def validate_binding(value):
         return ["binding must be an object"]
     if value.get("managed_by") != expected["managed_by"]:
         errors.append("binding is not owned by universal-project-governance")
-    managed = value.get("managed_files")
-    if managed != expected["managed_files"]:
+    if value.get("field_test_reporting") != expected["field_test_reporting"]:
+        errors.append("field_test_reporting drift detected")
+    if value.get("managed_files") != expected["managed_files"]:
         errors.append("managed_files drift detected")
     if value.get("field_report_file") != expected["field_report_file"]:
         errors.append("field_report_file drift detected")
     if value.get("max_reports") != expected["max_reports"]:
         errors.append("max_reports drift detected")
     return errors
-
 def ledger_default():
     return {"schema_version": 1, "runtime_version": index()["version"], "reports": []}
 
@@ -80,13 +93,34 @@ def ensure(project):
     cfg = config()
     binding_path = resolve(project, cfg["binding_file"])
     report_path = resolve(project, cfg["field_report_file"])
+    reporting = bool(cfg["field_test_reporting"])
+    current = None
     if binding_path.exists():
         current = load_json(binding_path)
         errors = validate_binding(current)
         if errors:
-            raise ValueError("; ".join(errors))
+            if not reporting and _retirable_reporting_binding(current):
+                if report_path.exists():
+                    ledger = load_json(report_path)
+                    reports = ledger.get("reports") if isinstance(ledger, dict) else None
+                    if not isinstance(reports, list):
+                        raise ValueError("cannot retire invalid field report ledger")
+                    if reports:
+                        raise ValueError("field-test reporting retirement requires export and purge before upgrade")
+                    report_path.unlink()
+            else:
+                raise ValueError("; ".join(errors))
+
     binding = expected_binding()
     write_json_atomic(binding_path, binding)
+    if not reporting:
+        return {
+            "binding": str(binding_path),
+            "field_test_reporting": False,
+            "field_reports": None,
+            "report_count": 0,
+        }
+
     if report_path.exists():
         ledger = load_json(report_path)
         if not isinstance(ledger, dict) or ledger.get("schema_version") != 1 or not isinstance(ledger.get("reports"), list):
@@ -95,32 +129,41 @@ def ensure(project):
     else:
         ledger = ledger_default()
     write_json_atomic(report_path, ledger)
-    return {"binding": str(binding_path), "field_reports": str(report_path), "report_count": len(ledger["reports"])}
-
+    return {
+        "binding": str(binding_path),
+        "field_test_reporting": True,
+        "field_reports": str(report_path),
+        "report_count": len(ledger["reports"]),
+    }
 def status(project):
     cfg = config()
     binding_path = resolve(project, cfg["binding_file"])
-    report_path = resolve(project, cfg["field_report_file"])
     if not binding_path.is_file():
         return {"ok": False, "reason": "binding-missing"}
     binding = load_json(binding_path)
     errors = validate_binding(binding)
     if errors:
         return {"ok": False, "reason": "binding-drift", "errors": errors}
-    if not report_path.is_file():
-        return {"ok": False, "reason": "field-report-ledger-missing"}
-    ledger = load_json(report_path)
-    if not isinstance(ledger, dict) or not isinstance(ledger.get("reports"), list):
-        return {"ok": False, "reason": "field-report-ledger-invalid"}
+
+    reporting = bool(binding.get("field_test_reporting"))
+    report_count = 0
+    if reporting:
+        report_path = resolve(project, cfg["field_report_file"])
+        if not report_path.is_file():
+            return {"ok": False, "reason": "field-report-ledger-missing"}
+        ledger = load_json(report_path)
+        if not isinstance(ledger, dict) or not isinstance(ledger.get("reports"), list):
+            return {"ok": False, "reason": "field-report-ledger-invalid"}
+        report_count = len(ledger["reports"])
+
     return {
         "ok": True,
         "runtime_version": index()["version"],
         "binding_runtime_version": binding.get("runtime_version"),
-        "field_test_reporting": binding.get("field_test_reporting"),
+        "field_test_reporting": reporting,
         "managed_files": binding.get("managed_files", []),
-        "report_count": len(ledger["reports"]),
+        "report_count": report_count,
     }
-
 def validate_report(report):
     encoded = json.dumps(report, ensure_ascii=False)
     if len(encoded.encode("utf-8")) > 65536:
@@ -207,6 +250,8 @@ def validate_report(report):
         raise ValueError("; ".join(errors))
 
 def record_report(project, input_path):
+    if not bool(config()["field_test_reporting"]):
+        raise ValueError("field-test reporting is disabled for this runtime")
     ensured = ensure(project)
     cfg = config()
     report_path = resolve(project, cfg["field_report_file"])
@@ -227,8 +272,9 @@ def record_report(project, input_path):
     ledger["reports"].append(entry)
     write_json_atomic(report_path, ledger)
     return {"sequence": entry["sequence"], "report_count": len(ledger["reports"]), "path": str(report_path), "binding": ensured["binding"]}
-
 def export_reports(project, output):
+    if not bool(config()["field_test_reporting"]):
+        raise ValueError("field-test reporting is disabled for this runtime")
     state = status(project)
     if not state.get("ok"):
         raise ValueError("cannot export: project binding is not healthy")
@@ -247,31 +293,44 @@ def export_reports(project, output):
     }
     write_json_atomic(Path(output), payload)
     return {"output": str(Path(output).resolve()), "reports": len(ledger["reports"])}
-
 def purge_reports(project, yes):
     if not yes:
         raise ValueError("purge requires --yes")
+    cfg = config()
+    report_path = resolve(project, cfg["field_report_file"])
+    if not bool(cfg["field_test_reporting"]):
+        if report_path.is_file():
+            report_path.unlink()
+        return {"purged": True, "path": str(report_path), "field_test_reporting": False}
     state = status(project)
     if not state.get("ok"):
         raise ValueError("cannot purge: project binding is not healthy")
-    report_path = resolve(project, config()["field_report_file"])
     ledger = ledger_default()
     write_json_atomic(report_path, ledger)
-    return {"purged": True, "path": str(report_path)}
-
+    return {"purged": True, "path": str(report_path), "field_test_reporting": True}
 def remove(project, yes):
     if not yes:
         raise ValueError("remove requires --yes")
     cfg = config()
     binding_path = resolve(project, cfg["binding_file"])
-    report_path = resolve(project, cfg["field_report_file"])
+    managed_paths = []
     if binding_path.exists():
         binding = load_json(binding_path)
         errors = validate_binding(binding)
         if errors:
-            raise ValueError("refusing to remove drifted/unowned binding: " + "; ".join(errors))
+            if not bool(cfg["field_test_reporting"]) and _retirable_reporting_binding(binding):
+                managed = binding.get("managed_files", [])
+            else:
+                raise ValueError("refusing to remove drifted/unowned binding: " + "; ".join(errors))
+        else:
+            managed = binding.get("managed_files", [])
+        for rel in managed:
+            if rel != cfg["binding_file"]:
+                managed_paths.append(resolve(project, rel))
+    managed_paths.append(binding_path)
+
     removed = []
-    for path in [report_path, binding_path]:
+    for path in managed_paths:
         if path.is_file():
             path.unlink()
             removed.append(str(path))
@@ -288,7 +347,6 @@ def remove(project, yes):
         except OSError:
             pass
     return {"removed": removed}
-
 def main():
     parser = argparse.ArgumentParser()
     sub = parser.add_subparsers(dest="cmd", required=True)
