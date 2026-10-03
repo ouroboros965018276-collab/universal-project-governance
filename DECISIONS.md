@@ -62,6 +62,8 @@ Secret-pattern rejection is defense-in-depth for common private keys, tokens, Be
 
 Qualification identity binds the runtime, protocol, fixtures, evaluators, adapters/runners, analyzer, and deployment wrapper. A semantic change to a frozen surface requires a new identity.
 
+`qualification/lib/contracts.py` is the responsible frozen-candidate authority for planning, execution and admission. Supplied settings must equal this candidate; analysis consumes one admission gate. This prevents identity rules drifting between consumers without introducing a second configuration or policy system.
+
 ## Current tree contains current truth
 
 Superseded protocols, readiness audits, and obsolete implementation notes belong in Git history rather than coexisting as parallel current documentation.
