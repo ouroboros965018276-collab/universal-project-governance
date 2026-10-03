@@ -2,8 +2,8 @@
   "schema_version": 4,
   "version": "3.0.0-rc.8",
   "candidate": "Universal Continuity Real-Agent Test Freeze",
-  "updated_at": "2026-10-03T18:54:06+08:00",
-  "status": "freeze-sealing",
+  "updated_at": "2026-10-03T19:03:34+08:00",
+  "status": "engineering-valid-frozen-ready-for-real-agent-testing",
   "claims": {
     "abrupt_interruption_reconstructable": true,
     "legacy_project_in_place_adoption": true,
@@ -20,8 +20,8 @@
   "evidence": [
     {
       "name": "canonical/runtime architecture",
-      "result": "pending-final-freeze",
-      "evidence": "canonical governance source compiles deterministically to generated Skill; final RC8 artifact identity will be inserted after machine sealing"
+      "result": "pass",
+      "evidence": "compiler drift check, runtime integrity, repository validation, and machine freeze all passed on RC8 branch Run #180"
     },
     {
       "name": "abrupt interruption continuity",
@@ -60,22 +60,26 @@
     },
     {
       "name": "privacy hygiene",
-      "result": "pending-final-ci",
-      "evidence": "metadata-only bounded report contract rejects common private-key/token/Bearer/JWT/assignment/database credential patterns; general DLP is not claimed"
+      "result": "pass",
+      "evidence": "expanded secret-pattern tests and static security audit passed on RC8 branch Run #180"
     },
     {
-      "name": "final default-branch validation",
-      "result": "pending",
-      "evidence": "must be filled only after RC8 freeze is merged and main CI succeeds"
+      "name": "pre-merge freeze validation",
+      "result": "pass",
+      "evidence": "Run #180 completed with all 7 formal jobs passing; Python 3.8/3.11/3.13 each passed the 47-test suite"
     }
   ],
-  "real_test_blockers": [
-    "RC8 machine freeze identity not yet sealed",
-    "final main validation not yet complete"
-  ],
+  "real_test_blockers": [],
   "causal_claims": {
     "real_agent_benefit_proven": false,
     "stable_release_eligible": false,
     "reason": "No immutable locked RC8 real-Agent result round has been executed."
-  }
+  },
+  "machine_identity": {
+    "behavioral_fingerprint": "sha256:bf6eca2a9024bf7c23a07487534c0840f5176f11ace7fabd6e215eaf302e40fc",
+    "qualification_fingerprint": "sha256:63afa5d1e4cd109987f70c9ddac9223b805c5442a1829bbffee21e77bae414b4",
+    "runtime_tree_sha256": "sha256:6b0ad0e208114d8a25684290ed620517ffe66402d2c64a7401ff6cd6392e7d2e",
+    "deterministic_package_sha256": "a64aed9c991989f197a8e7ef2581d4c5864ecfdac368bbccffefdcec5e6c3544"
+  },
+  "release_notes": "RC8 is ready to begin gray/real-Agent testing under the frozen qualification identity. Stable remains blocked on immutable locked causal evidence, not engineering preflight."
 }
