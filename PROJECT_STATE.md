@@ -1,6 +1,6 @@
 # Project State
 
-Updated at: **2026-10-03T14:17:00+08:00**
+Updated at: **2026-10-03T14:46:17+08:00**
 
 ## Purpose
 
@@ -10,7 +10,7 @@ Develop and empirically qualify one model-agnostic Agent Skill that improves mai
 
 **3.0.0-rc.6 — Structural Integration & Qualification Hardening**
 
-The project is in engineering validation before real locked Agent qualification.
+The RC6 engineering framework is validated, private-default-branch-install-valid, and machine-frozen. The next phase is real locked Agent qualification.
 
 ## Current architecture
 
@@ -39,8 +39,8 @@ The project is in engineering validation before real locked Agent qualification.
 - **Change:** RC6 structural upgrade.
 - **Why:** pre-qualification review found safety-denominator contamination, incomplete matrix enforcement, weak subgroup generalization, unenforced handoff/artifact/control thresholds, and an overly permissive 5-repetition Stable path.
 - **What changed:** governance runtime gained one structural-integration semantic; qualification was decomposed into explicit independent gates and evidence contracts; obsolete RC-specific layers were removed.
-- **Validation state:** deterministic CI pending final regenerated runtime/freeze and full matrix tests.
-- **Handoff rule:** do not start real locked qualification until RC6 final CI is green and `qualification/FREEZE.json` is regenerated.
+- **Validation state:** final branch and main CI are green; Python 3.8/3.11/3.13 each pass 31/31 tests; default-branch private install passes; qualification fingerprint is frozen.
+- **Handoff rule:** the next safe action is real locked qualification under the current fingerprint. Do not change frozen surfaces during a result round.
 
 ## Previous meaningful change
 
