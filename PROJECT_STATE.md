@@ -1,6 +1,6 @@
 # Project State
 
-Updated at: **2026-10-03T17:13:53+08:00**
+Updated at: **2026-10-03T17:17:09+08:00**
 
 ## Purpose
 
@@ -10,7 +10,7 @@ Develop and empirically qualify one model-agnostic Agent Skill that improves mai
 
 **3.0.0-rc.7 — Real-Agent Test Freeze**
 
-The final RC7 branch is engineering-valid and machine-frozen. Default-branch promotion/installation validation is the only remaining engineering step before real locked Agent and gray testing.
+RC7 is engineering-valid on the private default branch, machine-frozen, and ready for real locked Agent qualification plus personal/friend gray testing.
 
 ## Current architecture
 
@@ -43,8 +43,8 @@ The final RC7 branch is engineering-valid and machine-frozen. Default-branch pro
 - **Change:** final RC7 freeze hardening.
 - **Why:** final audit found two residual lifecycle/statistical risks: scope-overreach confidence could combine qualitatively different local/structural exposures, and the field-report switch did not yet exercise a real no-ledger retirement path.
 - **What changed:** split overreach into independent local/structural cohorts; made reporting-disabled binding actually omit the ledger and reject report operations; blocked silent retirement of non-empty evidence; added fresh-install project-state + Skill rollback; regenerated the deployment-bound freeze identity.
-- **Validation state:** branch Run #107 is green; Python 3.8/3.11/3.13 each pass 43/43 tests; deterministic Skill package SHA-256 is `794de7033d6ff4c556249499db1caff8033a7f1f746bd8d4f95c141109c54adf`.
-- **Next safe action:** promote this exact frozen branch to `main`, validate private default-branch installation, then start real testing without changing frozen surfaces.
+- **Validation state:** branch Runs #107/#108 and main Run #109 are green; Python 3.8/3.11/3.13 each pass 43/43 tests; private default-branch clone/install and 16-file installed-copy integrity pass; deterministic Skill package SHA-256 is `794de7033d6ff4c556249499db1caff8033a7f1f746bd8d4f95c141109c54adf`.
+- **Next safe action:** start real locked Agent and gray testing under the current fingerprint without changing frozen surfaces.
 
 ## Previous meaningful change
 
