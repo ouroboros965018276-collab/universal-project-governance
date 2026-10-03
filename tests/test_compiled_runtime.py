@@ -212,6 +212,45 @@ class CompiledRuntimeTests(unittest.TestCase):
             ledger = json.loads((project / ".governance/field-reports.json").read_text(encoding="utf-8"))
             self.assertEqual(ledger["reports"], [])
 
+    def test_field_report_rejects_credential_material(self):
+        with tempfile.TemporaryDirectory() as td:
+            project = pathlib.Path(td)
+            tool = RUNTIME / "scripts/project_tool.py"
+            cp = subprocess.run(
+                [PY, str(tool), "install", str(project)],
+                text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+            )
+            self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
+            report = {
+                "task": "inspect " + ("-----BEGIN " + "PRIVATE KEY-----"),
+                "status": "complete",
+                "change_mode": "local",
+                "scope_guard": "local-only",
+                "risk_level": "low",
+                "active_rules": [],
+                "changed_files": [],
+                "validation": [],
+                "cleanup": [],
+                "structural_scope": {
+                    "canonical_layer": "none",
+                    "unrelated_changes": [],
+                    "api_changes": [],
+                    "architecture_changes": [],
+                    "overreach_concern": False,
+                },
+                "integrity": "pass",
+                "handoff": "not-required",
+                "feedback": [],
+            }
+            payload = project / "credential-report.json"
+            payload.write_text(json.dumps(report), encoding="utf-8")
+            cp = subprocess.run(
+                [PY, str(tool), "report", str(project), "--input", str(payload)],
+                text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+            )
+            self.assertNotEqual(cp.returncode, 0)
+            self.assertIn("credential material", cp.stderr)
+
     def test_handoff_schema_validate_and_render(self):
         sample = {
             "updated_at": "2026-10-03T14:17:00+08:00",
