@@ -15,8 +15,12 @@ def load_json(path):
 
 def write_json_atomic(path, value):
     path = Path(path)
+    if path.is_symlink() or path.parent.is_symlink():
+        raise ValueError("refusing to write through symlinked managed path")
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_name(path.name + ".tmp")
+    if tmp.exists() or tmp.is_symlink():
+        raise ValueError("temporary managed path already exists: %s" % tmp)
     tmp.write_text(json.dumps(value, indent=2, ensure_ascii=False, sort_keys=True) + "\n", encoding="utf-8")
     tmp.replace(path)
 
@@ -26,8 +30,19 @@ def index():
 def config():
     return index()["project_binding"]
 
+def project_root(project):
+    root = Path(project).resolve()
+    gov = root / ".governance"
+    if gov.is_symlink():
+        raise ValueError("refusing to manage a symlinked .governance directory")
+    return root
+
 def resolve(project, rel):
-    return Path(project).resolve() / rel
+    root = project_root(project)
+    path = root / rel
+    if path.is_symlink():
+        raise ValueError("refusing to manage symlinked path: %s" % rel)
+    return path
 
 def expected_binding():
     idx = index()
@@ -107,6 +122,9 @@ def status(project):
     }
 
 def validate_report(report):
+    encoded = json.dumps(report, ensure_ascii=False)
+    if len(encoded.encode("utf-8")) > 65536:
+        raise ValueError("field report exceeds 64 KiB metadata limit")
     required = {
         "task": str,
         "status": str,
@@ -161,6 +179,24 @@ def validate_report(report):
             errors.append("agent must be object")
         elif any(not isinstance(v, str) for v in agent.values()):
             errors.append("agent values must be strings")
+    string_values = []
+    for key in ["task", "integrity", "handoff", "change_mode", "scope_guard", "risk_level"]:
+        if isinstance(report.get(key), str):
+            string_values.append(report[key])
+    for key in ["active_rules", "changed_files", "validation", "cleanup", "feedback"]:
+        if isinstance(report.get(key), list):
+            string_values.extend(x for x in report[key] if isinstance(x, str))
+    if isinstance(scope, dict):
+        if isinstance(scope.get("canonical_layer"), str):
+            string_values.append(scope["canonical_layer"])
+        for key in ["unrelated_changes", "api_changes", "architecture_changes"]:
+            if isinstance(scope.get(key), list):
+                string_values.extend(x for x in scope[key] if isinstance(x, str))
+    if any(len(value) > 1000 for value in string_values):
+        errors.append("field report metadata entries must be <= 1000 characters")
+    secret_markers = ["-----BEGIN PRIVATE KEY-----", "-----BEGIN OPENSSH PRIVATE KEY-----", "ghp_", "github_pat_", "AKIA"]
+    if any(marker in encoded for marker in secret_markers):
+        errors.append("field report appears to contain credential material")
     if errors:
         raise ValueError("; ".join(errors))
 

@@ -86,6 +86,21 @@ def remove(project, agent, yes):
     print("UPG project binding and Skill removed.")
     return 0
 
+def invoke_project_command(project, command, extra=None):
+    project = Path(project).resolve()
+    skill_dir = find_installed(project) or (ROOT / "universal-project-governance")
+    tool = skill_dir / "scripts/project_tool.py"
+    if not tool.is_file():
+        raise RuntimeError("project tool is unavailable; install the Skill first")
+    args = [sys.executable, str(tool), command, str(project)]
+    if extra:
+        args.extend(extra)
+    cp = run(args, project)
+    if cp.returncode != 0:
+        raise RuntimeError(cp.stderr[-2000:] or cp.stdout[-2000:])
+    sys.stdout.write(cp.stdout)
+    return 0
+
 def main():
     parser = argparse.ArgumentParser()
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -97,11 +112,25 @@ def main():
     remove_p.add_argument("--project", default=".")
     remove_p.add_argument("--agent", default="codex")
     remove_p.add_argument("--yes", action="store_true")
+    status_p = sub.add_parser("status")
+    status_p.add_argument("--project", default=".")
+    export_p = sub.add_parser("export")
+    export_p.add_argument("--project", default=".")
+    export_p.add_argument("--output", required=True)
+    purge_p = sub.add_parser("purge-reports")
+    purge_p.add_argument("--project", default=".")
+    purge_p.add_argument("--yes", action="store_true")
     args = parser.parse_args()
     try:
         if args.cmd == "install":
             return install(args.project, args.agent, args.source)
-        return remove(args.project, args.agent, args.yes)
+        if args.cmd == "remove":
+            return remove(args.project, args.agent, args.yes)
+        if args.cmd == "status":
+            return invoke_project_command(args.project, "status")
+        if args.cmd == "export":
+            return invoke_project_command(args.project, "export", ["--output", args.output])
+        return invoke_project_command(args.project, "purge-reports", ["--yes"] if args.yes else [])
     except (OSError, RuntimeError) as exc:
         print("error: %s" % exc, file=sys.stderr)
         return 2
