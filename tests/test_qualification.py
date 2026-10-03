@@ -1,5 +1,6 @@
 from __future__ import annotations
 import json
+import os
 import pathlib
 import shutil
 import subprocess
@@ -27,6 +28,11 @@ from tools.qualification_freeze import behavioral_fingerprint
 
 PY = sys.executable
 RUNTIME = ROOT / "universal-project-governance"
+
+# The suite must not mutate the tree it validates: without this, importing the generated
+# runtime scripts writes scripts/__pycache__ into release source, which then fails the
+# packaging and mutant-manifest checks of the *next* run.
+os.environ["PYTHONDONTWRITEBYTECODE"] = "1"
 
 def run(*args, cwd=None):
     return subprocess.run(
@@ -161,6 +167,11 @@ class QualificationTests(unittest.TestCase):
 
     def test_mutant_runtime_is_integrity_valid_but_behaviorally_different(self):
         with tempfile.TemporaryDirectory() as td:
+            # The builder manifests every file it copies, so its input must be the canonical
+            # runtime as source. Local interpreter caches are not source, are never committed
+            # and are never packaged, so they are cleared before the build.
+            for cache in sorted(RUNTIME.rglob("__pycache__")):
+                shutil.rmtree(cache, ignore_errors=True)
             output = pathlib.Path(td) / "mutant"
             cp = run(
                 "qualification/mutations/build_mutant_runtime.py",

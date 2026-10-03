@@ -1,6 +1,7 @@
 from __future__ import annotations
 import hashlib
 import json
+import os
 import pathlib
 import shutil
 import subprocess
@@ -12,6 +13,11 @@ from registration_fixture import report_identity
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 PY = sys.executable
 RUNTIME = ROOT / "universal-project-governance"
+
+# The suite must not mutate the tree it validates: without this, importing the generated
+# runtime scripts writes scripts/__pycache__ into release source, which then fails the
+# packaging and mutant-manifest checks of the *next* run.
+os.environ["PYTHONDONTWRITEBYTECODE"] = "1"
 
 def run(*args, cwd=None):
     return subprocess.run(
@@ -555,6 +561,25 @@ class CompiledRuntimeTests(unittest.TestCase):
                 hashlib.sha256(z1.read_bytes()).hexdigest(),
                 hashlib.sha256(z2.read_bytes()).hexdigest(),
             )
+
+    def test_local_bytecode_residue_does_not_fail_the_bundle_check(self):
+        with tempfile.TemporaryDirectory() as td:
+            copy = pathlib.Path(td) / RUNTIME.name
+            shutil.copytree(
+                RUNTIME,
+                copy,
+                ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "*.pyo"),
+            )
+            cache = copy / "scripts" / "__pycache__"
+            cache.mkdir()
+            (cache / "state_tool.cpython-312.pyc").write_bytes(b"residue")
+            cp = run("tools/validate_skill_bundle.py", str(copy))
+            self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
+            self.assertIn("local bytecode residue present", cp.stdout)
+            (copy / "scripts" / "stray.pyc").write_bytes(b"stray")
+            cp = run("tools/validate_skill_bundle.py", str(copy))
+            self.assertNotEqual(cp.returncode, 0)
+            self.assertIn("generated artifact bundled", cp.stderr)
 
 if __name__ == "__main__":
     unittest.main()

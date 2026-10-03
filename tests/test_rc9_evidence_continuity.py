@@ -15,6 +15,11 @@ from unittest.mock import patch
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / 'universal-project-governance/scripts'))
+# The suite must not mutate the tree it validates: importing the generated runtime scripts
+# in-process would otherwise write scripts/__pycache__ into release source, and later runs
+# would fail the packaging and mutant-manifest checks on that residue.
+sys.dont_write_bytecode = True
+os.environ["PYTHONDONTWRITEBYTECODE"] = "1"
 import project_tool
 from plan_governance import compile_plan, load_index
 from state_tool import validate_node

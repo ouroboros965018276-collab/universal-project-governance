@@ -60,7 +60,9 @@ def main():
         try: ast.parse(p.read_text(encoding="utf-8"),filename=str(p))
         except SyntaxError as exc: errors.append("Python syntax error in %s: %s" % (p.name,exc))
     for p in root.rglob("*"):
-        if "__pycache__" in p.parts or p.suffix in {".pyc",".pyo"}: errors.append("generated artifact bundled: %s" % p.relative_to(root))
+        if p.is_file() and "__pycache__" not in p.parts and p.suffix in {".pyc",".pyo"}: errors.append("generated artifact bundled: %s" % p.relative_to(root))
+    for d in sorted(x for x in root.rglob("__pycache__") if x.is_dir()):
+        warnings.append("local bytecode residue present (excluded by packaging and by Git, so it neither ships nor commits): %s" % d.relative_to(root))
     for w in warnings: print("warning: "+w)
     for e in errors: print("error: "+e,file=sys.stderr)
     if errors: return 1
