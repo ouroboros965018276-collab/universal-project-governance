@@ -2,7 +2,7 @@
   "schema_version": 2,
   "version": "3.0.0-rc.6",
   "candidate": "Structural Integration & Qualification Hardening",
-  "updated_at": "2026-10-03T14:17:00+08:00",
+  "updated_at": "2026-10-03T14:46:17+08:00",
   "status": "framework-engineering-valid-ready-for-real-agent-qualification",
   "claims": {
     "structural_integration_canonical": true,
@@ -65,6 +65,11 @@
       "name": "machine qualification freeze",
       "result": "pass",
       "evidence": "qualification fingerprint sha256:468c5cd41d33c94d908778421d8b5bc74b067563777aa8a1deb1fd9305b5dcc3"
+    },
+    {
+      "name": "final current-tree main validation",
+      "result": "pass",
+      "evidence": "main Run #74 completed successfully after RC6 audit closure; all seven jobs passed"
     }
   ],
   "qualification_blockers": [
