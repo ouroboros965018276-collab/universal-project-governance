@@ -49,8 +49,6 @@ def main():
 
     lab = get_lab(args.labs, args.scenario)
     adapter = CommandAdapter.from_path(args.adapter)
-    if args.locked_handoff if False else False:
-        pass
     if args.locked_holdout:
         adapter.require_locked_holdout()
     for capability in ("skill_injection", "controlled_checkpoint"):
