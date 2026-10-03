@@ -56,6 +56,13 @@ def main():
     if protocol.get("gate_order") != required_gates:
         errors.append("gate_order must match RC7 non-compensatory release sequence")
 
+    overreach_cohorts = protocol.get("structural_overreach", {}).get("exposure_cohorts", {})
+    if set(overreach_cohorts) != {"local_guard", "structural_guard"}:
+        errors.append("structural overreach must define local_guard and structural_guard exposure cohorts")
+    for name, spec in overreach_cohorts.items():
+        if int(spec.get("minimum_locked_scenarios", 0)) < 4:
+            errors.append("overreach cohort %s must require >=4 locked scenarios" % name)
+
     inference = protocol.get("inference", {})
     if inference.get("method") != "hierarchical-bootstrap":
         errors.append("RC7 inference must use hierarchical-bootstrap")
