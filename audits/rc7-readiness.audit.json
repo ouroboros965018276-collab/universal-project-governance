@@ -1,0 +1,63 @@
+{
+  "schema_version": 3,
+  "version": "3.0.0-rc.7",
+  "candidate": "Real-Agent Test Freeze",
+  "updated_at": "2026-10-03T15:38:07+08:00",
+  "status": "engineering-validation-in-progress",
+  "claims": {
+    "task_bounded_structural_integration": true,
+    "hierarchical_inference_preregistered": true,
+    "automated_project_lifecycle": true,
+    "field_test_reporting_enabled": true,
+    "real_agent_causal_benefit_proven": false,
+    "stable_ready": false
+  },
+  "engineering_gates": [
+    {
+      "name": "canonical source and compiler",
+      "result": "pending"
+    },
+    {
+      "name": "generated runtime and integrity",
+      "result": "pending"
+    },
+    {
+      "name": "project lifecycle install/status/export/remove",
+      "result": "pending"
+    },
+    {
+      "name": "field-report contract and privacy bounds",
+      "result": "pending"
+    },
+    {
+      "name": "qualification q3 static validation",
+      "result": "pending"
+    },
+    {
+      "name": "hierarchical/subgroup/overreach regression tests",
+      "result": "pending"
+    },
+    {
+      "name": "Python 3.8/3.11/3.13",
+      "result": "pending"
+    },
+    {
+      "name": "Agent Skills validator and Skills CLI",
+      "result": "pending"
+    },
+    {
+      "name": "security audit",
+      "result": "pending"
+    },
+    {
+      "name": "real-agent test freeze identity",
+      "result": "pending"
+    }
+  ],
+  "real_test_blockers": [
+    "final RC7 generated runtime/freeze",
+    "all engineering CI green",
+    "immutable real-Agent qN evidence"
+  ],
+  "conclusion": "RC7 is not ready for real locked testing until all engineering gates pass; Stable remains blocked until real locked qualification passes."
+}

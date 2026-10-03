@@ -1,33 +1,29 @@
 # Contributing
 
-RC6 is a structural-integration and qualification-correctness release.
+RC7 is the real-Agent test freeze.
 
-## Change policy
+## Structural contribution rule
 
-Small, isolated, low-risk corrections may be narrow.
+Small isolated fixes may remain narrow. Non-trivial changes modify the responsible canonical module and clean the superseded in-scope path.
 
-Non-trivial changes should be structural: integrate into the responsible canonical module, remove the superseded path, and update tests/docs/contracts in the same change. Avoid additive patch layers.
+“Structural” never means “broaden scope.” Unrequested API/architecture redesign is a regression unless separately authorized.
 
 ## Runtime evolution
 
-Change `governance-src/`, not generated runtime. Regenerate the runtime, rerun complexity/static checks, regenerate qualification freeze identity when required, and preserve one canonical semantic definition.
+Edit `governance-src/`, regenerate runtime, run lint/integrity/tests, and regenerate test-freeze identity before empirical results begin.
+
+Do not hand-edit generated runtime.
+
+## Project lifecycle
+
+Project ownership is limited to the two paths declared in the canonical binding. New persistent per-project files require an explicit architecture decision and complexity-budget change.
 
 ## Qualification changes
 
-Protocol, fixtures, evaluators, adapters, runners, and analyzer are frozen evidence surfaces after qualification freeze.
+Protocol, fixtures, statistics, graders, mutations, adapters, runners, analyzer, deployment wrapper, canonical source, compiler, and generated runtime are frozen evidence surfaces.
 
-A change to one of those surfaces requires:
-
-1. explicit reason;
-2. updated qualification fingerprint;
-3. invalidation/replacement of any dependent evidence round;
-4. full deterministic validation before new Agent trials.
+After real testing starts, modifying any frozen surface invalidates the affected result round.
 
 ## Evidence rules
 
-- no empty result placeholders;
-- no moving locked thresholds after observing results;
-- no deterministic failure relabeling;
-- no holdout leakage;
-- no raw secret-bearing traces in Git;
-- no rewriting completed qN rounds.
+No result placeholders, threshold changes after seeing results, deterministic-failure relabeling, holdout leakage, raw secret-bearing traces, private chain-of-thought collection, or rewriting completed qN rounds.

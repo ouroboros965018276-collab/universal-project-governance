@@ -1,73 +1,48 @@
 # Qualification Plane
 
-Purpose: determine whether the frozen Skill causally improves real engineering outcomes enough to justify its cost.
+Purpose: establish whether the frozen RC7 Skill causally improves real engineering outcomes enough to justify its behavioral and operational cost.
 
-This directory is repository-only and never ships in the installed Skill.
+This directory is repository-only.
 
-## Protocol v2
+## Protocol q3
 
-`protocol/qualification-v2.json` is the preregistered release contract. `thresholds.json` contains numeric release criteria.
+`protocol/qualification-v3.json` preregisters arms, sampling, hierarchical inference, safety exposure, deployment integrity, structural overreach, efficiency, subgroup semantics, and stopping rules.
 
-Formal evidence uses locked trials only. Development runs are diagnostic.
+Development runs are diagnostic. Stable evidence uses locked trials only.
 
-## Evidence model
+## Hierarchical inference
 
-Every formal behavioral/handoff trial records:
+Formal paired effects use hierarchical bootstrap:
 
-- Agent/model/scaffold identity;
-- tool and budget profile;
-- locked/dev evidence set;
-- experimental arm/condition;
-- explicit `safety_exposures`;
-- observable outcome;
-- measured usage;
-- persistent governance artifact count;
-- behavioral and qualification fingerprints.
+```text
+agent_family
+  → scenario_id
+    → pair_id / repetition
+```
 
-Trigger and mutation trials declare no normal critical-safety exposure.
+This avoids treating all repetitions as simple IID observations.
 
-## Analyzer structure
+## Generalization
 
-- `analysis/metrics.py`: statistical primitives.
-- `analysis/coverage.py`: matrix completeness.
-- `analysis/gates.py`: one implementation per release criterion.
-- `analyze.py`: orchestration only.
+Every Agent-family and project-profile subgroup reports task/governance CIs.
 
-This separation exists to prevent release semantics from becoming hidden inside a single conditional-heavy script.
+The gate distinguishes:
 
-## Sampling
+- `positive-subgroup-evidence`
+- `severe-reversal-ruled-out-only`
 
-Development minimum: 3 repetitions per cell.  
-Checkpoint: 5.  
-Locked Stable minimum: 8.  
-Borderline progression: 10, then 12 maximum before `MORE_DATA`.
+Coverage/generalization does not automatically claim statistically significant benefit for every subgroup.
 
-Every participating Agent family must complete the full locked behavioral matrix. Project profiles must meet their minimum complete-pair exposure.
+## Structural overreach
 
-## Critical safety
+Behavioral labs define a scope contract. Locked A2 trials measure unexpected changed files, unrequested API/architecture changes, changed-file count, diff lines, and latency.
 
-Safety is class-specific.
+The overreach gate is independent from task success.
 
-For each CF class:
+## Project deployment
 
-1. select normal locked A2 rows;
-2. retain only rows declaring that class in `safety_exposures`;
-3. enforce eligible trial kind/condition;
-4. count observed failures;
-5. compute the zero-event confidence bound from that class's denominator.
-
-No unrelated rows may improve the bound.
-
-## Attention control
-
-A1 is valid only when measured `governance_context_tokens` is within the locked ratio to A2. If control validity fails, A2>A1 uplift is not interpretable.
-
-## Handoff
-
-Formal handoff compares `present` vs `ablated` under controlled checkpoints.
-
-It measures both final recovery success and whether Agent B regressed state that Agent A had already made correct at the checkpoint.
+A2 behavioral evidence includes project-binding validity and the required completion report. Fixed UPG managed files are counted separately from task governance artifacts.
 
 ## Results
 
-Real runs create immutable `results/qN/` evidence. This repository intentionally contains no fabricated empty result files.
+Real result rounds appear under `results/qN/` only after execution and are immutable. No fabricated empty result artifacts are permitted.

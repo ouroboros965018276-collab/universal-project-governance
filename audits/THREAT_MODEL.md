@@ -1,64 +1,50 @@
-# Threat Model — 3.0.0-rc.6
+# Threat Model — 3.0.0-rc.7
 
 ## Protected assets
 
-- canonical governance semantics;
-- generated runtime integrity;
-- structural-integration behavior;
-- locked qualification protocol/thresholds;
-- holdout oracles;
-- safety exposure metadata;
-- evaluator/runner identity;
-- raw evidence and immutable result rounds.
+Canonical governance semantics, generated Skill integrity, task scope boundaries, project binding ownership, field-test evidence, locked protocol/thresholds, holdout oracles, evaluator/runner/deployment identity, and immutable result rounds.
 
-## Threats and controls
+## Threats
 
-### Patch accumulation
+### Structural overreach
 
-**Risk:** an Agent satisfies local metrics by adding wrappers, flags, fallbacks, duplicate configs, or parallel paths.  
-**Control:** canonical `STRUCTURAL_INTEGRATION` policy + planner change mode + cleanup/evidence rules.
+**Risk:** an Agent interprets structural integration as permission to redesign unrelated modules or contracts.  
+**Controls:** task-bounded scope guard, per-lab scope contract, changed-file/diff/API/architecture diagnostics, independent non-compensatory overreach gate.
 
-### Safety-denominator contamination
+### Correlated observations
 
-**Risk:** trigger/mutation/unrelated trials falsely increase safety confidence.  
-**Control:** explicit per-trial `safety_exposures`; normal locked A2 behavioral/present-handoff rows only; class-specific denominators.
+**Risk:** pair-level IID resampling produces optimistic confidence intervals.  
+**Control:** preregistered hierarchical Agent-family → scenario → repetition bootstrap.
 
-### Incomplete matrix promoted as Stable
+### Aggregate benefit hides subgroup uncertainty
 
-**Risk:** a few easy scenarios or one dominant Agent family create apparent uplift.  
-**Control:** 12 locked scenarios × 8 repetitions × complete A0/A1/A2 × each participating Agent family.
+**Risk:** coverage and aggregate uplift are mistaken for significant benefit in each subgroup.  
+**Control:** subgroup hierarchical CIs and explicit evidence-level semantics.
 
-### Invalid attention control
+### Project-state proliferation
 
-**Risk:** A1 is much smaller than A2, making A2>A1 uninterpretable.  
-**Control:** measured governance-context-token validity gate before uplift.
+**Risk:** automatic governance creates accumulating report files.  
+**Control:** exactly two managed files and one bounded rolling report ledger.
 
-### Weak handoff metric
+### Managed-state accidental cleanup
 
-**Risk:** final task success hides regression of already-correct checkpoint state.  
-**Control:** independent recovery and degradation-reduction gates.
+**Risk:** an Agent treats UPG binding/report state as junk.  
+**Control:** generated Skill explicitly marks binding-owned paths as managed infrastructure; deployment gate detects their loss.
 
-### Governance artifact proliferation
+### Unsafe uninstall
 
-**Risk:** the Skill creates persistent report/handoff debris per task.  
-**Control:** runner-measured artifact count is a release efficiency criterion.
+**Risk:** automated removal deletes project-owned governance data or follows a symlink outside the project.  
+**Control:** exact ownership validation, two-path removal allowlist, symlink refusal, empty-directory cleanup only.
 
-### Subgroup reversal
+### Field-report leakage
 
-**Risk:** aggregate benefit hides severe harm to one Agent family or project profile.  
-**Control:** subgroup minimum exposure and reversal floors.
+**Risk:** users share source/secrets through gray-test reports.  
+**Control:** metadata-only contract, size bounds, common credential-marker rejection, review-before-sharing guidance, no private chain-of-thought.
 
-### Benchmark leakage
+### Benchmark leakage / frozen-evidence drift
 
-**Risk:** Agent sees holdout oracle/graders.  
-**Control:** strong sandboxing and oracle exclusion.
-
-### Frozen-evidence drift
-
-**Risk:** protocol/evaluator/runner changes without invalidating results.  
-**Control:** qualification fingerprint binds the full evidence pipeline.
+**Control:** strong isolation, oracle exclusion, and a qualification fingerprint binding runtime, protocol, fixtures, evaluator, runner, and deployment wrapper.
 
 ### False zero-risk claim
 
-**Risk:** zero observed failures is reported as zero real risk.  
-**Control:** per-class one-sided confidence upper bounds and explicit sample counts.
+**Control:** observed counts plus one-sided zero-event confidence bounds; zero observations never mean zero real risk.

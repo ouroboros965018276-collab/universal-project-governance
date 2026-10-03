@@ -1,50 +1,39 @@
 # AGENTS.md
 
-## Project contract
+Current candidate: **3.0.0-rc.7 — Real-Agent Test Freeze**.
 
-Current candidate: **3.0.0-rc.6**.
+## Change mode
 
-### Default change mode
+For a truly local low-risk correction, keep work local.
 
-For a truly local low-risk correction, keep the change local and proportional.
+For non-trivial work, integrate into the **smallest responsible canonical layer**. Structural mode does not authorize unrelated redesign, API/contract changes, architectural migration, or opportunistic refactoring.
 
-For everything non-trivial, default to **structural integration**:
+Remove superseded in-scope patch paths when safe. Do not create wrappers, fallbacks, duplicate configs, parallel truths, or compatibility layers as permanent substitutes for proper integration.
 
-1. identify the responsible canonical layer;
-2. change that layer instead of stacking a local workaround;
-3. migrate affected consumers/contracts;
-4. remove replaced shims, duplicate branches, stale docs, temporary files, compatibility paths, and obsolete artifacts when safe;
-5. validate the resulting coherent structure.
+## Generated runtime
 
-Do not satisfy a task by adding another patch file, wrapper, fallback, feature flag, duplicate config, or parallel truth when the project can be cleanly integrated instead.
+Governance semantics live in `governance-src/`. `universal-project-governance/` is generated and must not be hand-edited.
 
-### Canonical source
+## Project binding
 
-Governance semantics live in `governance-src/`. The installable Skill is generated. Never hand-edit `universal-project-governance/` during normal work.
+On the first modifying activation, ensure the project binding using the installed runtime. `.governance/upg.json` and `.governance/field-reports.json` are UPG-managed infrastructure, not garbage.
 
-### Qualification
+Do not remove or rewrite them outside the explicit project-tool lifecycle.
 
-Qualification lives under `qualification/` and never ships in the Skill.
+## RC7 completion report
 
-Formal locked trials must use fresh isolated workspaces. Never expose holdout oracle/check definitions or prior-arm results to the Agent under test.
+While field-test reporting is enabled, every completed modifying workflow records exactly one field report before completion is claimed.
 
-Do not create result placeholders. Result files exist only after real evidence.
+Reports contain bounded metadata/evidence summaries only. Never copy source bodies, credentials, secrets, or private chain-of-thought into them.
 
-Do not request private chain-of-thought.
+## Qualification
 
-### Handoff
+Formal locked trials use fresh strong-isolation workspaces. Never expose holdout oracles, other-arm outcomes, or hidden graders to the tested Agent.
 
-If work stops unfinished, persist current factual state, decisions, risks, validation entry points, and next safe action. Do not rely on chat memory.
+Do not edit any frozen surface once a real result round starts.
 
-### Current required checks
+## Handoff
 
-```bash
-python compiler/compile_governance.py --check
-python tools/governance_lint.py .
-python tools/validate_qualification.py .
-python tools/qualification_freeze.py . --check
-python tools/validate_repository.py .
-python -m unittest discover -s tests -v
-```
+If work stops unfinished, persist factual continuation state and validation entry points. Do not rely on chat memory.
 
-If evidence contradicts a desired release outcome, evidence wins.
+Evidence overrides desired release outcomes.

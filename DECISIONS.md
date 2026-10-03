@@ -1,55 +1,51 @@
 # Active Design Decisions
 
-## Structural integration is the default for non-trivial work
+## Structural integration is task-bounded
 
-Tiny local low-risk corrections may remain local. Medium/high-risk work and intrinsically structural operations activate `STRUCTURAL_INTEGRATION`.
+Non-trivial work changes the smallest responsible canonical layer rather than stacking local patches. This is not a license to enlarge scope.
 
-The rule exists to prevent repeated local fixes from becoming parallel architecture, hidden compatibility layers, duplicated truth, and growing cleanup debt.
+Unrequested redesign, API/contract change, architecture migration, and opportunistic refactoring are outside the authority of `STRUCTURAL_INTEGRATION`.
 
-## Structural integration is canonical, not advisory prose
+## Structural overreach is a first-class release risk
 
-The policy lives in `governance-src/model/governance-model.json`; the compiler emits it into the runtime and the planner reports `change_mode`.
+Task success cannot compensate for scope violation. Locked A2 behavioral trials collect changed-file count, diff lines, unexpected changed files, unrequested API changes, unrequested architecture changes, and timing.
 
-Do not reimplement this rule in docs, adapters, or qualification code.
+The overreach gate is independent and non-compensatory.
 
-## Qualification is a separate plane
+## Formal effect inference is hierarchical
 
-Qualification code never ships in the Skill. Runtime governance stays bounded while evaluation sophistication can grow independently.
+Primary paired effects use hierarchical bootstrap over Agent family, scenario, and repetition/pair. This matches the experimental nesting better than pair-level IID resampling.
 
-## Release evidence uses locked trials only
+The preregistered seed/repetition count is frozen before real results.
 
-Development results are diagnostic. Five repetitions are a checkpoint; Stable cannot pass before 8 complete locked repetitions per scenario × Agent-family cell.
+## Generalization claims are deliberately narrow
 
-## Primary behavioral matrix must be complete
+Every Agent-family and project-profile subgroup receives its own hierarchical CI.
 
-A release matrix requires A0, A1, and A2 for each paired replication. Every participating Agent family must meet the full locked scenario/repetition minimum; a single token appearance from a second family never satisfies generalization.
+A subgroup gate may establish that the preregistered severe-reversal floor is ruled out. “Positive subgroup evidence” is reported separately. A generalization PASS does not by itself mean every subgroup has statistically significant benefit.
 
-## Critical safety uses class-specific exposure populations
+## Project binding has fixed cardinality
 
-Each trial declares the critical-failure classes it can genuinely expose. Safety confidence is calculated per class from those exposures only.
+RC7 owns exactly two project files: binding state and one rolling field-test ledger. The fixed cardinality prevents report-file proliferation.
 
-Trigger and mutation trials are excluded from normal treatment safety denominators. Handoff ablation trials are not counted as normal A2 safety exposure.
+Managed files are excluded from task change-count metrics but included in a separate deployment/overhead gate.
 
-## Attention control is a validity gate
+## Field-test reporting is temporary but first-class during RC7
 
-A1 must be measured against A2 using `governance_context_tokens`. If the control is not within the preregistered ratio, A2>A1 governance uplift is not interpretable and cannot support release.
+While the canonical flag is enabled, completion requires one report record. Reports are bounded metadata/evidence summaries and are exportable for cross-project analysis.
 
-## Handoff has two independent success criteria
+The capability is isolated behind one canonical switch and one runtime tool so a Stable decision can either retain it intentionally or remove it structurally without orphaned paths.
 
-Handoff must improve recovery success and reduce degradation of already-correct checkpoint state. Passing one does not compensate for failing the other.
+## Install and remove are explicit lifecycle operations
 
-## Governance artifact overhead is a release criterion
+`upg.py install` combines host Skill installation, installed-copy integrity validation, and project binding initialization.
 
-Completed behavioral tasks may not proliferate persistent `.governance` files beyond the locked threshold. Report lifecycle is therefore measured, not merely documented.
+`upg.py remove` removes owned project state before invoking the host Skills CLI. Removal refuses drifted/unowned bindings and preserves unrelated project governance data.
 
-## Generalization requires exposure and no severe reversal
+## Frozen evidence includes deployment tooling
 
-Each Agent family and project profile must meet minimum complete-pair exposure. Subgroups may vary, but a severe reversal in task success or governance effect blocks qualification.
-
-## Qualification fingerprint binds the full evidence pipeline
-
-The fingerprint covers protocol, fixtures, evaluators, mutation definitions, adapters, runners, and analyzer. A frozen-surface change requires a new fingerprint and result round.
+The RC7 qualification fingerprint binds `upg.py` because real results depend on the actual installation/project lifecycle, not only the Skill prompt/runtime.
 
 ## Current tree contains current truth
 
-Historical prerelease audits, old version-specific test names, superseded protocol files, and redundant prompt-only eval assets belong in VCS history, not the current working tree.
+Superseded protocols and prior readiness audits belong in VCS history. The current tree contains only RC7 normative and readiness surfaces.

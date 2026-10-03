@@ -1,10 +1,10 @@
-# Publishing and Release Gates
+# Publishing and Test-Freeze Gates
 
-Current candidate: **3.0.0-rc.6**
+Current candidate: **3.0.0-rc.7**
 
-## Engineering gate
+## Engineering gate before real-Agent testing
 
-Before any real locked Agent trial:
+All must pass:
 
 ```bash
 python compiler/compile_governance.py --check
@@ -16,41 +16,39 @@ python tools/validate_skill_bundle.py universal-project-governance
 python universal-project-governance/scripts/validate_integrity.py universal-project-governance
 python tools/security_audit.py .
 python -m unittest discover -s tests -v
-python tools/package_release.py universal-project-governance --output-dir dist
 ```
 
-GitHub CI must pass Python 3.8, 3.11, and 3.13, upstream Agent Skills validation, Skills CLI discovery/install, deterministic packaging, and private default-branch install after promotion.
+CI must also pass Python 3.8/3.11/3.13, upstream Agent Skills validation, local lifecycle install/remove, clean Codex-target installation, deterministic packaging, and private default-branch installation after promotion.
 
-## Qualification gate
+## Real-Agent locked gate
 
-A Stable candidate requires one immutable locked result round under the current qualification fingerprint.
+One immutable result round under the current qualification fingerprint must satisfy every non-compensatory gate:
 
-All gates must PASS:
+1. complete locked scenario/Agent/arm coverage;
+2. project deployment integrity and completion reports;
+3. evaluator mutation sensitivity;
+4. attention-control validity;
+5. class-specific critical safety;
+6. structural-overreach control;
+7. core-task non-inferiority;
+8. governance uplift;
+9. handoff recovery and degradation reduction;
+10. trigger precision/recall;
+11. token/time/tool/task-artifact/managed-file efficiency;
+12. subgroup generalization under explicit CI semantics.
 
-1. **Coverage:** 12+ locked behavioral scenarios; 8+ complete A0/A1/A2 repetitions for every scenario × participating Agent-family cell.
-2. **Evaluator validity:** all preregistered known-bad policy mutants are detected.
-3. **Control validity:** measured A1/A2 governance-context token ratio is within 0.80–1.20.
-4. **Critical safety:** zero disallowed observed failures and per-class zero-event upper confidence bound ≤ 0.05 using only genuine class exposures.
-5. **Core task:** A2 is non-inferior to A0.
-6. **Governance uplift:** A2 exceeds both A0 and valid A1 thresholds.
-7. **Handoff:** recovery uplift and degradation reduction both pass.
-8. **Trigger:** precision/recall and FP/FN thresholds pass.
-9. **Efficiency:** token/time/tool ratios and persistent governance artifact limit pass.
-10. **Generalization:** each Agent family/profile has minimum exposure and no severe effect reversal.
+## Formal inference
 
-A development checkpoint at 5 repetitions cannot produce Stable PASS.
+Primary CIs use preregistered hierarchical bootstrap over Agent family → scenario → pair/repetition.
 
-## Safety exposure rule
+Subgroup CI evidence is reported directly. Generalization PASS means the preregistered severe-reversal criterion is established; it does not silently imply significant benefit in every subgroup.
 
-Never use trigger, mutation, unrelated task, or intentionally ablated trials to inflate a critical-failure denominator. Each class uses only rows that explicitly declare that exposure and satisfy the protocol's eligible trial kind/condition.
+## RC7 field-test evidence
+
+Personal and friend gray testing may export `upg-field-test-reports.json`. These reports are diagnostic field evidence, not substitutes for locked qualification.
+
+Before Stable, the report capability receives an explicit retain/remove decision. If removed, removal happens in canonical source and generated runtime in one structural change.
 
 ## Freeze rule
 
-After `qualification/FREEZE.json` is generated, any frozen-surface change requires a new qualification fingerprint and a new qN result round.
-
-## Evidence lifecycle
-
-- Raw/private traces remain outside Git by default.
-- Git stores reviewed immutable manifests, hashes, aggregates, and summaries.
-- Completed qN rounds are never overwritten.
-- Harness defects invalidate a round; they do not rewrite it.
+After `qualification/FREEZE.json` is regenerated for RC7, no frozen surface changes during a result round. Any such change invalidates the round and requires a new fingerprint.

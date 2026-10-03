@@ -1,32 +1,30 @@
 # Canonical Governance Source
 
-`governance-src/` is the only editable source of runtime governance semantics.
+`governance-src/` is the only editable source of distributed governance semantics.
 
-## Why this layer exists
+## RC7 responsibilities
 
-The installable Skill is generated. Keeping one canonical typed source prevents documentation drift, duplicated rules, and hand-edited runtime patches.
+The canonical model defines:
 
-## RC6 structural-integration contract
+- bounded Hot Path and policy graph;
+- risk-adaptive planning;
+- task-bounded structural integration;
+- the two-file project binding;
+- temporary RC7 field-test reporting;
+- runtime complexity budgets.
 
-`model/governance-model.json` defines `STRUCTURAL_INTEGRATION` and the activation rule:
+Runtime helpers and schemas are compiled from this directory.
 
-- tiny/low-risk local work may remain local;
-- medium/high-risk work defaults to structural mode;
-- refactor, migration, dependency, generated-source, architecture, security, data, and governance upgrades force structural mode;
-- release bookkeeping itself is exempt.
+## Structural scope rule
 
-The planner emits `change_mode` so downstream Agents and audits can observe the decision.
+Structural work changes the smallest responsible canonical layer. It must not reinterpret “structural” as permission to widen task scope.
+
+## Project binding
+
+RC7 uses exactly two managed project paths. Field reports use one bounded rolling ledger instead of per-task files.
+
+The reporting switch is canonical so the capability can be intentionally retained or structurally removed before Stable.
 
 ## Change safety
 
-A governance semantic change requires:
-
-1. canonical source edit;
-2. compiler regeneration;
-3. governance lint;
-4. runtime integrity;
-5. deterministic tests;
-6. qualification freeze regeneration;
-7. new empirical evidence if the behavioral fingerprint changes.
-
-Do not add a second source of the same rule elsewhere.
+Any semantic change requires regeneration, lint, runtime integrity, deterministic tests, qualification-freeze regeneration, and new empirical evidence if a result round has already started.
