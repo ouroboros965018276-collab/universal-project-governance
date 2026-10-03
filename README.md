@@ -70,7 +70,7 @@ Each trial carries `safety_exposures`; each critical-failure class receives its 
 
 ## Current evidence status
 
-RC6 engineering and qualification infrastructure are being validated. No real Agent qualification result is claimed yet. `qualification/results/` is created only by real immutable evidence rounds.
+RC6 engineering and qualification infrastructure are validated and machine-frozen. No real Agent qualification result is claimed yet. `qualification/results/` is created only by real immutable evidence rounds.
 
 Stable remains blocked until a locked qualification round is **PASS** under the final RC6 qualification fingerprint.
 
