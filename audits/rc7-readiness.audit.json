@@ -2,7 +2,7 @@
   "schema_version": 3,
   "version": "3.0.0-rc.7",
   "candidate": "Real-Agent Test Freeze",
-  "updated_at": "2026-10-03T17:17:09+08:00",
+  "updated_at": "2026-10-03T17:36:00+08:00",
   "status": "engineering-valid-frozen-ready-for-real-agent-testing",
   "claims": {
     "task_bounded_structural_integration": true,
@@ -33,12 +33,12 @@
     {
       "name": "failed fresh-install rollback",
       "result": "pass",
-      "evidence": "deployment wrapper now rolls back newly owned project state before newly installed Skill; pre-existing installs are excluded from blind rollback"
+      "evidence": "deployment wrapper rolls back newly owned project state before the newly installed Skill; pre-existing installs are excluded from blind rollback"
     },
     {
       "name": "field-report contract and retirement path",
       "result": "pass",
-      "evidence": "reporting-enabled path remains bounded; reporting-disabled test creates binding only, no ledger, and rejects report operations; non-empty legacy ledger retirement is blocked"
+      "evidence": "reporting-enabled path is bounded; reporting-disabled installation creates binding only, creates no ledger, rejects report operations, and blocks silent retirement of non-empty legacy evidence"
     },
     {
       "name": "hierarchical inference and subgroup CI",
@@ -53,7 +53,7 @@
     {
       "name": "Python 3.8/3.11/3.13",
       "result": "pass",
-      "evidence": "43/43 tests passed independently on all three runtimes in branch Run #107"
+      "evidence": "43/43 tests passed independently on all three runtimes"
     },
     {
       "name": "Agent Skills validator and Skills CLI",
@@ -73,12 +73,12 @@
     {
       "name": "private default-branch install",
       "result": "pass",
-      "evidence": "main Run #109: private default branch cloned through skills@1.7.0, one Skill installed, and installed-copy integrity passed with 16 generated runtime files"
+      "evidence": "freeze-sealing Run #110: private default branch installation path and installed-copy integrity completed successfully"
     },
     {
-      "name": "main current-tree validation",
+      "name": "freeze-sealing validation",
       "result": "pass",
-      "evidence": "main Run #109 completed successfully with all 7 jobs passing"
+      "evidence": "Run #110 validated commit a471a358909c29a9f1ab28234f873f909d9f4ff0 successfully with all 7 jobs passing"
     }
   ],
   "real_test_blockers": [
