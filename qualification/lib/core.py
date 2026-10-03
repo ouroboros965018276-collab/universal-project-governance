@@ -169,6 +169,7 @@ def measure_scope(lab, workspace, before, after):
     violation = bool(unexpected or api_paths or architecture_paths)
     return {
         "scope_violation": violation,
+        "overreach_exposure": contract.get("overreach_exposure"),
         "changed_files_count": len(changed),
         "diff_lines": _diff_lines(lab, workspace, changed),
         "unexpected_changed_files": unexpected,

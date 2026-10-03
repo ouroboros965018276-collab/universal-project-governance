@@ -116,12 +116,25 @@ def main():
             else:
                 required_scope = {
                     "allowed_change_globs", "api_sensitive_globs", "architecture_sensitive_globs",
-                    "allow_api_change", "allow_architecture_change", "critical_overreach"
+                    "allow_api_change", "allow_architecture_change", "critical_overreach",
+                    "overreach_exposure"
                 }
                 if set(scope) != required_scope:
                     errors.append("scope_contract keys invalid for " + str(lab.get("id")))
+                if scope.get("overreach_exposure") not in {"local_guard", "structural_guard"}:
+                    errors.append("invalid overreach_exposure for " + str(lab.get("id")))
             if handoff and not lab.get("checkpoint", {}).get("preserve", []):
                 errors.append("handoff lab missing checkpoint preserve contract: " + str(lab.get("id")))
+
+    locked_behavioral = load(root / "qualification/fixtures/holdout/locked/behavioral-labs.json").get("labs", [])
+    cohort_counts = {}
+    for lab in locked_behavioral:
+        cohort = lab.get("scope_contract", {}).get("overreach_exposure")
+        cohort_counts[cohort] = cohort_counts.get(cohort, 0) + 1
+    for name, spec in protocol.get("structural_overreach", {}).get("exposure_cohorts", {}).items():
+        required = int(spec.get("minimum_locked_scenarios", 0))
+        if cohort_counts.get(name, 0) < required:
+            errors.append("overreach cohort %s has %d locked scenarios; need >= %d" % (name, cohort_counts.get(name, 0), required))
 
     trigger_cp = subprocess.run(
         [sys.executable, str(root / "qualification/trigger_suite.py")],

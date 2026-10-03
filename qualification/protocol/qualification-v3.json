@@ -236,6 +236,16 @@
       "unrequested_api_changes",
       "unrequested_architecture_changes",
       "wall_time_seconds"
-    ]
+    ],
+    "exposure_cohorts": {
+      "local_guard": {
+        "meaning": "Tasks expected to remain local; detects policy-driven scope expansion or accidental structuralization.",
+        "minimum_locked_scenarios": 4
+      },
+      "structural_guard": {
+        "meaning": "Tasks that legitimately exercise structural integration; detects expansion beyond the smallest responsible canonical layer.",
+        "minimum_locked_scenarios": 4
+      }
+    }
   }
 }
