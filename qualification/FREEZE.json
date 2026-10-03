@@ -4,7 +4,7 @@
     "documentation corrections that do not change frozen semantics",
     "external adapter instances/configuration that satisfy the frozen adapter contract"
   ],
-  "behavioral_fingerprint": "sha256:df45b42aa3eef420fec61427b3f7fdd3aa95af5c16af133e0bb3c589a9504159",
+  "behavioral_fingerprint": "sha256:bf6eca2a9024bf7c23a07487534c0840f5176f11ace7fabd6e215eaf302e40fc",
   "compiler_sha256": "sha256:a6f91b14b57c293bc3c4f77c654d8adaeedd6d5c48d7a207b0f550f30e040d28",
   "deployment_sha256": "sha256:c0ba0cfdffcc67b89054e68a469192a56487dc07ebce065de7c1b8ba71405118",
   "evaluator_sha256": "sha256:bd5370aea78923736edf02bbfbbcd38bc4e616f1501e747fe6e084d918a99015",
@@ -29,10 +29,10 @@
     "qualification/analyze.py"
   ],
   "governance_model_sha256": "sha256:f1ff176cc2f507977444cd0b52d9fbfa3fedd94d76b30bf1f1ef337eeec3ae26",
-  "qualification_fingerprint": "sha256:357b7122dafeee67b48c3d943a12088d6b158e3ac0235cdae983cd42a1c68488",
+  "qualification_fingerprint": "sha256:63afa5d1e4cd109987f70c9ddac9223b805c5442a1829bbffee21e77bae414b4",
   "qualification_protocol_sha256": "sha256:3e79f373274e64c1fef4db7cf7f373fed237406ec80d932799819af5108ad078",
   "runner_sha256": "sha256:fcadc09a2f3f513bcc0a27f2d6ed3a13d53840fb127cf559b591dadb70abe5d7",
-  "runtime_tree_sha256": "sha256:bbcf239dd6827456463a03caedd734ff51bd0fb9c86844527735a89dc67fd8f3",
+  "runtime_tree_sha256": "sha256:6b0ad0e208114d8a25684290ed620517ffe66402d2c64a7401ff6cd6392e7d2e",
   "schema_version": 3,
   "state": "real-agent-test-freeze",
   "version": "3.0.0-rc.8"
