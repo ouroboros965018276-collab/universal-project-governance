@@ -189,13 +189,13 @@ def main():
                 "source_adapter_config_sha256": source_identity["adapter_config_sha256"],
                 "source_host_tool_name": source_identity["host_tool_name"],
                 "source_host_tool_version": source_identity["host_tool_version"],
-                "sandboxed": adapter.config.get("sandboxed"),
-                "workspace_isolation": adapter.config.get(
+                "sandboxed": continuation.config.get("sandboxed"),
+                "workspace_isolation": continuation.config.get(
                     "workspace_isolation"
                 ),
                 "project_profile": lab.get("profile"),
-                "tool_profile": adapter.config.get("tool_profile"),
-                "budget_profile": adapter.config.get("budget_profile"),
+                "tool_profile": continuation.config.get("tool_profile"),
+                "budget_profile": continuation.config.get("budget_profile"),
                 "handoff_condition": args.condition,
             },
             "fingerprints": {
