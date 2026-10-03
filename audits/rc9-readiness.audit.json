@@ -8,9 +8,23 @@
   "previous_event": "RC8 audit/HANDOFF.md; historical checkpoint timestamps remain stated, not observed work times",
   "qualification_fingerprint": "sha256:054864a6c2675610f23dfed718416109346dfd4f3bb47bf38c6323b3de321b86",
   "behavioral_fingerprint": "sha256:2883028e85e060af2d12e54e938ce7c52df074e66b9a1ef2b59f09a588afd796",
-  "status": "engineering-accepted-awaiting-separate-real-agent-phase",
+  "status": "engineering-accepted-field-tested-awaiting-formal-qualification-phase",
   "real_agent_execution": false,
+  "real_agent_execution_semantics": "formal dev-smoke/locked protocol execution only; informal real-Agent field runs are recorded under evidence_stages and micro_project_runtime_acceptance",
   "stable_promoted": false,
+  "evidence_stages": {
+    "note": "Layered stage status. Having field-run evidence is not the same as being empirically qualified; the four named stages are field-tested / formal dev-smoke validated / empirically qualified / Stable.",
+    "static_unit_ci_engineering_validation": "COMPLETE: 69/69 local tests; CI 9/9 jobs",
+    "real_agent_field_run": "OCCURRED: five bounded host micro-projects plus a two-project reciprocal handoff exercise; real problem discovery and repair",
+    "real_project_functional_verification": "PASS 5/5 current micro-projects",
+    "historical_original_workflow_governance_acceptance": "NOT PASS: 1 FAIL (04-pendulum) + 4 BLOCKED (missing historical evidence)",
+    "formal_real_agent_dev_smoke": "NOT EXECUTED",
+    "locked_causal_qualification": "NOT EXECUTED",
+    "empirical_qualification": "NOT OBTAINED",
+    "stable": "NOT ELIGIBLE",
+    "stage_current": "field-tested",
+    "one_sentence": "Field-tested RC9; the current five micro-projects pass functionally, the original-workflow governance acceptance does not fully pass, and formal empirical qualification has not been obtained."
+  },
   "scope": {
     "policy_count": 16,
     "hot_path": 8,
@@ -24,7 +38,7 @@
   ],
   "known_claim_limits": [
     "locked software/data task matrix does not establish efficacy across every runtime domain",
-    "no real locked/dev Agent tests in this release phase",
+    "no formal dev-smoke or locked real-Agent qualification results exist in this phase; informal field runs are recorded separately and are not qualification evidence",
     "explicit epoch rotation bounds report deduplication; sequence and verified exports persist",
     "abrupt process death may leave transient lock/temp state; inspect before recovery"
   ],

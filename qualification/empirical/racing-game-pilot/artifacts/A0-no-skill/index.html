@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Top-Down Racer</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #12151c; overflow: hidden;
+    font-family: system-ui, "Segoe UI", sans-serif; color: #eef1f7; }
+  #app { height: 100%; display: flex; align-items: center; justify-content: center; }
+  #board { position: relative; }
+  canvas { display: block; border-radius: 8px; }
+  #hud { position: absolute; top: 12px; left: 12px; padding: 8px 12px;
+    background: rgba(0,0,0,.55); border-radius: 6px; font-size: 14px; line-height: 1.6;
+    font-variant-numeric: tabular-nums; }
+  #hud span { color: #7fd1ff; }
+  #done { position: absolute; inset: 0; display: none; align-items: center;
+    justify-content: center; background: rgba(0,0,0,.7); border-radius: 8px; }
+  #done.on { display: flex; }
+  #done div { background: #1b2130; padding: 24px 32px; border-radius: 10px; text-align: center; }
+  #done h2 { margin: 0 0 8px; color: #7fd1ff; }
+  #keys { position: absolute; bottom: 10px; width: 100%; text-align: center;
+    font-size: 12px; color: #7b8698; }
+</style>
+</head>
+<body>
+<div id="app"><div id="board">
+  <canvas id="c" width="960" height="600"></canvas>
+  <div id="hud">
+    <div>Speed <span id="spd">0</span></div>
+    <div>Lap <span id="lap">1</span> / <span id="tlap">3</span></div>
+    <div>Time <span id="t">0.00</span></div>
+    <div>Best <span id="best">--.--</span></div>
+  </div>
+  <div id="done"><div>
+    <h2>Race complete</h2>
+    <div>Total <span id="tot">0.00</span>s</div>
+    <div>Best lap <span id="fbest">0.00</span>s</div>
+  </div></div>
+  <div id="keys">Arrows / WASD &middot; R restart &middot; P pause</div>
+</div></div>
+<script>
+// Track: a rounded-rectangle ring. The car may only be in the band between the
+// outer and inner rounded rectangles.
+var canvas = document.getElementById('c');
+var ctx = canvas.getContext('2d');
+var CX = 480, CY = 300, HX = 348, HY = 188, RAD = 92, HALF = 42;
+var OUT = { hx: HX + HALF, hy: HY + HALF, r: RAD + HALF };
+var INN = { hx: HX - HALF, hy: HY - HALF, r: RAD - HALF };
+
+function inRoundRect(x, y, rr) {
+  var dx = Math.abs(x - CX), dy = Math.abs(y - CY);
+  if (dx <= rr.hx - rr.r && dy <= rr.hy) return true;
+  if (dy <= rr.hy - rr.r && dx <= rr.hx) return true;
+  var ex = dx - (rr.hx - rr.r), ey = dy - (rr.hy - rr.r);
+  if (ex < 0) ex = 0;
+  if (ey < 0) ey = 0;
+  return ex * ex + ey * ey <= rr.r * rr.r;
+}
+function onTrack(x, y) { return inRoundRect(x, y, OUT) && !inRoundRect(x, y, INN); }
+
+// Gates: cross the finish in the racing direction after taking the checkpoint.
+var FINISH = { x: CX, lo: CY - HY - HALF, hi: CY - HY + HALF };
+var CHECK  = { x: CX, lo: CY + HY - HALF, hi: CY + HY + HALF };
+
+function segCrosses(g, x1, y1, x2, y2) {
+  var d1 = x1 - g.x, d2 = x2 - g.x;
+  if (d1 * d2 > 0 || x1 === x2) return 0;
+  var u = (g.x - x1) / (x2 - x1);
+  if (u < 0 || u > 1) return 0;
+  var yy = y1 + (y2 - y1) * u;
+  if (yy < g.lo || yy > g.hi) return 0;
+  return (x2 - x1) > 0 ? 1 : -1;
+}
+
+var TOTAL = 3;
+var car, pressed, prev, clock, lapStart, best, lapNum, armed, mode, frames, doneTotal, lastT;
+
+function start() {
+  car = { x: CX - 60, y: CY - HY, ang: 0, v: 0 };
+  pressed = {};
+  prev = { x: car.x, y: car.y };
+  clock = 0; lapStart = 0; best = null; lapNum = 1; armed = false;
+  mode = 'running'; frames = 0; doneTotal = null;
+  document.getElementById('done').classList.remove('on');
+  document.getElementById('best').textContent = '--.--';
+  lastT = performance.now();
+}
+
+var CODES = {
+  ArrowUp: 'up', KeyW: 'up', ArrowDown: 'down', KeyS: 'down',
+  ArrowLeft: 'left', KeyA: 'left', ArrowRight: 'right', KeyD: 'right'
+};
+addEventListener('keydown', function (e) {
+  if (e.code === 'KeyR') { start(); return; }
+  if (e.code === 'KeyP' || e.code === 'Escape') {
+    if (mode === 'running') mode = 'paused';
+    else if (mode === 'paused') mode = 'running';
+    return;
+  }
+  if (CODES[e.code]) { pressed[CODES[e.code]] = true; e.preventDefault(); }
+});
+addEventListener('keyup', function (e) {
+  if (CODES[e.code]) { pressed[CODES[e.code]] = false; e.preventDefault(); }
+});
+addEventListener('blur', function () { pressed = {}; });
+
+var MAXV = 430, ACC = 540, DEC = 700, RMAX = 150, DRAG = 0.55, TURN = 2.7;
+
+function physics(dt) {
+  clock += dt;
+  var up = pressed.up, down = pressed.down;
+  var turn = (pressed.left ? -1 : 0) + (pressed.right ? 1 : 0);
+
+  if (up) car.v += ACC * dt;
+  if (down) car.v -= (car.v > 0 ? DEC : ACC * 0.6) * dt;
+  if (!up && !down) {
+    car.v *= Math.exp(-DRAG * dt);
+    if (Math.abs(car.v) < 1) car.v = 0;
+  }
+  if (car.v > MAXV) car.v = MAXV;
+  if (car.v < -RMAX) car.v = -RMAX;
+
+  if (Math.abs(car.v) > 3) {
+    var a = Math.min(1, Math.abs(car.v) / 220) * (car.v >= 0 ? 1 : -1);
+    car.ang += turn * TURN * a * dt;
+  }
+
+  var nx = car.x + Math.cos(car.ang) * car.v * dt;
+  var ny = car.y + Math.sin(car.ang) * car.v * dt;
+
+  if (!onTrack(nx, ny)) {
+    // Walk back toward the last valid point and stop at the barrier.
+    var lo = 0, hi = 1;
+    for (var i = 0; i < 12; i++) {
+      var mid = (lo + hi) / 2;
+      if (onTrack(car.x + (nx - car.x) * mid, car.y + (ny - car.y) * mid)) lo = mid;
+      else hi = mid;
+    }
+    car.x += (nx - car.x) * lo;
+    car.y += (ny - car.y) * lo;
+    car.v *= 0.25;
+  } else {
+    car.x = nx;
+    car.y = ny;
+  }
+
+  var a1 = segCrosses(FINISH, prev.x, prev.y, car.x, car.y);
+  var a2 = segCrosses(CHECK, prev.x, prev.y, car.x, car.y);
+  if (a2 === -1) armed = true;
+  if (a1 === 1 && armed) {
+    armed = false;
+    var lt = clock - lapStart;
+    if (best === null || lt < best) {
+      best = lt;
+      document.getElementById('best').textContent = lt.toFixed(2);
+    }
+    lapStart = clock;
+    if (lapNum >= TOTAL) {
+      mode = 'finished';
+      doneTotal = clock;
+      document.getElementById('tot').textContent = clock.toFixed(2);
+      document.getElementById('fbest').textContent = (best === null ? lt : best).toFixed(2);
+      document.getElementById('done').classList.add('on');
+    } else {
+      lapNum++;
+    }
+  }
+  prev.x = car.x; prev.y = car.y;
+}
+
+function rr(c, rr, fill) {
+  c.beginPath();
+  c.moveTo(CX - rr.hx + rr.r, CY - rr.hy);
+  c.lineTo(CX + rr.hx - rr.r, CY - rr.hy);
+  c.arcTo(CX + rr.hx, CY - rr.hy, CX + rr.hx, CY - rr.hy + rr.r, rr.r);
+  c.lineTo(CX + rr.hx, CY + rr.hy - rr.r);
+  c.arcTo(CX + rr.hx, CY + rr.hy, CX + rr.hx - rr.r, CY + rr.hy, rr.r);
+  c.lineTo(CX - rr.hx + rr.r, CY + rr.hy);
+  c.arcTo(CX - rr.hx, CY + rr.hy, CX - rr.hx, CY + rr.hy - rr.r, rr.r);
+  c.lineTo(CX - rr.hx, CY - rr.hy + rr.r);
+  c.arcTo(CX - rr.hx, CY - rr.hy, CX - rr.hx + rr.r, CY - rr.hy, rr.r);
+  c.closePath();
+  if (fill) c.fill();
+}
+
+function render() {
+  ctx.fillStyle = '#1d3b26';
+  ctx.fillRect(0, 0, 960, 600);
+  ctx.fillStyle = '#3a3f4a';
+  rr(ctx, OUT, true);
+  ctx.fillStyle = '#1d3b26';
+  rr(ctx, INN, true);
+
+  ctx.lineWidth = 3; ctx.strokeStyle = '#e8ecf5';
+  rr(ctx, OUT); ctx.stroke();
+  rr(ctx, INN); ctx.stroke();
+
+  ctx.save();
+  ctx.setLineDash([16, 18]);
+  ctx.strokeStyle = 'rgba(255,255,255,.14)';
+  ctx.lineWidth = 2;
+  rr(ctx, { hx: HX, hy: HY, r: RAD });
+  ctx.stroke();
+  ctx.restore();
+
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = 7;
+  ctx.beginPath(); ctx.moveTo(FINISH.x, FINISH.lo); ctx.lineTo(FINISH.x, FINISH.hi); ctx.stroke();
+  ctx.save(); ctx.setLineDash([6, 6]); ctx.strokeStyle = '#20242c';
+  ctx.beginPath(); ctx.moveTo(FINISH.x, FINISH.lo); ctx.lineTo(FINISH.x, FINISH.hi); ctx.stroke(); ctx.restore();
+
+  ctx.strokeStyle = 'rgba(127,209,255,.35)'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(CHECK.x, CHECK.lo); ctx.lineTo(CHECK.x, CHECK.hi); ctx.stroke();
+
+  ctx.save();
+  ctx.translate(car.x, car.y);
+  ctx.rotate(car.ang);
+  ctx.fillStyle = '#ff5a5f'; ctx.strokeStyle = '#ffd0d1'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.roundRect(-13, -7, 26, 14, 4); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#1b1f27';
+  ctx.beginPath(); ctx.roundRect(-2, -5, 8, 10, 2); ctx.fill();
+  ctx.fillStyle = '#ffd479';
+  ctx.fillRect(10, -5, 3, 3); ctx.fillRect(10, 2, 3, 3);
+  ctx.restore();
+}
+
+function hud() {
+  document.getElementById('spd').textContent = Math.round(Math.abs(car.v) * 0.62);
+  document.getElementById('lap').textContent = Math.min(lapNum, TOTAL);
+  document.getElementById('t').textContent = (clock - lapStart).toFixed(2);
+}
+
+function tick(now) {
+  var dt = Math.min(0.05, (now - lastT) / 1000);
+  lastT = now;
+  if (mode === 'running') {
+    var n = Math.max(1, Math.ceil(Math.abs(car.v) * dt / 6));
+    for (var i = 0; i < n; i++) physics(dt / n);
+  }
+  render(); hud();
+  frames++;
+  window.__racingDebug = {
+    frame: frames, x: car.x, y: car.y, heading: car.ang, speed: car.v,
+    lap: lapNum, totalLaps: TOTAL, lapTime: clock - lapStart, bestLap: best,
+    state: mode, totalTime: doneTotal
+  };
+  requestAnimationFrame(tick);
+}
+
+start();
+requestAnimationFrame(tick);
+</script>
+</body>
+</html>

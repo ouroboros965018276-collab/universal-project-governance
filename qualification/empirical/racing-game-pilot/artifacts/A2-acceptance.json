@@ -1,0 +1,56 @@
+{
+  "passed": 10,
+  "total": 10,
+  "checks": {
+    "AC1": {
+      "pass": true,
+      "method": "mechanical",
+      "detail": "console_errors=[] page_errors=[]"
+    },
+    "AC2": {
+      "pass": true,
+      "method": "mechanical",
+      "detail": "canvas={'w': 960, 'h': 600, 'cw': 960, 'ch': 600} frame_advanced=True (25->55)"
+    },
+    "AC3": {
+      "pass": true,
+      "method": "mechanical",
+      "detail": "speed_state=430.0"
+    },
+    "AC4": {
+      "pass": true,
+      "method": "mechanical",
+      "detail": "heading 0.000 -> 0.778"
+    },
+    "AC5": {
+      "pass": true,
+      "method": "mechanical",
+      "detail": "lap=1 totalLaps=3"
+    },
+    "AC6": {
+      "pass": true,
+      "method": "mechanical",
+      "detail": "forward_no_checkpoint=True reverse=True forward_again=True lap0=1 x_fwd=506.4 x_rev=461.6 lap_end=1"
+    },
+    "AC7": {
+      "pass": true,
+      "method": "mechanical",
+      "detail": "debug_fields=True visible_numbers=True"
+    },
+    "AC8": {
+      "pass": true,
+      "method": "mechanical",
+      "detail": "escaped=None samples=40 max_sdf_ok"
+    },
+    "AC9": {
+      "pass": true,
+      "method": "mechanical",
+      "detail": "external_requests=[] total=3"
+    },
+    "AC10": {
+      "pass": true,
+      "method": "mechanical",
+      "detail": "root html files: ['index.html']"
+    }
+  }
+}

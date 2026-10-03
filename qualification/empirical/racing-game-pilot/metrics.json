@@ -1,0 +1,82 @@
+{
+  "pilot_id": "racing-game-pilot",
+  "not_qualification": true,
+  "candidate": "3.0.0-rc.9",
+  "qualification_fingerprint": "sha256:054864a6c2675610f23dfed718416109346dfd4f3bb47bf38c6323b3de321b86",
+  "protocol": "PROTOCOL.md (pre-registered 2026-10-03T21:13:16.007417Z, plus Amendments 1-3 recorded before re-grading)",
+  "grader": {
+    "file": "grader.py",
+    "sha256": "d463c75fbb3913679487c7b846af69ec2bf9e4366c15a66ad135f5cd7055d3d3",
+    "note": "identical byte-for-byte grading code applied to both arms after Amendment 3"
+  },
+  "execution_order": ["A2", "A0"],
+  "order_rationale": "control (A0) runs second so any cross-arm familiarity benefit favours the control; this biases the pilot against finding an A2 advantage",
+  "arms": {
+    "A2": {
+      "name": "full-upg",
+      "arm_start_utc": "2026-10-03T21:13:39.863Z",
+      "deliverable_last_write_utc": "2026-10-03T21:14:52.653Z",
+      "arm_end_utc": "2026-10-03T21:17:27Z",
+      "code_phase_wall_clock_s": 72.8,
+      "total_arm_wall_clock_s": 228,
+      "product_files": 1,
+      "product_loc": 392,
+      "product_bytes": 13765,
+      "governance_input_files": 1,
+      "managed_state_files": 2,
+      "acceptance_passed": 10,
+      "acceptance_total": 10,
+      "field_report_count": 1,
+      "handoff_written": false,
+      "overreach_files": 0,
+      "in_arm_defects_found": 2,
+      "governance_tool_calls": {
+        "total": 7,
+        "breakdown": {
+          "project_tool_ensure": 1,
+          "plan_governance_invocations": 2,
+          "plan_governance_failed_invocations": 1,
+          "project_tool_report": 1,
+          "governance_file_writes": 3
+        }
+      }
+    },
+    "A0": {
+      "name": "no-skill",
+      "arm_start_utc": "2026-10-03T21:17:51.835Z",
+      "deliverable_last_write_utc": "2026-10-03T21:18:06.323Z",
+      "code_phase_wall_clock_s": 14.5,
+      "product_files": 1,
+      "product_loc": 253,
+      "product_bytes": 8878,
+      "governance_input_files": 0,
+      "managed_state_files": 0,
+      "acceptance_passed": 10,
+      "acceptance_total": 10,
+      "field_report_count": 0,
+      "handoff_written": false,
+      "overreach_files": 0,
+      "in_arm_defects_found": 0,
+      "governance_tool_calls": {"total": 0}
+    }
+  },
+  "shared_measurement": {
+    "product_attributable_tool_calls_per_arm": 3,
+    "product_tool_call_breakdown": "1 deliverable write + 2 acceptance-grader runs (grader is shared experiment tooling)",
+    "note": "grader authoring/debugging is experiment tooling and is not attributed to either arm"
+  },
+  "deltas": {
+    "acceptance": "tied 10/10 = 10/10",
+    "product_loc_delta": 139,
+    "product_loc_delta_pct": 54.9,
+    "governance_tool_calls_delta": 7,
+    "extra_failed_tool_calls": 1,
+    "wall_clock_note": "code-phase wall clock is dominated by model generation and tool round-trips at n=1; treated as weak evidence only"
+  },
+  "not_measured": [
+    "token counts (not instrumented in this harness)",
+    "cross-family generalization (single agent family)",
+    "confidence intervals (n=1 per arm)",
+    "latency/tool-call ratios at the locked-matrix scale"
+  ]
+}

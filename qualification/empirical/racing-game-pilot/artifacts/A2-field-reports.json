@@ -1,0 +1,71 @@
+{
+  "epoch": 0,
+  "next_sequence": 2,
+  "reports": [
+    {
+      "active_rules": [
+        "CLEANUP_OBSOLETE",
+        "EVIDENCE_AFFECTED",
+        "TRUTH_CURRENT"
+      ],
+      "agent": {
+        "family": "Trae",
+        "model_id": "DeepSeek-V4.1-Flash (operator-declared)",
+        "scaffold_version": "trae-agent"
+      },
+      "change": {
+        "after": "index.html implementing track SDF collision, checkpoint-gated direction-checked lap counting, HUD and finish overlay",
+        "base_revision": "unknown",
+        "before": "empty A2 project directory with only the UPG binding",
+        "function": "Deliver the frozen-spec top-down racing game as one offline HTML5 canvas page",
+        "occurred_at": "2026-10-03T21:17:27Z",
+        "parent_event_id": null,
+        "rationale": "owner-requested bounded with/without Skill pilot for the RC9 evidence gap",
+        "result_revision": "sha256:7a48bdb2ab4aff6913c0c682448b2c828d19cf491f60fff0fe0dde97bb7ce29a",
+        "source": "qualification/empirical/racing-game-pilot/PROTOCOL.md",
+        "time_source": "local UTC observation at arm completion; not a Git commit time",
+        "validation_revision": "sha256:7a48bdb2ab4aff6913c0c682448b2c828d19cf491f60fff0fe0dde97bb7ce29a"
+      },
+      "change_mode": "local",
+      "changed_files": [
+        "index.html",
+        "task-context.json"
+      ],
+      "cleanup": [
+        "no superseded patch paths: the game is one new canonical root file",
+        "no temporary files, no build output, no duplicate entry HTML"
+      ],
+      "epoch": 0,
+      "event_id": "0:pilot-racing-a2-2026-10-03:complete",
+      "feedback": [
+        "planner rejected risk key 'data_impact'; the canonical key is 'data' (and 'handoff', not 'handoff_need'). SKILL.md names these dimensions in prose only, and task-context.schema.json does not enumerate or constrain risk keys, so the mismatch surfaces as a bare runtime error instead of an early validation error.",
+        "report level resolved to 'none' while field_test_reporting=true still requires exactly one report; the two concepts are easy to conflate."
+      ],
+      "handoff": "not-required",
+      "integrity": "pass",
+      "recorded_at": "2026-10-03T21:17:38Z",
+      "risk_level": "trivial",
+      "runtime_version": "3.0.0-rc.9",
+      "schema_version": 1,
+      "scope_guard": "local-only",
+      "sequence": 1,
+      "status": "complete",
+      "structural_scope": {
+        "api_changes": [],
+        "architecture_changes": [],
+        "canonical_layer": "index.html (single root entry artifact)",
+        "overreach_concern": false,
+        "unrelated_changes": []
+      },
+      "task": "Build the frozen pilot top-down racing game (single index.html) in the A2 full-upg arm",
+      "validation": [
+        "playwright/msedge acceptance grader: 10/10 PASS (AC1-AC10)",
+        "AC6 anti-farming probe: forward 511.6 -> reverse 453.6 -> forward, lap stayed 1",
+        "AC8 boundary probe: 40 samples, no escape beyond the drivable band"
+      ],
+      "workflow_id": "pilot-racing-a2-2026-10-03"
+    }
+  ],
+  "runtime_version": "3.0.0-rc.9",
+  "schema_version": 1
+}

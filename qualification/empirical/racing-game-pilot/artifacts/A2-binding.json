@@ -1,0 +1,36 @@
+{
+  "adoption_mode": "in-place",
+  "capability_handshake": "observe-before-assume",
+  "continuity_mode": "handoff-or-reconstruct",
+  "field_report_file": ".governance/field-reports.json",
+  "field_test_reporting": true,
+  "latest_change": {
+    "change": {
+      "after": "index.html implementing track SDF collision, checkpoint-gated direction-checked lap counting, HUD and finish overlay",
+      "base_revision": "unknown",
+      "before": "empty A2 project directory with only the UPG binding",
+      "function": "Deliver the frozen-spec top-down racing game as one offline HTML5 canvas page",
+      "occurred_at": "2026-10-03T21:17:27Z",
+      "parent_event_id": null,
+      "rationale": "owner-requested bounded with/without Skill pilot for the RC9 evidence gap",
+      "result_revision": "sha256:7a48bdb2ab4aff6913c0c682448b2c828d19cf491f60fff0fe0dde97bb7ce29a",
+      "source": "qualification/empirical/racing-game-pilot/PROTOCOL.md",
+      "time_source": "local UTC observation at arm completion; not a Git commit time",
+      "validation_revision": "sha256:7a48bdb2ab4aff6913c0c682448b2c828d19cf491f60fff0fe0dde97bb7ce29a"
+    },
+    "epoch": 0,
+    "event_id": "0:pilot-racing-a2-2026-10-03:complete",
+    "recorded_at": "2026-10-03T21:17:38Z",
+    "sequence": 1,
+    "workflow_id": "pilot-racing-a2-2026-10-03"
+  },
+  "managed_by": "universal-project-governance",
+  "managed_files": [
+    ".governance/upg.json",
+    ".governance/field-reports.json"
+  ],
+  "max_reports": 200,
+  "project_origin": "new",
+  "runtime_version": "3.0.0-rc.9",
+  "schema_version": 2
+}
