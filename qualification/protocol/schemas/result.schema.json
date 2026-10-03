@@ -9,7 +9,7 @@
   ],
   "properties": {
     "schema_version": {
-      "const": 1
+      "const": 2
     },
     "qualification_fingerprint": {
       "type": "string"
@@ -21,6 +21,7 @@
         "type": "object",
         "additionalProperties": false,
         "required": [
+          "schema_version",
           "trial_id",
           "pair_id",
           "scenario_id",
@@ -29,11 +30,15 @@
           "agent",
           "environment",
           "fingerprints",
+          "safety_exposures",
           "outcome",
           "usage",
           "evidence"
         ],
         "properties": {
+          "schema_version": {
+            "const": 2
+          },
           "trial_id": {
             "type": "string"
           },
@@ -61,13 +66,54 @@
             ]
           },
           "agent": {
-            "type": "object"
+            "type": "object",
+            "required": [
+              "family",
+              "model_id",
+              "scaffold_version"
+            ]
           },
           "environment": {
-            "type": "object"
+            "type": "object",
+            "required": [
+              "qualification_set"
+            ],
+            "properties": {
+              "qualification_set": {
+                "enum": [
+                  "dev",
+                  "locked"
+                ]
+              },
+              "project_profile": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "tool_profile": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "budget_profile": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
           },
           "fingerprints": {
             "type": "object"
+          },
+          "safety_exposures": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string"
+            }
           },
           "outcome": {
             "type": "object"
@@ -77,12 +123,6 @@
           },
           "evidence": {
             "type": "object"
-          },
-          "started_at": {
-            "type": "string"
-          },
-          "finished_at": {
-            "type": "string"
           }
         }
       }

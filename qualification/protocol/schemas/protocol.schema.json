@@ -7,16 +7,19 @@
     "protocol_id",
     "status",
     "arms",
-    "primary_endpoints",
+    "gate_order",
     "critical_failure_classes",
     "sampling",
+    "coverage",
+    "safety_exposure_model",
+    "evaluator_validity",
     "grading",
     "holdout",
     "stopping"
   ],
   "properties": {
     "schema_version": {
-      "const": 1
+      "const": 2
     },
     "protocol_id": {
       "type": "string"
@@ -39,21 +42,10 @@
     "arms": {
       "type": "object"
     },
-    "primary_endpoints": {
+    "gate_order": {
       "type": "array",
       "minItems": 1,
-      "items": {
-        "type": "string"
-      }
-    },
-    "secondary_endpoints": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
-    },
-    "diagnostic_metrics": {
-      "type": "array",
+      "uniqueItems": true,
       "items": {
         "type": "string"
       }
@@ -67,6 +59,15 @@
       }
     },
     "sampling": {
+      "type": "object"
+    },
+    "coverage": {
+      "type": "object"
+    },
+    "safety_exposure_model": {
+      "type": "object"
+    },
+    "evaluator_validity": {
       "type": "object"
     },
     "randomization": {
