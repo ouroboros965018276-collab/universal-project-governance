@@ -1,12 +1,13 @@
 {
   "schema_version": 1,
   "name": "universal-project-governance",
-  "version": "2.0.0-rc.5",
+  "version": "3.0.0-rc.6",
   "architecture": "compiled-governance",
   "principles": [
     "ONE_SEMANTIC_RULE_ONE_CANONICAL_DEFINITION",
     "CAPABILITY_GROWTH_MUST_NOT_LINEARLY_INCREASE_RUNTIME_LOAD",
-    "COMPLEXITY_BELONGS_IN_COMPILER_NOT_AGENT_CONTEXT"
+    "COMPLEXITY_BELONGS_IN_COMPILER_NOT_AGENT_CONTEXT",
+    "NON_TRIVIAL_CHANGE_PREFERS_STRUCTURAL_INTEGRATION_OVER_PATCH_STACKING"
   ],
   "hot_path": [
     {
@@ -36,6 +37,10 @@
     {
       "id": "HANDOFF_IF_UNFINISHED",
       "statement": "If work crosses an agent/session boundary or remains unfinished, persist current handoff state in the project rather than chat memory."
+    },
+    {
+      "id": "STRUCTURAL_INTEGRATION",
+      "statement": "Except for truly local low-risk edits, change the responsible canonical structure and remove superseded patch paths instead of stacking shims, duplicate branches, one-off flags, or detached fixes."
     }
   ],
   "risk_model": {
@@ -404,6 +409,61 @@
       ]
     },
     {
+      "id": "STRUCTURAL_INTEGRATION",
+      "kind": "architecture",
+      "severity": "required",
+      "triggers": {
+        "operations": [
+          "refactor",
+          "migration",
+          "dependency",
+          "generated",
+          "architecture",
+          "security",
+          "data",
+          "governance_upgrade"
+        ],
+        "domains": [],
+        "signals": [
+          "structure_change",
+          "boundary_change",
+          "legacy",
+          "workaround"
+        ]
+      },
+      "requires": [
+        "CLEANUP_OBSOLETE",
+        "TRUTH_CURRENT",
+        "EVIDENCE_AFFECTED"
+      ],
+      "conflicts_with": [],
+      "applies_to": [
+        "code",
+        "config",
+        "data",
+        "docs",
+        "infra",
+        "ml",
+        "automation",
+        "design",
+        "governance"
+      ],
+      "closure": "For non-trivial work, identify the responsible canonical layer, integrate the change there, remove superseded patch/shim/duplicate paths when safe, and leave one coherent post-change structure rather than accumulating local fixes.",
+      "evidence": [
+        "responsible canonical layer identified",
+        "superseded patch/path review",
+        "post-change structural/current-truth validation"
+      ],
+      "report": "inherit",
+      "handoff": "inherit",
+      "eval_tags": [
+        "structural-integration",
+        "cleanup",
+        "architecture",
+        "debt"
+      ]
+    },
+    {
       "id": "DEBT_BOUNDARY",
       "kind": "debt",
       "severity": "required",
@@ -693,7 +753,8 @@
         "signals": []
       },
       "requires": [
-        "RELEASE_AUDIT"
+        "RELEASE_AUDIT",
+        "STRUCTURAL_INTEGRATION"
       ],
       "conflicts_with": [],
       "applies_to": [
@@ -727,5 +788,22 @@
     "unused_profile_activations_max": 0,
     "persistent_current_handoffs_max": 1,
     "persistent_current_execution_reports_max": 1
+  },
+  "structural_integration": {
+    "policy_id": "STRUCTURAL_INTEGRATION",
+    "minimum_risk_level": "medium",
+    "force_operations": [
+      "refactor",
+      "migration",
+      "dependency",
+      "generated",
+      "architecture",
+      "security",
+      "data",
+      "governance_upgrade"
+    ],
+    "exempt_operations": [
+      "release"
+    ]
   }
 }

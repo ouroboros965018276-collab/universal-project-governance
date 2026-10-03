@@ -80,6 +80,15 @@ def main() -> int:
         errors.append("G007 policy dependency cycle: " + " -> ".join(cycle))
 
     entries = set(model.get("default_rules", []))
+    structural = model.get("structural_integration", {})
+    structural_policy = structural.get("policy_id")
+    if structural_policy:
+        if structural_policy not in by_id:
+            errors.append("G017 structural integration references unknown rule %s" % structural_policy)
+        else:
+            entries.add(structural_policy)
+    if structural.get("minimum_risk_level") not in {"trivial","low","medium","high"}:
+        errors.append("G018 invalid structural-integration minimum risk level")
     for p in policies:
         t = p.get("triggers", {})
         if any(t.get(k) for k in ("operations","domains","signals")):

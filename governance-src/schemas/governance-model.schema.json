@@ -9,6 +9,7 @@
     "risk_model",
     "default_rules",
     "policies",
+    "structural_integration",
     "complexity_budget"
   ],
   "properties": {
@@ -70,6 +71,43 @@
     },
     "complexity_budget": {
       "type": "object"
+    },
+    "structural_integration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "policy_id",
+        "minimum_risk_level",
+        "force_operations",
+        "exempt_operations"
+      ],
+      "properties": {
+        "policy_id": {
+          "type": "string"
+        },
+        "minimum_risk_level": {
+          "enum": [
+            "trivial",
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        "force_operations": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "exempt_operations": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        }
+      }
     }
   }
 }

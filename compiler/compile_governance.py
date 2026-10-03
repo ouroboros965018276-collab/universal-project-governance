@@ -52,6 +52,7 @@ def compile_index(src: Path, model: dict) -> dict:
         "source_sha256": source_digest(src),
         "hot_path": model["hot_path"],
         "risk_model": model["risk_model"],
+        "structural_integration": model["structural_integration"],
         "default_rules": model["default_rules"],
         "policies": model["policies"],
         "profiles": profiles,
