@@ -1,6 +1,6 @@
 # Project State
 
-Updated at: **2026-10-03T17:17:09+08:00**
+Updated at: **2026-10-03T17:36:00+08:00**
 
 ## Purpose
 
@@ -39,16 +39,17 @@ RC7 is engineering-valid on the private default branch, machine-frozen, and read
 
 ## Latest meaningful change
 
+- **Time:** 2026-10-03T17:36:00+08:00.
+- **Change:** freeze-seal chronology correction after final audit.
+- **Why:** the current-state documents still referenced main Run #109 even though the freeze-sealing commit `a471a358909c29a9f1ab28234f873f909d9f4ff0` was subsequently validated by Run #110.
+- **What changed:** documentation/audit chronology only. No frozen runtime, protocol, fixture, analyzer, deployment, or qualification surface changed; all frozen fingerprints remain unchanged.
+- **Validation state:** freeze-sealing Run #110 completed successfully with all 7 jobs passing; Python 3.8/3.11/3.13 each pass 43/43 tests; private default-branch clone/install and 16-file installed-copy integrity pass; deterministic Skill package SHA-256 is `794de7033d6ff4c556249499db1caff8033a7f1f746bd8d4f95c141109c54adf`.
+- **Next safe action:** start real locked Agent and gray testing under qualification fingerprint `sha256:bc8727c209235d8a1a3b4bd2fe617753b82bdda7305ca8d6846f8081748757da` without changing frozen surfaces.
+
+## Previous meaningful change
+
 - **Time:** 2026-10-03T17:13:53+08:00.
 - **Change:** final RC7 freeze hardening.
 - **Why:** final audit found two residual lifecycle/statistical risks: scope-overreach confidence could combine qualitatively different local/structural exposures, and the field-report switch did not yet exercise a real no-ledger retirement path.
 - **What changed:** split overreach into independent local/structural cohorts; made reporting-disabled binding actually omit the ledger and reject report operations; blocked silent retirement of non-empty evidence; added fresh-install project-state + Skill rollback; regenerated the deployment-bound freeze identity.
-- **Validation state:** branch Runs #107/#108 and main Run #109 are green; Python 3.8/3.11/3.13 each pass 43/43 tests; private default-branch clone/install and 16-file installed-copy integrity pass; deterministic Skill package SHA-256 is `794de7033d6ff4c556249499db1caff8033a7f1f746bd8d4f95c141109c54adf`.
-- **Next safe action:** start real locked Agent and gray testing under the current fingerprint without changing frozen surfaces.
-
-## Previous meaningful change
-
-- **Time:** 2026-10-03T15:38:07+08:00.
-- **Change:** initial RC7 real-Agent test-freeze architecture.
-- **Why:** replace pair-IID inference, bound structural integration, automate field deployment, and collect bounded cross-project field evidence.
-- **Carried forward:** hierarchical inference, subgroup CIs, task-bounded scope contracts, project binding, bounded field reports, deployment identity, and all RC6 qualification safeguards.
+- **Carried forward:** hierarchical inference, subgroup CIs, task-bounded scope contracts, bounded field reports, automated lifecycle, and all RC6 qualification safeguards.
