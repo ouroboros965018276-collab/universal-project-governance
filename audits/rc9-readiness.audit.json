@@ -222,14 +222,14 @@
     "real_agent_execution": false
   },
   "final_main_validation": {
-    "revision": "bc0890f41297f6ebc20185c383cdba663ac46b43",
-    "run": 210,
-    "id": 37131341404,
-    "url": "https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/37131341404",
+    "revision": "e9c4d52ab0008b1a2e682b6d3dd6bccd428645fd",
+    "run": 213,
+    "id": 37141775400,
+    "url": "https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/37141775400",
     "jobs": "9/9 PASS",
     "private_default_branch_install": "PASS",
-    "observed_at": "2026-10-03T17:44:40.802992Z",
-    "time_source": "current reconciliation from retained observed GitHub job evidence; not future sync commit validation",
+    "observed_at": "2026-10-03T18:04:56.030372Z",
+    "time_source": "observed completed prior main CI; not future hygiene commit validation",
     "frozen_semantics_changed": false
   },
   "current_truth_reconciliation": {
@@ -266,7 +266,7 @@
       "05-astronomy": "2a2993bdba28d2ee69675db439bd9202ee6ec001"
     },
     "repairs": [
-      "CLI malformed JSON now exits2 at existing argument boundary; invalid finite timeout refused",
+      "CLI malformed JSON now exits2 at existing argument boundary; invalid or non-finite timeouts refused",
       "external experiment completion helper now requires source/runtime/command-log receipt before commit and verifies committed bytes before report"
     ],
     "external_evidence": {
@@ -279,15 +279,30 @@
     "frozen_semantics_changed": false,
     "formal_qualification_executed": false,
     "remote_branch_hygiene": {
-      "status": "PENDING",
-      "reason": "browser control communication failed; do not confuse observed installation/permissions with successful control",
-      "branches": [
+      "status": "COMPLETE",
+      "observed_at": "2026-10-03T18:04:56.030372Z",
+      "time_source": "UTC observation after successful browser deletion and authenticated API branch listing",
+      "verified_main_revision": "e9c4d52ab0008b1a2e682b6d3dd6bccd428645fd",
+      "removed_branches": [
         "rc9-evidence-continuity",
         "rc9-config-identity",
         "rc9-canonical-qualification-contract",
         "rc9-current-truth-closeout"
       ],
-      "removal_condition": "usable authenticated control, confirm contained in main then remove branch references; preserve commits"
+      "method": "authenticated built-in browser merged PR deletion; each showed Restore branch; connector branch listing confirms all four absent",
+      "commits_preserved_in_main": true,
+      "previous_blocker": "Edge control communication failure and built-in-browser branches-page Failed to fetch; authenticated merged-PR deletion succeeded",
+      "previous_observation": {
+        "status": "PENDING",
+        "reason": "browser control communication failed; do not confuse observed installation/permissions with successful control",
+        "branches": [
+          "rc9-evidence-continuity",
+          "rc9-config-identity",
+          "rc9-canonical-qualification-contract",
+          "rc9-current-truth-closeout"
+        ],
+        "removal_condition": "usable authenticated control, confirm contained in main then remove branch references; preserve commits"
+      }
     }
   }
 }
