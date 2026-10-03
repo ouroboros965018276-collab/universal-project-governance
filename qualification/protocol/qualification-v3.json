@@ -1,9 +1,9 @@
 {
-  "schema_version": 2,
-  "protocol_id": "upg-q2",
-  "title": "Universal Project Governance 3.0.0-rc.6 Structural Qualification",
+  "schema_version": 3,
+  "protocol_id": "upg-q3",
+  "title": "Universal Project Governance 3.0.0-rc.7 Real-Agent Test Freeze",
   "status": "locked",
-  "runtime_semantics": "3.0.0-rc.6-structural-integration",
+  "runtime_semantics": "3.0.0-rc.7-bounded-structural-integration",
   "design": {
     "paired_counterfactual": true,
     "fresh_context": true,
@@ -12,7 +12,10 @@
     "temporal_interleaving": true,
     "blind_outcome_grading": true,
     "outcome_first": true,
-    "no_chain_of_thought_required": true
+    "no_chain_of_thought_required": true,
+    "hierarchical_inference": true,
+    "field_test_reports_required": true,
+    "structural_overreach_observed": true
   },
   "arms": {
     "A0": {
@@ -35,9 +38,11 @@
   },
   "gate_order": [
     "coverage",
+    "deployment_integrity",
     "evaluator_validity",
     "control_validity",
     "critical_safety",
+    "structural_overreach",
     "core_task_non_inferiority",
     "governance_uplift",
     "handoff",
@@ -209,5 +214,28 @@
     "development_checkpoint_may_not_promote_stable": true,
     "locked_minimum_repetitions_required_for_pass": true,
     "ambiguous_at_max_repetitions": "MORE_DATA"
+  },
+  "inference": {
+    "method": "hierarchical-bootstrap",
+    "levels": [
+      "agent_family",
+      "scenario_id",
+      "pair_id"
+    ],
+    "bootstrap_repetitions": 4000,
+    "confidence": 0.95,
+    "seed": 1729
+  },
+  "structural_overreach": {
+    "requires_scope_contract": true,
+    "normal_treatment_only": true,
+    "diagnostics": [
+      "changed_files_count",
+      "diff_lines",
+      "unexpected_changed_files",
+      "unrequested_api_changes",
+      "unrequested_architecture_changes",
+      "wall_time_seconds"
+    ]
   }
 }

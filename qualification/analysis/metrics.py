@@ -44,15 +44,25 @@ def _arm_map(records):
         grouped.setdefault(pair_key(record), {})[record["arm"]] = record
     return grouped
 
+def _observation(record, delta):
+    return {
+        "agent_family": record.get("agent", {}).get("family") or "<unknown>",
+        "scenario_id": record.get("scenario_id") or "<unknown>",
+        "pair_id": record.get("pair_id") or "<unknown>",
+        "delta": float(delta),
+    }
+
 def paired_binary(records, left_arm, right_arm, field):
     pairs = []
+    observations = []
     for arms in _arm_map(records).values():
         if left_arm in arms and right_arm in arms:
-            pairs.append((
-                bool(arms[left_arm]["outcome"].get(field, False)),
-                bool(arms[right_arm]["outcome"].get(field, False)),
-            ))
-    diffs = [int(right) - int(left) for left, right in pairs]
+            left = bool(arms[left_arm]["outcome"].get(field, False))
+            right = bool(arms[right_arm]["outcome"].get(field, False))
+            delta = int(right) - int(left)
+            pairs.append((left, right))
+            observations.append(_observation(arms[right_arm], delta))
+    diffs = [obs["delta"] for obs in observations]
     left_only = sum(1 for left, right in pairs if left and not right)
     right_only = sum(1 for left, right in pairs if not left and right)
     return {
@@ -61,7 +71,7 @@ def paired_binary(records, left_arm, right_arm, field):
         "left_only_success": left_only,
         "right_only_success": right_only,
         "mcnemar_exact_p": mcnemar_exact_p(left_only, right_only),
-        "deltas": diffs,
+        "observations": observations,
     }
 
 def paired_numeric_ratio(records, numerator_arm, denominator_arm, field):
@@ -86,41 +96,67 @@ def paired_condition(records, baseline_condition, treatment_condition, field, hi
             record.get("outcome", {}).get("handoff_condition")
             or record.get("environment", {}).get("handoff_condition")
         )
-        grouped.setdefault(pair_key(record), {})[condition] = bool(record["outcome"].get(field, False))
-    pairs = [
-        values for values in grouped.values()
-        if baseline_condition in values and treatment_condition in values
-    ]
-    if higher_is_better:
-        diffs = [
-            int(values[treatment_condition]) - int(values[baseline_condition])
-            for values in pairs
-        ]
-    else:
-        diffs = [
-            int(values[baseline_condition]) - int(values[treatment_condition])
-            for values in pairs
-        ]
+        grouped.setdefault(pair_key(record), {})[condition] = record
+    observations = []
+    for values in grouped.values():
+        if baseline_condition not in values or treatment_condition not in values:
+            continue
+        baseline = bool(values[baseline_condition]["outcome"].get(field, False))
+        treatment = bool(values[treatment_condition]["outcome"].get(field, False))
+        if higher_is_better:
+            delta = int(treatment) - int(baseline)
+        else:
+            delta = int(baseline) - int(treatment)
+        observations.append(_observation(values[treatment_condition], delta))
+    diffs = [obs["delta"] for obs in observations]
     return {
-        "n": len(pairs),
+        "n": len(observations),
         "mean_delta": sum(diffs) / float(len(diffs)) if diffs else 0.0,
-        "deltas": diffs,
+        "observations": observations,
     }
 
-def bootstrap_paired_delta(values, seed=1729, reps=4000, alpha=0.05):
-    if not values:
-        return {"median_delta": 0.0, "mean_delta": 0.0, "ci": [0.0, 0.0]}
+def hierarchical_bootstrap_delta(observations, seed=1729, reps=4000, alpha=0.05):
+    if not observations:
+        return {
+            "mean_delta": 0.0,
+            "ci": [0.0, 0.0],
+            "method": "hierarchical-bootstrap",
+            "levels": ["agent_family", "scenario_id", "pair_id"],
+            "clusters": {"agent_families": 0, "scenarios": 0, "pairs": 0},
+        }
+    hierarchy = {}
+    for obs in observations:
+        family = obs["agent_family"]
+        scenario = obs["scenario_id"]
+        hierarchy.setdefault(family, {}).setdefault(scenario, []).append(float(obs["delta"]))
+    families = sorted(hierarchy)
     rng = random.Random(seed)
-    n = len(values)
     means = []
     for _ in range(reps):
-        sample = [values[rng.randrange(n)] for __ in range(n)]
-        means.append(sum(sample) / float(n))
+        sample = []
+        for __ in range(len(families)):
+            family = families[rng.randrange(len(families))]
+            scenarios = sorted(hierarchy[family])
+            for ___ in range(len(scenarios)):
+                scenario = scenarios[rng.randrange(len(scenarios))]
+                values = hierarchy[family][scenario]
+                for ____ in range(len(values)):
+                    sample.append(values[rng.randrange(len(values))])
+        means.append(sum(sample) / float(len(sample)))
     means.sort()
-    lo = means[int((alpha / 2.0) * reps)]
-    hi = means[min(reps - 1, max(0, int((1.0 - alpha / 2.0) * reps) - 1))]
+    lo_index = int((alpha / 2.0) * reps)
+    hi_index = min(reps - 1, max(0, int((1.0 - alpha / 2.0) * reps) - 1))
+    scenario_count = sum(len(items) for items in hierarchy.values())
     return {
-        "median_delta": statistics.median(values),
-        "mean_delta": sum(values) / float(n),
-        "ci": [lo, hi],
+        "mean_delta": sum(float(x["delta"]) for x in observations) / float(len(observations)),
+        "ci": [means[lo_index], means[hi_index]],
+        "method": "hierarchical-bootstrap",
+        "levels": ["agent_family", "scenario_id", "pair_id"],
+        "clusters": {
+            "agent_families": len(families),
+            "scenarios": scenario_count,
+            "pairs": len(observations),
+        },
+        "bootstrap_repetitions": reps,
+        "seed": seed,
     }
