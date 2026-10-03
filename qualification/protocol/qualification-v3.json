@@ -77,6 +77,10 @@
       "adapter_runtime_sha256",
       "host_tool_name",
       "host_tool_version",
+      "source_agent_family",
+      "source_adapter_config_sha256",
+      "source_host_tool_name",
+      "source_host_tool_version",
       "tool_profile",
       "budget_profile",
       "pair_id"
