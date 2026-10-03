@@ -17,6 +17,9 @@ def registration(args, adapter, kind, scenario, arm, condition=None, source=None
         raise ValueError("locked trial requires --round-manifest and registered --trial-id")
     manifest = json.loads(pathlib.Path(args.round_manifest).read_text(encoding="utf-8"))
     freeze = json.loads((ROOT / "qualification/FREEZE.json").read_text(encoding="utf-8"))
+    from tools.qualification_freeze import expected
+    if expected(ROOT) != freeze:
+        raise ValueError("frozen surfaces drifted; no locked execution permitted")
     protocol = json.loads((ROOT / "qualification/protocol/qualification-v3.json").read_text(encoding="utf-8"))
     if manifest.get("qualification_fingerprint") != freeze["qualification_fingerprint"] or manifest.get("protocol_revision") != protocol["protocol_revision"]:
         raise ValueError("round candidate fingerprint mismatch")

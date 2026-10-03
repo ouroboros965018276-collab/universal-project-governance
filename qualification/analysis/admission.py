@@ -32,6 +32,9 @@ def admit(rows, fingerprint, protocol, manifest=None):
         return {"state": "MORE_DATA", "errors": [], "accepted": 0}
     errors = []
     freeze = json.loads((ROOT / "qualification/FREEZE.json").read_text(encoding="utf-8"))
+    from tools.qualification_freeze import expected
+    if expected(ROOT) != freeze:
+        errors.append("frozen source/runtime/evaluator drift detected")
     if fingerprint != freeze["qualification_fingerprint"]:
         errors.append("requested fingerprint differs from candidate freeze")
     if not isinstance(manifest, dict):

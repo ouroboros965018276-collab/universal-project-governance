@@ -2,12 +2,12 @@
   "schema_version": 5,
   "version": "3.0.0-rc.9",
   "candidate": "Evidence and Continuity Hardening",
-  "observed_at": "2026-10-03T13:08:32.722539Z",
+  "observed_at": "2026-10-03T13:20:33.332472Z",
   "time_source": "local UTC acceptance checkpoint; not commit or original modification time",
   "base_revision": "2127d022d3bb0db636324b0355ef307993486371",
   "previous_event": "RC8 audit/HANDOFF.md; historical checkpoint timestamps remain stated, not observed work times",
-  "qualification_fingerprint": "sha256:81e3b3a4883c3aeda9a078774bd0fd4ae55328126910051ee5d6b722c4bde1e8",
-  "behavioral_fingerprint": "sha256:97fef94ef0b4f47b75bd5d98c1f18984535cb7176fe0320d5b11d754ec258eb3",
+  "qualification_fingerprint": "sha256:e78fbfa881b3e44061442feede226ced8208c01d27bc3ae35b8ccde841b590d7",
+  "behavioral_fingerprint": "sha256:2883028e85e060af2d12e54e938ce7c52df074e66b9a1ef2b59f09a588afd796",
   "status": "local-engineering-pass-ci-not-yet-observed",
   "real_agent_execution": false,
   "stable_promoted": false,
@@ -67,10 +67,28 @@
     }
   ],
   "tests": {
-    "count": 68,
+    "count": 69,
     "environment": "Windows bundled Python 3.12; engineering fixtures only",
     "result": "PASS",
     "log": "audit/rc9-tests.log (local acceptance evidence, outside source tree)"
   },
-  "package_sha256": "22210a00b60c3b234981b20b870ec535e8d747daeb595d35b662fd05f0c7c036"
+  "package_sha256": "39d91d2f21cc390c08f4d630a64aca48134a4feddd604cc9d718f2a8d3cbf37e",
+  "previous_candidate_revision": "31896578b73ae0207d2a1bf8d35ad8ff5608b4a7",
+  "observed_remote_validation": {
+    "run": 189,
+    "url": "https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/37125355206",
+    "candidate": "31896578b73ae0207d2a1bf8d35ad8ff5608b4a7",
+    "results": "Linux 3.8/3.11/3.13, source/qualification, upstream Agent Skills and Skills CLI PASS; Windows 3.11/3.13 FAIL due cp1252 stdout",
+    "remediation": "ASCII JSON transport retains Chinese values; adds cp1252 trigger/planner regression. New candidate CI still required."
+  },
+  "latest_checkpoint": {
+    "observed_at": "2026-10-03T13:20:36.274819Z",
+    "time_source": "local UTC follow-up observation, not Git time",
+    "function": "multilingual JSON transport and frozen surface enforcement",
+    "before": "RC9 first candidate; Windows cp1252 trigger output failed",
+    "after": "ASCII JSON transport with preserved Unicode values; fail closed on live frozen-surface drift",
+    "why": "new Windows CI revealed a concrete compatibility failure; actual frozen files must match claimed identity",
+    "source": "Run #189 logs and candidate verification",
+    "parent_revision": "31896578b73ae0207d2a1bf8d35ad8ff5608b4a7"
+  }
 }

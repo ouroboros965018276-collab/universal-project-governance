@@ -10,7 +10,7 @@ Evidence and Continuity Hardening. RC8 baseline: `2127d022d3bb0db636324b0355ef30
 - Makes observed serious safety failures fatal even when an exposure tag is absent. A single invalid report cannot pass deployment.
 - Adds stable workflow/event IDs, causal parents, sourced occurrence times, preserved active/latest/previous checkpoints, idempotent/conflict-safe retries and crash recovery. Explicit verified export precedes epoch rotation; sequence never resets. Old retries cannot rewind current truth.
 - Preserves optional profile fallback and capability-based application with helpers unavailable. Rules remain 16, Hot Path 8, persistent managed files at most two; no new profiles or parallel history database.
-- Adds 21 engineering regression cases (68 tests total). No real Agent or locked qualification results were produced in this phase.
+- Adds 22 engineering regression cases (69 tests total). No real Agent or locked qualification results were produced in this phase.
 
 ## 3.0.0-rc.8 — 2026-10-03
 

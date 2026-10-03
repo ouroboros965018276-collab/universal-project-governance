@@ -3,6 +3,7 @@ import ast
 import copy
 import hashlib
 import json
+import os
 import pathlib
 import shutil
 import subprocess
@@ -35,6 +36,19 @@ def write(path, data):
     return pathlib.Path(path)
 
 class RC9Tests(unittest.TestCase):
+    def test_multilingual_trigger_cli_handles_cp1252_stdout(self):
+        env=dict(os.environ,PYTHONIOENCODING='cp1252',PYTHONDONTWRITEBYTECODE='1')
+        cp=subprocess.run([sys.executable,'qualification/trigger_suite.py'],cwd=ROOT,env=env,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        self.assertEqual(cp.returncode,0,cp.stderr.decode('ascii',errors='replace'))
+        cp.stdout.decode('ascii')
+        data=json.loads(cp.stdout.decode('ascii'))
+        self.assertTrue(any(any(ord(c)>127 for c in case['query']) for case in data['cases']))
+        with tempfile.TemporaryDirectory() as td:
+            path=write(pathlib.Path(td)/'context.json',{'operation':'edit','domains':['content'],'profiles':['未知项目']})
+            cp=subprocess.run([sys.executable,str(ROOT/'universal-project-governance/scripts/plan_governance.py'),'--context',str(path),'--json'],cwd=ROOT,env=env,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+            self.assertEqual(cp.returncode,0,cp.stderr.decode('ascii',errors='replace'))
+            self.assertTrue(any('未知项目' in item for item in json.loads(cp.stdout.decode('ascii'))['warnings']))
+
     def test_unknown_project_profile_keeps_universal_scope_and_rules(self):
         base={'operation':'edit','domains':['content'],'profiles':[],'signals':[],'risk':{}}
         known=compile_plan(load_index(),base)
@@ -55,6 +69,8 @@ class RC9Tests(unittest.TestCase):
         rows, manifest = self.registered()
         self.assertEqual(self.admission(rows, None)['state'], 'FAIL')
         self.assertEqual(self.admission(rows, manifest, 'sha256:'+'0'*64)['state'], 'FAIL')
+        with patch('tools.qualification_freeze.expected',return_value={}):
+            self.assertEqual(self.admission(rows,manifest)['state'],'FAIL')
         rows[0]['fingerprints']['qualification'] = 'sha256:'+'0'*64
         self.assertEqual(self.admission(rows, manifest)['state'], 'FAIL')
 

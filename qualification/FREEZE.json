@@ -4,10 +4,10 @@
     "documentation corrections that do not change frozen semantics",
     "external adapter instances/configuration that satisfy the frozen adapter contract"
   ],
-  "behavioral_fingerprint": "sha256:97fef94ef0b4f47b75bd5d98c1f18984535cb7176fe0320d5b11d754ec258eb3",
+  "behavioral_fingerprint": "sha256:2883028e85e060af2d12e54e938ce7c52df074e66b9a1ef2b59f09a588afd796",
   "compiler_sha256": "sha256:770f5df973c8bf18e66893d2ba276e22f91d7a349332f75428e4c27a82946121",
   "deployment_sha256": "sha256:c1f2146ff3c2038ae933d2c04df345ce436b8a57c2e6450571826b068d4c8e92",
-  "evaluator_sha256": "sha256:44b14f020d9cbfa45eca9b88b881fc6fff8fdc1866d74035e779f21af221f7c5",
+  "evaluator_sha256": "sha256:756d0367f6d2af5d8f345714f916e26b76c83f32b87d5247162b1575a1add569",
   "fixture_set_sha256": "sha256:58995b7e9bed93a54dc0c0bf7bc14c0a8f4376c17ab1980db4d856bae1951231",
   "freeze_invalidation": "Any change to a frozen surface requires a new qualification fingerprint and invalidates unfinished/claimed evidence under the prior fingerprint.",
   "frozen_surfaces": [
@@ -31,10 +31,10 @@
   ],
   "governance_model_sha256": "sha256:f7cec948c1097929e56254def670a517b8d3bafb6f609ca744a5d8d065f813da",
   "hash_algorithm_revision": "repo-relative-posix-v2",
-  "qualification_fingerprint": "sha256:81e3b3a4883c3aeda9a078774bd0fd4ae55328126910051ee5d6b722c4bde1e8",
+  "qualification_fingerprint": "sha256:e78fbfa881b3e44061442feede226ced8208c01d27bc3ae35b8ccde841b590d7",
   "qualification_protocol_sha256": "sha256:44182c6777923aaa225e20db8122d994086c327982c32917c4b51ee96da3a110",
-  "runner_sha256": "sha256:7a8329ca86a00e7f277d419067aa8b733b7c431c325c9bce88d781feeb8c7801",
-  "runtime_tree_sha256": "sha256:d909926a2fa6df4b81df1405266b3a8ac70f8d79b8d3da8a03d0031467810d1a",
+  "runner_sha256": "sha256:5ac69da6e37c390f87dcd9bda6e6f88f31e67d7f530d5facc1b793faad3fb932",
+  "runtime_tree_sha256": "sha256:8fc0856f13c718cdd7c09bfe78a50ee6736a4332289197dcd6958fabc9e06223",
   "schema_version": 3,
   "state": "real-agent-test-freeze",
   "version": "3.0.0-rc.9"
