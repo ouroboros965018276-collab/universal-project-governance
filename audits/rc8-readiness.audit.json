@@ -1,0 +1,81 @@
+{
+  "schema_version": 4,
+  "version": "3.0.0-rc.8",
+  "candidate": "Universal Continuity Real-Agent Test Freeze",
+  "updated_at": "2026-10-03T18:54:06+08:00",
+  "status": "freeze-sealing",
+  "claims": {
+    "abrupt_interruption_reconstructable": true,
+    "legacy_project_in_place_adoption": true,
+    "capability_negotiated_agent_interoperability": true,
+    "cross_agent_handoff_supported": true,
+    "project_type_fallback_universal": true,
+    "task_bounded_structural_integration": true,
+    "exactly_one_completion_report": true,
+    "adapter_host_identity_bound": true,
+    "minimum_locked_agent_families": 3,
+    "field_report_secret_hygiene_hardened": true,
+    "managed_project_files_max": 2
+  },
+  "evidence": [
+    {
+      "name": "canonical/runtime architecture",
+      "result": "pending-final-freeze",
+      "evidence": "canonical governance source compiles deterministically to generated Skill; final RC8 artifact identity will be inserted after machine sealing"
+    },
+    {
+      "name": "abrupt interruption continuity",
+      "result": "pass-engineering",
+      "evidence": "runtime operating contract requires handoff-or-reconstruct recovery from canonical project truth and observable state with unknown intent left unknown"
+    },
+    {
+      "name": "legacy project adoption",
+      "result": "pass-engineering",
+      "evidence": "binding v2 adopts existing projects in place and RC7-owned binding upgrade preserves the existing report ledger"
+    },
+    {
+      "name": "agent interoperability",
+      "result": "pass-engineering",
+      "evidence": "capability handshake is observe-before-assume; qualification supports distinct source and continuation adapters"
+    },
+    {
+      "name": "project-type universality",
+      "result": "pass-engineering",
+      "evidence": "universal fallback remains active without a profile; research/content/product/operations domains and profiles extend existing coverage"
+    },
+    {
+      "name": "exact completion reporting",
+      "result": "pass-engineering",
+      "evidence": "deployment gate requires report_count == 1"
+    },
+    {
+      "name": "reproducible trial identity",
+      "result": "pass-engineering",
+      "evidence": "locked trials bind adapter config/runtime SHA-256 and host-tool identity; handoff evidence binds source and receiver"
+    },
+    {
+      "name": "top-level statistical guard",
+      "result": "pass-engineering",
+      "evidence": "locked sampling requires at least three Agent families and cross-family claim semantics remain narrow"
+    },
+    {
+      "name": "privacy hygiene",
+      "result": "pending-final-ci",
+      "evidence": "metadata-only bounded report contract rejects common private-key/token/Bearer/JWT/assignment/database credential patterns; general DLP is not claimed"
+    },
+    {
+      "name": "final default-branch validation",
+      "result": "pending",
+      "evidence": "must be filled only after RC8 freeze is merged and main CI succeeds"
+    }
+  ],
+  "real_test_blockers": [
+    "RC8 machine freeze identity not yet sealed",
+    "final main validation not yet complete"
+  ],
+  "causal_claims": {
+    "real_agent_benefit_proven": false,
+    "stable_release_eligible": false,
+    "reason": "No immutable locked RC8 real-Agent result round has been executed."
+  }
+}
