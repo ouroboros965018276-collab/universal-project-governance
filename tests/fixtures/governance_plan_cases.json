@@ -1,5 +1,5 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "cases": [
     {
       "id": "trivial-code-edit",
@@ -24,7 +24,8 @@
           "EVIDENCE_AFFECTED"
         ],
         "max_rules": 5,
-        "change_mode": "local"
+        "change_mode": "local",
+        "scope_guard": "local-only"
       }
     },
     {
@@ -60,7 +61,8 @@
           "TRUTH_CURRENT",
           "STRUCTURAL_INTEGRATION"
         ],
-        "change_mode": "structural"
+        "change_mode": "structural",
+        "scope_guard": "task-bounded-responsible-layer"
       }
     },
     {
@@ -89,7 +91,8 @@
           "SAFE_DELETE",
           "STRUCTURAL_INTEGRATION"
         ],
-        "change_mode": "structural"
+        "change_mode": "structural",
+        "scope_guard": "task-bounded-responsible-layer"
       }
     },
     {
@@ -116,7 +119,8 @@
           "SECURITY_ASSURANCE",
           "STRUCTURAL_INTEGRATION"
         ],
-        "change_mode": "structural"
+        "change_mode": "structural",
+        "scope_guard": "task-bounded-responsible-layer"
       }
     },
     {
@@ -141,7 +145,8 @@
           "GENERATED_SOURCE",
           "STRUCTURAL_INTEGRATION"
         ],
-        "change_mode": "structural"
+        "change_mode": "structural",
+        "scope_guard": "task-bounded-responsible-layer"
       }
     },
     {
@@ -171,7 +176,8 @@
           "DEBT_BOUNDARY",
           "STRUCTURAL_INTEGRATION"
         ],
-        "change_mode": "structural"
+        "change_mode": "structural",
+        "scope_guard": "task-bounded-responsible-layer"
       }
     },
     {
@@ -198,7 +204,8 @@
         "contains": [
           "RELEASE_AUDIT"
         ],
-        "change_mode": "local"
+        "change_mode": "local",
+        "scope_guard": "local-only"
       }
     },
     {
@@ -223,7 +230,8 @@
           "RELEASE_AUDIT",
           "STRUCTURAL_INTEGRATION"
         ],
-        "change_mode": "structural"
+        "change_mode": "structural",
+        "scope_guard": "task-bounded-responsible-layer"
       }
     }
   ]

@@ -90,7 +90,7 @@ class CompiledRuntimeTests(unittest.TestCase):
                 self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
                 plan = json.loads(cp.stdout)
                 expected = case["expect"]
-                for key in ("risk_level", "change_mode", "report", "handoff"):
+                for key in ("risk_level", "change_mode", "scope_guard", "report", "handoff"):
                     if key in expected:
                         self.assertEqual(plan[key], expected[key])
                 for rule_id in expected.get("contains", []):
@@ -128,7 +128,89 @@ class CompiledRuntimeTests(unittest.TestCase):
             self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
             plan = json.loads(cp.stdout)
             self.assertEqual(plan["change_mode"], "structural")
+            self.assertEqual(plan["scope_guard"], "task-bounded-responsible-layer")
             self.assertIn("STRUCTURAL_INTEGRATION", plan["active_rules"])
+
+    def test_project_binding_report_export_and_safe_remove(self):
+        with tempfile.TemporaryDirectory() as td:
+            project = pathlib.Path(td) / "project"
+            project.mkdir()
+            tool = RUNTIME / "scripts/project_tool.py"
+            cp = subprocess.run(
+                [PY, str(tool), "install", str(project)],
+                text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+            )
+            self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
+            self.assertTrue((project / ".governance/upg.json").is_file())
+            self.assertTrue((project / ".governance/field-reports.json").is_file())
+
+            report = {
+                "task": "Fix bounded defect",
+                "status": "complete",
+                "change_mode": "structural",
+                "scope_guard": "task-bounded-responsible-layer",
+                "risk_level": "medium",
+                "active_rules": ["STRUCTURAL_INTEGRATION"],
+                "changed_files": ["module.py"],
+                "validation": ["unit tests pass"],
+                "cleanup": ["obsolete shim removed"],
+                "structural_scope": {
+                    "canonical_layer": "module.py",
+                    "unrelated_changes": [],
+                    "api_changes": [],
+                    "architecture_changes": [],
+                    "overreach_concern": False,
+                },
+                "integrity": "pass",
+                "handoff": "not-required",
+                "feedback": [],
+            }
+            input_path = project / "report-input.json"
+            input_path.write_text(json.dumps(report), encoding="utf-8")
+            cp = subprocess.run(
+                [PY, str(tool), "report", str(project), "--input", str(input_path)],
+                text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+            )
+            self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
+            ledger = json.loads((project / ".governance/field-reports.json").read_text(encoding="utf-8"))
+            self.assertEqual(len(ledger["reports"]), 1)
+            self.assertEqual(ledger["reports"][0]["sequence"], 1)
+
+            export_path = project / "field-test-export.json"
+            cp = subprocess.run(
+                [PY, str(tool), "export", str(project), "--output", str(export_path)],
+                text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+            )
+            self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
+            exported = json.loads(export_path.read_text(encoding="utf-8"))
+            self.assertEqual(len(exported["reports"]), 1)
+
+            keep = project / ".governance/keep.json"
+            keep.write_text('{"project_owned":true}\n', encoding="utf-8")
+            cp = subprocess.run(
+                [PY, str(tool), "remove", str(project), "--yes"],
+                text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+            )
+            self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
+            self.assertFalse((project / ".governance/upg.json").exists())
+            self.assertFalse((project / ".governance/field-reports.json").exists())
+            self.assertTrue(keep.is_file())
+
+    def test_field_report_contract_rejects_incomplete_report(self):
+        with tempfile.TemporaryDirectory() as td:
+            project = pathlib.Path(td)
+            tool = RUNTIME / "scripts/project_tool.py"
+            cp = subprocess.run([PY, str(tool), "install", str(project)], text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
+            self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
+            bad = project / "bad.json"
+            bad.write_text('{"task":"missing contract"}\n', encoding="utf-8")
+            cp = subprocess.run(
+                [PY, str(tool), "report", str(project), "--input", str(bad)],
+                text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+            )
+            self.assertNotEqual(cp.returncode, 0)
+            ledger = json.loads((project / ".governance/field-reports.json").read_text(encoding="utf-8"))
+            self.assertEqual(ledger["reports"], [])
 
     def test_handoff_schema_validate_and_render(self):
         sample = {
