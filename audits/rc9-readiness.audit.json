@@ -110,7 +110,7 @@
     ],
     "upstream_agent_skills": "PASS",
     "skills_cli_install_lifecycle": "PASS",
-    "default_branch_private_install": "previous main Run #200 PASS; observe on new promoted main"
+    "default_branch_private_install": "PASS on main 3f1f8379d0392fe19cff9ecef54130b187f0aad9, Run #206"
   },
   "installed_skill": {
     "host": "local Codex user Skills directory",
@@ -220,5 +220,26 @@
     "reason": "owner structural integration instruction and audited configuration identity contract",
     "tests": 69,
     "real_agent_execution": false
+  },
+  "final_main_validation": {
+    "revision": "3f1f8379d0392fe19cff9ecef54130b187f0aad9",
+    "run": 206,
+    "id": 37128763928,
+    "url": "https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/37128763928",
+    "jobs": "9/9 PASS",
+    "private_default_branch_install": "PASS",
+    "observed_at": "2026-10-03T14:49:48.477273Z",
+    "time_source": "local UTC reconciliation from retained GitHub run/step evidence",
+    "frozen_semantics_changed": false
+  },
+  "current_truth_reconciliation": {
+    "parent_revision": "3f1f8379d0392fe19cff9ecef54130b187f0aad9",
+    "observed_at": "2026-10-03T14:49:48.477273Z",
+    "function": "post-promotion readiness/current state",
+    "why": "owner-requested final reconciliation of observed main validation",
+    "before": "pending main/private-install wording",
+    "after": "actual Run #206 9/9 and private default-branch install PASS",
+    "time_source": "observation, separate from eventual Git time",
+    "frozen_semantics_changed": false
   }
 }
