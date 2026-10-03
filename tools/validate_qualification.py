@@ -54,7 +54,7 @@ def main():
         "generalization",
     ]
     if protocol.get("gate_order") != required_gates:
-        errors.append("gate_order must match RC7 non-compensatory release sequence")
+        errors.append("gate_order must match RC8 non-compensatory release sequence")
 
     overreach_cohorts = protocol.get("structural_overreach", {}).get("exposure_cohorts", {})
     if set(overreach_cohorts) != {"local_guard", "structural_guard"}:
@@ -65,9 +65,11 @@ def main():
 
     inference = protocol.get("inference", {})
     if inference.get("method") != "hierarchical-bootstrap":
-        errors.append("RC7 inference must use hierarchical-bootstrap")
+        errors.append("RC8 inference must use hierarchical-bootstrap")
     if inference.get("levels") != ["agent_family", "scenario_id", "pair_id"]:
         errors.append("hierarchical bootstrap levels must be agent_family -> scenario_id -> pair_id")
+    if "minimum 3 agent families" not in inference.get("top_level_claim_guard", ""):
+        errors.append("inference must explicitly guard sparse top-level Agent-family generalization")
     if int(inference.get("bootstrap_repetitions", 0)) < 4000:
         errors.append("hierarchical bootstrap repetitions must be >= 4000")
     if float(inference.get("confidence", 0)) != 0.95:
@@ -88,6 +90,14 @@ def main():
         errors.append("locked qualification minimum repetitions must be >= 8")
     if locked_max < locked_min:
         errors.append("locked maximum repetitions must be >= locked minimum")
+    if int(sampling.get("minimum_agent_families", 0)) < 3:
+        errors.append("RC8 universal cross-agent claim requires at least 3 locked agent families")
+    required_pairing = {
+        "adapter_config_sha256", "adapter_runtime_sha256",
+        "host_tool_name", "host_tool_version",
+    }
+    if not required_pairing.issubset(set(sampling.get("pairing_keys", []))):
+        errors.append("pairing keys must bind adapter runtime/config and host tool identity")
 
     lab_requirements = [
         ("qualification/fixtures/dev/behavioral-labs.json", 12, False),
@@ -203,13 +213,13 @@ def main():
         if binding.get("binding_file") != ".governance/upg.json" or binding.get("field_report_file") != ".governance/field-reports.json":
             errors.append("project binding paths must match qualification managed-file contract")
         if binding.get("field_test_reporting") is not True:
-            errors.append("RC7 real-agent freeze requires field_test_reporting=true")
+            errors.append("RC8 real-agent freeze requires field_test_reporting=true")
         if int(binding.get("managed_files_max", 0)) != 2:
-            errors.append("RC7 managed project file budget must be exactly 2")
+            errors.append("RC8 managed project file budget must be exactly 2")
 
     for rel in ["upg.py", "governance-src/runtime-scripts/project_tool.py", "governance-src/schemas/field-report.schema.json"]:
         if not (root / rel).is_file():
-            errors.append("missing RC7 deployment/reporting surface: " + rel)
+            errors.append("missing RC8 deployment/reporting surface: " + rel)
 
     python_files = list((root / "qualification").rglob("*.py"))
     python_files += list((root / "tools").glob("qualification_*.py"))

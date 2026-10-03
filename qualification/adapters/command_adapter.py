@@ -7,6 +7,18 @@ def _expand(items,values):
 class CommandAdapter(object):
     def __init__(self,config):
         self.config=config
+
+    def identity(self):
+        canonical=json.dumps(self.config,sort_keys=True,separators=(",",":"),ensure_ascii=False).encode("utf-8")
+        runtime=pathlib.Path(__file__).read_bytes()
+        host=self.config.get("host_tool") or {}
+        return {
+            "adapter_config_sha256":"sha256:"+hashlib.sha256(canonical).hexdigest(),
+            "adapter_runtime_sha256":"sha256:"+hashlib.sha256(runtime).hexdigest(),
+            "host_tool_name":host.get("name"),
+            "host_tool_version":host.get("version"),
+            "adapter_id":self.config.get("id"),
+        }
     @classmethod
     def from_path(cls,path):
         return cls(json.loads(pathlib.Path(path).read_text(encoding="utf-8")))

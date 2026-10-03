@@ -46,8 +46,12 @@ def deployment_integrity(rows, thresholds, coverage):
             continue
         if not deployment.get("binding_ok"):
             failures.append({"trial_id": row.get("trial_id"), "reason": "project binding invalid/missing"})
-        if not deployment.get("field_report_recorded"):
-            failures.append({"trial_id": row.get("trial_id"), "reason": "completion field report missing"})
+        if deployment.get("report_count") != 1:
+            failures.append({
+                "trial_id": row.get("trial_id"),
+                "reason": "completed modifying workflow must record exactly one field report",
+                "report_count": deployment.get("report_count"),
+            })
         managed = row.get("usage", {}).get("managed_project_files")
         if isinstance(managed, (int, float)):
             managed_counts.append(managed)

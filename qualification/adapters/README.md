@@ -1,42 +1,56 @@
 # Qualification Adapter Contract
 
-Adapters connect the provider-neutral RC6 protocol to a real coding Agent. They are infrastructure, not part of the installable Skill.
+Adapters connect the provider/host-neutral RC8 protocol to real Agents. They are qualification infrastructure, not part of the installable Skill.
 
-## Required operations
+## Required behavior
 
-1. **prepare** — create a fresh isolated workspace and configure only the selected experimental arm.
-2. **run** — execute one fresh-context task under the declared model/scaffold/tool/budget profile.
-3. **collect** — return observable outcome metadata, usage, activation/checkpoint events, and evidence references.
+1. **Prepare** — use a fresh isolated workspace and configure only the selected experimental arm.
+2. **Run** — execute one fresh-context task under the declared Agent/model/scaffold/tool/budget condition.
+3. **Collect** — return observable outcome metadata, usage, activation/checkpoint events, and evidence references.
 
 Private chain-of-thought is never required or stored.
+
+## Identity contract
+
+Each adapter config declares:
+
+- stable adapter `id`;
+- Agent `family`, `model_id`, and `scaffold_version`;
+- `host_tool.name` and `host_tool.version`;
+- available `capabilities`;
+- isolation mode;
+- command/configuration;
+- tool and budget profiles where applicable.
+
+The runner derives SHA-256 identities for both the canonicalized adapter configuration and the adapter implementation/runtime. These hashes are written into locked trial evidence so a changed command/config/runtime cannot masquerade as the same experimental condition.
+
+For handoff trials, a separate `--continuation-adapter` may be supplied. Source and receiving identities are both recorded.
 
 ## Locked qualification
 
 Formal locked trials require externally enforced `sandbox`, `container`, or `vm` isolation. A plain process working directory is development-only.
 
-A2 must use a real host Skill installation/activation path. Trigger trials require `activation_trace`. Handoff trials require `controlled_checkpoint`.
+A2 must use a real host Skill installation/activation path. Trigger trials require `activation_trace`. Source-side handoff trials require `controlled_checkpoint`; the receiving adapter must support Skill injection.
 
 ## Measurement contract
 
-Formal behavioral trials must report these usage fields:
+Formal behavioral trials report:
 
-- `total_tokens`
-- `wall_time_seconds`
-- `tool_calls`
-- `governance_context_tokens` for A1 and A2
+- `total_tokens`;
+- `wall_time_seconds`;
+- `tool_calls`;
+- `governance_context_tokens` for A1 and A2.
 
-`governance_context_tokens` means governance/control instruction context added beyond the common task and shared scaffold. It is used only to validate that the attention-control arm is actually attention matched.
+`governance_context_tokens` is governance/control instruction context added beyond the common task and shared scaffold. It is used only to validate that the attention-control arm is genuinely attention matched.
 
-The RC6 runner computes `persistent_governance_artifacts` directly from the final workspace; adapters must not self-report that value.
-
-Formal adapter configs should also declare `tool_profile` and `budget_profile` so paired evidence cannot silently mix different execution budgets.
+The runner computes persistent governance artifact counts from the final workspace rather than trusting Agent self-report.
 
 ## Events
 
 Adapters may emit:
 
-- `skill_activated`
-- `checkpoint_reached`
-- `critical_failures` — externally observed CF identifiers when the harness has direct evidence
+- `skill_activated`;
+- `checkpoint_reached`;
+- `critical_failures` — externally observed failure-class identifiers when the harness has direct evidence.
 
 Deterministic repository checks remain authoritative over Agent self-description.

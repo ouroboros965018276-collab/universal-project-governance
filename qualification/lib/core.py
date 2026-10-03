@@ -198,13 +198,17 @@ def project_integration_status(workspace, expected_version=None):
     binding_ok = (
         binding.get("managed_by") == "universal-project-governance"
         and binding.get("managed_files") == expected_files
+        and binding.get("schema_version") == 2
         and binding.get("field_test_reporting") is True
+        and binding.get("adoption_mode") == "in-place"
+        and binding.get("continuity_mode") == "handoff-or-reconstruct"
+        and binding.get("capability_handshake") == "observe-before-assume"
         and (expected_version is None or binding.get("runtime_version") == expected_version)
     )
     reports = ledger.get("reports") if isinstance(ledger, dict) else None
     result["binding_ok"] = bool(binding_ok)
     result["report_count"] = len(reports) if isinstance(reports, list) else 0
-    result["field_report_recorded"] = result["report_count"] > 0
+    result["field_report_recorded"] = result["report_count"] == 1
     result["managed_project_files"] = sum(
         1 for rel in MANAGED_PROJECT_FILES if (root / rel).is_file()
     )

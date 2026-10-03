@@ -1,10 +1,10 @@
 # 通用项目治理 | Universal Project Governance
 
-Current candidate: **3.0.0-rc.7 — Real-Agent Test Freeze**
+Current candidate: **3.0.0-rc.8 — Universal Continuity Real-Agent Test Freeze**
 
-Universal Project Governance is a model-agnostic Agent Skill for maintained-project engineering governance.
+Universal Project Governance is a model-agnostic, host-agnostic Agent Skill for maintained-project governance across software, data, infrastructure, research, content, product/specification, operations, design systems, automation, ML/AI, documentation, and mixed projects.
 
-RC7 is the final engineering freeze before real-Agent qualification. It preserves the compiled, bounded Skill architecture while tightening inference, preventing structural overreach, automating project installation/removal, and collecting bounded gray-test evidence.
+RC8 keeps the bounded compiled architecture while adding reconstructable continuity after abrupt Agent interruption, non-destructive in-place adoption of legacy projects, capability-negotiated interoperability across different Agent classes/vendors, stricter real-Agent evidence identity, exact-one completion reporting, and stronger field-report secret hygiene.
 
 ## Architecture
 
@@ -13,28 +13,57 @@ governance-src/                canonical governance semantics
         ↓ compiler/
 universal-project-governance/  generated installable Skill
         ↓
-project binding                .governance/upg.json
+project binding v2             .governance/upg.json
 field-test ledger              .governance/field-reports.json
         ↓
-real Agent work
+human / coding / workspace / browser / tool-using Agent work
         ↓
 qualification/                 repository-only causal qualification
 ```
 
 Qualification code never ships as Agent runtime.
 
-## Structural integration is task-bounded
+## Universal continuity
+
+A planned unfinished transition should use one current handoff. RC8 does not assume that a previous actor had time to create one.
+
+After quota exhaustion, crash, session loss, tool failure, or another abrupt stop, the next actor reconstructs before modifying: it reads current canonical project truth, observable worktree/VCS or equivalent state, existing validation/evidence, UPG state, and unresolved artifacts. Recovered facts are separated from possibilities; unavailable prior intent stays explicitly unknown. Recovery never requires private chat memory or chain-of-thought.
+
+## Legacy projects: effective immediately
+
+The first modifying activation runs the idempotent project `ensure` operation.
+
+RC8 adopts pre-UPG projects **in place**. Installation adds only UPG-owned state and does not restructure, rewrite, or demand project-wide migration of existing content. Existing artifacts are evidence rather than automatically trusted design; governance applies to the current task immediately while preserving observed contracts and current canonical sources.
+
+Owned field-test state remains bounded to:
+
+- `.governance/upg.json`
+- `.governance/field-reports.json`
+
+An owned RC7 binding can upgrade to RC8 binding schema v2 without discarding its existing report ledger.
+
+## Agent interoperability
+
+RC8 does not maintain a vendor/model allowlist. Before modifying state, the Agent observes available capabilities such as filesystem, VCS, search, build/test, browser, application, or other tools, and governs with what actually exists.
+
+The same contract therefore applies to conversational Agents, coding Agents, workspace/computer-use Agents, IDE/CLI Agents, and other tool-using systems. Missing capabilities reduce what can be verified; they never authorize fabricated validation.
+
+## Project-type interoperability
+
+Profiles are optional task hints, not mandatory project migrations. Current profiles cover software, data, infrastructure, ML/AI, automation, docs/knowledge, design systems, research/evidence, maintained content/editorial, product/specification, operations/runbooks, and mixed projects.
+
+Unknown project types still receive the universal Hot Path and task/risk-triggered policies; no project is excluded merely because it lacks a named profile.
+
+## Structural integration remains task-bounded
 
 The planner returns `change_mode` and `scope_guard`.
 
-- `local / local-only`: truly local low-risk work.
-- `structural / task-bounded-responsible-layer`: non-trivial work changes the smallest responsible canonical layer and removes superseded patch paths, but does not authorize unrelated redesign, API/contract changes, architectural migration, or opportunistic refactoring.
+- `local / local-only`: genuinely local low-risk work.
+- `structural / task-bounded-responsible-layer`: non-trivial work changes the smallest responsible canonical layer and removes superseded in-scope patch paths.
 
-RC7 measures scope overreach independently from task correctness and keeps two separate exposure populations: `local_guard` detects accidental structuralization of tasks that should stay local; `structural_guard` detects expansion beyond the smallest responsible canonical layer. Neither cohort can improve the other's confidence bound.
+Structural mode never grants permission for unrelated redesign, API/contract changes, architectural migration, or opportunistic refactoring.
 
-## Foolproof project lifecycle
-
-Repository checkout:
+## Automated lifecycle
 
 ```bash
 python upg.py install --project /path/to/project --agent codex
@@ -43,26 +72,15 @@ python upg.py export --project /path/to/project --output upg-field-test-reports.
 python upg.py remove --project /path/to/project --agent codex --yes
 ```
 
-The install command installs the Skill through `skills@1.7.0`, validates the installed copy, and initializes the project binding.
-
-If the Skill is installed directly through a host Skills CLI rather than `upg.py`, the first modifying activation runs the idempotent project-binding `ensure` operation.
-
-Only two persistent files are owned by UPG during RC7 field testing:
-
-- `.governance/upg.json`
-- `.governance/field-reports.json`
-
-They are managed infrastructure, not cleanup residue. Explicit uninstall removes only UPG-owned state and preserves unrelated project-owned governance files.
+Install uses the pinned Skills CLI, validates the installed copy, and initializes/adopts the project binding. Fresh-install failure attempts owned-state and Skill rollback. Uninstall removes only UPG-owned paths and preserves unrelated project governance data.
 
 ## Gray-test report
 
-While `field_test_reporting=true`, every completed modifying workflow must append exactly one bounded report record. Reports contain metadata/evidence summaries, not source contents or private chain-of-thought.
+While `field_test_reporting=true`, every completed modifying workflow must append **exactly one** bounded report. The qualification deployment gate verifies `report_count == 1`, not merely that a report exists.
 
-The ledger is fixed-cardinality: one file, at most 200 reports. Export it and upload the exported JSON for cross-project analysis.
+Reports contain metadata/evidence summaries rather than source bodies or private chain-of-thought. The ledger is one bounded file with at most 200 entries. Report validation rejects common private-key/token patterns, Bearer/JWT-like credentials, assignment-style secrets, and credential-bearing database URLs. This is defense-in-depth rather than a claim of general DLP; participants should still review exports before sharing.
 
-This reporting plane is deliberately isolated behind the canonical `project_binding.field_test_reporting` switch. When disabled, fresh project binding creates no report ledger and report/export operations refuse to run. Retirement of an existing non-empty RC7 ledger is blocked until it is exported and purged, preventing silent evidence loss.
-
-## Qualification v3
+## Qualification v3 / RC8 identity
 
 Formal primary confidence intervals use hierarchical bootstrap:
 
@@ -72,27 +90,23 @@ Agent family
     → repetition / pair
 ```
 
-Release gates are non-compensatory:
+RC8 requires at least **3 Agent families** for the locked matrix. Bootstrap repetitions cannot create independent top-level information, so cross-family generalization is reported separately and remains deliberately narrower than within-family precision.
 
-1. locked matrix coverage;
-2. deployment integrity;
-3. evaluator validity;
-4. attention-control validity;
-5. class-specific critical safety;
-6. structural-overreach control;
-7. core-task non-inferiority;
-8. governance uplift;
-9. handoff recovery and degradation reduction;
-10. trigger precision/recall;
-11. efficiency;
-12. subgroup generalization.
+Locked evidence also binds the actual execution condition through:
 
-Generalization distinguishes “severe reversal ruled out” from “positive subgroup evidence”; a coverage PASS is not described as subgroup statistical significance.
+- Agent family, model ID, scaffold version;
+- adapter configuration SHA-256;
+- adapter implementation/runtime SHA-256;
+- host tool name/version;
+- tool profile and budget profile;
+- both source and receiving identities for cross-Agent handoff trials.
+
+Release gates remain non-compensatory for coverage, deployment, evaluator/control validity, critical safety, structural overreach, task performance, governance uplift, handoff, trigger behavior, efficiency, and subgroup generalization.
 
 ## Current evidence status
 
-RC7 source/runtime/qualification engineering validation is complete on the private default branch and the real-Agent test identity is machine-frozen. No real Agent causal result is claimed yet and no `qualification/results/` placeholder exists.
+RC8 is an engineering candidate being sealed for real-Agent and gray testing. Engineering validation does not itself prove causal benefit.
 
-Stable remains blocked until immutable locked real-Agent evidence passes the frozen RC7 protocol.
+Stable remains blocked until immutable locked real-Agent evidence passes the final RC8 machine-frozen identity and protocol.
 
 License: Apache-2.0.

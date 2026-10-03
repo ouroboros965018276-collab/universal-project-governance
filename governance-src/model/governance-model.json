@@ -1,14 +1,16 @@
 {
   "schema_version": 1,
   "name": "universal-project-governance",
-  "version": "3.0.0-rc.7",
+  "version": "3.0.0-rc.8",
   "architecture": "compiled-governance",
   "principles": [
     "ONE_SEMANTIC_RULE_ONE_CANONICAL_DEFINITION",
     "CAPABILITY_GROWTH_MUST_NOT_LINEARLY_INCREASE_RUNTIME_LOAD",
     "COMPLEXITY_BELONGS_IN_COMPILER_NOT_AGENT_CONTEXT",
     "NON_TRIVIAL_CHANGE_PREFERS_STRUCTURAL_INTEGRATION_OVER_PATCH_STACKING",
-    "STRUCTURAL_INTEGRATION_IS_TASK_BOUNDED_NOT_SCOPE_EXPANSION"
+    "STRUCTURAL_INTEGRATION_IS_TASK_BOUNDED_NOT_SCOPE_EXPANSION",
+    "CONTINUITY_MUST_BE_RECONSTRUCTABLE_AFTER_UNPLANNED_INTERRUPTION",
+    "LEGACY_PROJECT_ADOPTION_MUST_BE_IN_PLACE_AND_NON_DESTRUCTIVE"
   ],
   "hot_path": [
     {
@@ -37,7 +39,7 @@
     },
     {
       "id": "HANDOFF_IF_UNFINISHED",
-      "statement": "If work crosses an agent/session boundary or remains unfinished, persist current handoff state in the project rather than chat memory."
+      "statement": "If work crosses an agent/session boundary or remains unfinished, persist current handoff state when possible; if interruption prevented handoff, the next actor reconstructs from project truth and observable work state without inventing intent."
     },
     {
       "id": "STRUCTURAL_INTEGRATION",
@@ -672,7 +674,11 @@
         "domains": [],
         "signals": [
           "handoff",
-          "unfinished"
+          "unfinished",
+          "interrupted",
+          "resume",
+          "recovery",
+          "agent_change"
         ]
       },
       "requires": [
@@ -689,9 +695,10 @@
         "automation",
         "design"
       ],
-      "closure": "Persist only current continuation state needed by the next agent/human: goal, completed/in-progress work, constraints, risks, validation entry points, and next actions.",
+      "closure": "Preserve continuity across humans, sessions, vendors, and agent types. Prefer one current handoff when it can be written; after abrupt interruption with no handoff, reconstruct from canonical project truth, VCS/worktree state, validation evidence, and explicit unknowns before changing anything. Never fabricate prior intent.",
       "evidence": [
-        "handoff state validates against schema"
+        "validated handoff when available or reconstruction evidence when absent",
+        "unknown prior intent explicitly bounded"
       ],
       "report": "inherit",
       "handoff": "required",
@@ -811,11 +818,14 @@
     "scope_guard": "task-bounded-responsible-layer"
   },
   "project_binding": {
-    "schema_version": 1,
+    "schema_version": 2,
     "binding_file": ".governance/upg.json",
     "field_report_file": ".governance/field-reports.json",
     "field_test_reporting": true,
     "max_reports": 200,
-    "managed_files_max": 2
+    "managed_files_max": 2,
+    "adoption_mode": "in-place",
+    "continuity_mode": "handoff-or-reconstruct",
+    "capability_handshake": "observe-before-assume"
   }
 }

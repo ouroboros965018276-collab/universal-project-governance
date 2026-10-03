@@ -1,51 +1,67 @@
 # Active Design Decisions
 
+Only current RC8 decisions are documented here.
+
+## Continuity is reconstructable, not handoff-dependent
+
+A deliberate unfinished transition should create one current factual handoff when possible. Abrupt interruption cannot be prevented reliably, so continuity may not depend on the previous actor successfully writing one.
+
+A receiving actor reconstructs from canonical project truth, observable VCS/worktree or equivalent changes, validation evidence, UPG state, and unresolved artifacts. Unknown prior intent remains unknown. Private chat memory and chain-of-thought are not continuity dependencies.
+
+## Legacy adoption is in place
+
+UPG must become effective on a pre-existing maintained project without requiring a project-wide migration. Binding installation adds only UPG-owned state and preserves legacy project content.
+
+Existing artifacts are evidence, not automatically authoritative architecture. Governance applies immediately to the current task while locating existing canonical truth and preserving observed contracts.
+
+Owned RC7 binding state may upgrade to RC8 schema v2 without silently losing a report ledger.
+
+## Agent interoperability is capability-negotiated
+
+Vendor/model names do not determine behavior. An actor observes available host capabilities and uses only those it can actually exercise.
+
+This permits conversational, coding, workspace/computer-use, IDE/CLI, browser/application, and future tool-using Agent classes to share one governance contract without a brittle vendor allowlist.
+
+## Project-type profiles are hints, not forks
+
+Named profiles activate relevant existing policies for common maintained-project forms. They do not create separate governance implementations.
+
+Unknown or new project types remain governed by the universal Hot Path, default rules, task domains/signals, and risk model.
+
 ## Structural integration is task-bounded
 
-Non-trivial work changes the smallest responsible canonical layer rather than stacking local patches. This is not a license to enlarge scope.
+Non-trivial work changes the smallest responsible canonical layer rather than stacking local patches. This never authorizes unrelated redesign, API/contract change, migration, or opportunistic refactoring.
 
-Unrequested redesign, API/contract change, architecture migration, and opportunistic refactoring are outside the authority of `STRUCTURAL_INTEGRATION`.
+## Structural overreach is independently gated
 
-## Structural overreach is a first-class release risk
+Task success cannot compensate for scope violation. `local_guard` and `structural_guard` have separate exposure/confidence denominators so one population cannot dilute the other.
 
-Task success cannot compensate for scope violation. Locked A2 behavioral trials collect changed-file count, diff lines, unexpected changed files, unrequested API changes, unrequested architecture changes, and timing.
+## Formal effect inference remains hierarchical, with a stronger top-level claim guard
 
-The overreach gate is independent and non-compensatory. It has two separately estimated exposure cohorts: `local_guard` for tasks that should remain local and `structural_guard` for tasks that legitimately exercise structural integration. Their zero-event confidence denominators are never pooled.
+Primary paired effects bootstrap Agent family → scenario → repetition/pair. RC8 requires at least three locked Agent families.
 
-## Formal effect inference is hierarchical
+Bootstrap repetition count does not manufacture independent top-level clusters. Cross-family generalization is therefore reported separately from within-family precision and subgroup claims remain deliberately narrow.
 
-Primary paired effects use hierarchical bootstrap over Agent family, scenario, and repetition/pair. This matches the experimental nesting better than pair-level IID resampling.
+## Real-Agent execution identity is evidence
 
-The preregistered seed/repetition count is frozen before real results.
+A trial condition is not identified by a human-written scaffold label alone. Locked evidence binds adapter configuration and implementation hashes plus host-tool name/version, alongside Agent/model/scaffold/tool/budget identity.
 
-## Generalization claims are deliberately narrow
+Cross-Agent handoff evidence records both source and receiving conditions.
 
-Every Agent-family and project-profile subgroup receives its own hierarchical CI.
+## Completion reporting means exactly one
 
-A subgroup gate may establish that the preregistered severe-reversal floor is ruled out. “Positive subgroup evidence” is reported separately. A generalization PASS does not by itself mean every subgroup has statistically significant benefit.
+While field-test reporting is enabled, one completed modifying workflow must append exactly one report. The formal deployment gate checks `report_count == 1`; duplicate reports are a contract failure rather than acceptable evidence.
 
-## Project binding has fixed cardinality
+## Field-test reporting is bounded and privacy-conscious
 
-RC7 owns exactly two project files: binding state and one rolling field-test ledger. The fixed cardinality prevents report-file proliferation.
+RC8 still owns at most two project files during gray testing. Reports store bounded metadata/evidence summaries, not source contents or private reasoning.
 
-Managed files are excluded from task change-count metrics but included in a separate deployment/overhead gate.
+Secret-pattern rejection is defense-in-depth for common private keys, tokens, Bearer/JWT-like values, assignment-style credentials, and credential-bearing database URLs. It is not represented as full DLP; export review remains required.
 
-## Field-test reporting is temporary but first-class during RC7
+## Frozen evidence includes execution conditions
 
-While the canonical flag is enabled, completion requires one report record. Reports are bounded metadata/evidence summaries and are exportable for cross-project analysis.
-
-The capability is isolated behind one canonical switch and one runtime tool. When disabled, fresh binding owns only `.governance/upg.json`, creates no report ledger, and rejects report/export operations. A non-empty pre-existing field ledger blocks automatic retirement until export/purge, so removal cannot silently discard test evidence.
-
-## Install and remove are explicit lifecycle operations
-
-`upg.py install` combines host Skill installation, installed-copy integrity validation, and project binding initialization.
-
-`upg.py remove` removes owned project state before invoking the host Skills CLI. Removal refuses drifted/unowned bindings and preserves unrelated project governance data. A failed fresh install attempts to roll back any newly created UPG-owned project state and then the newly installed Skill; pre-existing installations are never blindly removed.
-
-## Frozen evidence includes deployment tooling
-
-The RC7 qualification fingerprint binds `upg.py` because real results depend on the actual installation/project lifecycle, not only the Skill prompt/runtime.
+Qualification identity binds the runtime, protocol, fixtures, evaluators, adapters/runners, analyzer, and deployment wrapper. A semantic change to a frozen surface requires a new identity.
 
 ## Current tree contains current truth
 
-Superseded protocols and prior readiness audits belong in VCS history. The current tree contains only RC7 normative and readiness surfaces.
+Superseded protocols, readiness audits, and obsolete implementation notes belong in Git history rather than coexisting as parallel current documentation.

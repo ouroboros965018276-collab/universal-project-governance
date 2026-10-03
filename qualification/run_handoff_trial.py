@@ -37,6 +37,7 @@ def main():
     parser.add_argument("--labs", required=True)
     parser.add_argument("--scenario", required=True)
     parser.add_argument("--adapter", required=True)
+    parser.add_argument("--continuation-adapter")
     parser.add_argument(
         "--condition",
         choices=["present", "ablated"],
@@ -50,8 +51,10 @@ def main():
 
     lab = get_lab(args.labs, args.scenario)
     adapter = CommandAdapter.from_path(args.adapter)
+    continuation = CommandAdapter.from_path(args.continuation_adapter) if args.continuation_adapter else adapter
     if args.locked_holdout:
         adapter.require_locked_holdout()
+        continuation.require_locked_holdout()
     for capability in ("skill_injection", "controlled_checkpoint"):
         if not adapter.supports(capability):
             print(
@@ -59,6 +62,9 @@ def main():
                 file=sys.stderr,
             )
             return 2
+    if not continuation.supports("skill_injection"):
+        print("error: continuation adapter requires skill_injection", file=sys.stderr)
+        return 2
 
     freeze = json.loads(
         (ROOT / "qualification/FREEZE.json").read_text(encoding="utf-8")
@@ -98,7 +104,7 @@ def main():
         if args.condition == "ablated" and handoff_path.exists():
             handoff_path.unlink()
 
-        second = adapter.run(
+        second = continuation.run(
             workspace,
             lab["continuation_task"],
             "",
@@ -161,6 +167,8 @@ def main():
         ]
         usage["managed_project_files"] = grade["managed_project_files"]
 
+        continuation_identity = continuation.identity()
+        source_identity = adapter.identity()
         trial = {
             "schema_version": 3,
             "trial_id": str(uuid.uuid4()),
@@ -168,18 +176,26 @@ def main():
             "scenario_id": lab["id"],
             "kind": "handoff",
             "arm": "A2",
-            "agent": adapter.config.get("agent", {}),
+            "agent": continuation.config.get("agent", {}),
             "environment": {
                 "qualification_set": (
                     "locked" if args.locked_holdout else "dev"
                 ),
-                "sandboxed": adapter.config.get("sandboxed"),
-                "workspace_isolation": adapter.config.get(
+                "adapter_config_sha256": continuation_identity["adapter_config_sha256"],
+                "adapter_runtime_sha256": continuation_identity["adapter_runtime_sha256"],
+                "host_tool_name": continuation_identity["host_tool_name"],
+                "host_tool_version": continuation_identity["host_tool_version"],
+                "source_agent_family": adapter.config.get("agent", {}).get("family"),
+                "source_adapter_config_sha256": source_identity["adapter_config_sha256"],
+                "source_host_tool_name": source_identity["host_tool_name"],
+                "source_host_tool_version": source_identity["host_tool_version"],
+                "sandboxed": continuation.config.get("sandboxed"),
+                "workspace_isolation": continuation.config.get(
                     "workspace_isolation"
                 ),
                 "project_profile": lab.get("profile"),
-                "tool_profile": adapter.config.get("tool_profile"),
-                "budget_profile": adapter.config.get("budget_profile"),
+                "tool_profile": continuation.config.get("tool_profile"),
+                "budget_profile": continuation.config.get("budget_profile"),
                 "handoff_condition": args.condition,
             },
             "fingerprints": {

@@ -42,6 +42,19 @@ def behavioral_coverage(rows, protocol):
     arms = list(protocol["coverage"]["primary_arms"])
     complete, malformed = _primary_groups(rows, arms)
     locked = release_rows(rows, "behavioral")
+    identity_fields = [
+        "adapter_config_sha256", "adapter_runtime_sha256",
+        "host_tool_name", "host_tool_version",
+    ]
+    for row in locked:
+        env = row.get("environment", {})
+        missing_identity = [key for key in identity_fields if not env.get(key)]
+        if missing_identity:
+            malformed.append({
+                "trial_id": row.get("trial_id"),
+                "error": "missing reproducibility identity",
+                "fields": missing_identity,
+            })
     scenarios = sorted({row.get("scenario_id") for row in locked})
     families = sorted({
         row.get("agent", {}).get("family")
@@ -90,6 +103,21 @@ def handoff_coverage(rows, protocol):
     locked = release_rows(rows, "handoff")
     groups = {}
     malformed = []
+    identity_fields = [
+        "adapter_config_sha256", "adapter_runtime_sha256",
+        "host_tool_name", "host_tool_version",
+        "source_agent_family", "source_adapter_config_sha256",
+        "source_host_tool_name", "source_host_tool_version",
+    ]
+    for row in locked:
+        env = row.get("environment", {})
+        missing_identity = [key for key in identity_fields if not env.get(key)]
+        if missing_identity:
+            malformed.append({
+                "trial_id": row.get("trial_id"),
+                "error": "missing handoff reproducibility identity",
+                "fields": missing_identity,
+            })
     for row in locked:
         key = pair_key(row)
         condition = (

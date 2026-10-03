@@ -1,20 +1,19 @@
 # Changelog
 
-## 3.0.0-rc.7 — 2026-10-03
+## 3.0.0-rc.8 — 2026-10-03
 
-Real-Agent Test Freeze.
+Universal Continuity Real-Agent Test Freeze.
 
-- Replaces pair-level IID bootstrap with hierarchical Agent-family → scenario → repetition bootstrap for formal primary confidence intervals.
-- Adds subgroup hierarchical confidence intervals and explicit claim semantics separating reversal control from positive subgroup evidence.
-- Bounds `STRUCTURAL_INTEGRATION` to the smallest task-responsible canonical layer.
-- Adds an independent structural-overreach release gate using unexpected file, API, architecture, diff-surface, and latency evidence, with separate `local_guard` and `structural_guard` exposure/confidence populations.
-- Adds a two-file project binding with automated install/status/export/remove lifecycle.
-- Adds a bounded RC7 field-test report ledger; every completed modifying workflow records one report while field testing is enabled. The disabled path creates no ledger, rejects report operations, and blocks silent retirement of non-empty evidence.
-- Keeps managed binding/report files out of task-change counts while validating their presence and integrity independently.
-- Hardens project management against symlink traversal, rejects oversized or obviously credential-bearing field reports, and rolls back newly owned project state plus the newly installed Skill after a failed fresh installation.
-- Qualification fingerprint now binds deployment tooling in addition to runtime, protocol, fixtures, evaluators, adapters, runners, and analyzer.
-- Removes the RC6 readiness audit and qualification-v2 protocol from the current tree.
+- Makes continuity reconstructable after abrupt interruption: a receiving actor can recover from project truth, observable work state, validation evidence, UPG state, and explicit unknowns even when no formal handoff was written.
+- Adds non-destructive in-place adoption for projects that predate UPG. Binding v2 records adoption/continuity/capability semantics while preserving legacy project content and existing RC7 field-test evidence.
+- Replaces vendor/class assumptions with observable capability negotiation so conversational, coding, workspace/computer-use, CLI/IDE, browser/application, and future tool-using Agents share one contract.
+- Broadens maintained-project coverage with research/evidence, content/editorial, product/specification, and operations/runbook domains/profiles while keeping unknown project types on the universal fallback path.
+- Raises locked qualification from two to at least three Agent families and explicitly narrows cross-family claims because bootstrap repetitions cannot create independent top-level clusters.
+- Binds locked trial evidence to adapter configuration SHA-256, adapter runtime SHA-256, host-tool name/version, and both source/receiving identities for cross-Agent handoff trials.
+- Enforces the declared completion invariant formally: exactly one field report per completed modifying workflow.
+- Extends field-report secret hygiene to common Bearer/JWT-like tokens, assignment-style credentials, and credential-bearing database URLs while retaining bounded metadata-only reporting.
+- Preserves RC7 task-bounded structural integration, independent overreach cohorts, subgroup CIs, automated lifecycle, deterministic compilation, and fixed managed-state cardinality.
 
-## Previous meaningful state — 3.0.0-rc.6
+## Previous meaningful state — 3.0.0-rc.7
 
-RC6 introduced task-level structural integration, class-specific safety exposure denominators, complete locked scenario/Agent matrices, valid attention controls, dual handoff criteria, governance-artifact efficiency, and subgroup exposure/reversal guards. RC7 preserves those foundations and tightens the final real-test methodology.
+RC7 established hierarchical Agent-family → scenario → repetition inference, subgroup confidence intervals, task-bounded structural integration, independent overreach cohorts, automated two-file project binding/report lifecycle, and the first machine-frozen real-Agent qualification identity. RC8 preserves those foundations and closes interruption, legacy-adoption, cross-Agent reproducibility, and exact-reporting gaps before real testing.

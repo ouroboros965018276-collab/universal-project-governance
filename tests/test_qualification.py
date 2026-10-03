@@ -60,7 +60,7 @@ class QualificationTests(unittest.TestCase):
 
     def test_hierarchical_bootstrap_is_reproducible_and_reports_clusters(self):
         observations = []
-        for family in ["a", "b"]:
+        for family in ["a", "b", "c"]:
             for scenario in ["s1", "s2", "s3"]:
                 for rep in range(4):
                     observations.append({
@@ -73,9 +73,9 @@ class QualificationTests(unittest.TestCase):
         second = hierarchical_bootstrap_delta(observations, seed=17, reps=500)
         self.assertEqual(first, second)
         self.assertEqual(first["method"], "hierarchical-bootstrap")
-        self.assertEqual(first["clusters"]["agent_families"], 2)
-        self.assertEqual(first["clusters"]["scenarios"], 6)
-        self.assertEqual(first["clusters"]["pairs"], 24)
+        self.assertEqual(first["clusters"]["agent_families"], 3)
+        self.assertEqual(first["clusters"]["scenarios"], 9)
+        self.assertEqual(first["clusters"]["pairs"], 36)
 
     def test_trigger_suite_is_large_balanced_and_multilingual(self):
         config = json.loads(
@@ -139,7 +139,7 @@ class QualificationTests(unittest.TestCase):
             skill = dst / "SKILL.md"
             skill.write_text(
                 skill.read_text(encoding="utf-8").replace(
-                    'version: "3.0.0-rc.7"', 'version: "9.9.9-test"'
+                    'version: "3.0.0-rc.8"', 'version: "9.9.9-test"'
                 ),
                 encoding="utf-8",
             )
@@ -175,12 +175,13 @@ class QualificationTests(unittest.TestCase):
         degrade_reduction=True,
         second_family_full=True,
         deployment_ok=True,
+        report_count=1,
         overreach=False,
         subgroup_reversal=False,
     ):
         rows = []
         protocol = load_protocol()
-        families = ["agent-a", "agent-b"]
+        families = ["agent-a", "agent-b", "agent-c"]
         all_failures = protocol["critical_failure_classes"]
         for scenario_index in range(12):
             scenario = "s%02d" % scenario_index
@@ -199,6 +200,10 @@ class QualificationTests(unittest.TestCase):
                         "agent": {"family": family, "model_id": "model", "scaffold_version": "1"},
                         "environment": {
                             "qualification_set": "locked",
+                            "adapter_config_sha256": "sha256:config-"+family,
+                            "adapter_runtime_sha256": "sha256:runtime",
+                            "host_tool_name": "host-"+family,
+                            "host_tool_version": "1",
                             "project_profile": profile,
                             "tool_profile": "standard",
                             "budget_profile": "standard",
@@ -240,8 +245,8 @@ class QualificationTests(unittest.TestCase):
                             "deployment": {
                                 "required": True,
                                 "binding_ok": deployment_ok,
-                                "field_report_recorded": deployment_ok,
-                                "report_count": 1 if deployment_ok else 0,
+                                "field_report_recorded": deployment_ok and report_count == 1,
+                                "report_count": report_count if deployment_ok else 0,
                             },
                             "scope_metrics": {
                                 "scope_violation": scope_violation,
@@ -298,7 +303,16 @@ class QualificationTests(unittest.TestCase):
                     rows.append(dict(
                         common,
                         environment={
-                            "qualification_set": "locked", "project_profile": profile,
+                            "qualification_set": "locked",
+                            "adapter_config_sha256": "sha256:config-"+family,
+                            "adapter_runtime_sha256": "sha256:runtime",
+                            "host_tool_name": "host-"+family,
+                            "host_tool_version": "1",
+                            "source_agent_family": "source-"+family,
+                            "source_adapter_config_sha256": "sha256:source-"+family,
+                            "source_host_tool_name": "source-host",
+                            "source_host_tool_version": "1",
+                            "project_profile": profile,
                             "tool_profile": "standard", "budget_profile": "standard",
                             "handoff_condition": "ablated",
                         },
@@ -311,7 +325,16 @@ class QualificationTests(unittest.TestCase):
                     rows.append(dict(
                         common,
                         environment={
-                            "qualification_set": "locked", "project_profile": profile,
+                            "qualification_set": "locked",
+                            "adapter_config_sha256": "sha256:config-"+family,
+                            "adapter_runtime_sha256": "sha256:runtime",
+                            "host_tool_name": "host-"+family,
+                            "host_tool_version": "1",
+                            "source_agent_family": "source-"+family,
+                            "source_adapter_config_sha256": "sha256:source-"+family,
+                            "source_host_tool_name": "source-host",
+                            "source_host_tool_version": "1",
+                            "project_profile": profile,
                             "tool_profile": "standard", "budget_profile": "standard",
                             "handoff_condition": "present",
                         },
@@ -460,8 +483,8 @@ class QualificationTests(unittest.TestCase):
             load_thresholds(), load_protocol(), "sha256:test",
         )
         cohorts = result["gates"]["structural_overreach"]["cohorts"]
-        self.assertEqual(cohorts["local_guard"]["exposures"], 64)
-        self.assertEqual(cohorts["structural_guard"]["exposures"], 128)
+        self.assertEqual(cohorts["local_guard"]["exposures"], 96)
+        self.assertEqual(cohorts["structural_guard"]["exposures"], 192)
         self.assertLess(cohorts["local_guard"]["zero_event_upper_95"], 0.05)
         self.assertLess(cohorts["structural_guard"]["zero_event_upper_95"], 0.05)
 
@@ -471,6 +494,17 @@ class QualificationTests(unittest.TestCase):
             load_thresholds(), load_protocol(), "sha256:test",
         )
         self.assertEqual(result["gates"]["deployment_integrity"]["state"], "FAIL")
+
+    def test_duplicate_completion_reports_fail_deployment_gate(self):
+        result = analyze(
+            self._synthetic_rows(repetitions=8, report_count=2),
+            load_thresholds(), load_protocol(), "sha256:test",
+        )
+        self.assertEqual(result["gates"]["deployment_integrity"]["state"], "FAIL")
+        self.assertTrue(any(
+            item.get("report_count") == 2
+            for item in result["gates"]["deployment_integrity"]["failures"]
+        ))
 
     def test_generalization_uses_subgroup_confidence_intervals(self):
         result = analyze(

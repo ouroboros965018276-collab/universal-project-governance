@@ -134,8 +134,13 @@ def main():
             "persistent_task_governance_artifacts"
         ]
         usage["managed_project_files"] = grade["managed_project_files"]
+        identity = adapter.identity()
         environment = {
             "qualification_set": "locked" if args.locked_holdout else "dev",
+            "adapter_config_sha256": identity["adapter_config_sha256"],
+            "adapter_runtime_sha256": identity["adapter_runtime_sha256"],
+            "host_tool_name": identity["host_tool_name"],
+            "host_tool_version": identity["host_tool_version"],
             "sandboxed": adapter.config.get("sandboxed", False),
             "workspace_isolation": adapter.config.get("workspace_isolation"),
             "capabilities": adapter.config.get("capabilities", []),

@@ -8,6 +8,7 @@ metadata:
   standard: "agentskills.io"
   maturity: "release-candidate"
   architecture: "compiled-governance"
+  interoperability: "capability-negotiated"
 ---
 
 # Universal Project Governance
@@ -18,7 +19,11 @@ A compiled governance runtime. The canonical governance model lives outside the 
 
 Use for any maintained-project state change. Do not activate for read-only explanation/review/research that makes no project change.
 
-At the first modifying activation in a project, resolve this installed Skill directory and run its `scripts/project_tool.py ensure <project-root>`. This idempotently installs/repairs the RC7 project binding. Files listed by that binding are managed UPG infrastructure: preserve them during ordinary cleanup and remove them only through the explicit uninstall path.
+At the first modifying activation in any maintained project, resolve this installed Skill directory and run its `scripts/project_tool.py ensure <project-root>`. This idempotently adopts both new and pre-existing projects in place: it adds only UPG-owned state and does not restructure legacy project content. Files listed by that binding are managed UPG infrastructure: preserve them during ordinary cleanup and remove them only through the explicit uninstall path.
+
+Before changing project state, perform a capability handshake from observable host facts: identify available filesystem/VCS/search/test/build/browser/app tools and unavailable capabilities. Govern the task with what exists; never assume a specific vendor, model, interface, or tool class, and never fabricate a validation that the current host cannot perform.
+
+For an existing project that predates UPG, treat current project artifacts as evidence, not automatically as correct design. Locate the smallest existing canonical sources of truth, preserve working contracts, mark unknown history/intent as unknown, and make governance effective on the current task immediately. Do not demand a project-wide migration merely to adopt UPG.
 
 ## Hot path
 
@@ -46,7 +51,7 @@ Use observable facts, not model confidence. Risk dimensions are scope, reversibi
 
 ## Evidence and reports
 
-Do not create a permanent general-purpose governance report for every task. RC7 field testing is the one temporary exception: the project binding maintains a single bounded report ledger for empirical evaluation.
+Do not create a permanent general-purpose governance report for every task. RC8 field testing is the one temporary exception: the project binding maintains a single bounded report ledger for empirical evaluation.
 
 - `none`: concise final response/VCS evidence is enough.
 - `change-note`: compact persistent note only if the project needs it.
@@ -55,7 +60,9 @@ Do not create a permanent general-purpose governance report for every task. RC7 
 
 Schema-first governance state is canonical. Markdown is a rendered view, not a second editable truth. Use `scripts/state_tool.py` to validate/render/compact/export governance state.
 
-A current handoff is required only when work is unfinished or actually crosses an agent/session boundary. Keep at most one current handoff.
+A current handoff is required when work is unfinished or deliberately crosses an agent/session boundary, when the actor can write one. Keep at most one current handoff.
+
+Abrupt interruption is a supported continuity mode, not an exceptional assumption. If a prior actor disappeared before writing a handoff, the next actor must reconstruct before modifying: inspect canonical project truth, VCS/worktree or equivalent observable changes, existing validation/evidence, current UPG state, and unresolved artifacts. Separate observed facts from inferred possibilities, mark prior intent that cannot be recovered as unknown, then continue from the smallest safe next action. Never require private chat memory or chain-of-thought for recovery.
 
 When the project binding has `field_test_reporting=true`, every completed modifying workflow must append exactly one field-test report through `scripts/project_tool.py report <project-root> --input <report.json>` before completion is claimed. The ledger stores metadata/evidence summaries only, never source contents, secrets, or private chain-of-thought.
 

@@ -1,55 +1,59 @@
 # Project State
 
-Updated at: **2026-10-03T17:36:00+08:00**
+Updated at: **2026-10-03T19:03:34+08:00**
 
 ## Purpose
 
-Develop and empirically qualify one model-agnostic Agent Skill that improves maintained-project engineering behavior without turning governance itself into technical debt.
+Develop and empirically qualify one bounded, model/host/project-type-agnostic Agent Skill that improves maintained-project governance without making governance itself a source of technical debt.
 
 ## Current candidate
 
-**3.0.0-rc.7 — Real-Agent Test Freeze**
+**3.0.0-rc.8 — Universal Continuity Real-Agent Test Freeze**
 
-RC7 is engineering-valid on the private default branch, machine-frozen, and ready for real locked Agent qualification plus personal/friend gray testing.
+RC8 is the candidate being sealed for personal/friend/professional gray testing and locked real-Agent qualification. Stable causal benefit is not claimed before immutable locked evidence exists.
 
 ## Current architecture
 
-- `governance-src/` — one canonical definition of governance semantics and project-binding policy.
+- `governance-src/` — one canonical definition of governance, continuity, interoperability, project-binding, and report semantics.
 - `compiler/` — deterministic source-to-runtime compiler.
-- `universal-project-governance/` — generated installable Skill; never hand-edit during normal work.
-- `upg.py` — one-command project-scoped Skill install/remove wrapper with fresh-install rollback.
-- `qualification/` — repository-only causal evidence system.
-- `tests/` — deterministic runtime, lifecycle, scope, statistics, and qualification-contract regression tests.
-- `audits/` — only the current threat model and current RC7 readiness audit.
+- `universal-project-governance/` — generated installable Skill; never hand-edit.
+- `upg.py` — automated project-scoped Skill lifecycle.
+- `qualification/` — repository-only causal evidence system with real execution identity.
+- `tests/` — deterministic runtime, adoption, privacy, lifecycle, statistics, and qualification regression tests.
+- `audits/` — current threat model plus current RC8 readiness evidence only.
 
 ## Current invariants
 
 1. One semantic rule has one canonical definition.
-2. Non-trivial work prefers structural integration, but structural mode is strictly task-bounded.
-3. Structural mode never grants permission for unrelated redesign, API change, migration, or opportunistic refactor.
-4. Structural overreach is evaluated in independent `local_guard` and `structural_guard` exposure cohorts; neither denominator may dilute the other.
-5. UPG project state has fixed persistent cardinality: two managed files while RC7 field reporting is enabled.
-6. Disabling field-test reporting produces a one-file binding for fresh projects and does not create a report ledger.
-7. A non-empty existing RC7 report ledger cannot be silently retired; export/purge is required before reporting retirement.
-8. RC7 completed modifying workflows create exactly one bounded field-test report record.
-9. Reports contain metadata/evidence summaries, not source bodies, secrets, or private chain-of-thought.
-10. Formal effect CIs use hierarchical Agent-family → scenario → repetition bootstrap.
-11. Generalization reports subgroup CIs and does not conflate “no severe reversal” with “significant subgroup benefit.”
-12. Stable gates use locked real-Agent evidence only; engineering tests cannot prove causal benefit.
+2. Runtime capability growth does not linearly increase Agent context; complexity stays in source/compiler/tooling.
+3. Non-trivial work integrates at the smallest responsible canonical layer and never authorizes unrelated scope expansion.
+4. Planned unfinished work uses one current handoff when possible; abrupt interruption is recoverable without a handoff through observable project-state reconstruction.
+5. Missing prior intent is marked unknown, never invented.
+6. Pre-UPG projects are adopted in place and governed immediately; installation does not require project-wide migration or rewrite.
+7. Agent interoperability is based on observed capabilities, not vendor/model/class allowlists.
+8. Named project profiles are optional hints; unknown project types remain governed by universal defaults and task/risk triggers.
+9. RC8 binding schema v2 records in-place adoption, handoff-or-reconstruct continuity, capability handshake, and project origin.
+10. UPG owns at most two persistent project files while field-test reporting is enabled.
+11. Every completed modifying workflow records exactly one bounded report; formal deployment evidence requires `report_count == 1`.
+12. Reports contain bounded summaries rather than source bodies or private chain-of-thought and reject common secret-like patterns.
+13. Formal primary effect CIs remain hierarchical Agent-family → scenario → repetition/pair.
+14. Locked cross-family qualification requires at least three Agent families; cross-family generalization is not overstated.
+15. Locked trial identity binds Agent/model/scaffold plus adapter config/runtime hashes and host-tool identity; handoff trials bind both source and receiver.
+16. Stable gates use locked real-Agent evidence only; engineering tests cannot prove causal benefit.
 
 ## Latest meaningful change
 
-- **Time:** 2026-10-03T17:36:00+08:00.
-- **Change:** freeze-seal chronology correction after final audit.
-- **Why:** the current-state documents still referenced main Run #109 even though the freeze-sealing commit `a471a358909c29a9f1ab28234f873f909d9f4ff0` was subsequently validated by Run #110.
-- **What changed:** documentation/audit chronology only. No frozen runtime, protocol, fixture, analyzer, deployment, or qualification surface changed; all frozen fingerprints remain unchanged.
-- **Validation state:** freeze-sealing Run #110 completed successfully with all 7 jobs passing; Python 3.8/3.11/3.13 each pass 43/43 tests; private default-branch clone/install and 16-file installed-copy integrity pass; deterministic Skill package SHA-256 is `794de7033d6ff4c556249499db1caff8033a7f1f746bd8d4f95c141109c54adf`.
-- **Next safe action:** start real locked Agent and gray testing under qualification fingerprint `sha256:bc8727c209235d8a1a3b4bd2fe617753b82bdda7305ca8d6846f8081748757da` without changing frozen surfaces.
+- **Time:** 2026-10-03T18:54:06+08:00.
+- **Change:** RC8 universal-continuity and interoperability hardening before any real-Agent result round.
+- **Why:** gray-test reviewers identified four pre-test gaps: abrupt interruption without formal handoff, legacy-project adoption, cross-project/cross-Agent universality, and experimental reproducibility/report-contract weaknesses.
+- **What changed:** reconstructable continuity; in-place binding v2 adoption including RC7-owned-state upgrade; capability-negotiated Agent interoperability; broader project domains/profiles; minimum three Agent families; exact-one report release gate; adapter/host identity hashes; cross-Agent handoff source/receiver identity; stronger report secret rejection.
+- **Structural constraint:** managed project state remains capped at two files; policy count remains 16; Hot Path remains 8; no parallel governance framework or recovery database was added.
+- **Validation state:** RC8 machine identity is sealed. Branch Run #180 passed all 7 formal jobs; Python 3.8/3.11/3.13 each pass 47/47 tests; Skills CLI and upstream Agent Skills validation pass; deterministic package SHA-256 is `a64aed9c991989f197a8e7ef2581d4c5864ecfdac368bbccffefdcec5e6c3544`. Frozen qualification fingerprint: `sha256:63afa5d1e4cd109987f70c9ddac9223b805c5442a1829bbffee21e77bae414b4`.
 
 ## Previous meaningful change
 
-- **Time:** 2026-10-03T17:13:53+08:00.
-- **Change:** final RC7 freeze hardening.
-- **Why:** final audit found two residual lifecycle/statistical risks: scope-overreach confidence could combine qualitatively different local/structural exposures, and the field-report switch did not yet exercise a real no-ledger retirement path.
-- **What changed:** split overreach into independent local/structural cohorts; made reporting-disabled binding actually omit the ledger and reject report operations; blocked silent retirement of non-empty evidence; added fresh-install project-state + Skill rollback; regenerated the deployment-bound freeze identity.
-- **Carried forward:** hierarchical inference, subgroup CIs, task-bounded scope contracts, bounded field reports, automated lifecycle, and all RC6 qualification safeguards.
+- **Time:** 2026-10-03T17:36:00+08:00.
+- **Change:** RC7 freeze chronology was aligned to its freeze-sealing validation.
+- **Why:** current-state documentation had referenced an earlier successful main run after a later freeze-sealing run existed.
+- **What it established:** RC7 engineering freeze with hierarchical inference, subgroup CIs, task-bounded structural integration, independent overreach cohorts, bounded field reporting, and automated install/remove lifecycle.
+- **Why RC8 supersedes it:** RC7 still assumed successful explicit handoff for strongest continuity, had no explicit in-place legacy adoption contract, required only two Agent families, accepted field-report existence rather than exact cardinality at the formal gate, and did not cryptographically bind adapter/host execution conditions.
