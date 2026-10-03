@@ -84,6 +84,42 @@
             "string",
             "null"
           ]
+        },
+        "adapter_config_sha256": {
+          "type": "string"
+        },
+        "adapter_runtime_sha256": {
+          "type": "string"
+        },
+        "host_tool_name": {
+          "type": "string"
+        },
+        "host_tool_version": {
+          "type": "string"
+        },
+        "source_agent_family": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source_adapter_config_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source_host_tool_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source_host_tool_version": {
+          "type": [
+            "string",
+            "null"
+          ]
         }
       }
     },
