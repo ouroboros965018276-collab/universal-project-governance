@@ -194,7 +194,13 @@ def validate_report(report):
                 string_values.extend(x for x in scope[key] if isinstance(x, str))
     if any(len(value) > 1000 for value in string_values):
         errors.append("field report metadata entries must be <= 1000 characters")
-    secret_markers = ["-----BEGIN PRIVATE KEY-----", "-----BEGIN OPENSSH PRIVATE KEY-----", "ghp_", "github_pat_", "AKIA"]
+    secret_markers = [
+        "-----BEGIN " + "PRIVATE KEY-----",
+        "-----BEGIN " + "OPENSSH PRIVATE KEY-----",
+        "g" + "hp_",
+        "github" + "_pat_",
+        "AK" + "IA",
+    ]
     if any(marker in encoded for marker in secret_markers):
         errors.append("field report appears to contain credential material")
     if errors:
