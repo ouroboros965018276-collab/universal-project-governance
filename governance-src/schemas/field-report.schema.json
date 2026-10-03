@@ -1,0 +1,166 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "sequence",
+    "recorded_at",
+    "runtime_version",
+    "task",
+    "status",
+    "change_mode",
+    "scope_guard",
+    "risk_level",
+    "active_rules",
+    "changed_files",
+    "validation",
+    "cleanup",
+    "structural_scope",
+    "integrity",
+    "handoff",
+    "feedback"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "sequence": {
+      "type": "integer"
+    },
+    "recorded_at": {
+      "type": "string"
+    },
+    "runtime_version": {
+      "type": "string"
+    },
+    "task": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "complete",
+        "partial",
+        "blocked"
+      ]
+    },
+    "change_mode": {
+      "enum": [
+        "local",
+        "structural"
+      ]
+    },
+    "scope_guard": {
+      "enum": [
+        "local-only",
+        "task-bounded-responsible-layer"
+      ]
+    },
+    "risk_level": {
+      "enum": [
+        "trivial",
+        "low",
+        "medium",
+        "high",
+        "release"
+      ]
+    },
+    "active_rules": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "changed_files": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "validation": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "cleanup": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "structural_scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "canonical_layer",
+        "unrelated_changes",
+        "api_changes",
+        "architecture_changes",
+        "overreach_concern"
+      ],
+      "properties": {
+        "canonical_layer": {
+          "type": "string"
+        },
+        "unrelated_changes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "api_changes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "architecture_changes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "overreach_concern": {
+          "type": "boolean"
+        }
+      }
+    },
+    "integrity": {
+      "enum": [
+        "pass",
+        "fail",
+        "not-checked"
+      ]
+    },
+    "handoff": {
+      "enum": [
+        "not-required",
+        "created",
+        "updated",
+        "closed"
+      ]
+    },
+    "feedback": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "agent": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "family": {
+          "type": "string"
+        },
+        "model_id": {
+          "type": "string"
+        },
+        "scaffold_version": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

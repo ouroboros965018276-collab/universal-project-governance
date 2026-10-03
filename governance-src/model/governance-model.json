@@ -1,13 +1,14 @@
 {
   "schema_version": 1,
   "name": "universal-project-governance",
-  "version": "3.0.0-rc.6",
+  "version": "3.0.0-rc.7",
   "architecture": "compiled-governance",
   "principles": [
     "ONE_SEMANTIC_RULE_ONE_CANONICAL_DEFINITION",
     "CAPABILITY_GROWTH_MUST_NOT_LINEARLY_INCREASE_RUNTIME_LOAD",
     "COMPLEXITY_BELONGS_IN_COMPILER_NOT_AGENT_CONTEXT",
-    "NON_TRIVIAL_CHANGE_PREFERS_STRUCTURAL_INTEGRATION_OVER_PATCH_STACKING"
+    "NON_TRIVIAL_CHANGE_PREFERS_STRUCTURAL_INTEGRATION_OVER_PATCH_STACKING",
+    "STRUCTURAL_INTEGRATION_IS_TASK_BOUNDED_NOT_SCOPE_EXPANSION"
   ],
   "hot_path": [
     {
@@ -40,7 +41,7 @@
     },
     {
       "id": "STRUCTURAL_INTEGRATION",
-      "statement": "Except for truly local low-risk edits, change the responsible canonical structure and remove superseded patch paths instead of stacking shims, duplicate branches, one-off flags, or detached fixes."
+      "statement": "Except for truly local low-risk edits, integrate at the smallest responsible canonical layer and remove superseded patch paths; structural mode never authorizes unrelated redesign, API change, migration, or cleanup outside task scope."
     }
   ],
   "risk_model": {
@@ -448,11 +449,12 @@
         "design",
         "governance"
       ],
-      "closure": "For non-trivial work, identify the responsible canonical layer, integrate the change there, remove superseded patch/shim/duplicate paths when safe, and leave one coherent post-change structure rather than accumulating local fixes.",
+      "closure": "For non-trivial work, identify the smallest responsible canonical layer, integrate the requested change there, remove superseded patch/shim/duplicate paths when safe, and stop at the task boundary. Structural integration never authorizes unrelated redesign, API/contract change, architectural migration, or opportunistic refactoring.",
       "evidence": [
-        "responsible canonical layer identified",
+        "smallest responsible canonical layer identified",
+        "task boundary and excluded unrelated surfaces identified",
         "superseded patch/path review",
-        "post-change structural/current-truth validation"
+        "post-change scope and structural/current-truth validation"
       ],
       "report": "inherit",
       "handoff": "inherit",
@@ -787,7 +789,8 @@
     "conflicting_blocking_rules_max": 0,
     "unused_profile_activations_max": 0,
     "persistent_current_handoffs_max": 1,
-    "persistent_current_execution_reports_max": 1
+    "persistent_current_execution_reports_max": 1,
+    "managed_project_files_max": 2
   },
   "structural_integration": {
     "policy_id": "STRUCTURAL_INTEGRATION",
@@ -804,6 +807,15 @@
     ],
     "exempt_operations": [
       "release"
-    ]
+    ],
+    "scope_guard": "task-bounded-responsible-layer"
+  },
+  "project_binding": {
+    "schema_version": 1,
+    "binding_file": ".governance/upg.json",
+    "field_report_file": ".governance/field-reports.json",
+    "field_test_reporting": true,
+    "max_reports": 200,
+    "managed_files_max": 2
   }
 }

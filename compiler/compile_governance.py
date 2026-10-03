@@ -13,6 +13,7 @@ import tempfile
 RUNTIME_SCHEMA_NAMES = [
     "task-context.schema.json", "governance-plan.schema.json", "handoff.schema.json",
     "execution.schema.json", "feedback.schema.json", "audit.schema.json",
+    "field-report.schema.json",
 ]
 
 
@@ -53,6 +54,7 @@ def compile_index(src: Path, model: dict) -> dict:
         "hot_path": model["hot_path"],
         "risk_model": model["risk_model"],
         "structural_integration": model["structural_integration"],
+        "project_binding": model["project_binding"],
         "default_rules": model["default_rules"],
         "policies": model["policies"],
         "profiles": profiles,

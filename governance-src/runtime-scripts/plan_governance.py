@@ -151,6 +151,7 @@ def compile_plan(index: dict, ctx: dict) -> dict:
     return {
         "version": index["version"],
         "change_mode": "structural" if structural["policy_id"] in active else "local",
+        "scope_guard": structural["scope_guard"] if structural["policy_id"] in active else "local-only",
         "risk_level": risk_level,
         "risk_score": risk_score,
         "active_rules": sorted(active),
@@ -168,6 +169,7 @@ def render_markdown(plan: dict) -> str:
         "",
         "- **Risk:** %s (%s)" % (plan["risk_level"], plan["risk_score"]),
         "- **Change mode:** %s" % plan["change_mode"],
+        "- **Scope guard:** %s" % plan["scope_guard"],
         "- **Report:** %s" % plan["report"],
         "- **Handoff:** %s" % plan["handoff"],
         "",

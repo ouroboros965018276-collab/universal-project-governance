@@ -10,6 +10,7 @@
     "default_rules",
     "policies",
     "structural_integration",
+    "project_binding",
     "complexity_budget"
   ],
   "properties": {
@@ -79,7 +80,8 @@
         "policy_id",
         "minimum_risk_level",
         "force_operations",
-        "exempt_operations"
+        "exempt_operations",
+        "scope_guard"
       ],
       "properties": {
         "policy_id": {
@@ -106,6 +108,43 @@
           "items": {
             "type": "string"
           }
+        },
+        "scope_guard": {
+          "enum": [
+            "task-bounded-responsible-layer"
+          ]
+        }
+      }
+    },
+    "project_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "binding_file",
+        "field_report_file",
+        "field_test_reporting",
+        "max_reports",
+        "managed_files_max"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": 1
+        },
+        "binding_file": {
+          "type": "string"
+        },
+        "field_report_file": {
+          "type": "string"
+        },
+        "field_test_reporting": {
+          "type": "boolean"
+        },
+        "max_reports": {
+          "type": "integer"
+        },
+        "managed_files_max": {
+          "type": "integer"
         }
       }
     }

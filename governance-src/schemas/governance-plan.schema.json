@@ -5,6 +5,7 @@
   "required": [
     "version",
     "change_mode",
+    "scope_guard",
     "risk_level",
     "risk_score",
     "active_rules",
@@ -71,6 +72,12 @@
       "enum": [
         "local",
         "structural"
+      ]
+    },
+    "scope_guard": {
+      "enum": [
+        "local-only",
+        "task-bounded-responsible-layer"
       ]
     }
   }
