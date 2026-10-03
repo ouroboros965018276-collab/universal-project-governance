@@ -1,6 +1,6 @@
 # Project State
 
-Updated at: **2026-10-03T15:43:54+08:00**
+Updated at: **2026-10-03T15:46:56+08:00**
 
 ## Purpose
 
@@ -41,7 +41,7 @@ RC7 engineering validation is complete and the candidate is machine-frozen for r
 - **Change:** RC7 real-Agent test freeze architecture.
 - **Why:** final engineering review identified IID bootstrap optimism, weak subgroup claim semantics, structural-overreach risk, and the need for foolproof field deployment/report collection.
 - **What changed:** hierarchical inference, subgroup CIs, task-bounded structural scope contracts, an independent overreach gate, two-file project binding, bounded field reports, automated lifecycle, and deployment-bound qualification identity.
-- **Validation state:** Run #93 is green; Python 3.8/3.11/3.13 each pass 41/41 tests; lifecycle/install/integrity/security/package gates pass; RC7 freeze identity is current.
+- **Validation state:** branch Run #94 and main Run #95 are green; Python 3.8/3.11/3.13 each pass 41/41 tests; one-command lifecycle, private default-branch install, integrity, security, and deterministic package gates pass; RC7 freeze identity is current.
 - **Next safe action:** start real locked Agent and gray testing under the current fingerprint without changing frozen surfaces.
 
 ## Previous meaningful change
