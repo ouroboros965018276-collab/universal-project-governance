@@ -284,7 +284,6 @@ def validate_report(report):
         errors.append("field report metadata entries must be <= 1000 characters")
     sensitive_patterns = [
         r"-----BEGIN (?:[A-Z0-9 ]+ )?PRIVATE KEY-----",
-        r"-----BEGIN OPENSSH PRIVATE KEY-----",
         r"g" + r"hp_[A-Za-z0-9]{20,}",
         r"github" + r"_pat_[A-Za-z0-9_]{20,}",
         r"AK" + r"IA[0-9A-Z]{16}",
