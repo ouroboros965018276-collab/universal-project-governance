@@ -219,10 +219,17 @@ def main():
         binding = model.get("project_binding", {})
         if binding.get("binding_file") != ".governance/upg.json" or binding.get("field_report_file") != ".governance/field-reports.json":
             errors.append("project binding paths must match qualification managed-file contract")
-        if binding.get("field_test_reporting") is not True:
-            errors.append("RC9 real-agent freeze requires field_test_reporting=true")
+        if binding.get("field_test_reporting") is not False:
+            errors.append("fresh candidate bindings must leave field-test reporting opt-in")
         if int(binding.get("managed_files_max", 0)) != 2:
             errors.append("RC9 managed project file budget must be exactly 2")
+        deployment = (root / "qualification/lib/deployment.py").read_text(encoding="utf-8")
+        runners = [
+            (root / "qualification/run_trial.py").read_text(encoding="utf-8"),
+            (root / "qualification/run_handoff_trial.py").read_text(encoding="utf-8"),
+        ]
+        if "def prepare_a2_reporting" not in deployment or "--field-test-reporting" not in deployment or any("prepare_a2_reporting" not in runner for runner in runners):
+            errors.append("A2 qualification paths must explicitly opt in to field-test reporting")
 
     for rel in ["upg.py", "governance-src/runtime-scripts/project_tool.py", "governance-src/schemas/field-report.schema.json"]:
         if not (root / rel).is_file():

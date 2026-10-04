@@ -12,7 +12,35 @@ def now():
 def registration(args, adapter, kind, scenario, arm, condition=None, source=None):
     started = now()
     if not args.locked_holdout:
-        return {"trial_id": str(uuid.uuid4()), "round_id": "dev", "repetition": 1, "started_at": started}
+        if not args.round_manifest and not args.trial_id:
+            return {"trial_id": str(uuid.uuid4()), "round_id": "dev", "repetition": 1, "started_at": started}
+        if not args.round_manifest or not args.trial_id:
+            raise ValueError("registered development trial requires both --round-manifest and --trial-id")
+        manifest = json.loads(pathlib.Path(args.round_manifest).read_text(encoding="utf-8"))
+        candidate = frozen_candidate()
+        freeze = candidate["identity"]
+        protocol = candidate["protocol"]
+        if manifest.get("qualification_set") != "dev":
+            raise ValueError("development registration requires qualification_set=dev")
+        if manifest.get("qualification_fingerprint") != freeze["qualification_fingerprint"] or manifest.get("protocol_revision") != protocol["protocol_revision"]:
+            raise ValueError("development registration candidate fingerprint mismatch")
+        if type(manifest.get("randomization_seed")) is not int or manifest.get("order_method") != "development-fixed-order":
+            raise ValueError("development registration method is invalid")
+        slots = [x for x in manifest.get("trials", []) if x.get("trial_id") == args.trial_id]
+        if len(slots) != 1:
+            raise ValueError("development trial is not uniquely registered")
+        slot = slots[0]
+        if slot.get("round_id") != manifest.get("round_id") or type(slot.get("repetition")) is not int or slot["repetition"] < 1:
+            raise ValueError("development registered round/repetition mismatch")
+        for key, value in [("kind", kind), ("scenario_id", scenario), ("arm", arm), ("pair_id", args.pair_id), ("agent", adapter.config.get("agent"))]:
+            if slot.get(key) != value:
+                raise ValueError("development registered execution mismatch: " + key)
+        for key, value in adapter.identity().items():
+            if key != "adapter_id" and slot.get(key) != value:
+                raise ValueError("development registered adapter mismatch: " + key)
+        if pathlib.Path(args.output).exists():
+            raise ValueError("development trial output already exists")
+        return {"trial_id": args.trial_id, "round_id": manifest["round_id"], "repetition": slot["repetition"], "started_at": started}
     if not args.round_manifest or not args.trial_id:
         raise ValueError("locked trial requires --round-manifest and registered --trial-id")
     manifest = json.loads(pathlib.Path(args.round_manifest).read_text(encoding="utf-8"))

@@ -68,6 +68,9 @@
     "explicit_audit": {
       "type": "boolean"
     },
+    "field_test_reporting": {
+      "type": "boolean"
+    },
     "risk": {
       "type": "object",
       "additionalProperties": false,

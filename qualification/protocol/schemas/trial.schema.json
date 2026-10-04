@@ -79,7 +79,6 @@
         "qualification_set",
         "sandboxed",
         "workspace_isolation",
-        "isolation_attestation",
         "adapter_config_sha256",
         "adapter_runtime_sha256",
         "host_tool_name",
@@ -151,17 +150,22 @@
           ]
         },
         "sandboxed": {
-          "const": true
+          "type": "boolean"
         },
         "workspace_isolation": {
           "enum": [
+            "none",
+            "process",
             "sandbox",
             "container",
             "vm"
           ]
         },
         "isolation_attestation": {
-          "type": "object",
+          "type": [
+            "object",
+            "null"
+          ],
           "required": [
             "issuer",
             "reference",

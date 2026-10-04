@@ -1,6 +1,6 @@
 # Publishing and Test-Freeze Gates
 
-Current candidate: **3.0.0-rc.10**
+Current candidate: **3.0.0-rc.11**
 
 ## Engineering gate before real-Agent testing
 
@@ -49,7 +49,7 @@ Subgroup CI evidence is reported directly. Generalization PASS means the preregi
 
 Personal and friend gray testing may export `upg-field-test-reports.json`. These reports are diagnostic field evidence, not substitutes for locked qualification.
 
-Before Stable, the report capability receives an explicit retain/remove decision. The disabled path is already executable: fresh binding creates no ledger and report/export operations are unavailable. Existing non-empty RC7 ledgers must be exported and purged before retirement; they are never silently discarded.
+Before Stable, the report capability receives an explicit retain/remove decision. The disabled path is already executable: fresh binding creates no ledger and report/export operations are unavailable. Existing non-empty ledgers must be exported and purged before retirement; `remove` refuses to proceed while history remains and never silently discards it.
 
 ## Freeze rule
 

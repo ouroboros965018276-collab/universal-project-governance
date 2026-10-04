@@ -826,7 +826,7 @@
     "capability_handshake": "observe-before-assume",
     "continuity_mode": "handoff-or-reconstruct",
     "field_report_file": ".governance/field-reports.json",
-    "field_test_reporting": true,
+    "field_test_reporting": false,
     "managed_files_max": 2,
     "max_reports": 200,
     "schema_version": 2
@@ -899,7 +899,7 @@
     "release_operation_forces": "audit"
   },
   "schema_version": 1,
-  "source_sha256": "1e74522d8c156927ed77da0f74831646fc6a143d63e5049dac2a00504c510df9",
+  "source_sha256": "2e07dd9960776704f59638c7304a9399eb5f5be176f84ca3eca80e79bced4a11",
   "structural_integration": {
     "exempt_operations": [
       "release"
@@ -953,5 +953,5 @@
       "governance_upgrade"
     ]
   },
-  "version": "3.0.0-rc.10"
+  "version": "3.0.0-rc.11"
 }

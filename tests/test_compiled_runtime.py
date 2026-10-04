@@ -1,5 +1,6 @@
 from __future__ import annotations
 import hashlib
+import importlib.util
 import json
 import os
 import pathlib
@@ -8,11 +9,15 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 from registration_fixture import report_identity
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 PY = sys.executable
 RUNTIME = ROOT / "universal-project-governance"
+UPG_SPEC = importlib.util.spec_from_file_location("upg_cli", ROOT / "upg.py")
+UPG = importlib.util.module_from_spec(UPG_SPEC)
+UPG_SPEC.loader.exec_module(UPG)
 
 # The suite must not mutate the tree it validates: without this, importing the generated
 # runtime scripts writes scripts/__pycache__ into release source, which then fails the
@@ -30,6 +35,26 @@ def run(*args, cwd=None):
     )
 
 class CompiledRuntimeTests(unittest.TestCase):
+    def test_top_level_installer_forwards_explicit_reporting_opt_in(self):
+        with tempfile.TemporaryDirectory() as td:
+            commands = []
+
+            def fake_run(command, cwd):
+                commands.append(command)
+                return subprocess.CompletedProcess(command, 0, "", "")
+
+            with patch.object(UPG.shutil, "which", return_value="npx"), patch.object(
+                UPG, "run", side_effect=fake_run
+            ), patch.object(UPG, "find_installed", return_value=RUNTIME):
+                self.assertEqual(
+                    UPG.install(td, "codex", str(ROOT), field_test_reporting=True),
+                    0,
+                )
+
+            binding_command = next(command for command in commands if "project_tool.py" in command[1])
+            self.assertIn("install", binding_command)
+            self.assertIn("--field-test-reporting", binding_command)
+
     def test_compiler_drift_check(self):
         cp = run("compiler/compile_governance.py", "--check")
         self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
@@ -100,7 +125,7 @@ class CompiledRuntimeTests(unittest.TestCase):
                 for key in ("risk_level", "change_mode", "scope_guard", "report", "handoff"):
                     if key in expected:
                         self.assertEqual(plan[key], expected[key])
-                self.assertEqual(plan["field_report_obligation"], "required-before-completion")
+                self.assertEqual(plan["field_report_obligation"], "not-required")
                 for rule_id in expected.get("contains", []):
                     self.assertIn(rule_id, plan["active_rules"])
                 if "max_rules" in expected:
@@ -138,6 +163,33 @@ class CompiledRuntimeTests(unittest.TestCase):
             self.assertEqual(plan["change_mode"], "structural")
             self.assertEqual(plan["scope_guard"], "task-bounded-responsible-layer")
             self.assertIn("STRUCTURAL_INTEGRATION", plan["active_rules"])
+
+    def test_project_binding_controls_planner_report_obligation(self):
+        with tempfile.TemporaryDirectory() as td:
+            project = pathlib.Path(td) / "project"
+            project.mkdir()
+            tool = RUNTIME / "scripts/project_tool.py"
+            planner = RUNTIME / "scripts/plan_governance.py"
+            context = pathlib.Path(td) / "context.json"
+            context.write_text(json.dumps({"operation": "edit", "domains": ["code"]}), encoding="utf-8")
+
+            cp = run(tool, "install", project)
+            self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
+            cp = run(planner, "--project-root", project, "--context", context, "--json")
+            self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
+            self.assertEqual(json.loads(cp.stdout)["field_report_obligation"], "not-required")
+
+            cp = run(tool, "ensure", project, "--field-test-reporting")
+            self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
+            cp = run(planner, "--project-root", project, "--context", context, "--json")
+            self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
+            self.assertEqual(json.loads(cp.stdout)["field_report_obligation"], "required-before-completion")
+
+            cp = run(tool, "ensure", project)
+            self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
+            binding = json.loads((project / ".governance/upg.json").read_text(encoding="utf-8"))
+            self.assertTrue(binding["field_test_reporting"])
+            self.assertEqual(len(json.loads((project / ".governance/field-reports.json").read_text(encoding="utf-8"))["reports"]), 0)
 
     def test_unknown_risk_dimension_fails_with_allowed_dimensions(self):
         with tempfile.TemporaryDirectory() as td:
@@ -184,7 +236,7 @@ class CompiledRuntimeTests(unittest.TestCase):
             project.mkdir()
             tool = RUNTIME / "scripts/project_tool.py"
             cp = subprocess.run(
-                [PY, str(tool), "install", str(project)],
+                [PY, str(tool), "install", str(project), "--field-test-reporting"],
                 text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
             )
             self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
@@ -195,6 +247,7 @@ class CompiledRuntimeTests(unittest.TestCase):
             self.assertEqual(binding["adoption_mode"], "in-place")
             self.assertEqual(binding["continuity_mode"], "handoff-or-reconstruct")
             self.assertEqual(binding["capability_handshake"], "observe-before-assume")
+            self.assertTrue(binding["field_test_reporting"])
 
             report = {
                 "task": "Fix bounded defect",
@@ -228,6 +281,19 @@ class CompiledRuntimeTests(unittest.TestCase):
             self.assertEqual(len(ledger["reports"]), 1)
             self.assertEqual(ledger["reports"][0]["sequence"], 1)
 
+            binding_path = project / ".governance/upg.json"
+            ledger_path = project / ".governance/field-reports.json"
+            binding_before = binding_path.read_bytes()
+            ledger_before = ledger_path.read_bytes()
+            cp = subprocess.run(
+                [PY, str(tool), "remove", str(project), "--yes"],
+                text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+            )
+            self.assertNotEqual(cp.returncode, 0)
+            self.assertIn("export and purge", cp.stderr)
+            self.assertEqual(binding_path.read_bytes(), binding_before)
+            self.assertEqual(ledger_path.read_bytes(), ledger_before)
+
             export_path = project / "field-test-export.json"
             cp = subprocess.run(
                 [PY, str(tool), "export", str(project), "--output", str(export_path)],
@@ -236,6 +302,13 @@ class CompiledRuntimeTests(unittest.TestCase):
             self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
             exported = json.loads(export_path.read_text(encoding="utf-8"))
             self.assertEqual(len(exported["reports"]), 1)
+
+            cp = subprocess.run(
+                [PY, str(tool), "purge-reports", str(project), "--yes"],
+                text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+            )
+            self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
+            self.assertEqual(json.loads(ledger_path.read_text(encoding="utf-8"))["reports"], [])
 
             keep = project / ".governance/keep.json"
             keep.write_text('{"project_owned":true}\n', encoding="utf-8")
@@ -265,6 +338,8 @@ class CompiledRuntimeTests(unittest.TestCase):
             binding = json.loads((project / ".governance/upg.json").read_text(encoding="utf-8"))
             self.assertEqual(binding["project_origin"], "existing")
             self.assertEqual(binding["adoption_mode"], "in-place")
+            self.assertFalse(binding["field_test_reporting"])
+            self.assertFalse((project / ".governance/field-reports.json").exists())
 
     def test_rc7_binding_upgrades_without_losing_report_ledger(self):
         with tempfile.TemporaryDirectory() as td:
@@ -296,18 +371,11 @@ class CompiledRuntimeTests(unittest.TestCase):
             self.assertEqual(binding["schema_version"], 2)
             self.assertEqual(ledger["reports"][0]["task"], "preserve-me")
 
-    def test_field_reporting_can_be_structurally_disabled_without_creating_ledger(self):
+    def test_field_reporting_is_opt_in_per_project_and_existing_setting_is_preserved(self):
         with tempfile.TemporaryDirectory() as td:
-            runtime = pathlib.Path(td) / "runtime"
-            shutil.copytree(RUNTIME, runtime)
-            index_path = runtime / "policy-index.json"
-            index = json.loads(index_path.read_text(encoding="utf-8"))
-            index["project_binding"]["field_test_reporting"] = False
-            index_path.write_text(json.dumps(index, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-
             project = pathlib.Path(td) / "project"
             project.mkdir()
-            tool = runtime / "scripts/project_tool.py"
+            tool = RUNTIME / "scripts/project_tool.py"
             cp = subprocess.run(
                 [PY, str(tool), "install", str(project)],
                 text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
@@ -327,12 +395,50 @@ class CompiledRuntimeTests(unittest.TestCase):
             )
             self.assertNotEqual(cp.returncode, 0)
             self.assertIn("disabled", cp.stderr)
+            self.assertFalse((project / ".governance/field-reports.json").exists())
+
+            cp = subprocess.run(
+                [PY, str(tool), "install", str(project), "--field-test-reporting"],
+                text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+            )
+            self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
+            enabled = json.loads((project / ".governance/upg.json").read_text(encoding="utf-8"))
+            self.assertTrue(enabled["field_test_reporting"])
+            self.assertTrue((project / ".governance/field-reports.json").is_file())
+
+            cp = subprocess.run(
+                [PY, str(tool), "ensure", str(project)],
+                text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+            )
+            self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
+            self.assertTrue(json.loads((project / ".governance/upg.json").read_text(encoding="utf-8"))["field_test_reporting"])
+
+    def test_disabled_reporting_does_not_purge_unowned_ledger_path(self):
+        with tempfile.TemporaryDirectory() as td:
+            project = pathlib.Path(td) / "project"
+            project.mkdir()
+            tool = RUNTIME / "scripts/project_tool.py"
+            installed = subprocess.run(
+                [PY, str(tool), "install", str(project)],
+                text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+            )
+            self.assertEqual(installed.returncode, 0, installed.stdout + installed.stderr)
+            ledger = project / ".governance/field-reports.json"
+            ledger.write_text('{"owner":"project"}\n', encoding="utf-8")
+            before = ledger.read_bytes()
+            purged = subprocess.run(
+                [PY, str(tool), "purge-reports", str(project), "--yes"],
+                text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+            )
+            self.assertNotEqual(purged.returncode, 0)
+            self.assertIn("not owned", purged.stderr)
+            self.assertEqual(ledger.read_bytes(), before)
 
     def test_field_report_contract_rejects_incomplete_report(self):
         with tempfile.TemporaryDirectory() as td:
             project = pathlib.Path(td)
             tool = RUNTIME / "scripts/project_tool.py"
-            cp = subprocess.run([PY, str(tool), "install", str(project)], text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
+            cp = subprocess.run([PY, str(tool), "install", str(project), "--field-test-reporting"], text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
             self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
             bad = project / "bad.json"
             bad.write_text('{"task":"missing contract"}\n', encoding="utf-8")
@@ -349,7 +455,7 @@ class CompiledRuntimeTests(unittest.TestCase):
             project = pathlib.Path(td)
             tool = RUNTIME / "scripts/project_tool.py"
             cp = subprocess.run(
-                [PY, str(tool), "install", str(project)],
+                [PY, str(tool), "install", str(project), "--field-test-reporting"],
                 text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
             )
             self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
@@ -387,7 +493,7 @@ class CompiledRuntimeTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             project = pathlib.Path(td)
             tool = RUNTIME / "scripts/project_tool.py"
-            cp = subprocess.run([PY, str(tool), "install", str(project)], text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
+            cp = subprocess.run([PY, str(tool), "install", str(project), "--field-test-reporting"], text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
             self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
             base = {
                 "task": "safe summary", "status": "complete", "change_mode": "local",

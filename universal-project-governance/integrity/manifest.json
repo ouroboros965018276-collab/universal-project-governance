@@ -3,22 +3,22 @@
   "files": {
     "INTEGRITY.md": "01e1e3eb772940fe8259b0cb125cd7712858c6f50d4f2fdcada420aa73d29ab5",
     "LICENSE": "50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a",
-    "SKILL.md": "63cac83509f72dbc6ae7589460f258a9ae1d92e5175fa1a6debd6ad7a3d48440",
-    "VERSION.md": "84cee2d3c87781a0e7fc7a7c6641951ecee0e7fd2c65fcd15756c23e3d2bec2f",
-    "policy-index.json": "aab87aef60c3015d0790ea613b35ee830446fa47d2c8f81cf71d2849b28a0ed8",
+    "SKILL.md": "0e139e69eec584e2e26c05ec3ed1a2cb6c69d2be246804c751031a66082d2154",
+    "VERSION.md": "f239b8859be1264f865c53b41cc35e1a8931dd5269cb37f6f3151014b6ae1551",
+    "policy-index.json": "1553b8c586b8ffcb8dce2c2dd32f47e5019c94b05b4e81d133305dbbf37841cb",
     "schemas/audit.schema.json": "a5e15c26eff86e3c4e2e174fb121ef22981628307f09cf18d09a589e738ea889",
     "schemas/execution.schema.json": "302d3e9e0a561b9d80e4fbea8dc053546160c7afa251c02b44e159c563979fed",
     "schemas/feedback.schema.json": "22da61a114a1e89ee641ac25e90e23d6231003351df15918d4265f9900091954",
     "schemas/field-report.schema.json": "e46349bcc8a659afa3368dfda143115f255e162574894770e9d41f87b456d93f",
     "schemas/governance-plan.schema.json": "82c26facfe5b53c5e418ac5309a9aefb678ac4ef9b9551f533304e3a613a5ffc",
     "schemas/handoff.schema.json": "9a2fb25fe32f11e1e2dc3d21ffa5c0fda5d3e5b87a2ad5010ac2b281ca604d48",
-    "schemas/task-context.schema.json": "519b4a98f1ab2a704fc8e887e31d8514924e7cec75dab2c9d816f9a449995424",
-    "scripts/plan_governance.py": "5cd7fb22c192a471d22c2b097d09b7df683cf048d71c4cfe6a3858d1d445ee8a",
-    "scripts/project_tool.py": "a486d4ec7795c9b2aac9d2638ac044ea78e71360b4bd7584331efd48349080ae",
+    "schemas/task-context.schema.json": "acc323f7d86f8dad5d8694e7fcf566dad6987d077877fbe6dbc819029936ad38",
+    "scripts/plan_governance.py": "cc07e7c1aab00f40f648f682b3847b72aa7eb40b03c3b7b7a3cd99f227e75956",
+    "scripts/project_tool.py": "13250b334a69552db4b005cdaeec72042e284988419c7945abb4148e2e38e9e0",
     "scripts/state_tool.py": "f375f7629a0558a30bf881d4202eae25994fff94a966cd127e06d312823be746",
     "scripts/validate_integrity.py": "cf09558e67b4488db88c5ce9836e9f1cf1c8bae97d6e1444bb9d2d80409157c0"
   },
-  "generated_for_version": "3.0.0-rc.10",
+  "generated_for_version": "3.0.0-rc.11",
   "schema_version": 1,
-  "source_sha256": "1e74522d8c156927ed77da0f74831646fc6a143d63e5049dac2a00504c510df9"
+  "source_sha256": "2e07dd9960776704f59638c7304a9399eb5f5be176f84ca3eca80e79bced4a11"
 }

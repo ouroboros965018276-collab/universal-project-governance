@@ -1,6 +1,6 @@
 # Contributing
 
-Current candidate: **3.0.0-rc.10 — Pilot Evidence and Usability Hardening**. Formal dev-smoke and locked qualification belong to the next phase.
+Current candidate: **3.0.0-rc.11 — Opt-in Reporting and Dev-Smoke Hardening**. Formal development smoke is a pipeline check; the latest RC11 attempt failed at Codex workspace routing. Locked qualification still requires external isolation and at least three independent Agent families.
 
 ## Structural contribution rule
 
@@ -16,7 +16,7 @@ Do not hand-edit generated runtime.
 
 ## Project lifecycle
 
-Project ownership is limited to the two paths declared in the canonical binding. New persistent per-project files require an explicit architecture decision and complexity-budget change.
+Project ownership is limited to the paths declared in the canonical binding. New projects manage only `.governance/upg.json` by default; opted-in field testing adds the bounded report ledger. New persistent per-project files require an explicit architecture decision and complexity-budget change.
 
 ## Qualification changes
 

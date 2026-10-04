@@ -4,7 +4,7 @@ description: Govern maintained-project changes with task-bounded integration, pr
 license: Apache-2.0
 compatibility: Core kernel needs no runtime. Optional deterministic planner/state/integrity helpers use Python 3.8+.
 metadata:
-  version: "3.0.0-rc.10"
+  version: "3.0.0-rc.11"
   standard: "agentskills.io"
   maturity: "release-candidate"
   architecture: "compiled-governance"
@@ -19,7 +19,7 @@ A compiled governance runtime. The canonical governance model lives outside the 
 
 Use for any maintained-project state change. Do not activate for read-only explanation/review/research that makes no project change.
 
-At the first modifying activation, resolve this installed Skill and run `scripts/project_tool.py ensure <project-root>` when filesystem and Python are available. Otherwise apply the same rules through existing host/project state and explicitly report unavailable binding/report verification; do not fabricate files or block unrelated authorized work merely to install tooling. This idempotently adopts both new and pre-existing projects in place: it adds only UPG-owned state and does not restructure legacy project content. Files listed by that binding are managed UPG infrastructure: preserve them during ordinary cleanup and remove them only through the explicit uninstall path.
+At the first modifying activation, resolve this installed Skill and run `scripts/project_tool.py ensure <project-root>` when filesystem and Python are available. New project bindings keep empirical field-test reporting disabled by default; an owner can explicitly opt in with `scripts/project_tool.py install <project-root> --field-test-reporting`. Existing bindings preserve their current setting and ledger. Otherwise apply the same rules through existing host/project state and explicitly report unavailable binding/report verification; do not fabricate files or block unrelated authorized work merely to install tooling. This idempotently adopts both new and pre-existing projects in place: it adds only UPG-owned state and does not restructure legacy project content. Files listed by that binding are managed UPG infrastructure: preserve them during ordinary cleanup and remove them only through the explicit uninstall path.
 
 Before changing project state, perform a capability handshake from observable host facts: identify available filesystem/VCS/search/test/build/browser/app tools and unavailable capabilities. Govern the task with what exists; never assume a specific vendor, model, interface, or tool class, and never fabricate a validation that the current host cannot perform.
 
@@ -45,10 +45,10 @@ For non-trivial work, prefer structural integration at the smallest responsible 
 Create a typed task context and compile the task-specific plan:
 
 ```bash
-python3 scripts/plan_governance.py --context /path/to/task-context.json
+python3 scripts/plan_governance.py --project-root /path/to/project --context /path/to/task-context.json
 ```
 
-Unknown profile hints fall back to universal task/risk rules; profiles never exclude a project. The plan returns the change mode (`local` or `structural`), an explicit scope guard, active rule closure, required evidence, report level, and whether handoff state is required. Execute that plan; do not load unrelated governance policy.
+The planner reads the healthy project binding so its field-report obligation reflects the actual project setting. Unknown profile hints fall back to universal task/risk rules; profiles never exclude a project. The plan returns the change mode (`local` or `structural`), an explicit scope guard, active rule closure, required evidence, report level, and whether handoff state is required. Execute that plan; do not load unrelated governance policy.
 
 If helpers are unavailable, read `policy-index.json` and apply only rules matching the task operation/domains/signals plus their `requires` closure.
 
@@ -58,7 +58,7 @@ Use observable facts, not model confidence. Risk dimensions are scope, reversibi
 
 ## Evidence and reports
 
-Do not create a permanent general-purpose governance report for every task. RC9 field testing is the one temporary exception: the project binding maintains a single bounded report ledger for empirical evaluation.
+Do not create a permanent general-purpose governance report for every task. Field-test reporting is an explicit, temporary evaluation mode, disabled by default for new projects; opted-in bindings maintain one bounded ledger.
 
 - `none`: concise final response/VCS evidence is enough.
 - `change-note`: compact persistent note only if the project needs it.
@@ -75,7 +75,7 @@ Abrupt interruption is a supported continuity mode, not an exceptional assumptio
 
 Use causal parent/revision references and persistent sequence for order. Tool `recorded_at` is observation time, never invented work/commit time. Preserve the previous change and tie validation to the actually tested state; a stale handoff is evidence to reconcile, not authority to overwrite current truth.
 
-When the project binding has `field_test_reporting=true`, every completed modifying workflow must append exactly one field-test report through `scripts/project_tool.py report <project-root> --input <report.json>` before completion is claimed. Include `workflow_id` and `change` metadata. Identical retries are idempotent; conflicting retries fail. Export and verify evidence before explicit epoch rotation; sequence never resets, and task IDs are unique within the declared retention epoch. The ledger stores metadata/evidence summaries only, never source contents, secrets, or private chain-of-thought.
+When the project binding has `field_test_reporting=true`, every completed modifying workflow must append exactly one field-test report through `scripts/project_tool.py report <project-root> --input <report.json>` before completion is claimed. Include `workflow_id` and `change` metadata. Identical retries are idempotent; conflicting retries fail. Export and verify evidence before explicit epoch rotation; sequence never resets, and task IDs are unique within the declared retention epoch. The ledger stores metadata/evidence summaries only, never source contents, secrets, or private chain-of-thought. With reporting disabled, do not create a field ledger or report merely to satisfy the ordinary governance-note level.
 
 ## Integrity
 

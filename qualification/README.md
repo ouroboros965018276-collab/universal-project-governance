@@ -10,6 +10,18 @@ This directory is repository-only and never ships as Agent runtime.
 
 Development runs are diagnostic. Stable evidence uses locked trials only.
 
+## Formal development smoke
+
+`dev_smoke.py` runs one registered A2 development task through the real adapter, temporary workspace, Agent, artifact retention, and release analyzer. Example:
+
+```bash
+python qualification/dev_smoke.py --adapter /path/to/codex-dev-adapter.json --output-dir qualification/workspaces/dev-smoke-rc11-01
+```
+
+The smoke passes only when the development trial executes, its registered identity and retained artifact verify, task checks pass, A2 records exactly one report, and the release analyzer rejects development evidence before inference. `release-analyzer-check.json` is expected to say `FAIL` because development evidence is not release evidence. Local process/workspace separation is not external isolation attestation and cannot authorize a locked trial. Keep smoke workspaces local and publish only reviewed, desensitized summaries.
+
+The seventh registered RC11 smoke is recorded in [`dev-smoke/rc11.summary.json`](dev-smoke/rc11.summary.json) and **failed** at real-Agent execution: Codex CLI could not discover workspace routing, exited before changing the task project, and recorded no completion report. Registration, schema, artifact, and pre-inference release rejection checks passed. The record publishes no raw Agent output or machine paths. This is a host execution blocker, not a product efficacy result.
+
 ## Hierarchical inference
 
 Formal paired effects use hierarchical bootstrap:
@@ -62,7 +74,7 @@ The overreach gate is independent from task success and has two non-pooled popul
 
 ## Project deployment
 
-A2 behavioral evidence includes RC9 binding-v2 validity and completion-report cardinality. A completed modifying workflow passes deployment integration only when exactly one report was recorded.
+A2 behavioral evidence explicitly opts each fresh evaluation workspace into field-test reporting. A completed modifying workflow passes deployment integration only when exactly one report was recorded. Ordinary installations default out of this temporary reporting mode; this does not relax the locked A2 gate.
 
 Fixed UPG managed files are counted separately from task governance artifacts.
 
@@ -82,6 +94,6 @@ Before/after text snapshots and execution metadata are saved outside the Agent w
 
 The default round builder registers same-family source/receiver handoffs. A separately reviewed manifest can register cross-family source/receiver identities; do not describe the default plan as evidence for every cross-family pairing. Report absolute success for both present and ablated handoff conditions as well as their difference. The locked task matrix presently represents software/data tasks, so trigger breadth and universal runtime design do not establish causal benefit in research, content or other unmeasured domains. Three family clusters and trial-level zero-event bounds require cautious interpretation of independence.
 
-No locked RC10 real-Agent round has run. Diagnostic field pilots may be summarized under `qualification/pilots/`, but they are not `results/qN/` evidence and cannot promote Stable.
+The TRAE racing-game pilot is diagnostic only: both A0 and A2 passed 10/10 mechanical checks, but it had one Agent family/scenario and no comparable usage-cost measures. It cannot establish efficiency, efficacy, cross-family generalization, or Stable. Development smoke runs exercise available host plumbing and are never admitted as locked results. The current Windows host lacks a reachable Docker engine and WSL Linux distribution; no locked trial was run. Locked evidence remains under immutable `results/qN/` rounds only after preregistration and external isolation review.
 
 `lib/contracts.py` is the shared authority for the frozen identity, live surface verification and finite JSON settings. Round planning and locked execution resolve this same candidate; evidence admission compares supplied protocol and thresholds against it before admitting even an empty evidence set. The analyzer consumes the admission gate without a separate configuration rejection path. A copied identical configuration is accepted; changed settings, including relaxed gates or bootstrap counts, fail before inference. Engine unit tests explicitly mock this configuration boundary to keep synthetic bootstrap tests short and separately test rejection at the real entry point. This testing mock is absent from production CLI behavior.

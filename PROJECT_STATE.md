@@ -1,10 +1,22 @@
 # Project State
 
-Current candidate: **3.0.0-rc.10 — Pilot Evidence and Usability Hardening**.
+Current candidate: **3.0.0-rc.11 — Opt-in Reporting and Dev-Smoke Hardening**.
 
-RC10 absorbs the diagnostic racing-game pilot and fixes the two runtime usability defects it exposed: unknown risk keys are rejected against the canonical risk model, and planner output now separates ordinary report level from the temporary field-test completion-report obligation. RC9 repaired the audited evidence and continuity gaps. `qualification/lib/contracts.py` remains the canonical authority for frozen identity, live surface verification and finite JSON analysis settings. No formal dev-smoke/locked qualification round has run; bounded host micro-project and pilot checks below are separate. Stable remains blocked pending the separate real-agent phase.
+RC11 absorbs the racing-pilot usability findings, defaults new project bindings to reporting off, preserves prior opted-in ledgers, makes planning reflect the actual project setting, and requires verified export/purge before removing non-empty report history. The registered real-Agent smoke is complete but failed at Codex workspace routing; the exact sanitized result is `qualification/dev-smoke/rc11.summary.json`. `qualification/lib/contracts.py` remains the canonical authority for frozen identity, live surface verification and finite JSON analysis settings. Locked qualification, empirical qualification, and Stable remain unachieved.
 
-## Current change and why
+## RC11 evidence and release stages
+
+| Stage | Current state | Evidence / limit |
+|---|---|---|
+| Field-tested | **Observed** | TRAE racing-game pilot: A0 and A2 each passed 10/10 mechanical checks. One Agent family/scenario; comparable token/time/tool-call data were not retained. Five current micro-project functions passed, but historical governance acceptance remains 1 FAIL + 4 BLOCKED. |
+| Formal dev-smoke | **FAIL** | Seventh registered A2 attempt: registration, schema, artifact retention, and pre-inference development-evidence rejection passed. Codex CLI returned `turn.failed` after workspace-routing discovery errors; task unchanged, zero tool calls, no completion report, no token usage. See `qualification/dev-smoke/rc11.summary.json`. |
+| Locked qualification | **NOT RUN** | No reachable Docker engine or installed WSL Linux distribution on this host; no demonstrated 3-family adapter matrix with externally verified isolation attestations. |
+| Empirical qualification | **NOT ACHIEVED** | No locked result round admitted; no causal efficacy, handoff, efficiency, or subgroup claim. |
+| Stable | **NOT ACHIEVED** | Release gates remain unchanged and unmet. |
+
+The smoke runner was corrected to measure task changes after skill/report setup and to require the analyzer's explicit pre-inference rejection note. A diagnostic scratch-project run separately confirmed this host's nested Codex shell calls are blocked by policy; bypassing that policy was intentionally not used.
+
+## RC9 contract-integration checkpoint (historical)
 
 Observation: 2026-10-03T14:03:08.697711Z, local UTC checkpoint; original edit-start unknown. Parent revision: `683b1ff0f85b36e9db38557d893051dcbc29ba50`, Git time `2026-10-03T13:46:36Z`. Before: equivalent freeze checks were repeated across consumers and external configuration rejection lived only in the analyzer. After: a single responsible contract layer supplies the candidate to all three consumers; admission validates settings before considering empty evidence. Reason/source: owner instruction to integrate into the whole structure, final audit evidence, and the existing STRUCTURAL_INTEGRATION invariant. Superseded duplicate checks and analyzer-only rejection are removed; no domain expansion or threshold changes.
 
@@ -12,7 +24,7 @@ Local engineering evidence: 69/69 tests, including changed settings, empty-evide
 
 ## Structure and bounded universal scope
 
-Maintained-project/model/host-agnostic Skill; canonical semantics in `governance-src/`, deterministic compiler, generated `universal-project-governance/`, repository-only qualification. Bounds remain 16 policies, 8 Hot Path invariants, 102 Skill lines and at most two persistent owned project files. Unknown optional profiles fall back to universal rules. Existing Git/project truth supplies history; no parallel chronology database or additional profiles. Installed Codex runtime equals the generated candidate. Package SHA-256 remains `39d91d2f21cc390c08f4d630a64aca48134a4feddd604cc9d718f2a8d3cbf37e`.
+Maintained-project/model/host-agnostic Skill; canonical semantics in `governance-src/`, deterministic compiler, generated `universal-project-governance/`, repository-only qualification. Bounds remain 16 policies, 8 Hot Path invariants, 102 Skill lines and at most two persistent owned project files. Unknown optional profiles fall back to universal rules. Existing Git/project truth supplies history; no parallel chronology database or additional profiles. Installed Codex runtime equals the generated candidate. Deterministic RC11 package SHA-256: `8c857683a545db5c396b9366038dd0ac4741856dc9257430eafaf01d35332a4f`.
 
 ## Previous changes and causal continuity
 

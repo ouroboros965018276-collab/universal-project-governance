@@ -4,10 +4,10 @@
     "documentation corrections that do not change frozen semantics",
     "external adapter instances/configuration that satisfy the frozen adapter contract"
   ],
-  "behavioral_fingerprint": "sha256:5cf6d599204a290538cabbd1056909839e44a54cb92b9eeb01aa0e9846d047e1",
+  "behavioral_fingerprint": "sha256:25a744dac1e808810e3df6395587da39633e21bbbea8f508567c1d2ab0fa3a08",
   "compiler_sha256": "sha256:770f5df973c8bf18e66893d2ba276e22f91d7a349332f75428e4c27a82946121",
-  "deployment_sha256": "sha256:c1f2146ff3c2038ae933d2c04df345ce436b8a57c2e6450571826b068d4c8e92",
-  "evaluator_sha256": "sha256:8f0c19fe375a40b258754d841dc4061e33ef08c31ced307163dff221ba55e45e",
+  "deployment_sha256": "sha256:f30b27bbf9159180d96eee5b0244d97ab4282449570aaae3684f1f7e840da4af",
+  "evaluator_sha256": "sha256:0e5db11877dc3fd987bc6a922c12165eea050d3ed65799487d4f4b6d6ade4676",
   "fixture_set_sha256": "sha256:58995b7e9bed93a54dc0c0bf7bc14c0a8f4376c17ab1980db4d856bae1951231",
   "freeze_invalidation": "Any change to a frozen surface requires a new qualification fingerprint and invalidates unfinished/claimed evidence under the prior fingerprint.",
   "frozen_surfaces": [
@@ -26,16 +26,17 @@
     "qualification/run_handoff_trial.py",
     "qualification/run_trigger_trial.py",
     "qualification/trigger_suite.py",
+    "qualification/dev_smoke.py",
     "qualification/analyze.py",
     "qualification/round_manifest.py"
   ],
-  "governance_model_sha256": "sha256:f70789cd857aa383df1804333fc4560f7605b9cb95c524fe5bedc49a53f85d4f",
+  "governance_model_sha256": "sha256:6a1c8e7790c8cb83b111d7a3f3058bc92e9cc3e5c2609f09ae2883954bd604a0",
   "hash_algorithm_revision": "repo-relative-posix-v2",
-  "qualification_fingerprint": "sha256:5b18e39cb06f355d96e2011556b3a84434f092032209b7d32c8227729454ec67",
-  "qualification_protocol_sha256": "sha256:e419be6e6ebd25127e94836554647c070b8baac3933413d3c6f732e1f710be49",
-  "runner_sha256": "sha256:a3e0353a750ea75e428a7f851fc743dd7c6887d2df1cfd1d7a97ab4c269ddb36",
-  "runtime_tree_sha256": "sha256:7cc3dea00b2b48eed9c64bac97dbbcfc76e9f17838f8a403354c92b54fa84fc2",
+  "qualification_fingerprint": "sha256:0a89b53a04e4ee1b1f1046924ffcf3f8d743726f048937c25db9fbf5fb53eaa7",
+  "qualification_protocol_sha256": "sha256:b913a10cbe9856db21beec4881c0df9e397f4b4003b369ade1064f136d681c3e",
+  "runner_sha256": "sha256:5eeeaa4238e14536d4ad969aebbb34413397f42338675a8e433245c98cbfc56e",
+  "runtime_tree_sha256": "sha256:685ab94e833346c039f517dcec64dc9ea233cd3106011049d20e6c252844a297",
   "schema_version": 3,
   "state": "real-agent-test-freeze",
-  "version": "3.0.0-rc.10"
+  "version": "3.0.0-rc.11"
 }

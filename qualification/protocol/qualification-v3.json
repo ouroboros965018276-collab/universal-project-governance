@@ -1,9 +1,9 @@
 {
   "schema_version": 3,
   "protocol_id": "upg-q3",
-  "title": "Universal Project Governance 3.0.0-rc.10 Pilot Evidence and Usability Hardening",
+  "title": "Universal Project Governance 3.0.0-rc.11 Opt-in Reporting and Formal Dev-Smoke",
   "status": "locked",
-  "runtime_semantics": "3.0.0-rc.10-pilot-evidence-usability-hardening",
+  "runtime_semantics": "3.0.0-rc.11-opt-in-reporting-formal-dev-smoke",
   "design": {
     "paired_counterfactual": true,
     "fresh_context": true,

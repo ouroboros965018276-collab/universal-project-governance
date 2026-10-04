@@ -82,6 +82,21 @@ def admit(rows, fingerprint, protocol, manifest=None, *, thresholds):
         for key in ["tool_profile", "budget_profile"]:
             if env.get(key) != slot.get(key): errors.append(prefix + key + " differs from registration")
         if env.get("qualification_set") != "locked": errors.append(prefix + "development evidence cannot promote release")
+        if env.get("sandboxed") is not True:
+            errors.append(prefix + "locked execution requires enforced sandboxing")
+        if env.get("workspace_isolation") not in {"sandbox", "container", "vm"}:
+            errors.append(prefix + "locked execution requires strong workspace isolation")
+        attestation = env.get("isolation_attestation")
+        if not (
+            isinstance(attestation, dict)
+            and isinstance(attestation.get("issuer"), str)
+            and attestation["issuer"]
+            and isinstance(attestation.get("reference"), str)
+            and attestation["reference"]
+            and isinstance(attestation.get("sha256"), str)
+            and re.fullmatch(r"sha256:[0-9a-f]{64}", attestation["sha256"])
+        ):
+            errors.append(prefix + "locked execution requires a valid operator isolation attestation")
         if row["fingerprints"] != {"behavioral": freeze["behavioral_fingerprint"], "qualification": fingerprint}:
             errors.append(prefix + "trial fingerprint mismatch")
         try:
@@ -110,6 +125,17 @@ def admit(rows, fingerprint, protocol, manifest=None, *, thresholds):
         if kind == "handoff":
             for key in ["source_agent_family", "source_adapter_config_sha256", "source_adapter_runtime_sha256", "source_host_tool_name", "source_host_tool_version", "source_model_id", "source_scaffold_version", "source_isolation_attestation"]:
                 if not env.get(key) or env[key] != slot.get(key): errors.append(prefix + "source execution identity mismatch: " + key)
+            source_attestation = env.get("source_isolation_attestation")
+            if not (
+                isinstance(source_attestation, dict)
+                and isinstance(source_attestation.get("issuer"), str)
+                and source_attestation["issuer"]
+                and isinstance(source_attestation.get("reference"), str)
+                and source_attestation["reference"]
+                and isinstance(source_attestation.get("sha256"), str)
+                and re.fullmatch(r"sha256:[0-9a-f]{64}", source_attestation["sha256"])
+            ):
+                errors.append(prefix + "locked handoff source requires a valid isolation attestation")
             if row["outcome"].get("handoff_condition") != slot.get("handoff_condition"): errors.append(prefix + "handoff condition mismatch")
         cells[(kind, row["scenario_id"], row["agent"]["family"], row["arm"], row["outcome"].get("handoff_condition"))] += 1
         if row["repetition"] > protocol["sampling"]["locked_repetitions_per_cell_max"]: errors.append(prefix + "repetition exceeds preregistered maximum")

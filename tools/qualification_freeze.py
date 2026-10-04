@@ -89,6 +89,7 @@ def expected(root):
         root / "qualification/run_handoff_trial.py",
         root / "qualification/run_trigger_trial.py",
         root / "qualification/trigger_suite.py",
+        root / "qualification/dev_smoke.py",
         root / "qualification/analyze.py",
         root / "qualification/round_manifest.py",
     ], root)
@@ -142,6 +143,7 @@ def expected(root):
             "qualification/run_handoff_trial.py",
             "qualification/run_trigger_trial.py",
             "qualification/trigger_suite.py",
+            "qualification/dev_smoke.py",
             "qualification/analyze.py",
             "qualification/round_manifest.py",
         ],

@@ -1,5 +1,18 @@
 # Changelog
 
+## 3.0.0-rc.11 — 2026-10-04
+
+- Makes field-test reporting explicitly opt-in for new project bindings, preserves existing enabled state and report history, and adds a top-level installer flag.
+- Refuses to purge a ledger path when reporting is disabled and the binding does not own it, preventing accidental deletion of coincidentally named project data.
+- Refuses to remove an opted-in project while its field-report ledger is non-empty; export and verified purge are required first.
+- Makes planner output read the actual project binding; ordinary governance-note level no longer implies a field-report obligation.
+- Adds a registered development-smoke path with real adapter identity, retained artifacts, A2 report integration, and a check that the release analyzer rejects development evidence before inference.
+- Moves Skill installation and A2 report opt-in before the measured task baseline, fixing setup files being falsely counted as Agent overreach; applies explicit A2 opt-in to handoff trials too.
+- Records the seventh registered RC11 dev-smoke as FAIL: the real Codex CLI turn failed at workspace routing before task changes; schema, artifact, and analyzer-boundary checks passed. See [`qualification/dev-smoke/rc11.summary.json`](qualification/dev-smoke/rc11.summary.json).
+- Binds declared adapter helper-script bytes into runtime identity and adds a Codex CLI development adapter using the host project Skill discovery path.
+- Adds a five-minute README quickstart, a concrete illustrative behavior comparison, and explicit limits on pilot, cost, domain, qualification, and Stable claims.
+- Locked qualification gates remain unchanged; RC11 is not empirically qualified or Stable.
+
 ## 3.0.0-rc.10 — 2026-10-04
 
 Pilot Evidence and Usability Hardening.

@@ -6,6 +6,7 @@ import argparse
 import json
 from pathlib import Path
 import sys
+from project_tool import status as project_status
 
 REPORT_ORDER = {"none": 0, "change-note": 1, "engineering": 2, "audit": 3}
 
@@ -52,6 +53,8 @@ def validate_context(ctx: dict, index: dict) -> None:
         raise ValueError("unknown operation: %r" % ctx.get("operation"))
     if not isinstance(ctx.get("domains"), list) or any(x not in allowed_domains for x in ctx["domains"]):
         raise ValueError("domains must be a list of known domain IDs")
+    if "field_test_reporting" in ctx and type(ctx["field_test_reporting"]) is not bool:
+        raise ValueError("field_test_reporting must be boolean")
     dims = index["risk_model"]["dimensions"]
     for key, value in ctx.get("risk", {}).items():
         if key not in dims:
@@ -168,7 +171,10 @@ def compile_plan(index: dict, ctx: dict) -> dict:
         "report": report,
         "field_report_obligation": (
             "required-before-completion"
-            if index.get("project_binding", {}).get("field_test_reporting") is True
+            if ctx.get(
+                "field_test_reporting",
+                index.get("project_binding", {}).get("field_test_reporting"),
+            ) is True
             else "not-required"
         ),
         "field_report_file": index.get("project_binding", {}).get("field_report_file"),
@@ -208,6 +214,7 @@ def main() -> int:
     ap.add_argument("--signal", action="append", default=[])
     ap.add_argument("--profile", action="append", default=[])
     ap.add_argument("--risk", action="append", default=[])
+    ap.add_argument("--project-root", help="read the project binding to resolve field-report obligation")
     ap.add_argument("--unfinished", action="store_true")
     ap.add_argument("--audit", action="store_true")
     ap.add_argument("--json", action="store_true")
@@ -215,6 +222,14 @@ def main() -> int:
     try:
         index = load_index()
         ctx = normalize_context(args)
+        if args.project_root:
+            state = project_status(args.project_root)
+            if state.get("ok"):
+                ctx["field_test_reporting"] = state["field_test_reporting"]
+            elif state.get("reason") == "binding-missing":
+                ctx["field_test_reporting"] = index.get("project_binding", {}).get("field_test_reporting", False)
+            else:
+                raise ValueError("project binding is not healthy: %s" % state.get("reason"))
         plan = compile_plan(index, ctx)
     except (OSError, ValueError, json.JSONDecodeError) as exc:
         print("error: %s" % exc, file=sys.stderr)
