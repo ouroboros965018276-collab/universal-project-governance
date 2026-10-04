@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "name": "universal-project-governance",
-  "version": "3.0.0-rc.11",
+  "version": "3.0.0-rc.12",
   "architecture": "compiled-governance",
   "principles": [
     "ONE_SEMANTIC_RULE_ONE_CANONICAL_DEFINITION",

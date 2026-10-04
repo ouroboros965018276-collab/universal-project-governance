@@ -1,10 +1,10 @@
 # 通用项目治理 | Universal Project Governance
 
-Current candidate: **3.0.0-rc.11 — Opt-in Reporting and Dev-Smoke Hardening**
+Current candidate: **3.0.0-rc.12 — Qualification Evidence Refresh**
 
 Universal Project Governance is a model-agnostic, host-agnostic Agent Skill for maintained-project governance across software, data, infrastructure, research, content, product/specification, operations, design systems, automation, ML/AI, documentation, and mixed projects.
 
-RC11 preserves the bounded architecture, in-place adoption and capability-based interoperability. It absorbs the diagnostic racing-game pilot findings, makes reporting opt-in for new projects, hardens the registered development-smoke path, and fixes measured-scope accounting for Skill installation. It introduces no new domain profiles or weaker qualification gates.
+RC12 refreshes qualification evidence against the installed runtime and current host. It carries forward RC11's bounded architecture and behavior unchanged; no governance semantics or release thresholds were relaxed. Five current micro-project functional and receipt checks pass, while the registered RC12 real-Agent smoke still fails at Codex workspace routing. Historical acceptance remains one FAIL and four BLOCKED; locked qualification, empirical qualification, and Stable remain unachieved.
 
 ## What changes when installed
 
@@ -150,6 +150,6 @@ Keep these stages separate:
 - **Empirical qualification:** locked evidence is admitted and all non-compensatory gates pass.
 - **Stable:** release promotion follows only after the qualification contract is met.
 
-**RC11 stage results:** field testing is supported by real Agent use and the TRAE pilot, but its racing-game comparison lacks comparable cost measurements. The latest registered formal dev-smoke is **FAIL**: registration, schema validation, retained-artifact verification, and rejection-before-inference passed; Codex CLI failed during workspace routing before making a task change, so the required A2 completion report is absent. Its desensitized record is [`qualification/dev-smoke/rc11.summary.json`](qualification/dev-smoke/rc11.summary.json). Locked qualification has not run: this Windows host has no available Docker engine/WSL Linux distribution and no demonstrated three-family adapter set with external isolation attestations. Empirical qualification and Stable are **not achieved**. Development smoke evidence is ineligible for release admission; do not infer a later stage from an earlier one.
+**RC12 stage results:** field testing is supported by real Agent use and the TRAE pilot, but its racing-game comparison lacks comparable cost measurements. Current functional and receipt checks pass for five micro-projects; these do not rewrite the historical one FAIL/four BLOCKED outcome. The tenth registered formal dev-smoke is **FAIL**: registration, schema validation, retained-artifact verification, and rejection-before-inference passed; Codex CLI 0.160.0 failed during workspace routing before making a task change, so the required A2 completion report is absent. See [`qualification/dev-smoke/rc12.summary.json`](qualification/dev-smoke/rc12.summary.json) and the current recheck aggregate at [`qualification/rc12-current-acceptance.summary.json`](qualification/rc12-current-acceptance.summary.json). Locked qualification has not run: this Windows host has no available Docker engine/WSL Linux distribution and no demonstrated three-family adapter set with external isolation attestations. Empirical qualification and Stable are **not achieved**. Development smoke evidence is ineligible for release admission; do not infer a later stage from an earlier one.
 
 License: Apache-2.0.

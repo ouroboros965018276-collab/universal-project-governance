@@ -1,5 +1,14 @@
 # Changelog
 
+## 3.0.0-rc.12 — 2026-10-04
+
+Qualification Evidence Refresh. Runtime governance semantics and qualification thresholds are unchanged from RC11.
+
+- Refreshes five current micro-project functional checks and receipt verification under the installed RC12 Skill: 5/5 functional, 5/5 receipts, and 35/35 negative receipt cases rejected. Historical results remain one FAIL and four BLOCKED; no source, project report ledger, or historical record was backfilled.
+- Executes the tenth registered formal RC12 development smoke on the final frozen fingerprint with Codex CLI 0.160.0. Registration, schema, artifact verification, and pre-inference release rejection pass; real-Agent execution still fails at host workspace-routing discovery before task changes. See [`qualification/dev-smoke/rc12.summary.json`](qualification/dev-smoke/rc12.summary.json).
+- Produces two byte-identical RC12 runtime packages (SHA-256 `c65c0afa8cf16d73e349d8d2311b2c4dae614bb594c24205dcf3808029710125`); the local Codex Skill installation passes the same generated integrity manifest.
+- Locked qualification remains NOT RUN; empirical qualification and Stable remain NOT ACHIEVED. This candidate does not promote development or functional evidence into release evidence.
+
 ## 3.0.0-rc.11 — 2026-10-04
 
 - Makes field-test reporting explicitly opt-in for new project bindings, preserves existing enabled state and report history, and adds a top-level installer flag.

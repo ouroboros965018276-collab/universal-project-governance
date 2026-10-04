@@ -1,6 +1,6 @@
 # Module Map
 
-Current candidate: **3.0.0-rc.11**.
+Current candidate: **3.0.0-rc.12**.
 
 This map describes the current tree only. Historical implementations belong in Git history.
 

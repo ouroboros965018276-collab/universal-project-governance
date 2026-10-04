@@ -1,6 +1,8 @@
 # Publishing and Test-Freeze Gates
 
-Current candidate: **3.0.0-rc.11**
+Current candidate: **3.0.0-rc.12**
+
+RC12 is an evidence-refresh candidate with no runtime semantic or qualification-threshold changes from RC11. Current micro-project functional/receipt checks pass 5/5, but historical governance remains 1 FAIL + 4 BLOCKED. Its registered real-Agent smoke is FAIL; locked qualification is NOT RUN; empirical qualification and Stable are NOT ACHIEVED. See [PROJECT_STATE.md](PROJECT_STATE.md) for the evidence boundary and current host constraints.
 
 ## Engineering gate before real-Agent testing
 

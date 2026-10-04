@@ -4,7 +4,7 @@ description: Govern maintained-project changes with task-bounded integration, pr
 license: Apache-2.0
 compatibility: Core kernel needs no runtime. Optional deterministic planner/state/integrity helpers use Python 3.8+.
 metadata:
-  version: "3.0.0-rc.11"
+  version: "3.0.0-rc.12"
   standard: "agentskills.io"
   maturity: "release-candidate"
   architecture: "compiled-governance"

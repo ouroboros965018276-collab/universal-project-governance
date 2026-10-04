@@ -1,6 +1,6 @@
 # Contributing
 
-Current candidate: **3.0.0-rc.11 — Opt-in Reporting and Dev-Smoke Hardening**. Formal development smoke is a pipeline check; the latest RC11 attempt failed at Codex workspace routing. Locked qualification still requires external isolation and at least three independent Agent families.
+Current candidate: **3.0.0-rc.12 — Qualification Evidence Refresh**. The latest registered RC12 development smoke failed at Codex CLI workspace routing; the sanitized evidence is in `qualification/dev-smoke/rc12.summary.json`. Locked qualification still requires externally enforced isolation and at least three independent Agent families.
 
 ## Structural contribution rule
 

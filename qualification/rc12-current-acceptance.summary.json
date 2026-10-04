@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "record_type": "current-version-read-only-microproject-reacceptance",
+  "candidate_version": "3.0.0-rc.12",
+  "observed_at": "2026-10-04T13:36:27.200126Z",
+  "observation_time_source": "local UTC observation recorded by the acceptance harness; not an inferred historical work time",
+  "scope": "Current functional and receipt rechecks only. No project deliverable sources or report ledgers were modified.",
+  "projects": [
+    {"project": "01-cli", "current_functional": "PASS", "current_receipt_check": "PASS", "negative_receipt_cases_rejected": 7, "historical_governance": "BLOCKED"},
+    {"project": "02-offline", "current_functional": "PASS", "current_receipt_check": "PASS", "negative_receipt_cases_rejected": 7, "historical_governance": "BLOCKED"},
+    {"project": "03-poster", "current_functional": "PASS", "current_receipt_check": "PASS", "negative_receipt_cases_rejected": 7, "historical_governance": "BLOCKED"},
+    {"project": "04-pendulum", "current_functional": "PASS", "current_receipt_check": "PASS", "negative_receipt_cases_rejected": 7, "historical_governance": "FAIL"},
+    {"project": "05-astronomy", "current_functional": "PASS", "current_receipt_check": "PASS", "negative_receipt_cases_rejected": 7, "historical_governance": "BLOCKED"}
+  ],
+  "aggregate": {
+    "functional_pass": 5,
+    "receipt_check_pass": 5,
+    "negative_receipt_cases_rejected": 35,
+    "project_sources_unchanged": true,
+    "project_report_ledgers_unchanged": true,
+    "historical_evidence_backfilled": false,
+    "formal_qualification": false
+  },
+  "historical_governance_total": {"fail": 1, "blocked": 4, "unchanged": true},
+  "privacy": {
+    "project_source_published": false,
+    "local_paths_published": false,
+    "raw_command_logs_published": false
+  }
+}

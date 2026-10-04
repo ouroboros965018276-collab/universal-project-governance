@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Current candidate: **3.0.0-rc.11 — Opt-in Reporting and Dev-Smoke Hardening**.
+Current candidate: **3.0.0-rc.12 — Qualification Evidence Refresh**.
 
 ## First modifying activation
 

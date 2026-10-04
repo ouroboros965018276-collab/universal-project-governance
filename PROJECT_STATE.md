@@ -1,20 +1,20 @@
 # Project State
 
-Current candidate: **3.0.0-rc.11 — Opt-in Reporting and Dev-Smoke Hardening**.
+Current candidate: **3.0.0-rc.12 — Qualification Evidence Refresh**.
 
-RC11 absorbs the racing-pilot usability findings, defaults new project bindings to reporting off, preserves prior opted-in ledgers, makes planning reflect the actual project setting, and requires verified export/purge before removing non-empty report history. The registered real-Agent smoke is complete but failed at Codex workspace routing; the exact sanitized result is `qualification/dev-smoke/rc11.summary.json`. `qualification/lib/contracts.py` remains the canonical authority for frozen identity, live surface verification and finite JSON analysis settings. Locked qualification, empirical qualification, and Stable remain unachieved.
+RC12 is an evidence-refresh candidate over RC11: generated runtime semantics, admission rules, and release thresholds are unchanged. The installed Codex Skill now matches the generated RC12 runtime. Five current micro-project functional/receipt checks pass, but strict historical governance remains one FAIL and four BLOCKED. The tenth registered RC12 real-Agent smoke failed at Codex CLI 0.160.0 workspace routing before task changes; its sanitized record is `qualification/dev-smoke/rc12.summary.json`. `qualification/lib/contracts.py` remains the canonical authority for frozen identity, live surface verification and finite JSON analysis settings. Locked qualification, empirical qualification, and Stable remain unachieved.
 
-## RC11 evidence and release stages
+## RC12 evidence and release stages
 
 | Stage | Current state | Evidence / limit |
 |---|---|---|
-| Field-tested | **Observed** | TRAE racing-game pilot: A0 and A2 each passed 10/10 mechanical checks. One Agent family/scenario; comparable token/time/tool-call data were not retained. Five current micro-project functions passed, but historical governance acceptance remains 1 FAIL + 4 BLOCKED. |
-| Formal dev-smoke | **FAIL** | Seventh registered A2 attempt: registration, schema, artifact retention, and pre-inference development-evidence rejection passed. Codex CLI returned `turn.failed` after workspace-routing discovery errors; task unchanged, zero tool calls, no completion report, no token usage. See `qualification/dev-smoke/rc11.summary.json`. |
+| Field-tested | **Observed** | TRAE racing-game pilot: A0 and A2 each passed 10/10 mechanical checks. One Agent family/scenario; comparable token/time/tool-call data were not retained. RC12 current functional and receipt checks pass 5/5 projects, and 35 negative receipt fixtures are rejected; these are not causal qualification or historical backfill. |
+| Formal dev-smoke | **FAIL** | Tenth registered A2 attempt on the final RC12 fingerprint: registration, schema, artifact retention, and pre-inference development-evidence rejection passed. Codex CLI 0.160.0 returned `turn.failed` after workspace-routing discovery errors; task unchanged, zero tool calls, no completion report, no token usage. See `qualification/dev-smoke/rc12.summary.json`. |
 | Locked qualification | **NOT RUN** | No reachable Docker engine or installed WSL Linux distribution on this host; no demonstrated 3-family adapter matrix with externally verified isolation attestations. |
 | Empirical qualification | **NOT ACHIEVED** | No locked result round admitted; no causal efficacy, handoff, efficiency, or subgroup claim. |
 | Stable | **NOT ACHIEVED** | Release gates remain unchanged and unmet. |
 
-The smoke runner was corrected to measure task changes after skill/report setup and to require the analyzer's explicit pre-inference rejection note. A diagnostic scratch-project run separately confirmed this host's nested Codex shell calls are blocked by policy; bypassing that policy was intentionally not used.
+The smoke runner measures task changes after Skill/report setup and requires the analyzer's explicit pre-inference rejection note. Updating the CLI from 0.151.0 to 0.160.0 did not resolve host workspace-routing discovery. No host policy was bypassed. The current functional recheck aggregate is `qualification/rc12-current-acceptance.summary.json`; detailed private logs remain operator-local.
 
 ## RC9 contract-integration checkpoint (historical)
 
@@ -24,7 +24,7 @@ Local engineering evidence: 69/69 tests, including changed settings, empty-evide
 
 ## Structure and bounded universal scope
 
-Maintained-project/model/host-agnostic Skill; canonical semantics in `governance-src/`, deterministic compiler, generated `universal-project-governance/`, repository-only qualification. Bounds remain 16 policies, 8 Hot Path invariants, 102 Skill lines and at most two persistent owned project files. Unknown optional profiles fall back to universal rules. Existing Git/project truth supplies history; no parallel chronology database or additional profiles. Installed Codex runtime equals the generated candidate. Deterministic RC11 package SHA-256: `8c857683a545db5c396b9366038dd0ac4741856dc9257430eafaf01d35332a4f`.
+Maintained-project/model/host-agnostic Skill; canonical semantics in `governance-src/`, deterministic compiler, generated `universal-project-governance/`, repository-only qualification. Bounds remain 16 policies, 8 Hot Path invariants, 102 Skill lines and at most two persistent owned project files. Unknown optional profiles fall back to universal rules. Existing Git/project truth supplies history; no parallel chronology database or additional profiles. Installed Codex runtime equals the generated RC12 candidate. Two independent RC12 package builds matched SHA-256 `c65c0afa8cf16d73e349d8d2311b2c4dae614bb594c24205dcf3808029710125`; the package and checksum are present in local `dist/`.
 
 ## Previous changes and causal continuity
 
