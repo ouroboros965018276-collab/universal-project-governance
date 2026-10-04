@@ -1,5 +1,38 @@
 # Changelog
 
+## 3.0.0-rc.12 — 2026-10-04
+
+Qualification Evidence Refresh. Runtime governance semantics and qualification thresholds are unchanged from RC11.
+
+- Refreshes five current micro-project functional checks and receipt verification under the installed RC12 Skill: 5/5 functional, 5/5 receipts, and 35/35 negative receipt cases rejected. Historical results remain one FAIL and four BLOCKED; no source, project report ledger, or historical record was backfilled.
+- Executes the eleventh registered formal RC12 development smoke on the final frozen fingerprint with Codex CLI 0.160.0. Registration, schema, artifact verification, and pre-inference release rejection pass; real-Agent execution still fails at host workspace-routing discovery before task changes. See [`qualification/dev-smoke/rc12.summary.json`](qualification/dev-smoke/rc12.summary.json).
+- Produces two byte-identical RC12 runtime packages (SHA-256 `c65c0afa8cf16d73e349d8d2311b2c4dae614bb594c24205dcf3808029710125`); the local Codex Skill installation passes the same generated integrity manifest.
+- Makes the hosted Skills CLI lifecycle job explicitly opt into field reporting before it exercises ledger export/removal, matching RC11's new-install default while retaining direct coverage of the opt-in path.
+- Makes the top-level installer decode Skills CLI output as UTF-8 with replacement for malformed bytes, preventing Windows GBK locales from aborting on Unicode CLI output; adds a byte-level regression test.
+- Locked qualification remains NOT RUN; empirical qualification and Stable remain NOT ACHIEVED. This candidate does not promote development or functional evidence into release evidence.
+
+## 3.0.0-rc.11 — 2026-10-04
+
+- Makes field-test reporting explicitly opt-in for new project bindings, preserves existing enabled state and report history, and adds a top-level installer flag.
+- Refuses to purge a ledger path when reporting is disabled and the binding does not own it, preventing accidental deletion of coincidentally named project data.
+- Refuses to remove an opted-in project while its field-report ledger is non-empty; export and verified purge are required first.
+- Makes planner output read the actual project binding; ordinary governance-note level no longer implies a field-report obligation.
+- Adds a registered development-smoke path with real adapter identity, retained artifacts, A2 report integration, and a check that the release analyzer rejects development evidence before inference.
+- Moves Skill installation and A2 report opt-in before the measured task baseline, fixing setup files being falsely counted as Agent overreach; applies explicit A2 opt-in to handoff trials too.
+- Records the seventh registered RC11 dev-smoke as FAIL: the real Codex CLI turn failed at workspace routing before task changes; schema, artifact, and analyzer-boundary checks passed. See [`qualification/dev-smoke/rc11.summary.json`](qualification/dev-smoke/rc11.summary.json).
+- Binds declared adapter helper-script bytes into runtime identity and adds a Codex CLI development adapter using the host project Skill discovery path.
+- Adds a five-minute README quickstart, a concrete illustrative behavior comparison, and explicit limits on pilot, cost, domain, qualification, and Stable claims.
+- Locked qualification gates remain unchanged; RC11 is not empirically qualified or Stable.
+
+## 3.0.0-rc.10 — 2026-10-04
+
+Pilot Evidence and Usability Hardening.
+
+- Absorbs the owner-authorized top-down racing diagnostic pilot as a desensitized repository summary. Both A0 no-skill and A2 full-UPG arms passed the same 10/10 mechanical acceptance suite; this remains diagnostic field evidence only, not formal dev-smoke, locked qualification, empirical qualification, or Stable evidence.
+- Closes the pilot feedback loop by making task-context risk dimensions schema-closed over the canonical risk model and by returning a clearer planner error for unknown keys such as legacy aliases.
+- Separates ordinary plan report level from the field-test completion-report obligation in generated governance plans. `report: none` no longer looks like permission to skip the exactly-one field report while field-test reporting is enabled.
+- Updates public evidence language to distinguish field-tested, formal dev-smoke validated, empirically qualified, and Stable states without weakening RC9/RC10 locked qualification gates.
+
 ## 3.0.0-rc.9 — 2026-10-03
 
 Evidence and Continuity Hardening. RC8 baseline: `2127d022d3bb0db636324b0355ef307993486371`.

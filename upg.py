@@ -22,6 +22,8 @@ def run(command, cwd):
         command,
         cwd=str(cwd),
         text=True,
+        encoding="utf-8",
+        errors="replace",
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         check=False,
@@ -42,7 +44,7 @@ def project_tool(skill_dir, project, *args):
     command = [sys.executable, str(skill_dir / "scripts/project_tool.py"), *args, str(Path(project).resolve())]
     return run(command, project)
 
-def install(project, agent, source):
+def install(project, agent, source, field_test_reporting=False):
     project = Path(project).resolve()
     project.mkdir(parents=True, exist_ok=True)
     if shutil.which("npx") is None:
@@ -65,7 +67,10 @@ def install(project, agent, source):
         )
         if integrity.returncode != 0:
             raise RuntimeError("installed Skill integrity failed: " + integrity.stderr[-2000:])
-        bound = project_tool(skill_dir, project, "install")
+        bind_args = ["install"]
+        if field_test_reporting:
+            bind_args.append("--field-test-reporting")
+        bound = project_tool(skill_dir, project, *bind_args)
         if bound.returncode != 0:
             raise RuntimeError("project binding install failed: " + bound.stderr[-2000:])
     except RuntimeError as exc:
@@ -135,6 +140,11 @@ def main():
     install_p.add_argument("--project", default=".")
     install_p.add_argument("--agent", default="codex")
     install_p.add_argument("--source", default=str(ROOT))
+    install_p.add_argument(
+        "--field-test-reporting",
+        action="store_true",
+        help="opt this project into one bounded report per completed modifying workflow",
+    )
     remove_p = sub.add_parser("remove")
     remove_p.add_argument("--project", default=".")
     remove_p.add_argument("--agent", default="codex")
@@ -150,7 +160,12 @@ def main():
     args = parser.parse_args()
     try:
         if args.cmd == "install":
-            return install(args.project, args.agent, args.source)
+            return install(
+                args.project,
+                args.agent,
+                args.source,
+                args.field_test_reporting,
+            )
         if args.cmd == "remove":
             return remove(args.project, args.agent, args.yes)
         if args.cmd == "status":

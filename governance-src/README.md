@@ -2,7 +2,7 @@
 
 `governance-src/` is the only editable source of distributed governance semantics.
 
-## RC7 responsibilities
+## Canonical responsibilities
 
 The canonical model defines:
 
@@ -10,7 +10,7 @@ The canonical model defines:
 - risk-adaptive planning;
 - task-bounded structural integration;
 - the two-file project binding;
-- temporary RC7 field-test reporting;
+- opt-in temporary field-test reporting;
 - runtime complexity budgets.
 
 Runtime helpers and schemas are compiled from this directory.
@@ -21,9 +21,9 @@ Structural work changes the smallest responsible canonical layer. It must not re
 
 ## Project binding
 
-RC7 uses exactly two managed project paths. Field reports use one bounded rolling ledger instead of per-task files.
+Project bindings manage at most two paths. New projects default to only `.governance/upg.json`; opting into field-test reporting adds one bounded rolling ledger instead of per-task files. Existing opted-in ledgers are preserved during adoption and upgrades.
 
-The reporting switch is canonical so the capability can be intentionally retained or structurally removed before Stable.
+The default and per-project switch are canonical. Qualification A2 runners explicitly opt into reporting; ordinary projects are not forced to collect research data.
 
 ## Change safety
 

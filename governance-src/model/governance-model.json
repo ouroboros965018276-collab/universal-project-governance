@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "name": "universal-project-governance",
-  "version": "3.0.0-rc.9",
+  "version": "3.0.0-rc.12",
   "architecture": "compiled-governance",
   "principles": [
     "ONE_SEMANTIC_RULE_ONE_CANONICAL_DEFINITION",
@@ -821,7 +821,7 @@
     "schema_version": 2,
     "binding_file": ".governance/upg.json",
     "field_report_file": ".governance/field-reports.json",
-    "field_test_reporting": true,
+    "field_test_reporting": false,
     "max_reports": 200,
     "managed_files_max": 2,
     "adoption_mode": "in-place",

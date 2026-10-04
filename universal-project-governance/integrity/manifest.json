@@ -3,22 +3,22 @@
   "files": {
     "INTEGRITY.md": "01e1e3eb772940fe8259b0cb125cd7712858c6f50d4f2fdcada420aa73d29ab5",
     "LICENSE": "50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a",
-    "SKILL.md": "7a19b7fa35de5c3eeacc5b817c4b0d088505a357805670d899fa28dbdfbb74f7",
-    "VERSION.md": "bd5bd5d77f6fc9ecf25748d6da3bf9a3885026e7bc699905cdb212d2b144d08c",
-    "policy-index.json": "ce76ca3068ebe2cfce8ec5ab3915056bfe743b9c26bb95cee2e71bff9c683b1e",
+    "SKILL.md": "4b2360e8f5827c68cb612d193185de44770ae92c9fb2667b8361586b55d7e0d2",
+    "VERSION.md": "0d789e2ec861e17d5752812b518559f7d3b139487b503ce1cecef5f626f9aad2",
+    "policy-index.json": "73241ddadaa165e38f8bd3efc12fefad7f62f1e930a42d0abdfa7ff300216896",
     "schemas/audit.schema.json": "a5e15c26eff86e3c4e2e174fb121ef22981628307f09cf18d09a589e738ea889",
     "schemas/execution.schema.json": "302d3e9e0a561b9d80e4fbea8dc053546160c7afa251c02b44e159c563979fed",
     "schemas/feedback.schema.json": "22da61a114a1e89ee641ac25e90e23d6231003351df15918d4265f9900091954",
     "schemas/field-report.schema.json": "e46349bcc8a659afa3368dfda143115f255e162574894770e9d41f87b456d93f",
-    "schemas/governance-plan.schema.json": "bab369769af52497c10a9cf02c0a7df4483a11452db4c6af1a98dfdb542f373d",
+    "schemas/governance-plan.schema.json": "82c26facfe5b53c5e418ac5309a9aefb678ac4ef9b9551f533304e3a613a5ffc",
     "schemas/handoff.schema.json": "9a2fb25fe32f11e1e2dc3d21ffa5c0fda5d3e5b87a2ad5010ac2b281ca604d48",
-    "schemas/task-context.schema.json": "2bca73ed899e836ba3f0a953382c13bf282044b4f6268016b57a877539f39082",
-    "scripts/plan_governance.py": "7f3150480fed91cc2374acb8112c0e8c20e65946526acfa12dc728762d4e6e6e",
-    "scripts/project_tool.py": "a486d4ec7795c9b2aac9d2638ac044ea78e71360b4bd7584331efd48349080ae",
+    "schemas/task-context.schema.json": "acc323f7d86f8dad5d8694e7fcf566dad6987d077877fbe6dbc819029936ad38",
+    "scripts/plan_governance.py": "cc07e7c1aab00f40f648f682b3847b72aa7eb40b03c3b7b7a3cd99f227e75956",
+    "scripts/project_tool.py": "13250b334a69552db4b005cdaeec72042e284988419c7945abb4148e2e38e9e0",
     "scripts/state_tool.py": "f375f7629a0558a30bf881d4202eae25994fff94a966cd127e06d312823be746",
     "scripts/validate_integrity.py": "cf09558e67b4488db88c5ce9836e9f1cf1c8bae97d6e1444bb9d2d80409157c0"
   },
-  "generated_for_version": "3.0.0-rc.9",
+  "generated_for_version": "3.0.0-rc.12",
   "schema_version": 1,
-  "source_sha256": "3f87ab95567ee8a48d6f82131f60e3baff3881e393ee61c043a9fb645a066943"
+  "source_sha256": "63f8441c3eaea37f23db05a200c1a2f1433edbfee6dd245b594bb321c37c597c"
 }

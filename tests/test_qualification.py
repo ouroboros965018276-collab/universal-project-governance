@@ -1,5 +1,6 @@
 from __future__ import annotations
 import json
+import os
 import pathlib
 import shutil
 import subprocess
@@ -27,6 +28,11 @@ from tools.qualification_freeze import behavioral_fingerprint
 
 PY = sys.executable
 RUNTIME = ROOT / "universal-project-governance"
+
+# The suite must not mutate the tree it validates: without this, importing the generated
+# runtime scripts writes scripts/__pycache__ into release source, which then fails the
+# packaging and mutant-manifest checks of the *next* run.
+os.environ["PYTHONDONTWRITEBYTECODE"] = "1"
 
 def run(*args, cwd=None):
     return subprocess.run(
@@ -97,6 +103,21 @@ class QualificationTests(unittest.TestCase):
         )
         self.assertEqual({item["language"] for item in cases}, {"en", "zh"})
 
+    def test_racing_pilot_summary_is_diagnostic_and_desensitized(self):
+        summary = json.loads(
+            (ROOT / "qualification/pilots/racing-game-pilot.summary.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        self.assertEqual(summary["status"], "diagnostic-field-pilot")
+        self.assertFalse(summary["formal_dev_smoke"])
+        self.assertFalse(summary["locked_qualification"])
+        self.assertFalse(summary["empirical_qualification"])
+        self.assertEqual(summary["arms"]["A0-no-skill"]["acceptance"], "10/10 PASS")
+        self.assertEqual(summary["arms"]["A2-full-upg"]["acceptance"], "10/10 PASS")
+        self.assertEqual(summary["committed_payload"], "desensitized-summary-only")
+        self.assertNotIn("index.html", json.dumps(summary))
+
     def test_scope_contract_detects_unrelated_change(self):
         lab = get_lab(
             ROOT / "qualification/fixtures/dev/behavioral-labs.json",
@@ -161,6 +182,11 @@ class QualificationTests(unittest.TestCase):
 
     def test_mutant_runtime_is_integrity_valid_but_behaviorally_different(self):
         with tempfile.TemporaryDirectory() as td:
+            # The builder manifests every file it copies, so its input must be the canonical
+            # runtime as source. Local interpreter caches are not source, are never committed
+            # and are never packaged, so they are cleared before the build.
+            for cache in sorted(RUNTIME.rglob("__pycache__")):
+                shutil.rmtree(cache, ignore_errors=True)
             output = pathlib.Path(td) / "mutant"
             cp = run(
                 "qualification/mutations/build_mutant_runtime.py",

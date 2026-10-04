@@ -1,6 +1,6 @@
 # Active Design Decisions
 
-Only current RC9 decisions are documented here.
+Only current RC11 decisions are documented here.
 
 ## Continuity is reconstructable, not handoff-dependent
 
@@ -14,7 +14,9 @@ UPG must become effective on a pre-existing maintained project without requiring
 
 Existing artifacts are evidence, not automatically authoritative architecture. Governance applies immediately to the current task while locating existing canonical truth and preserving observed contracts.
 
-Owned RC7 binding state may upgrade to RC9 schema v2 without silently losing a report ledger.
+Owned RC7 binding state upgrades to binding schema v2 without silently losing an existing report ledger.
+
+New bindings default field-test reporting off. Evaluation workspaces opt in explicitly, while adoption and `ensure` preserve existing project settings and evidence.
 
 ## Agent interoperability is capability-negotiated
 
@@ -38,7 +40,7 @@ Task success cannot compensate for scope violation. `local_guard` and `structura
 
 ## Formal effect inference remains hierarchical, with a stronger top-level claim guard
 
-Primary paired effects bootstrap Agent family → scenario → repetition/pair. RC9 requires at least three locked Agent families.
+Primary paired effects bootstrap Agent family → scenario → repetition/pair. Locked qualification requires at least three independent Agent families.
 
 Bootstrap repetition count does not manufacture independent top-level clusters. Cross-family generalization is therefore reported separately from within-family precision and subgroup claims remain deliberately narrow.
 
@@ -54,7 +56,7 @@ While field-test reporting is enabled, one completed modifying workflow must app
 
 ## Field-test reporting is bounded and privacy-conscious
 
-RC9 still owns at most two project files during gray testing. Reports store bounded metadata/evidence summaries, not source contents or private reasoning.
+UPG owns at most two project files when gray reporting is enabled. New ordinary project bindings use only the binding file. Reports store bounded metadata/evidence summaries, not source contents or private reasoning.
 
 Secret-pattern rejection is defense-in-depth for common private keys, tokens, Bearer/JWT-like values, assignment-style credentials, and credential-bearing database URLs. It is not represented as full DLP; export review remains required.
 

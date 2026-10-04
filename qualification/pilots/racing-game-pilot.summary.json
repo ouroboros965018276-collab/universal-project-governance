@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "pilot_id": "racing-game-pilot-2026-10-03",
+  "status": "diagnostic-field-pilot",
+  "formal_dev_smoke": false,
+  "locked_qualification": false,
+  "empirical_qualification": false,
+  "stable_evidence": false,
+  "task": "Build two as-similar-as-possible offline top-down racing games, one no-skill arm and one full-UPG arm, then run the same mechanical acceptance checks.",
+  "arms": {
+    "A0-no-skill": {
+      "agent_family": "Trae",
+      "model_id": "DeepSeek-V4.1-Flash (operator-declared)",
+      "acceptance": "10/10 PASS",
+      "acceptance_observed_at": "2026-10-03T21:19:33Z",
+      "source_retention": "operator-local ignored eval-workspace"
+    },
+    "A2-full-upg": {
+      "agent_family": "Trae",
+      "model_id": "DeepSeek-V4.1-Flash (operator-declared)",
+      "acceptance": "10/10 PASS",
+      "acceptance_observed_at": "2026-10-03T21:19:20Z",
+      "field_report": "present",
+      "source_retention": "operator-local ignored eval-workspace"
+    }
+  },
+  "acceptance_checks": [
+    "no console/page errors",
+    "canvas exists and animation advances",
+    "acceleration changes speed",
+    "steering changes heading",
+    "lap count can advance through checkpoints",
+    "reverse/forward anti-farming probe does not increment a lap",
+    "debug fields and visible HUD numbers exist",
+    "boundary probe stays inside the drivable band",
+    "no external network requests",
+    "single root HTML entry"
+  ],
+  "diagnostic_result": {
+    "task_outcome": "both arms passed the frozen mechanical acceptance suite",
+    "causal_claim": "none; same-family, single-scenario, non-locked pilot evidence cannot establish UPG efficacy",
+    "useful_signal": [
+      "A2 produced a bounded field report with validation, cleanup, scope and feedback metadata.",
+      "A2 feedback exposed two fixable runtime usability defects: late risk-key failure and report-level/report-obligation confusion."
+    ]
+  },
+  "absorbed_improvements": [
+    "task-context risk keys are now closed over canonical risk dimensions",
+    "planner output now separates report level from field-test completion-report obligation"
+  ],
+  "committed_payload": "desensitized-summary-only",
+  "excluded_payload": [
+    "game source bodies",
+    "raw local traces",
+    "private chain-of-thought",
+    "secrets or credentials"
+  ]
+}

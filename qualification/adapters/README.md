@@ -4,7 +4,7 @@ Adapters connect the provider/host-neutral RC9 protocol to real Agents. They are
 
 ## Required behavior
 
-1. **Prepare** — use a fresh isolated workspace and configure only the selected experimental arm.
+1. **Prepare** — use a fresh isolated workspace and configure only the selected experimental arm. Skill installation and A2 reporting opt-in happen before the measured task baseline; setup files are not charged as Agent-authored project changes.
 2. **Run** — execute one fresh-context task under the declared Agent/model/scaffold/tool/budget condition.
 3. **Collect** — return observable outcome metadata, usage, activation/checkpoint events, and evidence references.
 
@@ -23,6 +23,8 @@ Each adapter config declares:
 - tool and budget profiles where applicable.
 
 The runner derives SHA-256 identities for both the canonicalized adapter configuration and the adapter implementation/runtime. These hashes are written into locked trial evidence so a changed command/config/runtime cannot masquerade as the same experimental condition.
+
+Adapters with helper scripts must list their paths in `adapter_runtime_files`; those bytes are included in the runtime identity. The bundled `codex_cli.py` helper installs a validated Skill under the host's project discovery path and invokes `codex exec` with workspace-write sandboxing and without user MCP/config overrides for development smoke. Its local process workspace is not externally attested isolation.
 
 For handoff trials, a separate `--continuation-adapter` may be supplied. Source and receiving identities are both recorded.
 

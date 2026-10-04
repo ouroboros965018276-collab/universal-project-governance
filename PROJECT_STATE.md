@@ -1,10 +1,22 @@
 # Project State
 
-Current candidate: **3.0.0-rc.9 — Evidence and Continuity Hardening**.
+Current candidate: **3.0.0-rc.12 — Qualification Evidence Refresh**.
 
-RC9 repairs the audited evidence and continuity gaps. The latest task-bounded integration makes `qualification/lib/contracts.py` the canonical authority for frozen identity, live surface verification and finite JSON analysis settings. Registration planning, locked execution and evidence admission consume that authority; analysis dispatches the admission gate rather than maintaining a separate configuration rejection path. No formal dev-smoke/locked qualification round has run; bounded host micro-project checks below are separate. Stable remains blocked pending the separate real-agent phase.
+RC12 is an evidence-refresh candidate over RC11: generated runtime semantics, admission rules, and release thresholds are unchanged. The installed Codex Skill now matches the generated RC12 runtime. Five current micro-project functional/receipt checks pass, but strict historical governance remains one FAIL and four BLOCKED. The eleventh registered RC12 real-Agent smoke failed at Codex CLI 0.160.0 workspace routing before task changes; its sanitized record is `qualification/dev-smoke/rc12.summary.json`. `qualification/lib/contracts.py` remains the canonical authority for frozen identity, live surface verification and finite JSON analysis settings. Locked qualification, empirical qualification, and Stable remain unachieved.
 
-## Current change and why
+## RC12 evidence and release stages
+
+| Stage | Current state | Evidence / limit |
+|---|---|---|
+| Field-tested | **Observed** | TRAE racing-game pilot: A0 and A2 each passed 10/10 mechanical checks. One Agent family/scenario; comparable token/time/tool-call data were not retained. RC12 current functional and receipt checks pass 5/5 projects, and 35 negative receipt fixtures are rejected; these are not causal qualification or historical backfill. |
+| Formal dev-smoke | **FAIL** | Eleventh registered A2 attempt on the final RC12 fingerprint: registration, schema, artifact retention, and pre-inference development-evidence rejection passed. Codex CLI 0.160.0 returned `turn.failed` after workspace-routing discovery errors; task unchanged, zero tool calls, no completion report, no token usage. See `qualification/dev-smoke/rc12.summary.json`. |
+| Locked qualification | **NOT RUN** | No reachable Docker engine or installed WSL Linux distribution on this host; no demonstrated 3-family adapter matrix with externally verified isolation attestations. |
+| Empirical qualification | **NOT ACHIEVED** | No locked result round admitted; no causal efficacy, handoff, efficiency, or subgroup claim. |
+| Stable | **NOT ACHIEVED** | Release gates remain unchanged and unmet. |
+
+The smoke runner measures task changes after Skill/report setup and requires the analyzer's explicit pre-inference rejection note. Updating the CLI from 0.151.0 to 0.160.0 did not resolve host workspace-routing discovery. No host policy was bypassed. The current functional recheck aggregate is `qualification/rc12-current-acceptance.summary.json`; detailed private logs remain operator-local.
+
+## RC9 contract-integration checkpoint (historical)
 
 Observation: 2026-10-03T14:03:08.697711Z, local UTC checkpoint; original edit-start unknown. Parent revision: `683b1ff0f85b36e9db38557d893051dcbc29ba50`, Git time `2026-10-03T13:46:36Z`. Before: equivalent freeze checks were repeated across consumers and external configuration rejection lived only in the analyzer. After: a single responsible contract layer supplies the candidate to all three consumers; admission validates settings before considering empty evidence. Reason/source: owner instruction to integrate into the whole structure, final audit evidence, and the existing STRUCTURAL_INTEGRATION invariant. Superseded duplicate checks and analyzer-only rejection are removed; no domain expansion or threshold changes.
 
@@ -12,7 +24,7 @@ Local engineering evidence: 69/69 tests, including changed settings, empty-evide
 
 ## Structure and bounded universal scope
 
-Maintained-project/model/host-agnostic Skill; canonical semantics in `governance-src/`, deterministic compiler, generated `universal-project-governance/`, repository-only qualification. Bounds remain 16 policies, 8 Hot Path invariants, 102 Skill lines and at most two persistent owned project files. Unknown optional profiles fall back to universal rules. Existing Git/project truth supplies history; no parallel chronology database or additional profiles. Installed Codex runtime equals the generated candidate. Package SHA-256 remains `39d91d2f21cc390c08f4d630a64aca48134a4feddd604cc9d718f2a8d3cbf37e`.
+Maintained-project/model/host-agnostic Skill; canonical semantics in `governance-src/`, deterministic compiler, generated `universal-project-governance/`, repository-only qualification. Bounds remain 16 policies, 8 Hot Path invariants, 102 Skill lines and at most two persistent owned project files. Unknown optional profiles fall back to universal rules. Existing Git/project truth supplies history; no parallel chronology database or additional profiles. Installed Codex runtime equals the generated RC12 candidate. Two independent RC12 package builds matched SHA-256 `c65c0afa8cf16d73e349d8d2311b2c4dae614bb594c24205dcf3808029710125`; the package and checksum are present in local `dist/`.
 
 ## Previous changes and causal continuity
 
@@ -31,6 +43,8 @@ RC8 documents stated checkpoints `2026-10-03T19:06:41+08:00` and `2026-10-03T18:
 Synchronization observation: 2026-10-03T17:44:40.802992Z (UTC), parent main `bc0890f41297f6ebc20185c383cdba663ac46b43`; this is an observation, not an invented test/work start. Prior current-truth closeout main passed Run #210: nine jobs including private default-branch installation. This synchronization changes current-state/audit metadata only; the frozen semantics and installed Skill bytes remain unchanged.
 
 The owner-authorized five micro-projects were delivered, locally adjusted, recovered in a fresh task context and actually checked. Current CLI, offline browser, SVG/PNG, pendulum and astronomical-window functions pass. CLI recovery found malformed JSON returned exit1 rather than the documented exit2; the existing argument boundary now rejects it and non-finite timeout values correctly. The external experiment completion helper now requires actual source/runtime/command-log receipts before commit, compares committed bytes before reporting, refuses overwritten completion input, and rejected 35 explicitly marked invalid receipt fixtures. These are project/experiment-tool corrections, not RC9 product semantic expansion.
+
+The owner-authorized top-down racing diagnostic pilot produced two as-similar-as-possible offline games under A0 no-skill and A2 full-UPG arms. Both passed the same mechanical acceptance suite 10/10. This is same-family, single-scenario, non-locked field evidence, not formal dev-smoke or causal qualification. The committed repository record is the desensitized summary `qualification/pilots/racing-game-pilot.summary.json`; source bodies and raw traces remain operator-local ignored evidence. The A2 field report feedback is absorbed by RC10's schema and planner-output changes.
 
 A later, separate development-only reciprocal handoff exercise used two bounded micro-projects. Both directions completed across fresh contexts: one continuation was independently rerun by the originating actor; another initial implementation was resumed at its reserved follow-up, then reconstructed and read-only checked by the receiving actor. The scoped checks passed. A sanitized, date-ordered audit is in [the reciprocal handoff audit](audits/rc9-reciprocal-handoff.audit.md); underlying project files, samples, local paths, actor/provider details, and raw evidence remain outside this repository. This is a bounded workflow exercise, not formal dev-smoke, locked qualification, model-family independence evidence, or a Stable gate.
 

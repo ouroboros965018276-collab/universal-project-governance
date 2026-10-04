@@ -71,8 +71,8 @@ def main():
         binding = index.get("project_binding", {})
         if binding.get("managed_files_max") != 2:
             errors.append("compiled runtime managed project file budget mismatch")
-        if binding.get("field_test_reporting") is not True:
-            errors.append("compiled runtime field-test reporting not enabled")
+        if binding.get("field_test_reporting") is not False:
+            errors.append("compiled runtime must default to opt-in field-test reporting")
         if binding.get("schema_version") != 2:
             errors.append("compiled runtime RC9 binding schema mismatch")
         if binding.get("adoption_mode") != "in-place":

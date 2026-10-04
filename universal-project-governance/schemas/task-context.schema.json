@@ -68,12 +68,58 @@
     "explicit_audit": {
       "type": "boolean"
     },
+    "field_test_reporting": {
+      "type": "boolean"
+    },
     "risk": {
       "type": "object",
-      "additionalProperties": {
-        "type": "integer",
-        "minimum": 0,
-        "maximum": 2
+      "additionalProperties": false,
+      "properties": {
+        "scope": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2
+        },
+        "reversibility": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2
+        },
+        "security": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2
+        },
+        "data": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2
+        },
+        "external_consumers": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2
+        },
+        "migration": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2
+        },
+        "contract_change": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2
+        },
+        "unknowns": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2
+        },
+        "handoff": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2
+        }
       }
     },
     "project_type": {

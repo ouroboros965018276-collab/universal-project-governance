@@ -116,8 +116,8 @@ def main():
         errors.append("G029 agent interoperability must use capability handshake")
     if int(model.get("complexity_budget", {}).get("managed_project_files_max", 0)) != 2:
         errors.append("G023 complexity budget managed_project_files_max must be 2")
-    if binding.get("field_test_reporting") is not True:
-        errors.append("G024 RC8 test freeze requires field_test_reporting=true")
+    if binding.get("field_test_reporting") is not False:
+        errors.append("G024 fresh project bindings must default to field_test_reporting=false")
     if int(binding.get("max_reports", 0)) <= 0:
         errors.append("G025 field report ledger must have a positive finite cap")
 

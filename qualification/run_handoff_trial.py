@@ -19,6 +19,7 @@ from qualification.lib.core import (
     snapshot,
     project_integration_status,
 )
+from qualification.lib.deployment import prepare_a2_reporting
 
 def add_usage(first, second):
     keys = set(first) | set(second)
@@ -76,16 +77,22 @@ def main():
 
     with tempfile.TemporaryDirectory(prefix="upg-handoff-") as td:
         workspace = pathlib.Path(td) / "workspace"
-        before = materialize_lab(lab, workspace)
+        materialize_lab(lab, workspace)
+        skill_path = ROOT / "universal-project-governance"
+        prepare_a2_reporting(workspace, skill_path)
+        adapter.prepare_skill(workspace, lab["task"], "", skill_path, lab["checkpoint"], "agent-a")
+        continuation.prepare_skill(workspace, lab["continuation_task"], "", skill_path, phase="agent-b")
+        before = snapshot(workspace)
 
         first = adapter.run_checkpointed(
             workspace,
             lab["task"],
             "",
             lab["checkpoint"],
-            skill_path=ROOT / "universal-project-governance",
+            skill_path=skill_path,
             raw_dir=args.raw_dir,
             phase="agent-a",
+            skill_prepared=True,
         )
         if not first["events"].get("checkpoint_reached"):
             print(
@@ -112,9 +119,10 @@ def main():
             workspace,
             lab["continuation_task"],
             "",
-            skill_path=ROOT / "universal-project-governance",
+            skill_path=skill_path,
             raw_dir=args.raw_dir,
             phase="agent-b",
+            skill_prepared=True,
         )
 
         grade = grade_lab(lab, workspace, before)
