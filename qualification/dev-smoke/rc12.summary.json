@@ -1,14 +1,14 @@
 {
   "schema_version": 1,
   "record_type": "formal-development-smoke",
-  "smoke_id": "dev-smoke-d56b2a6f8d854aff89f3a668e22767f2",
-  "trial_id": "9a04a66b-359b-5b64-b5ea-dc80eb45baeb",
-  "observed_at": "2026-10-04T13:45:11Z",
+  "smoke_id": "dev-smoke-23d3813a87ef4582b6be24cacc21292d",
+  "trial_id": "511d0d23-6d4a-5c11-bbc0-e08bf9a2d8ef",
+  "observed_at": "2026-10-04T14:12:19Z",
   "observation_time_source": "Codex tool UTC clock; observation time, not asserted as execution completion time",
   "candidate_version": "3.0.0-rc.12",
   "status": "FAIL",
   "release_eligible": false,
-  "qualification_fingerprint": "sha256:5b484ded6023e8953991a8f1a1f2b6f08c046ee362e836677415c8e2bae5a031",
+  "qualification_fingerprint": "sha256:8fcddea5ef3e31ec69b95652c9689eff50cc18421c1578407b74e4c42129ef33",
   "behavioral_fingerprint": "sha256:25a744dac1e808810e3df6395587da39633e21bbbea8f508567c1d2ab0fa3a08",
   "agent": {
     "family": "codex",
@@ -28,14 +28,15 @@
   "workspace_isolation": "process",
   "externally_attested_isolation": false,
   "execution_timeout_seconds": 900,
-  "attempt_count": 10,
+  "attempt_count": 11,
   "prior_attempts": [
     "Attempt 1 exposed a development-versus-locked trial-schema mismatch; development schema support was added while locked admission stayed fail-closed.",
     "Attempts 2-3 timed out or returned nonzero without structured task output, prompting adapter diagnostics.",
     "Attempts 4-7 repeatedly failed at Codex CLI workspace-routing discovery; the task workspace remained unchanged.",
     "Attempt 8 ran the same registered smoke on Codex CLI 0.160.0 against RC11 and reproduced workspace-routing discovery failure.",
     "Attempt 9 ran against an earlier RC12 qualification fingerprint on Codex CLI 0.160.0 and reproduced the same failure.",
-    "Attempt 10 ran against the final RC12 fingerprint on Codex CLI 0.160.0 and reproduced the same failure before task changes."
+    "Attempt 10 ran against the prior RC12 fingerprint on Codex CLI 0.160.0 and reproduced the same failure before task changes.",
+    "Attempt 11 ran against the final RC12 fingerprint on Codex CLI 0.160.0; registration, schema, artifact retention, and pre-inference release rejection passed, but host workspace-routing discovery failed before task changes."
   ],
   "checks": {
     "registered_before_execution": true,
@@ -58,7 +59,7 @@
       "turn.failed": 1,
       "turn.started": 1
     },
-    "observed_wall_time_seconds": 14.11
+    "observed_wall_time_seconds": 13.297
   },
   "usage_measurement": {
     "token_counts_observed": false,

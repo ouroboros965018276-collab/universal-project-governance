@@ -35,6 +35,15 @@ def run(*args, cwd=None):
     )
 
 class CompiledRuntimeTests(unittest.TestCase):
+    def test_top_level_installer_decodes_utf8_cli_output_on_windows(self):
+        with tempfile.TemporaryDirectory() as td:
+            cp = UPG.run(
+                [PY, "-c", "import sys; sys.stdout.buffer.write(bytes.fromhex('e29c93'))"],
+                pathlib.Path(td),
+            )
+            self.assertEqual(cp.returncode, 0, cp.stderr)
+            self.assertEqual(cp.stdout, "✓")
+
     def test_top_level_installer_forwards_explicit_reporting_opt_in(self):
         with tempfile.TemporaryDirectory() as td:
             commands = []

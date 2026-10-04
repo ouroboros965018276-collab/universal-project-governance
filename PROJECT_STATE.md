@@ -2,14 +2,14 @@
 
 Current candidate: **3.0.0-rc.12 — Qualification Evidence Refresh**.
 
-RC12 is an evidence-refresh candidate over RC11: generated runtime semantics, admission rules, and release thresholds are unchanged. The installed Codex Skill now matches the generated RC12 runtime. Five current micro-project functional/receipt checks pass, but strict historical governance remains one FAIL and four BLOCKED. The tenth registered RC12 real-Agent smoke failed at Codex CLI 0.160.0 workspace routing before task changes; its sanitized record is `qualification/dev-smoke/rc12.summary.json`. `qualification/lib/contracts.py` remains the canonical authority for frozen identity, live surface verification and finite JSON analysis settings. Locked qualification, empirical qualification, and Stable remain unachieved.
+RC12 is an evidence-refresh candidate over RC11: generated runtime semantics, admission rules, and release thresholds are unchanged. The installed Codex Skill now matches the generated RC12 runtime. Five current micro-project functional/receipt checks pass, but strict historical governance remains one FAIL and four BLOCKED. The eleventh registered RC12 real-Agent smoke failed at Codex CLI 0.160.0 workspace routing before task changes; its sanitized record is `qualification/dev-smoke/rc12.summary.json`. `qualification/lib/contracts.py` remains the canonical authority for frozen identity, live surface verification and finite JSON analysis settings. Locked qualification, empirical qualification, and Stable remain unachieved.
 
 ## RC12 evidence and release stages
 
 | Stage | Current state | Evidence / limit |
 |---|---|---|
 | Field-tested | **Observed** | TRAE racing-game pilot: A0 and A2 each passed 10/10 mechanical checks. One Agent family/scenario; comparable token/time/tool-call data were not retained. RC12 current functional and receipt checks pass 5/5 projects, and 35 negative receipt fixtures are rejected; these are not causal qualification or historical backfill. |
-| Formal dev-smoke | **FAIL** | Tenth registered A2 attempt on the final RC12 fingerprint: registration, schema, artifact retention, and pre-inference development-evidence rejection passed. Codex CLI 0.160.0 returned `turn.failed` after workspace-routing discovery errors; task unchanged, zero tool calls, no completion report, no token usage. See `qualification/dev-smoke/rc12.summary.json`. |
+| Formal dev-smoke | **FAIL** | Eleventh registered A2 attempt on the final RC12 fingerprint: registration, schema, artifact retention, and pre-inference development-evidence rejection passed. Codex CLI 0.160.0 returned `turn.failed` after workspace-routing discovery errors; task unchanged, zero tool calls, no completion report, no token usage. See `qualification/dev-smoke/rc12.summary.json`. |
 | Locked qualification | **NOT RUN** | No reachable Docker engine or installed WSL Linux distribution on this host; no demonstrated 3-family adapter matrix with externally verified isolation attestations. |
 | Empirical qualification | **NOT ACHIEVED** | No locked result round admitted; no causal efficacy, handoff, efficiency, or subgroup claim. |
 | Stable | **NOT ACHIEVED** | Release gates remain unchanged and unmet. |
