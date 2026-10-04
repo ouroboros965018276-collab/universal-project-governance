@@ -1,5 +1,14 @@
 # Changelog
 
+## 3.0.0-rc.10 — 2026-10-04
+
+Pilot Evidence and Usability Hardening.
+
+- Absorbs the owner-authorized top-down racing diagnostic pilot as a desensitized repository summary. Both A0 no-skill and A2 full-UPG arms passed the same 10/10 mechanical acceptance suite; this remains diagnostic field evidence only, not formal dev-smoke, locked qualification, empirical qualification, or Stable evidence.
+- Closes the pilot feedback loop by making task-context risk dimensions schema-closed over the canonical risk model and by returning a clearer planner error for unknown keys such as legacy aliases.
+- Separates ordinary plan report level from the field-test completion-report obligation in generated governance plans. `report: none` no longer looks like permission to skip the exactly-one field report while field-test reporting is enabled.
+- Updates public evidence language to distinguish field-tested, formal dev-smoke validated, empirically qualified, and Stable states without weakening RC9/RC10 locked qualification gates.
+
 ## 3.0.0-rc.9 — 2026-10-03
 
 Evidence and Continuity Hardening. RC8 baseline: `2127d022d3bb0db636324b0355ef307993486371`.

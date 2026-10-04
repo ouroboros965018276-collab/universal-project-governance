@@ -54,7 +54,12 @@ def validate_context(ctx: dict, index: dict) -> None:
         raise ValueError("domains must be a list of known domain IDs")
     dims = index["risk_model"]["dimensions"]
     for key, value in ctx.get("risk", {}).items():
-        if key not in dims or (not isinstance(value, int) or isinstance(value, bool)) or value < 0 or value > dims[key]["max"]:
+        if key not in dims:
+            raise ValueError(
+                "unknown risk dimension: %s (expected one of: %s)"
+                % (key, ", ".join(sorted(dims)))
+            )
+        if (not isinstance(value, int) or isinstance(value, bool)) or value < 0 or value > dims[key]["max"]:
             raise ValueError("invalid risk dimension/value: %s=%r" % (key, value))
 
 
@@ -161,6 +166,12 @@ def compile_plan(index: dict, ctx: dict) -> dict:
         "required_closures": closures,
         "evidence": evidence,
         "report": report,
+        "field_report_obligation": (
+            "required-before-completion"
+            if index.get("project_binding", {}).get("field_test_reporting") is True
+            else "not-required"
+        ),
+        "field_report_file": index.get("project_binding", {}).get("field_report_file"),
         "handoff": handoff,
         "warnings": warnings,
     }
@@ -174,6 +185,7 @@ def render_markdown(plan: dict) -> str:
         "- **Change mode:** %s" % plan["change_mode"],
         "- **Scope guard:** %s" % plan["scope_guard"],
         "- **Report:** %s" % plan["report"],
+        "- **Field report:** %s" % plan["field_report_obligation"],
         "- **Handoff:** %s" % plan["handoff"],
         "",
         "## Active rules",

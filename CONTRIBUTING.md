@@ -1,6 +1,6 @@
 # Contributing
 
-Current candidate: **3.0.0-rc.9 — Evidence and Continuity Hardening**. Real-Agent execution belongs to the next phase.
+Current candidate: **3.0.0-rc.10 — Pilot Evidence and Usability Hardening**. Formal dev-smoke and locked qualification belong to the next phase.
 
 ## Structural contribution rule
 

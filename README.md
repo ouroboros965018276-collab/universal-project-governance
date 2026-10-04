@@ -1,10 +1,19 @@
 # 通用项目治理 | Universal Project Governance
 
-Current candidate: **3.0.0-rc.9 — Evidence and Continuity Hardening**
+Current candidate: **3.0.0-rc.10 — Pilot Evidence and Usability Hardening**
 
 Universal Project Governance is a model-agnostic, host-agnostic Agent Skill for maintained-project governance across software, data, infrastructure, research, content, product/specification, operations, design systems, automation, ML/AI, documentation, and mixed projects.
 
-RC9 preserves RC8's bounded architecture, in-place adoption and capability-based interoperability. It repairs evidence admission, portable freeze identity, invalid fixtures, critical-failure counting, chronology grading and workflow reporting. It introduces no new domain profiles or policy expansion.
+RC10 preserves RC9's bounded architecture, in-place adoption and capability-based interoperability. It absorbs a desensitized diagnostic racing-game pilot, closes the risk-key/report-obligation usability issues found there, and keeps formal qualification gates unchanged. It introduces no new domain profiles or policy expansion.
+
+## What changes when installed
+
+Without UPG, an Agent can still complete a task, but cleanup, current-truth updates, validation evidence, scope discipline and handoff recovery depend on the Agent remembering to do them. With UPG active on a maintained-project change, the Agent first observes available capabilities, chooses local or structural mode, keeps work inside the smallest responsible layer, removes replaced residue when safe, validates affected behavior, and records explicit unknowns instead of inventing history.
+
+The generated plan now separates two concepts that were easy to confuse during field testing:
+
+- `report` is the ordinary governance note level for the task.
+- `field_report_obligation` says whether the temporary field-test ledger still requires exactly one completion report before claiming a modifying workflow complete.
 
 ## Architecture
 
@@ -105,8 +114,8 @@ Release gates remain non-compensatory for coverage, deployment, evaluator/contro
 
 ## Current evidence status
 
-RC9 is an engineering candidate being sealed for real-Agent and gray testing. Engineering validation does not itself prove causal benefit.
+RC10 is field-tested and engineering-validated, but not empirically qualified. Current local evidence includes real Agent field runs, current-version functional checks, and a diagnostic A0/A2 racing-game pilot where both arms passed the same 10/10 acceptance suite. That pilot produced useful feedback and no causal efficacy claim.
 
-Stable remains blocked until immutable locked real-Agent evidence passes the final RC9 machine-frozen identity and protocol.
+Formal dev-smoke, locked qualification, empirical qualification, and Stable remain blocked until immutable locked real-Agent evidence passes the current machine-frozen identity and protocol.
 
 License: Apache-2.0.

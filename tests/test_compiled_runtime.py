@@ -100,6 +100,7 @@ class CompiledRuntimeTests(unittest.TestCase):
                 for key in ("risk_level", "change_mode", "scope_guard", "report", "handoff"):
                     if key in expected:
                         self.assertEqual(plan[key], expected[key])
+                self.assertEqual(plan["field_report_obligation"], "required-before-completion")
                 for rule_id in expected.get("contains", []):
                     self.assertIn(rule_id, plan["active_rules"])
                 if "max_rules" in expected:
@@ -137,6 +138,45 @@ class CompiledRuntimeTests(unittest.TestCase):
             self.assertEqual(plan["change_mode"], "structural")
             self.assertEqual(plan["scope_guard"], "task-bounded-responsible-layer")
             self.assertIn("STRUCTURAL_INTEGRATION", plan["active_rules"])
+
+    def test_unknown_risk_dimension_fails_with_allowed_dimensions(self):
+        with tempfile.TemporaryDirectory() as td:
+            ctx = pathlib.Path(td) / "context.json"
+            ctx.write_text(
+                json.dumps({
+                    "operation": "edit",
+                    "domains": ["code"],
+                    "risk": {"data_impact": 1},
+                }),
+                encoding="utf-8",
+            )
+            cp = subprocess.run(
+                [
+                    PY,
+                    str(RUNTIME / "scripts/plan_governance.py"),
+                    "--context",
+                    str(ctx),
+                    "--json",
+                ],
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False,
+            )
+            self.assertEqual(cp.returncode, 2)
+            self.assertIn("unknown risk dimension: data_impact", cp.stderr)
+            self.assertIn("external_consumers", cp.stderr)
+
+    def test_task_context_schema_risk_dimensions_match_model(self):
+        schema = json.loads(
+            (RUNTIME / "schemas/task-context.schema.json").read_text(encoding="utf-8")
+        )
+        index = json.loads((RUNTIME / "policy-index.json").read_text(encoding="utf-8"))
+        self.assertEqual(
+            set(schema["properties"]["risk"]["properties"]),
+            set(index["risk_model"]["dimensions"]),
+        )
+        self.assertFalse(schema["properties"]["risk"]["additionalProperties"])
 
     def test_project_binding_report_export_and_safe_remove(self):
         with tempfile.TemporaryDirectory() as td:

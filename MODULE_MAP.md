@@ -1,6 +1,6 @@
 # Module Map
 
-Current candidate: **3.0.0-rc.9**.
+Current candidate: **3.0.0-rc.10**.
 
 This map describes the current tree only. Historical implementations belong in Git history.
 
@@ -26,7 +26,7 @@ This map describes the current tree only. Historical implementations belong in G
 
 Source for generated deterministic helpers:
 
-- `plan_governance.py` — compiles typed task context into the smallest active rule closure, risk, change mode, scope guard, evidence, report, and handoff obligations.
+- `plan_governance.py` — compiles typed task context into the smallest active rule closure, risk, change mode, scope guard, evidence, report level, field-report obligation, and handoff obligations.
 - `project_tool.py` — owns bounded binding v2 lifecycle, non-destructive legacy adoption, RC7→RC9 owned-binding upgrade, status/report/export/purge/remove, and field-report secret hygiene.
 - `state_tool.py` — validates/renders/compacts/exports schema-first governance state.
 - `validate_integrity.py` — checks generated Skill integrity.
@@ -89,6 +89,10 @@ Known-bad policy variants used to prove evaluator sensitivity.
 ### results/
 
 Absent until real execution. Completed locked rounds are immutable.
+
+### pilots/
+
+Desensitized diagnostic field-pilot summaries. These records may explain what was learned and what was absorbed, but they are not locked qualification results and do not contain source bodies or raw traces.
 
 ## tests/
 

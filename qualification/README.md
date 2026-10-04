@@ -1,6 +1,6 @@
 # Qualification Plane
 
-Purpose: establish whether the frozen RC9 Skill causally improves maintained-project outcomes enough to justify its behavioral and operational cost.
+Purpose: establish whether the frozen current Skill causally improves maintained-project outcomes enough to justify its behavioral and operational cost.
 
 This directory is repository-only and never ships as Agent runtime.
 
@@ -82,6 +82,6 @@ Before/after text snapshots and execution metadata are saved outside the Agent w
 
 The default round builder registers same-family source/receiver handoffs. A separately reviewed manifest can register cross-family source/receiver identities; do not describe the default plan as evidence for every cross-family pairing. Report absolute success for both present and ablated handoff conditions as well as their difference. The locked task matrix presently represents software/data tasks, so trigger breadth and universal runtime design do not establish causal benefit in research, content or other unmeasured domains. Three family clusters and trial-level zero-event bounds require cautious interpretation of independence.
 
-No RC9 real-Agent round has run. This release phase contains engineering regression and installation acceptance only.
+No locked RC10 real-Agent round has run. Diagnostic field pilots may be summarized under `qualification/pilots/`, but they are not `results/qN/` evidence and cannot promote Stable.
 
 `lib/contracts.py` is the shared authority for the frozen identity, live surface verification and finite JSON settings. Round planning and locked execution resolve this same candidate; evidence admission compares supplied protocol and thresholds against it before admitting even an empty evidence set. The analyzer consumes the admission gate without a separate configuration rejection path. A copied identical configuration is accepted; changed settings, including relaxed gates or bootstrap counts, fail before inference. Engine unit tests explicitly mock this configuration boundary to keep synthetic bootstrap tests short and separately test rejection at the real entry point. This testing mock is absent from production CLI behavior.

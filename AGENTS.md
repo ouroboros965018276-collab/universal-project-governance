@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Current candidate: **3.0.0-rc.9 — Evidence and Continuity Hardening**.
+Current candidate: **3.0.0-rc.10 — Pilot Evidence and Usability Hardening**.
 
 ## First modifying activation
 

@@ -1,6 +1,6 @@
 # Publishing and Test-Freeze Gates
 
-Current candidate: **3.0.0-rc.9**
+Current candidate: **3.0.0-rc.10**
 
 ## Engineering gate before real-Agent testing
 
@@ -45,7 +45,7 @@ Primary CIs use preregistered hierarchical bootstrap over Agent family → scena
 
 Subgroup CI evidence is reported directly. Generalization PASS means the preregistered severe-reversal criterion is established; it does not silently imply significant benefit in every subgroup.
 
-## RC9 field-test evidence
+## Field-test evidence
 
 Personal and friend gray testing may export `upg-field-test-reports.json`. These reports are diagnostic field evidence, not substitutes for locked qualification.
 
@@ -53,4 +53,4 @@ Before Stable, the report capability receives an explicit retain/remove decision
 
 ## Freeze rule
 
-After `qualification/FREEZE.json` is regenerated for RC9, no frozen surface changes during a result round. Any such change invalidates the round and requires a new fingerprint.
+After `qualification/FREEZE.json` is regenerated for the current candidate, no frozen surface changes during a result round. Any such change invalidates the round and requires a new fingerprint.

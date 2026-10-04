@@ -1,6 +1,6 @@
 # Active Design Decisions
 
-Only current RC9 decisions are documented here.
+Only current RC10 decisions are documented here.
 
 ## Continuity is reconstructable, not handoff-dependent
 
