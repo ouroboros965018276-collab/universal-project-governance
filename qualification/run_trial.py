@@ -11,7 +11,8 @@ sys.path.insert(0, str(ROOT))
 
 from qualification.adapters.command_adapter import CommandAdapter
 from qualification.lib.execution import registration, persist_evidence, now
-from qualification.lib.core import get_lab, grade_lab, materialize_lab, project_integration_status
+from qualification.lib.core import get_lab, grade_lab, materialize_lab, project_integration_status, snapshot
+from qualification.lib.deployment import prepare_a2_reporting
 
 def arm_condition(arm):
     if arm == "A0":
@@ -96,13 +97,20 @@ def main():
 
     with tempfile.TemporaryDirectory(prefix="upg-trial-") as td:
         workspace = pathlib.Path(td) / "workspace"
-        before = materialize_lab(lab, workspace)
+        materialize_lab(lab, workspace)
+        deployment_required = args.arm == "A2" and args.kind == "behavioral"
+        if deployment_required:
+            prepare_a2_reporting(workspace, skill_path)
+        if args.arm == "A2":
+            adapter.prepare_skill(workspace, lab["task"], arm_condition(args.arm), skill_path)
+        before = snapshot(workspace)
         result = adapter.run(
             workspace,
             lab["task"],
             arm_condition(args.arm),
             skill_path=skill_path if args.arm == "A2" else None,
             raw_dir=args.raw_dir,
+            skill_prepared=args.arm == "A2",
         )
         grade = grade_lab(lab, workspace, before)
         external = [
@@ -112,7 +120,6 @@ def main():
         ]
         critical = sorted(set(grade["critical_failures"] + external))
         integration = project_integration_status(workspace, freeze.get("version"))
-        deployment_required = args.arm == "A2" and args.kind == "behavioral"
         governance_ok = grade["governance_defect_free"]
         if deployment_required and not (integration["binding_ok"] and integration["field_report_recorded"]):
             governance_ok = False

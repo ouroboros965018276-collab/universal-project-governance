@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "record_type": "formal-development-smoke",
+  "smoke_id": "dev-smoke-752fb2f45daf4bff916a93c409a63f4a",
+  "trial_id": "376dfc95-7622-57c2-adf9-c04905821965",
+  "observed_at": "2026-10-04T02:57:02Z",
+  "observation_time_source": "Codex tool UTC clock; observation time, not asserted as execution completion time",
+  "candidate_version": "3.0.0-rc.11",
+  "status": "FAIL",
+  "release_eligible": false,
+  "qualification_fingerprint": "sha256:0a89b53a04e4ee1b1f1046924ffcf3f8d743726f048937c25db9fbf5fb53eaa7",
+  "behavioral_fingerprint": "sha256:25a744dac1e808810e3df6395587da39633e21bbbea8f508567c1d2ab0fa3a08",
+  "agent": {
+    "family": "codex",
+    "model_id": "gpt-5.5",
+    "scaffold_version": "codex-cli-0.151.0"
+  },
+  "host_tool": {
+    "name": "Codex CLI",
+    "version": "codex-cli 0.151.0"
+  },
+  "adapter_identity": {
+    "adapter_config_sha256": "sha256:0dc622878ec4e7240a5d656e37707e2f5856ce7f23ecd779ab04ce4c4f487518",
+    "adapter_runtime_sha256": "sha256:781e65a13a59e415133050e7a8b52daf10996d231cb1ba8fd68e75fbce6d1891"
+  },
+  "registered_trials": 1,
+  "scenario_id": "dev-small-typo",
+  "workspace_isolation": "process",
+  "externally_attested_isolation": false,
+  "execution_timeout_seconds": 900,
+  "attempt_count": 7,
+  "prior_attempts": [
+    "Attempt 1 exposed a development-versus-locked trial-schema mismatch; development schema support was added while locked admission stayed fail-closed.",
+    "Attempt 2 reached registration, schema, artifact, and analyzer checks but the Codex subprocess exceeded 900 seconds.",
+    "Attempt 3 returned nonzero without structured output, prompting adapter diagnostics.",
+    "Attempt 4 exposed workspace-routing discovery failure; attempt 5 reproduced it under the strengthened pre-inference analyzer check.",
+    "Attempt 6 repeated the workspace-routing failure after a runtime safety fix and freeze refresh.",
+    "Attempt 7 reproduced the routing failure under the current freeze; the workspace remained unchanged and no completion report or usage tokens were produced."
+  ],
+  "checks": {
+    "registered_before_execution": true,
+    "real_agent_process_succeeded": false,
+    "trial_schema_valid": true,
+    "artifact_retained_and_verified": true,
+    "task_and_governance_checks_passed": false,
+    "a2_binding_and_single_report_passed": false,
+    "release_analyzer_rejects_dev_evidence_before_inference": true
+  },
+  "failure": {
+    "stage": "real-agent-execution",
+    "reason": "Codex CLI turn failed after repeated workspace-routing discovery errors; the registered task workspace remained unchanged and no A2 completion report was produced",
+    "exit_code": 1,
+    "changed_files": 0,
+    "event_counts": {
+      "error": 10,
+      "item.completed": 1,
+      "thread.started": 1,
+      "turn.failed": 1,
+      "turn.started": 1
+    },
+    "observed_wall_time_seconds": 13.64
+  },
+  "usage_measurement": {
+    "token_counts_observed": false,
+    "input_tokens": null,
+    "output_tokens": null,
+    "total_tokens": null,
+    "tool_calls": 0
+  },
+  "release_analyzer_status": "FAIL",
+  "release_analyzer_rejected_before_inference": true,
+  "release_admission_reasons": [
+    "round randomization contract missing",
+    "development evidence cannot promote release",
+    "locked execution requires enforced sandboxing",
+    "locked execution requires strong workspace isolation",
+    "locked execution requires a valid operator isolation attestation",
+    "unknown locked scenario",
+    "reviewable artifact identity missing or execution failed"
+  ],
+  "privacy": {
+    "raw_agent_output_published": false,
+    "project_source_published": false,
+    "local_paths_published": false,
+    "local_run_artifacts_retained_outside_repository": true
+  }
+}

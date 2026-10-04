@@ -155,7 +155,7 @@ jobs:
         run: |
           set -euo pipefail
           work="$(mktemp -d)"
-          python upg.py install --project "$work" --agent codex --source "$GITHUB_WORKSPACE"
+          python upg.py install --project "$work" --agent codex --field-test-reporting --source "$GITHUB_WORKSPACE"
           test -f "$work/.governance/upg.json"
           test -f "$work/.governance/field-reports.json"
           python upg.py status --project "$work"

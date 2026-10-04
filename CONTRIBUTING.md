@@ -1,6 +1,6 @@
 # Contributing
 
-Current candidate: **3.0.0-rc.9 — Evidence and Continuity Hardening**. Real-Agent execution belongs to the next phase.
+Current candidate: **3.0.0-rc.12 — Qualification Evidence Refresh**. The latest registered RC12 development smoke failed at Codex CLI workspace routing; the sanitized evidence is in `qualification/dev-smoke/rc12.summary.json`. Locked qualification still requires externally enforced isolation and at least three independent Agent families.
 
 ## Structural contribution rule
 
@@ -16,7 +16,7 @@ Do not hand-edit generated runtime.
 
 ## Project lifecycle
 
-Project ownership is limited to the two paths declared in the canonical binding. New persistent per-project files require an explicit architecture decision and complexity-budget change.
+Project ownership is limited to the paths declared in the canonical binding. New projects manage only `.governance/upg.json` by default; opted-in field testing adds the bounded report ledger. New persistent per-project files require an explicit architecture decision and complexity-budget change.
 
 ## Qualification changes
 

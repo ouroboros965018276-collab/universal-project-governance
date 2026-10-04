@@ -1,6 +1,8 @@
 # Publishing and Test-Freeze Gates
 
-Current candidate: **3.0.0-rc.9**
+Current candidate: **3.0.0-rc.12**
+
+RC12 is an evidence-refresh candidate with no runtime semantic or qualification-threshold changes from RC11. Current micro-project functional/receipt checks pass 5/5, but historical governance remains 1 FAIL + 4 BLOCKED. Its registered real-Agent smoke is FAIL; locked qualification is NOT RUN; empirical qualification and Stable are NOT ACHIEVED. See [PROJECT_STATE.md](PROJECT_STATE.md) for the evidence boundary and current host constraints.
 
 ## Engineering gate before real-Agent testing
 
@@ -45,12 +47,12 @@ Primary CIs use preregistered hierarchical bootstrap over Agent family → scena
 
 Subgroup CI evidence is reported directly. Generalization PASS means the preregistered severe-reversal criterion is established; it does not silently imply significant benefit in every subgroup.
 
-## RC9 field-test evidence
+## Field-test evidence
 
 Personal and friend gray testing may export `upg-field-test-reports.json`. These reports are diagnostic field evidence, not substitutes for locked qualification.
 
-Before Stable, the report capability receives an explicit retain/remove decision. The disabled path is already executable: fresh binding creates no ledger and report/export operations are unavailable. Existing non-empty RC7 ledgers must be exported and purged before retirement; they are never silently discarded.
+Before Stable, the report capability receives an explicit retain/remove decision. The disabled path is already executable: fresh binding creates no ledger and report/export operations are unavailable. Existing non-empty ledgers must be exported and purged before retirement; `remove` refuses to proceed while history remains and never silently discards it.
 
 ## Freeze rule
 
-After `qualification/FREEZE.json` is regenerated for RC9, no frozen surface changes during a result round. Any such change invalidates the round and requires a new fingerprint.
+After `qualification/FREEZE.json` is regenerated for the current candidate, no frozen surface changes during a result round. Any such change invalidates the round and requires a new fingerprint.

@@ -91,10 +91,12 @@ def _project_origin(project):
         return "existing"
     return "new"
 
-def expected_binding(project_origin="existing"):
+def expected_binding(project_origin="existing", field_test_reporting=None):
     idx = index()
     cfg = idx["project_binding"]
-    reporting = bool(cfg["field_test_reporting"])
+    reporting = cfg["field_test_reporting"] if field_test_reporting is None else field_test_reporting
+    if type(reporting) is not bool:
+        raise ValueError("field_test_reporting must be boolean")
     managed_files = [cfg["binding_file"]]
     if reporting:
         managed_files.append(cfg["field_report_file"])
@@ -112,16 +114,6 @@ def expected_binding(project_origin="existing"):
         "project_origin": project_origin,
     }
 
-def _retirable_reporting_binding(value):
-    cfg = config()
-    return (
-        isinstance(value, dict)
-        and value.get("managed_by") == index()["name"]
-        and value.get("field_test_reporting") is True
-        and value.get("managed_files") == [cfg["binding_file"], cfg["field_report_file"]]
-        and value.get("field_report_file") == cfg["field_report_file"]
-    )
-
 def _upgradeable_binding(value):
     cfg = config()
     return (
@@ -136,10 +128,14 @@ def _upgradeable_binding(value):
 
 def validate_binding(value):
     origin = value.get("project_origin") if isinstance(value, dict) else "existing"
-    expected = expected_binding(origin)
     errors = []
     if not isinstance(value, dict):
         return ["binding must be an object"]
+    reporting = value.get("field_test_reporting")
+    if type(reporting) is not bool:
+        errors.append("field_test_reporting must be boolean")
+        reporting = None
+    expected = expected_binding(origin, reporting)
     if value.get("schema_version") != 2:
         errors.append("binding schema_version drift detected")
     if value.get("managed_by") != expected["managed_by"]:
@@ -162,11 +158,12 @@ def ledger_default():
     return {"schema_version": 1, "runtime_version": index()["version"], "epoch": 0, "next_sequence": 1, "reports": []}
 
 @serialized
-def ensure(project):
+def ensure(project, field_test_reporting=None):
     cfg = config()
+    if field_test_reporting is not None and type(field_test_reporting) is not bool:
+        raise ValueError("field_test_reporting must be boolean")
     binding_path = resolve(project, cfg["binding_file"])
     report_path = resolve(project, cfg["field_report_file"])
-    reporting = bool(cfg["field_test_reporting"])
     current = None
     origin = _project_origin(project)
     if binding_path.exists():
@@ -177,19 +174,19 @@ def ensure(project):
         else:
             errors = validate_binding(current)
         if errors:
-            if not reporting and _retirable_reporting_binding(current):
-                if report_path.exists():
-                    ledger = load_json(report_path)
-                    reports = ledger.get("reports") if isinstance(ledger, dict) else None
-                    if not isinstance(reports, list):
-                        raise ValueError("cannot retire invalid field report ledger")
-                    if reports:
-                        raise ValueError("field-test reporting retirement requires export and purge before upgrade")
-                    report_path.unlink()
-            else:
-                raise ValueError("; ".join(errors))
+            raise ValueError("; ".join(errors))
 
-    binding = expected_binding(origin)
+    existing_reporting = current.get("field_test_reporting") if isinstance(current, dict) else None
+    if existing_reporting is True and field_test_reporting is False:
+        raise ValueError("disabling project field-test reporting requires an explicit export and ledger-retirement workflow")
+    reporting = (
+        field_test_reporting
+        if field_test_reporting is not None
+        else existing_reporting if type(existing_reporting) is bool
+        else bool(cfg["field_test_reporting"])
+    )
+
+    binding = expected_binding(origin, reporting)
     if isinstance(current, dict):
         for key in ["active_workflow", "latest_change", "previous_change", "export_receipt"]:
             if key in current:
@@ -398,14 +395,15 @@ def begin_workflow(project, input_path):
 
 @serialized
 def record_report(project, input_path):
-    if not bool(config()["field_test_reporting"]):
-        raise ValueError("field-test reporting is disabled for this runtime")
+    ensured = ensure(project)
+    binding = load_json(resolve(project, config()["binding_file"]))
+    if binding.get("field_test_reporting") is not True:
+        raise ValueError("field-test reporting is disabled for this project; opt in during install")
     if input_path == "-":
         payload = json.load(sys.stdin)
     else:
         payload = load_json(input_path)
     validate_report(payload)
-    ensured = ensure(project)
     cfg = config()
     report_path = resolve(project, cfg["field_report_file"])
     ledger = load_json(report_path)
@@ -445,11 +443,11 @@ def record_report(project, input_path):
     return {"sequence": entry["sequence"], "report_count": len(ledger["reports"]), "path": str(report_path), "binding": ensured["binding"]}
 @serialized
 def export_reports(project, output):
-    if not bool(config()["field_test_reporting"]):
-        raise ValueError("field-test reporting is disabled for this runtime")
     state = status(project)
     if not state.get("ok"):
         raise ValueError("cannot export: project binding is not healthy")
+    if state.get("field_test_reporting") is not True:
+        raise ValueError("field-test reporting is disabled for this project; there is no ledger to export")
     cfg = config()
     binding = load_json(resolve(project, cfg["binding_file"]))
     ledger = load_json(resolve(project, cfg["field_report_file"]))
@@ -476,13 +474,18 @@ def purge_reports(project, yes):
         raise ValueError("purge requires --yes")
     cfg = config()
     report_path = resolve(project, cfg["field_report_file"])
-    if not bool(cfg["field_test_reporting"]):
+    binding_path = resolve(project, cfg["binding_file"])
+    if binding_path.is_file():
+        state = status(project)
+        if not state.get("ok"):
+            raise ValueError("cannot purge: project binding is not healthy")
+        reporting = state.get("field_test_reporting") is True
+    else:
+        reporting = bool(cfg["field_test_reporting"])
+    if not reporting:
         if report_path.is_file():
-            report_path.unlink()
+            raise ValueError("cannot purge a report ledger that is not owned by this reporting-disabled project binding")
         return {"purged": True, "path": str(report_path), "field_test_reporting": False}
-    state = status(project)
-    if not state.get("ok"):
-        raise ValueError("cannot purge: project binding is not healthy")
     ledger = ledger_default()
     old = load_json(report_path)
     ledger["next_sequence"] = old.get("next_sequence", max([x.get("sequence", 0) for x in old.get("reports", [])] or [0]) + 1)
@@ -509,12 +512,16 @@ def remove(project, yes):
         binding = load_json(binding_path)
         errors = validate_binding(binding)
         if errors:
-            if not bool(cfg["field_test_reporting"]) and _retirable_reporting_binding(binding):
-                managed = binding.get("managed_files", [])
-            else:
-                raise ValueError("refusing to remove drifted/unowned binding: " + "; ".join(errors))
+            raise ValueError("refusing to remove drifted/unowned binding: " + "; ".join(errors))
         else:
             managed = binding.get("managed_files", [])
+        if binding.get("field_test_reporting") is True:
+            state = status(project)
+            if not state.get("ok"):
+                raise ValueError("refusing to remove unhealthy field-report state")
+            ledger = load_json(resolve(project, cfg["field_report_file"]))
+            if ledger.get("reports"):
+                raise ValueError("export and purge field-report history before removing UPG")
         for rel in managed:
             if rel != cfg["binding_file"]:
                 managed_paths.append(resolve(project, rel))
@@ -544,6 +551,8 @@ def main():
     for name in ["install", "ensure", "status"]:
         p = sub.add_parser(name)
         p.add_argument("project", nargs="?", default=".")
+        if name in {"install", "ensure"}:
+            p.add_argument("--field-test-reporting", action="store_true")
     report = sub.add_parser("report")
     report.add_argument("project", nargs="?", default=".")
     report.add_argument("--input", required=True)
@@ -562,7 +571,10 @@ def main():
     args = parser.parse_args()
     try:
         if args.cmd in {"install", "ensure"}:
-            result = ensure(args.project)
+            result = ensure(
+                args.project,
+                field_test_reporting=True if args.field_test_reporting else None,
+            )
         elif args.cmd == "status":
             result = status(args.project)
             if not result.get("ok"):

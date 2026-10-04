@@ -12,6 +12,7 @@
     "required_closures",
     "evidence",
     "report",
+    "field_report_obligation",
     "handoff"
   ],
   "properties": {
@@ -55,6 +56,15 @@
         "engineering",
         "audit"
       ]
+    },
+    "field_report_obligation": {
+      "enum": [
+        "required-before-completion",
+        "not-required"
+      ]
+    },
+    "field_report_file": {
+      "type": "string"
     },
     "handoff": {
       "enum": [

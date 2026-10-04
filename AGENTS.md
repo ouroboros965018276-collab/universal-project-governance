@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Current candidate: **3.0.0-rc.9 — Evidence and Continuity Hardening**.
+Current candidate: **3.0.0-rc.12 — Qualification Evidence Refresh**.
 
 ## First modifying activation
 
@@ -27,6 +27,8 @@ Governance semantics live in `governance-src/`. `universal-project-governance/` 
 ## Project binding
 
 `.governance/upg.json` is always UPG-managed. `.governance/field-reports.json` is managed only while field-test reporting is enabled. Managed UPG state is infrastructure, not cleanup residue.
+
+New project bindings default field-test reporting off. Qualification A2 workspaces must explicitly opt in; preserve any existing enabled state and ledger during routine adoption.
 
 RC9 binding v2 records in-place adoption, handoff-or-reconstruct continuity, capability handshake, and whether the project existed before adoption. Never rewrite these paths outside the project-tool lifecycle.
 
