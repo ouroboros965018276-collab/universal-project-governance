@@ -124,9 +124,11 @@ class RC9Tests(unittest.TestCase):
             output = pathlib.Path(td) / 'adapter-output.json'
             task.write_text('bounded task', encoding='utf-8')
             condition.write_text('', encoding='utf-8')
-            with patch('qualification.adapters.codex_cli.shutil.which', return_value='codex'), patch(
+            with patch('qualification.adapters.codex_cli.sys.platform', 'linux'), patch(
+                'qualification.adapters.codex_cli.shutil.which', return_value='codex'
+            ), patch(
                 'qualification.adapters.codex_cli.subprocess.run',
-                return_value=subprocess.CompletedProcess([], 0, '{"type":"turn.completed","usage":{"input_tokens":10,"output_tokens":2}}\n', ''),
+                return_value=subprocess.CompletedProcess([], 0, '{"type":"turn.completed","usage":{"input_tokens":10,"output_tokens":2}}\n', 'diagnostic stderr'),
             ) as run:
                 from qualification.adapters.codex_cli import run as run_codex
                 self.assertEqual(run_codex(td, task, condition, output, 'single', 'gpt-5.5', ROOT / 'universal-project-governance'), 0)
@@ -135,6 +137,57 @@ class RC9Tests(unittest.TestCase):
                 result = json.loads(output.read_text(encoding='utf-8'))
                 self.assertEqual(result['usage']['total_tokens'], 12)
                 self.assertEqual(result['events']['event_counts']['turn.completed'], 1)
+                self.assertEqual(result['stderr'], 'diagnostic stderr')
+
+    def test_windows_codex_adapter_reapplies_only_allowlisted_host_preferences(self):
+        with tempfile.TemporaryDirectory() as td:
+            home = pathlib.Path(td)
+            (home / 'config.toml').write_text(
+                'approval_policy = "never"\n'
+                '[windows]\nsandbox = "elevated"\n'
+                '[features]\nrespect_system_proxy = true\n'
+                '[mcp_servers.untrusted]\ncommand = "must-not-load"\n',
+                encoding='utf-8',
+            )
+            task = home / 'task.txt'
+            condition = home / 'condition.md'
+            output = home / 'adapter-output.json'
+            task.write_text('bounded task', encoding='utf-8')
+            condition.write_text('', encoding='utf-8')
+            with patch('qualification.adapters.codex_cli.sys.platform', 'win32'), patch.dict(
+                os.environ, {'CODEX_HOME': td, 'CODEX_CLI_PATH': ''}, clear=False
+            ), patch('qualification.adapters.codex_cli.shutil.which', return_value='codex.exe'), patch(
+                'qualification.adapters.codex_cli.subprocess.run',
+                return_value=subprocess.CompletedProcess([], 0, '{"type":"turn.completed"}\n', ''),
+            ) as run:
+                from qualification.adapters.codex_cli import run as run_codex
+                self.assertEqual(run_codex(td, task, condition, output, 'single', 'gpt-5.5', None), 0)
+                command = run.call_args.args[0]
+                self.assertEqual(command[:8], [
+                    'codex.exe', '-c', 'windows.sandbox="elevated"',
+                    '--enable', 'respect_system_proxy', '-c', 'suppress_unstable_features_warning=true', 'exec',
+                ])
+                self.assertNotIn('--ask-for-approval', command)
+                self.assertIn('--ignore-user-config', command)
+                self.assertIn('--sandbox', command)
+                self.assertEqual(command[command.index('--sandbox') + 1], 'workspace-write')
+                result = json.loads(output.read_text(encoding='utf-8'))
+                self.assertEqual(result['host_adaptation'], {
+                    'windows_sandbox': 'elevated',
+                    'respect_system_proxy': True,
+                })
+
+    def test_command_adapter_does_not_forward_undeclared_host_environment(self):
+        adapter = CommandAdapter({'environment_passthrough': ['CODEX_HOME', 'HTTPS_PROXY']})
+        with patch.dict(os.environ, {
+            'CODEX_HOME': 'C:/codex-home', 'HTTPS_PROXY': 'http://proxy.invalid:8080',
+            'CODEX_THREAD_ID': 'outer-thread', 'CODEX_SHELL': 'outer-shell',
+        }, clear=True):
+            env = adapter._environment()
+        self.assertEqual(env['CODEX_HOME'], 'C:/codex-home')
+        self.assertEqual(env['HTTPS_PROXY'], 'http://proxy.invalid:8080')
+        self.assertNotIn('CODEX_THREAD_ID', env)
+        self.assertNotIn('CODEX_SHELL', env)
 
     def test_unknown_project_profile_keeps_universal_scope_and_rules(self):
         base={'operation':'edit','domains':['content'],'profiles':[],'signals':[],'risk':{}}

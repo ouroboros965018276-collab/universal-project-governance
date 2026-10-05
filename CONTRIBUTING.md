@@ -1,6 +1,6 @@
 # Contributing
 
-Current candidate: **3.0.0-rc.12 — Qualification Evidence Refresh**. The historical eleventh RC12 development smoke failed at workspace routing; prospective attempt 12 resolved routing but failed task/A2 report checks with zero tool calls. Its adapter was locally fingerprinted, but its source was uncommitted/unsealed and the host sandbox was unrestricted, so the run is not official-candidate evidence. See `qualification/dev-smoke/rc12-attempt-12.summary.json`. Locked qualification still requires externally enforced isolation, reviewed attestation, and at least three independent usable Agent families.
+Current candidate: **3.0.0-rc.12 — Qualification Evidence Refresh**. The historical eleventh RC12 development smoke failed at workspace routing. Prospective attempt 12 completed with zero tool calls and failed task/A2 checks under unrestricted host settings. Attempts 13/14 exited 1 before task evidence and did not retain exact stderr or usage, leaving causes unknown. See their separate summaries under `qualification/dev-smoke/`. Locked qualification still requires externally enforced isolation, reviewed attestation, and at least three actually usable independent Agent families.
 
 ## Structural contribution rule
 

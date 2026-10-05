@@ -10,6 +10,38 @@ import subprocess
 import sys
 import time
 
+try:
+    import tomllib
+except ImportError:
+    try:
+        import tomli as tomllib
+    except ImportError:
+        tomllib = None
+
+
+def _host_preferences():
+    if sys.platform != "win32":
+        return {}
+    codex_home = pathlib.Path(os.environ.get("CODEX_HOME") or pathlib.Path.home() / ".codex")
+    config_path = codex_home / "config.toml"
+    if not config_path.is_file():
+        return {}
+    if tomllib is None:
+        raise RuntimeError("Python 3.11+ or tomli is required to preserve Windows Codex sandbox settings")
+    try:
+        config = tomllib.loads(config_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        raise RuntimeError("could not read allowlisted settings from Codex config") from exc
+    preferences = {}
+    windows = config.get("windows", {})
+    sandbox = windows.get("sandbox") if isinstance(windows, dict) else None
+    if sandbox in {"elevated", "unelevated"}:
+        preferences["windows_sandbox"] = sandbox
+    features = config.get("features", {})
+    if isinstance(features, dict) and features.get("respect_system_proxy") is True:
+        preferences["respect_system_proxy"] = True
+    return preferences
+
 
 def install(workspace, skill_path):
     workspace = pathlib.Path(workspace).resolve()
@@ -107,9 +139,17 @@ def run(workspace, task_file, condition_file, output_file, phase, model_id, skil
     prompt = "\n\n".join(
         part for part in [skill, condition, "Task:\n" + task, "Evaluation phase: " + phase] if part
     )
+    host_preferences = _host_preferences()
     last_message = pathlib.Path(output_file).with_suffix(".last-message.txt")
-    command = [
-        codex,
+    command = [codex]
+    if host_preferences.get("windows_sandbox"):
+        command.extend(["-c", 'windows.sandbox="%s"' % host_preferences["windows_sandbox"]])
+    if host_preferences.get("respect_system_proxy"):
+        command.extend([
+            "--enable", "respect_system_proxy",
+            "-c", "suppress_unstable_features_warning=true",
+        ])
+    command.extend([
         "exec",
         "--cd",
         str(workspace),
@@ -124,7 +164,7 @@ def run(workspace, task_file, condition_file, output_file, phase, model_id, skil
         "--model",
         model_id,
         "-",
-    ]
+    ])
     started = time.monotonic()
     timed_out = False
     try:
@@ -138,16 +178,25 @@ def run(workspace, task_file, condition_file, output_file, phase, model_id, skil
             check=False,
         )
         stdout = completed.stdout
+        stderr = completed.stderr or ""
         return_code = completed.returncode
     except subprocess.TimeoutExpired as exc:
         stdout = exc.stdout or ""
         if isinstance(stdout, bytes):
             stdout = stdout.decode("utf-8", errors="replace")
+        stderr = exc.stderr or ""
+        if isinstance(stderr, bytes):
+            stderr = stderr.decode("utf-8", errors="replace")
         return_code = 124
         timed_out = True
     usage = _usage(stdout)
     usage["wall_time_seconds"] = time.monotonic() - started
-    payload = {"usage": usage, "events": _diagnostics(stdout, last_message, return_code, timed_out)}
+    payload = {
+        "usage": usage,
+        "events": _diagnostics(stdout, last_message, return_code, timed_out),
+        "host_adaptation": host_preferences,
+        "stderr": stderr[-8000:],
+    }
     pathlib.Path(output_file).write_text(json.dumps(payload), encoding="utf-8")
     if timed_out:
         print("error: Codex CLI exceeded the 900-second task timeout", file=sys.stderr)

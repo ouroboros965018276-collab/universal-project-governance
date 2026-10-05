@@ -1,5 +1,10 @@
 # Changelog
 
+## RC12 prospective diagnostic record (2026-10-05, follow-up)
+
+- Added path-free summaries for prospective Codex smoke attempts 13 and 14. Both exited 1 before usable task evidence; exact stderr and usage were not retained, so the cause remains unknown.
+- Preserved the historical eleventh-smoke routing failure and the existing 1 FAIL + 4 BLOCKED governance result. Locked qualification remains NOT RUN; empirical qualification and Stable remain NOT ACHIEVED.
+
 ## RC12 prospective host diagnostic (2026-10-05)
 
 - Docker Engine became reachable on the configured D: installation and successfully ran a container.
@@ -70,3 +75,9 @@ Universal Continuity Real-Agent Test Freeze.
 ## Previous meaningful state — 3.0.0-rc.7
 
 RC7 established hierarchical Agent-family → scenario → repetition inference, subgroup confidence intervals, task-bounded structural integration, independent overreach cohorts, automated two-file project binding/report lifecycle, and the first machine-frozen real-Agent qualification identity. RC8 preserves those foundations and closes interruption, legacy-adoption, cross-Agent reproducibility, and exact-reporting gaps before real testing.
+## 2026-10-05 — RC12 prospective diagnostic record refresh
+
+- Added path-free summaries for prospective Codex smoke attempts 13 and 14. Both exited 1 before usable task evidence; exact stderr and usage were not retained, so the cause remains unknown.
+- Preserved the historical eleventh-smoke routing failure and the existing 1 FAIL + 4 BLOCKED governance result. Locked qualification remains NOT RUN; empirical qualification and Stable remain NOT ACHIEVED.
+
+\n

@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "record_type": "formal-development-smoke",
+  "smoke_id": "dev-smoke-12f43a98bb5f4d54940373d59887da08",
+  "trial_id": "ee738dc0-460b-5918-ba82-429879764d57",
+  "observed_at": "2026-10-05",
+  "observation_time_source": "Local tool observation; exact execution timestamp not independently retained",
+  "candidate_version": "3.0.0-rc.12",
+  "status": "FAIL",
+  "release_eligible": false,
+  "qualification_fingerprint": "sha256:7b2c734eea264a2a3557f87d78f2f14f0c6c03b1dc52f9e7274cbd78c2b4e209",
+  "behavioral_fingerprint": "sha256:25a744dac1e808810e3df6395587da39633e21bbbea8f508567c1d2ab0fa3a08",
+  "agent": {
+    "family": "codex",
+    "model_id": "gpt-5.5",
+    "scaffold_version": "codex-cli-0.160.0"
+  },
+  "host_tool": {
+    "name": "Codex CLI",
+    "version": "0.160.0"
+  },
+  "adapter_identity": {
+    "id": "codex-cli-windows-0.160.0",
+    "adapter_config_sha256": "sha256:4499cbf96e09ac814715b1477af9d49eb9c0a85e83b41bd821b1ed32bae83cd1",
+    "adapter_runtime_sha256": "sha256:0f894a19f0e61e248533c9f09faab28e5c53252051dc3e2b92f86d0de07d84d1"
+  },
+  "scenario_id": "dev-small-typo",
+  "workspace_isolation": "process",
+  "externally_attested_isolation": false,
+  "host_permission_condition": "workspace-write sandbox; approval on-request; elevated mode configured",
+  "checks": {
+    "registered_before_execution": true,
+    "real_agent_process_succeeded": false,
+    "trial_schema_valid": true,
+    "artifact_retained_and_verified": true,
+    "task_and_governance_checks_passed": false,
+    "a2_binding_and_single_report_passed": false,
+    "release_analyzer_rejects_dev_evidence_before_inference": true
+  },
+  "failure": {
+    "stage": "real-agent-execution",
+    "reason": "Codex CLI returned exit code 1 before structured execution metadata or usage could be retained; exact CLI error text was not retained, so the cause remains unknown",
+    "exit_code": 1,
+    "changed_files": 0,
+    "tool_calls": null,
+    "token_usage_recorded": false,
+    "observed_wall_time_seconds": 43.109
+  },
+  "release_analyzer_status": "FAIL",
+  "release_analyzer_rejected_before_inference": true,
+  "release_admission_reasons": [
+    "round randomization contract missing",
+    "development evidence cannot promote release",
+    "locked execution requires enforced sandboxing",
+    "locked execution requires strong workspace isolation",
+    "locked execution requires a valid operator isolation attestation",
+    "unknown locked scenario",
+    "reviewable artifact identity missing or execution failed"
+  ],
+  "privacy": {
+    "raw_agent_output_published": false,
+    "project_source_published": false,
+    "local_paths_published": false,
+    "raw_run_artifacts_retained_outside_repository": true
+  }
+}
