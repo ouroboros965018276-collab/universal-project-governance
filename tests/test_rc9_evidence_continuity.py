@@ -10,6 +10,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from types import SimpleNamespace
 from unittest.mock import patch
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -156,6 +157,12 @@ class RC9Tests(unittest.TestCase):
             condition.write_text('', encoding='utf-8')
             with patch('qualification.adapters.codex_cli.sys.platform', 'win32'), patch.dict(
                 os.environ, {'CODEX_HOME': td, 'CODEX_CLI_PATH': ''}, clear=False
+            ), patch(
+                'qualification.adapters.codex_cli.tomllib',
+                SimpleNamespace(loads=lambda _: {
+                    'windows': {'sandbox': 'elevated'},
+                    'features': {'respect_system_proxy': True},
+                }),
             ), patch('qualification.adapters.codex_cli.shutil.which', return_value='codex.exe'), patch(
                 'qualification.adapters.codex_cli.subprocess.run',
                 return_value=subprocess.CompletedProcess([], 0, '{"type":"turn.completed"}\n', ''),
