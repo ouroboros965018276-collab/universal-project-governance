@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import pathlib
 import shutil
 import subprocess
@@ -89,9 +90,17 @@ def _diagnostics(stdout, last_message, return_code, timed_out):
 
 def run(workspace, task_file, condition_file, output_file, phase, model_id, skill_path):
     workspace = pathlib.Path(workspace).resolve()
-    codex = shutil.which("codex")
+    # On Windows shutil.which("codex") usually finds the npm-generated .CMD
+    # shim first. subprocess.run cannot execute that shim directly; its failure
+    # looks like a Codex workspace-routing error because the Agent never starts.
+    # Prefer the native CLI executable so the measured turn reaches Codex itself.
+    host_cli = os.environ.get("CODEX_CLI_PATH")
+    if sys.platform == "win32" and host_cli and pathlib.Path(host_cli).is_file():
+        codex = host_cli
+    else:
+        codex = shutil.which("codex.exe") if sys.platform == "win32" else shutil.which("codex")
     if not codex:
-        raise RuntimeError("Codex CLI is unavailable on PATH")
+        raise RuntimeError("native Codex CLI executable is unavailable on PATH")
     task = pathlib.Path(task_file).read_text(encoding="utf-8")
     condition = pathlib.Path(condition_file).read_text(encoding="utf-8").strip()
     skill = "Use $universal-project-governance for this maintained-project change." if skill_path else "Do not use or install a project governance Skill."

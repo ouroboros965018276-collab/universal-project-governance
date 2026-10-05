@@ -1,6 +1,6 @@
 # Contributing
 
-Current candidate: **3.0.0-rc.12 — Qualification Evidence Refresh**. The latest registered RC12 development smoke failed at Codex CLI workspace routing; the sanitized evidence is in `qualification/dev-smoke/rc12.summary.json`. Locked qualification still requires externally enforced isolation and at least three independent Agent families.
+Current candidate: **3.0.0-rc.12 — Qualification Evidence Refresh**. The historical eleventh RC12 development smoke failed at workspace routing; prospective attempt 12 resolved routing but failed task/A2 report checks with zero tool calls. Its adapter was locally fingerprinted, but its source was uncommitted/unsealed and the host sandbox was unrestricted, so the run is not official-candidate evidence. See `qualification/dev-smoke/rc12-attempt-12.summary.json`. Locked qualification still requires externally enforced isolation, reviewed attestation, and at least three independent usable Agent families.
 
 ## Structural contribution rule
 

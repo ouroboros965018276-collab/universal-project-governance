@@ -1,5 +1,12 @@
 # Changelog
 
+## RC12 prospective host diagnostic (2026-10-05)
+
+- Docker Engine became reachable on the configured D: installation and successfully ran a container.
+- Codex CLI Windows executable selection and process-environment routing now reach and complete the CLI turn; prospective attempt 12 still fails the task and A2 report checks with zero tool calls. Its adapter was uncommitted/unfrozen and host sandbox configuration was unrestricted, so it is diagnostic only; the prior attempt-11 history is unchanged.
+- Historical acceptance remains 1 FAIL + 4 BLOCKED. Locked qualification remains NOT RUN; reviewed external isolation and three usable independent Agent families are still missing. Empirical qualification and Stable remain NOT ACHIEVED.
+- Claude Code 2.1.289 and Gemini CLI 0.62.0 are installed on D: and report versions, but are unauthenticated and have not been run as Agents; family availability is not yet established.
+
 ## 3.0.0-rc.12 — 2026-10-04
 
 Qualification Evidence Refresh. Runtime governance semantics and qualification thresholds are unchanged from RC11.

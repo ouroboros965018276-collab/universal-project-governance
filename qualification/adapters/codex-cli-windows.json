@@ -1,0 +1,76 @@
+{
+  "id": "codex-cli-windows-0.160.0",
+  "kind": "command",
+  "sandboxed": false,
+  "workspace_isolation": "process",
+  "capabilities": [
+    "skill_injection"
+  ],
+  "adapter_runtime_files": [
+    "codex_cli.py"
+  ],
+  "command": [
+    "py",
+    "-3",
+    "{skill_path}/../qualification/adapters/codex_cli.py",
+    "run",
+    "{workspace}",
+    "{task_file}",
+    "{condition_file}",
+    "{output_file}",
+    "{phase}",
+    "gpt-5.5",
+    "{skill_path}"
+  ],
+  "skill_install_command": [
+    "py",
+    "-3",
+    "{skill_path}/../qualification/adapters/codex_cli.py",
+    "install",
+    "{workspace}",
+    "{skill_path}"
+  ],
+  "environment_passthrough": [
+    "ALL_PROXY",
+    "APPDATA",
+    "CODEX_APPLY_PATCH_PRESERVE_LINE_ENDINGS",
+    "CODEX_CI",
+    "CODEX_CLI_PATH",
+    "CODEX_INTERNAL_ORIGINATOR_OVERRIDE",
+    "CODEX_MCP_NODE_PATH",
+    "CODEX_SAGE_BACKFILL_TRACKER_TAB_REUSE",
+    "CODEX_SESSION_ID",
+    "CODEX_SHELL",
+    "CODEX_TASK_WORKSPACE_VERIFYING_IDENTITY",
+    "CODEX_TECTONIC_PATH",
+    "CODEX_THREAD_ID",
+    "CODEX_VERSION",
+    "CODEX_WINDOWS_SANDBOX_PACKAGE_FAMILY",
+    "COMSPEC",
+    "HOMEDRIVE",
+    "HOMEPATH",
+    "HTTPS_PROXY",
+    "HTTP_PROXY",
+    "LOCALAPPDATA",
+    "NODE_USE_ENV_PROXY",
+    "NO_PROXY",
+    "PROGRAMDATA",
+    "SYSTEMROOT",
+    "TEMP",
+    "TMP",
+    "USERPROFILE",
+    "WINDIR",
+    "WS_PROXY",
+    "WSS_PROXY"
+  ],
+  "timeout_seconds": 900,
+  "agent": {
+    "family": "codex",
+    "model_id": "gpt-5.5",
+    "scaffold_version": "codex-cli-0.160.0"
+  },
+  "host_tool": {
+    "name": "Codex CLI",
+    "version": "0.160.0"
+  }
+}

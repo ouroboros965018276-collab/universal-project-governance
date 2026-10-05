@@ -46,6 +46,8 @@ class CommandAdapter(object):
         return capability in set(self.config.get("capabilities",[]))
     def _environment(self,skill_path=None):
         env={"PATH":os.environ.get("PATH",""),"HOME":os.environ.get("HOME",""),"LANG":os.environ.get("LANG","C.UTF-8")}
+        for name in self.config.get("environment_passthrough",[]):
+            if name in os.environ: env[name]=os.environ[name]
         env.update(self.config.get("environment",{}))
         if skill_path: env["UPG_SKILL_PATH"]=str(pathlib.Path(skill_path).resolve())
         return env

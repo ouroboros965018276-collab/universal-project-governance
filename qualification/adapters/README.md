@@ -26,6 +26,8 @@ The runner derives SHA-256 identities for both the canonicalized adapter configu
 
 Adapters with helper scripts must list their paths in `adapter_runtime_files`; those bytes are included in the runtime identity. The bundled `codex_cli.py` helper installs a validated Skill under the host's project discovery path and invokes `codex exec` with workspace-write sandboxing and without user MCP/config overrides for development smoke. Its local process workspace is not externally attested isolation.
 
+On Windows, use the native Codex executable supplied by the host (`CODEX_CLI_PATH`) rather than a `codex.cmd` shim. Declare required host process variables by name in `environment_passthrough`; their values are read from the invoking process at execution time and are not stored in adapter configuration. The checked-in Windows adapter allowlists the Codex CLI identity and workspace-routing context, required Windows profile/system paths, and configured proxy variables. It intentionally does not pass the desktop app-tools pipe or ambient permission-profile variable into the measured CLI process. Explicit `--sandbox workspace-write` remains in force. If Windows sandbox provisioning fails, preserve that failure as a host blocker; do not change to full access to make the smoke pass.
+
 For handoff trials, a separate `--continuation-adapter` may be supplied. Source and receiving identities are both recorded.
 
 ## Locked qualification

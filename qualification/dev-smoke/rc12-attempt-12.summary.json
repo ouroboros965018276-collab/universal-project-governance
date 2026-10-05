@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "record_type": "prospective-formal-development-smoke-diagnostic",
+  "smoke_id": "dev-smoke-e949d6f4ca18460f9a9157c26ecf85bf",
+  "trial_id": "205075fd-cc14-577c-b83f-117442bfad0b",
+  "observed_at": "2026-10-05",
+  "observation_time_source": "Local tool observation; exact execution timestamp intentionally not inferred",
+  "candidate_version": "3.0.0-rc.12",
+  "status": "FAIL",
+  "release_eligible": false,
+  "candidate_evidence_eligible": false,
+  "qualification_fingerprint": "sha256:7b2c734eea264a2a3557f87d78f2f14f0c6c03b1dc52f9e7274cbd78c2b4e209",
+  "behavioral_fingerprint": "sha256:25a744dac1e808810e3df6395587da39633e21bbbea8f508567c1d2ab0fa3a08",
+  "agent": {
+    "family": "codex",
+    "model_id": "gpt-5.5",
+    "scaffold_version": "codex-cli-0.160.0"
+  },
+  "host_tool": {
+    "name": "Codex CLI",
+    "version": "0.160.0"
+  },
+  "adapter_identity": {
+    "id": "codex-cli-windows-0.160.0",
+    "adapter_config_sha256": "sha256:4499cbf96e09ac814715b1477af9d49eb9c0a85e83b41bd821b1ed32bae83cd1",
+    "adapter_runtime_sha256": "sha256:0f894a19f0e61e248533c9f09faab28e5c53252051dc3e2b92f86d0de07d84d1"
+  },
+  "registered_trials": 1,
+  "scenario_id": "dev-small-typo",
+  "workspace_isolation": "process",
+  "externally_attested_isolation": false,
+  "host_sandbox_condition": "unrestricted filesystem and network; approval policy never; intended workspace-write sandbox condition not established",
+  "checks": {
+    "registered_before_execution": true,
+    "real_agent_process_succeeded": true,
+    "codex_workspace_routing_succeeded": true,
+    "zero_routing_errors": true,
+    "trial_schema_valid": true,
+    "artifact_retained_and_verified": true,
+    "task_and_governance_checks_passed": false,
+    "a2_binding_and_single_report_passed": false,
+    "release_analyzer_rejects_dev_evidence_before_inference": true
+  },
+  "failure": {
+    "stage": "task-execution-and-deployment-contract",
+    "reason": "CLI turn completed with exit code 0 and zero tool calls; expected task text was absent, task_success and governance_defect_free were false, no A2 field report was recorded, and no project file changed",
+    "exit_code": 0,
+    "changed_files": 0,
+    "tool_calls": 0,
+    "a2_report_count": 0,
+    "observed_wall_time_seconds": 31.704
+  },
+  "usage": {
+    "usage_available": true,
+    "input_tokens": 65514,
+    "cached_input_tokens": 51072,
+    "output_tokens": 992,
+    "total_tokens": 66506,
+    "tool_calls": 0
+  },
+  "release_analyzer_status": "FAIL",
+  "release_analyzer_rejected_before_inference": true,
+  "release_admission_reasons": [
+    "round randomization contract missing",
+    "development evidence cannot promote release",
+    "locked execution requires enforced sandboxing",
+    "locked execution requires strong workspace isolation",
+    "locked execution requires a valid operator isolation attestation",
+    "unknown locked scenario"
+  ],
+  "prior_history": "The eleventh RC12 smoke remains recorded unchanged in rc12.summary.json; this attempt is a separate prospective diagnostic and does not alter historical acceptance.",
+  "privacy": {
+    "raw_agent_output_published": false,
+    "project_source_published": false,
+    "local_paths_published": false,
+    "raw_run_artifacts_retained_outside_repository": true
+  }
+}

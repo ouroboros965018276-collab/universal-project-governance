@@ -67,6 +67,14 @@
         "type": "string"
       }
     },
+    "environment_passthrough": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+      }
+    },
     "timeout_seconds": {
       "type": "integer",
       "minimum": 1
