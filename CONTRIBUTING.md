@@ -1,6 +1,6 @@
 # Contributing
 
-Current candidate: **3.0.0-rc.12 — Qualification Evidence Refresh**. The historical eleventh RC12 development smoke failed at workspace routing. Prospective attempt 12 completed with zero tool calls and failed task/A2 checks under unrestricted host settings. Attempts 13/14 exited 1 before task evidence and did not retain exact stderr or usage, leaving causes unknown. See their separate summaries under `qualification/dev-smoke/`. Locked qualification still requires externally enforced isolation, reviewed attestation, and at least three actually usable independent Agent families.
+Current candidate: **3.0.0-rc.14 — Runtime Integrity and Diagnostic Hardening**. RC14 carries forward RC13 runtime completion and schema validation, then closes independent-review findings in credential redaction, timeout classification/budgets, and reporting opt-in failure atomicity. Qualification thresholds remain unchanged. Current test/freeze/smoke evidence and remaining host limits live in [`PROJECT_STATE.md`](PROJECT_STATE.md); historical outcomes and unknown causes remain unchanged.
 
 ## Structural contribution rule
 

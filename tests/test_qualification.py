@@ -7,6 +7,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from types import SimpleNamespace
 from unittest.mock import patch
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -23,6 +24,10 @@ def analyze(rows, thresholds, protocol, fingerprint):
 from qualification.analysis.gates import critical_safety
 from qualification.analysis.metrics import hierarchical_bootstrap_delta, zero_event_upper_bound
 from qualification.lib.core import get_lab, grade_lab, materialize_lab, normalized_outcome
+from qualification.adapters import codex_cli
+from qualification.adapters.command_adapter import CommandAdapter
+from qualification.adapters.diagnostics import redact_public, redact_text
+from qualification.lib.execution import persist_evidence
 from qualification.trigger_suite import build as build_trigger_suite
 from tools.qualification_freeze import behavioral_fingerprint
 
@@ -572,6 +577,216 @@ class QualificationTests(unittest.TestCase):
             len((RUNTIME / "SKILL.md").read_text(encoding="utf-8").splitlines()),
             120,
         )
+
+    def test_command_adapter_persists_redacted_summary_and_local_raw_diagnostics(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = pathlib.Path(td)
+            workspace = root / "workspace"
+            workspace.mkdir()
+            (workspace / "project.txt").write_text("project state", encoding="utf-8")
+            helper = root / "fake_agent.py"
+            helper.write_text(
+                "import json,pathlib,sys\n"
+                "out=pathlib.Path(sys.argv[1])\n"
+                "message='Bearer '+'test-'+'secret-token-123456'+' /home/private/project/file.py postgres://fake-user:fake-password@db.internal:5432/app https://service-user:service-token@api.internal/v1'\n"
+                "out.write_text(json.dumps({'usage':{'input_tokens':3},'events':{'errors':[message]}}),encoding='utf-8')\n"
+                "out.with_suffix('.stdout.raw').write_text('inner raw stdout',encoding='utf-8')\n"
+                "out.with_suffix('.stderr.raw').write_text(message,encoding='utf-8')\n"
+                "print('outer public text')\n"
+                "print(message,file=sys.stderr)\n"
+                "raise SystemExit(17)\n",
+                encoding="utf-8",
+            )
+            secret = "test-" + "secret-token-123456"
+            url_secrets = ["fake-user", "fake-password", "service-user", "service-token"]
+            raw_dir = root / "raw"
+            output = root / "trial.json"
+            adapter = CommandAdapter({
+                "id": "fake-process",
+                "kind": "command",
+                "command": [sys.executable, str(helper), "{output_file}"],
+                "timeout_seconds": 5,
+                "host_tool": {},
+            })
+            result = adapter.run(workspace, "fake task", "", raw_dir=raw_dir, phase="fake")
+            artifact = persist_evidence(SimpleNamespace(output=str(output)), "fake-trial", workspace, result=result)
+            public = json.dumps(result) + pathlib.Path(artifact["artifact_manifest"]).read_text(encoding="utf-8")
+            self.assertEqual(result["exit_code"], 17)
+            self.assertEqual(result["events"]["runner_status"], "failed")
+            self.assertNotIn(secret, public)
+            self.assertNotIn("/home/private/project/file.py", public)
+            for value in url_secrets:
+                self.assertNotIn(value, public)
+            self.assertIn("[REDACTED]", public)
+            self.assertNotIn(secret, result["events"]["error_excerpt"])
+            self.assertNotIn("/home/private/project/file.py", result["events"]["error_excerpt"])
+            self.assertEqual((raw_dir / "fake-inner-stdout.txt").read_text(encoding="utf-8"), "inner raw stdout")
+            self.assertIn(secret, (raw_dir / "fake-inner-stderr.txt").read_text(encoding="utf-8"))
+            raw_stderr = (raw_dir / "fake-inner-stderr.txt").read_text(encoding="utf-8")
+            self.assertIn("postgres://fake-user:fake-password@db.internal:5432/app", raw_stderr)
+            self.assertIn("https://service-user:service-token@api.internal/v1", raw_stderr)
+            self.assertIn(secret, (raw_dir / "fake-stderr.txt").read_text(encoding="utf-8"))
+            self.assertIn("inner_stderr_sha256", result["evidence"])
+
+    def test_shared_diagnostic_redaction_handles_url_userinfo_and_preserves_public_urls(self):
+        message = "postgres://fake-user:fake-password@db.internal/app https://service:token@api.internal/v1 https://example.test/public"
+        redacted = redact_text(message)
+        self.assertNotIn("fake-user", redacted)
+        self.assertNotIn("fake-password", redacted)
+        self.assertNotIn("service:token", redacted)
+        self.assertIn("postgres://[REDACTED]@db.internal/app", redacted)
+        self.assertIn("https://[REDACTED]@api.internal/v1", redacted)
+        self.assertIn("https://example.test/public", redacted)
+        nested = redact_public({"items": [message]})
+        self.assertNotIn("fake-password", json.dumps(nested))
+
+    def test_command_adapter_timeout_is_persisted_without_raising(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = pathlib.Path(td)
+            workspace = root / "workspace"
+            workspace.mkdir()
+            helper = root / "slow_agent.py"
+            helper.write_text(
+                "import sys,time\n"
+                "print('partial stdout',flush=True)\n"
+                "message='Bearer '+'test-'+'secret-token-123456'+' /home/private/project/file.py'\n"
+                "print(message,file=sys.stderr,flush=True)\n"
+                "time.sleep(5)\n",
+                encoding="utf-8",
+            )
+            secret = "test-" + "secret-token-123456"
+            raw_dir = root / "raw"
+            adapter = CommandAdapter({
+                "id": "slow-process",
+                "kind": "command",
+                "command": [sys.executable, str(helper)],
+                "timeout_seconds": 0.2,
+                "host_tool": {},
+            })
+            result = adapter.run(workspace, "fake task", "", raw_dir=raw_dir, phase="timeout")
+            self.assertEqual(result["exit_code"], 124)
+            self.assertTrue(result["evidence"]["timed_out"])
+            self.assertTrue(result["events"]["timed_out"])
+            self.assertIn("partial stdout", (raw_dir / "timeout-stdout.txt").read_text(encoding="utf-8"))
+            self.assertIn(secret, (raw_dir / "timeout-stderr.txt").read_text(encoding="utf-8"))
+
+    def test_codex_cli_inner_timeout_keeps_raw_logs_local_and_uses_wrapper_deadline(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = pathlib.Path(td)
+            workspace = root / "workspace"
+            workspace.mkdir()
+            task = root / "task.txt"
+            condition = root / "condition.md"
+            output = root / "adapter-output.json"
+            task.write_text("fake", encoding="utf-8")
+            condition.write_text("", encoding="utf-8")
+            secret = "test-" + "secret-token-123456"
+            message = "Bearer " + secret + " /home/private/project/file.py postgres://fake-user:fake-password@db.internal/app https://service:token@api.internal/v1"
+            timeout = subprocess.TimeoutExpired(
+                "codex", 4,
+                output=json.dumps({"type": "error", "message": message}).encode("utf-8") + b"\n",
+                stderr=message.encode("utf-8"),
+            )
+            with patch.object(codex_cli.shutil, "which", return_value=sys.executable), \
+                 patch.object(codex_cli, "_host_preferences", return_value={}), \
+                 patch.object(codex_cli, "_preflight_windows_sandbox", return_value=None), \
+                 patch.object(codex_cli.subprocess, "run", side_effect=timeout) as mocked_run, \
+                 patch.dict(os.environ, {"UPG_ADAPTER_TIMEOUT_SECONDS": "4"}):
+                code = codex_cli.run(str(workspace), str(task), str(condition), str(output), "fake", "test-model", "")
+            payload = json.loads(output.read_text(encoding="utf-8"))
+            public = json.dumps(payload)
+            self.assertEqual(code, 124)
+            self.assertEqual(mocked_run.call_args.kwargs["timeout"], 4.0)
+            self.assertTrue(payload["events"]["timed_out"])
+            self.assertNotIn(secret, public)
+            self.assertNotIn("/home/private/project/file.py", public)
+            self.assertNotIn("fake-password", public)
+            self.assertNotIn("service:token", public)
+            self.assertIn(secret, output.with_suffix(".stderr.raw").read_text(encoding="utf-8"))
+            self.assertIn("postgres://fake-user:fake-password@db.internal/app", output.with_suffix(".stderr.raw").read_text(encoding="utf-8"))
+
+    def test_codex_cli_preflight_timeout_is_structured_and_raw_partial_output_persists(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = pathlib.Path(td)
+            workspace = root / "workspace"
+            workspace.mkdir()
+            task = root / "task.txt"
+            condition = root / "condition.md"
+            output = root / "adapter-output.json"
+            task.write_text("fake", encoding="utf-8")
+            condition.write_text("", encoding="utf-8")
+            secret = "fake-preflight-password"
+            timeout = subprocess.TimeoutExpired(
+                "codex doctor", 0.2,
+                output=b'{"checks":{"sandbox.helpers":{"status":"checking"}}}\n',
+                stderr=("partial preflight " + secret).encode("utf-8"),
+            )
+            with patch.object(codex_cli.sys, "platform", "win32"), \
+                 patch.object(codex_cli.shutil, "which", return_value=sys.executable), \
+                 patch.object(codex_cli, "_host_preferences", return_value={}), \
+                 patch.object(codex_cli.subprocess, "run", side_effect=timeout) as mocked_run, \
+                 patch.dict(os.environ, {"CODEX_CLI_PATH": sys.executable, "UPG_ADAPTER_PREFLIGHT_TIMEOUT_SECONDS": "0.2"}):
+                code = codex_cli.run(str(workspace), str(task), str(condition), str(output), "fake", "test-model", "")
+            payload = json.loads(output.read_text(encoding="utf-8"))
+            self.assertEqual(code, 124)
+            self.assertEqual(mocked_run.call_args.kwargs["timeout"], 0.2)
+            self.assertTrue(payload["events"]["timed_out"])
+            self.assertEqual(payload["events"]["failure_category"], "preflight_timed_out")
+            self.assertEqual(payload["events"]["timeout_phase"], "windows_sandbox_preflight")
+            self.assertEqual(payload["sandbox_preflight"]["status"], "timed_out")
+            self.assertTrue(payload["sandbox_preflight"]["timed_out"])
+            self.assertFalse(payload["sandbox_preflight"]["model_invoked"])
+            self.assertEqual(output.with_suffix(".preflight.stdout.raw").read_bytes(), timeout.output)
+            self.assertEqual(output.with_suffix(".preflight.stderr.raw").read_bytes(), timeout.stderr)
+            self.assertNotIn(secret, json.dumps(payload))
+
+    def test_command_adapter_preserves_preflight_timeout_classification_and_raw_bytes(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = pathlib.Path(td)
+            workspace = root / "workspace"
+            workspace.mkdir()
+            helper = root / "preflight_timeout.py"
+            helper.write_text(
+                "import json,pathlib,sys\n"
+                "out=pathlib.Path(sys.argv[1])\n"
+                "out.write_text(json.dumps({'events':{'timed_out':True,'failure_category':'preflight_timed_out','timeout_phase':'windows_sandbox_preflight','sandbox_preflight':{'status':'timed_out','model_invoked':False}}}),encoding='utf-8')\n"
+                "out.with_suffix('.preflight.stdout.raw').write_bytes(b'partial doctor stdout')\n"
+                "out.with_suffix('.preflight.stderr.raw').write_bytes(b'partial doctor stderr')\n"
+                "raise SystemExit(124)\n",
+                encoding="utf-8",
+            )
+            raw_dir = root / "raw"
+            adapter = CommandAdapter({
+                "id": "preflight-timeout",
+                "kind": "command",
+                "command": [sys.executable, str(helper), "{output_file}"],
+                "timeout_seconds": 5,
+                "host_tool": {},
+            })
+            result = adapter.run(workspace, "fake task", "", raw_dir=raw_dir, phase="preflight")
+            self.assertEqual(result["exit_code"], 124)
+            self.assertFalse(result["evidence"]["timed_out"])
+            self.assertTrue(result["events"]["timed_out"])
+            self.assertEqual(result["events"]["runner_status"], "inner_timed_out")
+            self.assertEqual(result["events"]["failure_category"], "preflight_timed_out")
+            self.assertEqual(result["events"]["timeout_phase"], "windows_sandbox_preflight")
+            self.assertEqual((raw_dir / "preflight-preflight-stdout.txt").read_bytes(), b"partial doctor stdout")
+            self.assertEqual((raw_dir / "preflight-preflight-stderr.txt").read_bytes(), b"partial doctor stderr")
+            self.assertIn("preflight_stdout_sha256", result["evidence"])
+
+    def test_command_adapter_timeout_budget_reserves_preflight_and_wrapper_grace(self):
+        adapter = CommandAdapter({"timeout_seconds": 900})
+        env = adapter._environment()
+        preflight = float(env["UPG_ADAPTER_PREFLIGHT_TIMEOUT_SECONDS"])
+        model = float(env["UPG_ADAPTER_TIMEOUT_SECONDS"])
+        self.assertEqual(preflight, 30.0)
+        self.assertEqual(model, 840.0)
+        self.assertLess(preflight + model, 900.0)
+
+        tiny = CommandAdapter({"timeout_seconds": 0.1})
+        with self.assertRaisesRegex(ValueError, "timeout budget too small"):
+            tiny._environment()
+
 
 if __name__ == "__main__":
     unittest.main()

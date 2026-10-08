@@ -1,5 +1,28 @@
 # Changelog
 
+## 3.0.0-rc.14 — 2026-10-08
+
+Runtime Integrity and Diagnostic Hardening. Qualification thresholds and the A0/A1/A2 protocol remain unchanged.
+
+- Consolidates public diagnostic redaction for both adapters, including URL userinfo, while preserving raw output only in local evidence storage; includes the helper in the Codex adapter runtime identity.
+- Preserves Windows sandbox preflight timeout category, `timed_out` state, model-not-invoked boundary, and partial raw bytes. Reserves separate preflight, model-call, and outer-wrapper budget for the 900-second adapter.
+- Makes reporting opt-in validation failure-neutral: invalid latest sequence/epoch leaves the reporting-off binding byte-identical and creates no ledger.
+- Uses the canonical task-context schema for operation/domain/risk value validation while preserving the specific unknown-risk-dimension diagnostic and unknown-profile fallback.
+- Adds URL-credential, preflight-timeout, timeout-budget, reporting-state, and default-mode partial-recovery regressions. The current full local run passed 101/101 tests on Blender-bundled CPython 3.13.13.
+- Produces two byte-identical RC14 installable bundles, SHA-256 `60b2770e8c3cbc96c76081bf2504b3451349fc1141f4eb39f9e33c246145dd6b`. Compiler, lint, qualification, freeze (`sha256:e6e2bce7d6127655f49e88fd8d9e90e3ef2c0535c03fef1df5e2d6446d258b45`), repository, bundle, integrity, and security checks pass.
+- Current RC14 development smoke passed registration/schema/artifact/analyzer-boundary checks but failed closed before model invocation because Windows sandbox provisioning is incomplete/outdated; see [`rc14-attempt-1.summary.json`](qualification/dev-smoke/rc14-attempt-1.summary.json). No model usage was incurred. The actual Codex Skill directory now matches the generated RC14 bundle and passed its temporary lifecycle task; the current session's Skills catalog still reports cached RC12. Draft PR and hosted CI remain pending in [`PROJECT_STATE.md`](PROJECT_STATE.md).
+
+## 3.0.0-rc.13 — 2026-10-08
+
+Runtime Completion and Diagnostics. Qualification thresholds and the frozen A0/A1/A2 protocol remain unchanged.
+
+- Preserves Codex CLI inner stdout/stderr sidecars through the outer command adapter, records hashes and sanitized failure summaries, and distinguishes inner-task from wrapper timeouts. Windows sandbox preflight fails closed before inference and keeps raw diagnostics local.
+- Adds a shared `finish` lifecycle command. Completed workflows update the existing latest/previous checkpoints when reporting is off and use the same exactly-once ledger reconciliation when reporting is on; no history database or extra managed project file is added.
+- Validates all task-context fields against the canonical schema while retaining universal fallback for unknown optional profile hints.
+- Regenerates the installable runtime and qualification freeze as RC13. Historical RC12 outcomes remain unchanged; this candidate does not claim locked qualification, empirical qualification, or Stable.
+- Final local engineering verification passed 95/95 tests plus compiler, lint, qualification, repository, freeze (`sha256:31f754a18bd07cd07339eb148e726ac6df817032f71dc65506f63461e75234a7`), bundle, integrity, and security checks. Two independent Skill package builds matched SHA-256 `dcc8409381437051ffca0de5a143a5e63d066425b3f1d915ac8b982f72dbb2da`.
+- The final registered A2 development smoke failed closed before model invocation because elevated Windows sandbox provisioning is incomplete; see [`rc13-attempt-3.summary.json`](qualification/dev-smoke/rc13-attempt-3.summary.json). An interrupted prior registration has no trial or usage result and remains explicitly unknown in [`rc13-attempt-2.summary.json`](qualification/dev-smoke/rc13-attempt-2.summary.json).
+
 ## RC12 prospective diagnostic record (2026-10-05, follow-up)
 
 - Added path-free summaries for prospective Codex smoke attempts 13 and 14. Both exited 1 before usable task evidence; exact stderr and usage were not retained, so the cause remains unknown.
@@ -75,9 +98,4 @@ Universal Continuity Real-Agent Test Freeze.
 ## Previous meaningful state — 3.0.0-rc.7
 
 RC7 established hierarchical Agent-family → scenario → repetition inference, subgroup confidence intervals, task-bounded structural integration, independent overreach cohorts, automated two-file project binding/report lifecycle, and the first machine-frozen real-Agent qualification identity. RC8 preserves those foundations and closes interruption, legacy-adoption, cross-Agent reproducibility, and exact-reporting gaps before real testing.
-## 2026-10-05 — RC12 prospective diagnostic record refresh
-
-- Added path-free summaries for prospective Codex smoke attempts 13 and 14. Both exited 1 before usable task evidence; exact stderr and usage were not retained, so the cause remains unknown.
-- Preserved the historical eleventh-smoke routing failure and the existing 1 FAIL + 4 BLOCKED governance result. Locked qualification remains NOT RUN; empirical qualification and Stable remain NOT ACHIEVED.
-
 \n

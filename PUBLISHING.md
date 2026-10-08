@@ -1,8 +1,8 @@
 # Publishing and Test-Freeze Gates
 
-Current candidate: **3.0.0-rc.12**
+Current candidate: **3.0.0-rc.14 — Runtime Integrity and Diagnostic Hardening**
 
-RC12 is an evidence-refresh candidate with no runtime semantic or qualification-threshold changes from RC11. Current micro-project functional/receipt checks pass 5/5, but historical governance remains 1 FAIL + 4 BLOCKED. Its registered real-Agent smoke is FAIL; locked qualification is NOT RUN; empirical qualification and Stable are NOT ACHIEVED. See [PROJECT_STATE.md](PROJECT_STATE.md) for the evidence boundary and current host constraints.
+RC14 incorporates RC13 runtime completion and schema checks, then fixes three independently reviewed gaps: shared URL-userinfo redaction, structured preflight timeout handling with a reserved timeout budget, and failure-neutral reporting opt-in validation. It does not change qualification thresholds. RC14 remains a release candidate until the current checks, smoke, installation, and hosted CI state in [PROJECT_STATE.md](PROJECT_STATE.md) are verified. Historical RC12 acceptance remains 1 FAIL + 4 BLOCKED; the formal locked run remains NOT RUN; empirical qualification and Stable are NOT ACHIEVED.
 
 ## Engineering gate before real-Agent testing
 

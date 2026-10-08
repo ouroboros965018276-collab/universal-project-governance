@@ -96,6 +96,8 @@ def main():
         manifest["trials"][0]["pair_id"],
         "--round-manifest",
         str(manifest_path),
+        "--raw-dir",
+        str(output_dir / "raw"),
         "--trial-id",
         manifest["trials"][0]["trial_id"],
         "--output",

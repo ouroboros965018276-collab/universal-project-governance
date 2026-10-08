@@ -10,7 +10,7 @@ import sys
 import tempfile
 import unittest
 from unittest.mock import patch
-from registration_fixture import report_identity
+from registration_fixture import change as fixture_change, report_identity
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 PY = sys.executable
@@ -395,6 +395,12 @@ class CompiledRuntimeTests(unittest.TestCase):
             binding = json.loads((project / ".governance/upg.json").read_text(encoding="utf-8"))
             self.assertEqual(binding["managed_files"], [".governance/upg.json"])
             self.assertFalse(binding["field_test_reporting"])
+            cp = subprocess.run(
+                [PY, str(tool), "status", str(project)],
+                text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+            )
+            self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
+            self.assertFalse(json.loads(cp.stdout)["field_test_reporting"])
 
             bad = project / "report.json"
             bad.write_text("{}", encoding="utf-8")
@@ -414,6 +420,13 @@ class CompiledRuntimeTests(unittest.TestCase):
             enabled = json.loads((project / ".governance/upg.json").read_text(encoding="utf-8"))
             self.assertTrue(enabled["field_test_reporting"])
             self.assertTrue((project / ".governance/field-reports.json").is_file())
+            cp = subprocess.run(
+                [PY, str(tool), "status", str(project)],
+                text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+            )
+            self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
+            self.assertTrue(json.loads(cp.stdout)["field_test_reporting"])
+            self.assertEqual(json.loads(cp.stdout)["report_count"], 0)
 
             cp = subprocess.run(
                 [PY, str(tool), "ensure", str(project)],
@@ -735,6 +748,231 @@ class CompiledRuntimeTests(unittest.TestCase):
             cp = run("tools/validate_skill_bundle.py", str(copy))
             self.assertNotEqual(cp.returncode, 0)
             self.assertIn("generated artifact bundled", cp.stderr)
+
+    def _workflow_report(self, workflow_id, status="complete", parent_event_id=None, task="Bounded test change"):
+        report = {
+            "task": task,
+            "status": status,
+            "change_mode": "local",
+            "scope_guard": "local-only",
+            "risk_level": "low",
+            "active_rules": [],
+            "changed_files": ["module.py"],
+            "validation": ["unit checks pass"],
+            "cleanup": [],
+            "structural_scope": {
+                "canonical_layer": "module.py",
+                "unrelated_changes": [],
+                "api_changes": [],
+                "architecture_changes": [],
+                "overreach_concern": False,
+            },
+            "integrity": "pass",
+            "handoff": "not-required",
+            "feedback": [],
+            "workflow_id": workflow_id,
+            "change": fixture_change(),
+        }
+        report["change"]["parent_event_id"] = parent_event_id
+        return report
+
+    def test_default_workflow_finish_is_idempotent_and_continues_into_opt_in_sequence(self):
+        with tempfile.TemporaryDirectory() as td:
+            project = pathlib.Path(td) / "project"
+            project.mkdir()
+            tool = RUNTIME / "scripts/project_tool.py"
+            cp = run(tool, "install", project)
+            self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
+            binding_path = project / ".governance/upg.json"
+
+            begin_a = {"workflow_id": "workflow-a", "change": fixture_change()}
+            begin_path = project / "begin-a.json"
+            begin_path.write_text(json.dumps(begin_a), encoding="utf-8")
+            cp = run(tool, "begin", project, "--input", begin_path)
+            self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
+
+            report_a = self._workflow_report("workflow-a")
+            report_path = project / "finish-a.json"
+            report_path.write_text(json.dumps(report_a), encoding="utf-8")
+            cp = run(tool, "finish", project, "--input", report_path)
+            self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
+            self.assertEqual(json.loads(cp.stdout)["sequence"], 1)
+            binding = json.loads(binding_path.read_text(encoding="utf-8"))
+            self.assertNotIn("active_workflow", binding)
+            self.assertEqual(binding["latest_change"]["sequence"], 1)
+            self.assertFalse((project / ".governance/field-reports.json").exists())
+
+            cp = run(tool, "finish", project, "--input", report_path)
+            self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
+            self.assertTrue(json.loads(cp.stdout)["idempotent"])
+            conflict = dict(report_a, task="conflicting retry")
+            conflict_path = project / "finish-conflict.json"
+            conflict_path.write_text(json.dumps(conflict), encoding="utf-8")
+            cp = run(tool, "finish", project, "--input", conflict_path)
+            self.assertNotEqual(cp.returncode, 0)
+            self.assertIn("conflicting", cp.stderr)
+
+            cp = run(tool, "ensure", project, "--field-test-reporting")
+            self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
+            ledger_path = project / ".governance/field-reports.json"
+            ledger = json.loads(ledger_path.read_text(encoding="utf-8"))
+            self.assertEqual(ledger["next_sequence"], 2)
+
+            wrong_parent = {"workflow_id": "workflow-b", "change": fixture_change()}
+            wrong_parent["change"]["parent_event_id"] = "incorrect-parent"
+            wrong_path = project / "begin-b-wrong.json"
+            wrong_path.write_text(json.dumps(wrong_parent), encoding="utf-8")
+            cp = run(tool, "begin", project, "--input", wrong_path)
+            self.assertNotEqual(cp.returncode, 0)
+            self.assertIn("latest completed event", cp.stderr)
+
+            begin_b = {"workflow_id": "workflow-b", "change": fixture_change()}
+            begin_b["change"]["parent_event_id"] = binding["latest_change"]["event_id"]
+            begin_b_path = project / "begin-b.json"
+            begin_b_path.write_text(json.dumps(begin_b), encoding="utf-8")
+            cp = run(tool, "begin", project, "--input", begin_b_path)
+            self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
+            report_b = self._workflow_report("workflow-b", parent_event_id=begin_b["change"]["parent_event_id"])
+            report_b_path = project / "finish-b.json"
+            report_b_path.write_text(json.dumps(report_b), encoding="utf-8")
+            cp = run(tool, "finish", project, "--input", report_b_path)
+            self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
+            self.assertEqual(json.loads(cp.stdout)["sequence"], 2)
+            ledger = json.loads(ledger_path.read_text(encoding="utf-8"))
+            self.assertEqual([row["sequence"] for row in ledger["reports"]], [2])
+            self.assertEqual(json.loads(binding_path.read_text(encoding="utf-8"))["latest_change"]["sequence"], 2)
+
+            cp = run(tool, "finish", project, "--input", report_b_path)
+            self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
+            self.assertTrue(json.loads(cp.stdout)["idempotent"])
+            self.assertEqual(len(json.loads(ledger_path.read_text(encoding="utf-8"))["reports"]), 1)
+
+    def test_opt_in_partial_report_keeps_active_workflow_for_completion_recovery(self):
+        with tempfile.TemporaryDirectory() as td:
+            project = pathlib.Path(td) / "project"
+            project.mkdir()
+            tool = RUNTIME / "scripts/project_tool.py"
+            cp = run(tool, "install", project, "--field-test-reporting")
+            self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
+            start = {"workflow_id": "workflow-partial", "change": fixture_change()}
+            start_path = project / "begin.json"
+            start_path.write_text(json.dumps(start), encoding="utf-8")
+            cp = run(tool, "begin", project, "--input", start_path)
+            self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
+
+            partial = self._workflow_report("workflow-partial", status="partial")
+            partial_path = project / "partial.json"
+            partial_path.write_text(json.dumps(partial), encoding="utf-8")
+            cp = run(tool, "finish", project, "--input", partial_path)
+            self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
+            self.assertIn("active_workflow", json.loads((project / ".governance/upg.json").read_text(encoding="utf-8")))
+            cp = run(tool, "begin", project, "--input", start_path)
+            self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
+            self.assertTrue(json.loads(cp.stdout)["idempotent"])
+
+            complete = self._workflow_report("workflow-partial")
+            complete_path = project / "complete.json"
+            complete_path.write_text(json.dumps(complete), encoding="utf-8")
+            cp = run(tool, "finish", project, "--input", complete_path)
+            self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
+            binding = json.loads((project / ".governance/upg.json").read_text(encoding="utf-8"))
+            self.assertNotIn("active_workflow", binding)
+            ledger = json.loads((project / ".governance/field-reports.json").read_text(encoding="utf-8"))
+            self.assertEqual([row["status"] for row in ledger["reports"]], ["partial", "complete"])
+
+    def test_default_partial_workflow_keeps_active_checkpoint_until_recovered(self):
+        with tempfile.TemporaryDirectory() as td:
+            project = pathlib.Path(td) / "project"
+            project.mkdir()
+            tool = RUNTIME / "scripts/project_tool.py"
+            cp = run(tool, "install", project)
+            self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
+            start = {"workflow_id": "workflow-default-partial", "change": fixture_change()}
+            start_path = project / "begin.json"
+            start_path.write_text(json.dumps(start), encoding="utf-8")
+            cp = run(tool, "begin", project, "--input", start_path)
+            self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
+
+            partial_path = project / "partial.json"
+            partial_path.write_text(json.dumps(self._workflow_report("workflow-default-partial", status="partial")), encoding="utf-8")
+            cp = run(tool, "finish", project, "--input", partial_path)
+            self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
+            partial_binding = json.loads((project / ".governance/upg.json").read_text(encoding="utf-8"))
+            self.assertIn("active_workflow", partial_binding)
+            self.assertFalse(partial_binding["field_test_reporting"])
+            self.assertFalse((project / ".governance/field-reports.json").exists())
+
+            cp = run(tool, "begin", project, "--input", start_path)
+            self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
+            self.assertTrue(json.loads(cp.stdout)["idempotent"])
+            complete_path = project / "complete.json"
+            complete_path.write_text(json.dumps(self._workflow_report("workflow-default-partial")), encoding="utf-8")
+            cp = run(tool, "finish", project, "--input", complete_path)
+            self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
+            binding = json.loads((project / ".governance/upg.json").read_text(encoding="utf-8"))
+            self.assertNotIn("active_workflow", binding)
+            self.assertEqual(binding["latest_change"]["sequence"], 1)
+            self.assertFalse((project / ".governance/field-reports.json").exists())
+
+    def test_reporting_opt_in_validation_failure_does_not_mutate_binding_or_create_ledger(self):
+        with tempfile.TemporaryDirectory() as td:
+            tool = RUNTIME / "scripts/project_tool.py"
+            for field, value in [("sequence", -1), ("epoch", -1)]:
+                with self.subTest(field=field):
+                    project = pathlib.Path(td) / field
+                    project.mkdir()
+                    cp = run(tool, "install", project)
+                    self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
+                    binding_path = project / ".governance/upg.json"
+                    binding = json.loads(binding_path.read_text(encoding="utf-8"))
+                    binding["latest_change"] = {"sequence": value, "epoch": 0 if field == "sequence" else value}
+                    binding_path.write_text(json.dumps(binding, indent=2) + "\n", encoding="utf-8")
+                    before = binding_path.read_bytes()
+
+                    cp = run(tool, "ensure", project, "--field-test-reporting")
+                    self.assertNotEqual(cp.returncode, 0)
+                    self.assertIn("invalid", cp.stderr)
+                    self.assertEqual(binding_path.read_bytes(), before)
+                    self.assertFalse((project / ".governance/field-reports.json").exists())
+
+                    cp = run(tool, "status", project)
+                    self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
+                    self.assertTrue(json.loads(cp.stdout)["ok"])
+                    self.assertFalse(json.loads(cp.stdout)["field_test_reporting"])
+
+    def test_planner_validates_full_context_schema_and_keeps_unknown_profile_fallback(self):
+        with tempfile.TemporaryDirectory() as td:
+            context_path = pathlib.Path(td) / "context.json"
+            planner = RUNTIME / "scripts/plan_governance.py"
+            invalid = [
+                {"operation": "edit", "domains": ["code"], "signals": [None]},
+                {"operation": "edit", "domains": ["code"], "profiles": [1]},
+                {"operation": "edit", "domains": ["code"], "unfinished": 1},
+                {"operation": "edit", "domains": ["code"], "explicit_audit": "yes"},
+                {"operation": "edit", "domains": ["code"], "field_test_reporting": 0},
+                {"operation": "edit", "domains": ["code"], "project_type": ""},
+                {"operation": "edit", "domains": ["code"], "agent_mode": 3},
+                {"operation": "edit", "domains": ["code"], "capabilities": [""]},
+                {"operation": "edit", "domains": ["code"], "risk": []},
+                {"operation": "edit", "domains": ["code"], "unexpected": True},
+                [],
+            ]
+            for case in invalid:
+                with self.subTest(context=case):
+                    context_path.write_text(json.dumps(case), encoding="utf-8")
+                    cp = run(planner, "--context", context_path, "--json")
+                    self.assertNotEqual(cp.returncode, 0, cp.stdout + cp.stderr)
+
+            context_path.write_text(json.dumps({"operation": "edit", "domains": ["code"], "profiles": ["not-a-known-profile"]}), encoding="utf-8")
+            cp = run(planner, "--context", context_path, "--json")
+            self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
+            self.assertIn("unknown optional profiles", json.loads(cp.stdout)["warnings"][0])
+
+            context_path.write_text(json.dumps({"operation": "edit", "domains": ["code"], "risk": {"unmodeled": 1}}), encoding="utf-8")
+            cp = run(planner, "--context", context_path, "--json")
+            self.assertNotEqual(cp.returncode, 0)
+            self.assertIn("unknown risk dimension: unmodeled", cp.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()
