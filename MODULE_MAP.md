@@ -1,6 +1,6 @@
 # Module Map
 
-Current candidate: **3.0.0-rc.14 — Runtime Integrity and Diagnostic Hardening**.
+Current candidate: **3.0.0-rc.15 — Deterministic Skill Target Resolution**.
 
 This is the single current-tree map. Git history, `CHANGELOG.md`, and dated audit records retain prior states; generated output and validation artifacts are not alternate sources of policy truth.
 

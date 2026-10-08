@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Current candidate: **3.0.0-rc.14 — Runtime Integrity and Diagnostic Hardening**.
+Current candidate: **3.0.0-rc.15 — Deterministic Skill Target Resolution**.
 
 ## First modifying activation
 

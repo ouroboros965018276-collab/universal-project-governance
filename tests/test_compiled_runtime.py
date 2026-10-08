@@ -35,6 +35,49 @@ def run(*args, cwd=None):
     )
 
 class CompiledRuntimeTests(unittest.TestCase):
+    def test_top_level_installer_prefers_codex_project_target_over_old_skill_copies(self):
+        with tempfile.TemporaryDirectory() as td:
+            project = pathlib.Path(td)
+            stale = project / ".a-old-skills" / "universal-project-governance"
+            installed = project / ".agents" / "skills" / "universal-project-governance"
+            stale.mkdir(parents=True)
+            installed.mkdir(parents=True)
+            (stale / "SKILL.md").write_text("stale copy\n", encoding="utf-8")
+            (installed / "SKILL.md").write_text("current Codex install\n", encoding="utf-8")
+
+            self.assertEqual(UPG.find_installed(project), installed)
+
+    def test_top_level_installer_does_not_treat_old_copy_as_codex_install(self):
+        with tempfile.TemporaryDirectory() as td:
+            project = pathlib.Path(td)
+            stale = project / ".a-old-skills" / "universal-project-governance"
+            stale.mkdir(parents=True)
+            (stale / "SKILL.md").write_text("stale copy\n", encoding="utf-8")
+
+            self.assertIsNone(UPG.find_installed(project, "codex"))
+
+    def test_top_level_installer_keeps_unique_non_codex_copy_compatible(self):
+        with tempfile.TemporaryDirectory() as td:
+            project = pathlib.Path(td)
+            installed = project / ".claude" / "skills" / "universal-project-governance"
+            installed.mkdir(parents=True)
+            (installed / "SKILL.md").write_text("single copy\n", encoding="utf-8")
+
+            self.assertEqual(UPG.find_installed(project, "claude"), installed)
+
+    def test_top_level_installer_fails_closed_on_ambiguous_non_codex_copies(self):
+        with tempfile.TemporaryDirectory() as td:
+            project = pathlib.Path(td)
+            first = project / ".claude" / "skills" / "universal-project-governance"
+            second = project / ".agents" / "skills" / "universal-project-governance"
+            first.mkdir(parents=True)
+            second.mkdir(parents=True)
+            (first / "SKILL.md").write_text("first\n", encoding="utf-8")
+            (second / "SKILL.md").write_text("second\n", encoding="utf-8")
+
+            with self.assertRaisesRegex(RuntimeError, "multiple installed UPG copies"):
+                UPG.find_installed(project, "claude")
+
     def test_top_level_installer_decodes_utf8_cli_output_on_windows(self):
         with tempfile.TemporaryDirectory() as td:
             cp = UPG.run(

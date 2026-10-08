@@ -1,6 +1,6 @@
 # Contributing
 
-Current candidate: **3.0.0-rc.14 — Runtime Integrity and Diagnostic Hardening**. RC14 carries forward RC13 runtime completion and schema validation, then closes independent-review findings in credential redaction, timeout classification/budgets, and reporting opt-in failure atomicity. Qualification thresholds remain unchanged. Current test/freeze/smoke evidence and remaining host limits live in [`PROJECT_STATE.md`](PROJECT_STATE.md); historical outcomes and unknown causes remain unchanged.
+Current candidate: **3.0.0-rc.15 — Deterministic Skill Target Resolution**. RC15 corrects duplicate Skill-copy selection in the top-level installer while preserving unique non-Codex targets and failing closed on ambiguity. Qualification thresholds remain unchanged. Current test/freeze/smoke evidence and remaining host limits live in [`PROJECT_STATE.md`](PROJECT_STATE.md); RC14 and earlier outcomes remain historical.
 
 ## Structural contribution rule
 

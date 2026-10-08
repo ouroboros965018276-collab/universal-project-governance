@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.0.0-rc.15 — 2026-10-08
+
+Deterministic Skill Target Resolution. Qualification thresholds and the A0/A1/A2 protocol remain unchanged.
+
+- Reproduces the top-level installer selecting a lexically earlier stale UPG copy when projects contain duplicates; regression tests cover the Codex canonical target, a unique non-Codex target, and ambiguous-copy refusal.
+- Resolves Codex operations only through `.agents/skills/universal-project-governance`. An older/noncanonical copy counts as preexisting during install rollback so failed installation does not automatically remove preexisting project files.
+- Regenerates the runtime and qualification freeze because `upg.py` is a frozen deployment surface. Full validation and hosted checks are pending.
+
 ## 3.0.0-rc.14 — 2026-10-08
 
 Runtime Integrity and Diagnostic Hardening. Qualification thresholds and the A0/A1/A2 protocol remain unchanged.

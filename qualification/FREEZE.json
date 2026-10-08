@@ -6,7 +6,7 @@
   ],
   "behavioral_fingerprint": "sha256:b82114f143db8076bdd6d1da58148e9c1f60fc02144a71227352b59597dbd83e",
   "compiler_sha256": "sha256:770f5df973c8bf18e66893d2ba276e22f91d7a349332f75428e4c27a82946121",
-  "deployment_sha256": "sha256:e0d549e33ae8f403ee41758efc252c8575d04eadf0eca62a071a8e11d83e36ef",
+  "deployment_sha256": "sha256:716b4348dc21f15cc35d349e2da717195a20d053a265573ed267ee1fcab8bacf",
   "evaluator_sha256": "sha256:0e5db11877dc3fd987bc6a922c12165eea050d3ed65799487d4f4b6d6ade4676",
   "fixture_set_sha256": "sha256:58995b7e9bed93a54dc0c0bf7bc14c0a8f4376c17ab1980db4d856bae1951231",
   "freeze_invalidation": "Any change to a frozen surface requires a new qualification fingerprint and invalidates unfinished/claimed evidence under the prior fingerprint.",
@@ -30,13 +30,13 @@
     "qualification/analyze.py",
     "qualification/round_manifest.py"
   ],
-  "governance_model_sha256": "sha256:367cb1307533e4b2816dff053a4343fe7cf0ed9d45e402e37358eda5c4aaaa11",
+  "governance_model_sha256": "sha256:1b55ab00f62ac64408ce77d34b2754eae510ea2b7ae948e3c2928b6a29e3c76d",
   "hash_algorithm_revision": "repo-relative-posix-v2",
-  "qualification_fingerprint": "sha256:e6e2bce7d6127655f49e88fd8d9e90e3ef2c0535c03fef1df5e2d6446d258b45",
+  "qualification_fingerprint": "sha256:12d689cf8c1ff55480ba0295d046d1fe1a4a482ff1a76d7b6789f38817211a8a",
   "qualification_protocol_sha256": "sha256:464fcdb23f0b107e9c53149ae377945ff8417615dc47d4c9895a76c088fdddd3",
   "runner_sha256": "sha256:b90fdc5dbd8238684c7e9816ea677fcf9b3d38a6c7ef5ca337c7e628fb1f238a",
-  "runtime_tree_sha256": "sha256:3f9b8c07c3321924f3c797924dd620efaa0c2b4c141b26249bf8cc35e472633f",
+  "runtime_tree_sha256": "sha256:49e12cd173649374ae69ba1eedb504cb0778dd5a9bf264febcdeba1c77095728",
   "schema_version": 3,
   "state": "real-agent-test-freeze",
-  "version": "3.0.0-rc.14"
+  "version": "3.0.0-rc.15"
 }

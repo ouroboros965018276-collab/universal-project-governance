@@ -1,8 +1,8 @@
 # Publishing and Test-Freeze Gates
 
-Current candidate: **3.0.0-rc.14 — Runtime Integrity and Diagnostic Hardening**
+Current candidate: **3.0.0-rc.15 — Deterministic Skill Target Resolution**
 
-RC14 incorporates RC13 runtime completion and schema checks, then fixes three independently reviewed gaps: shared URL-userinfo redaction, structured preflight timeout handling with a reserved timeout budget, and failure-neutral reporting opt-in validation. It does not change qualification thresholds. RC14 remains a release candidate until the current checks, smoke, installation, and hosted CI state in [PROJECT_STATE.md](PROJECT_STATE.md) are verified. Historical RC12 acceptance remains 1 FAIL + 4 BLOCKED; the formal locked run remains NOT RUN; empirical qualification and Stable are NOT ACHIEVED.
+RC15 fixes a verified duplicate-copy selection defect in the top-level installer. Codex resolves only `.agents/skills/universal-project-governance`; other Agent targets remain supported when unique and reject ambiguous copies. This change is in the deployment freeze surface, so RC15 has a new generated runtime and qualification fingerprint. It does not change qualification thresholds. RC14 evidence in [PROJECT_STATE.md](PROJECT_STATE.md) remains historical; RC15 must complete its own checks and hosted review. The formal locked run remains NOT RUN; empirical qualification and Stable are NOT ACHIEVED.
 
 ## Engineering gate before real-Agent testing
 
