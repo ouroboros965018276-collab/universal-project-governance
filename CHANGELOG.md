@@ -6,7 +6,7 @@ Deterministic Skill Target Resolution. Qualification thresholds and the A0/A1/A2
 
 - Reproduces the top-level installer selecting a lexically earlier stale UPG copy when projects contain duplicates; regression tests cover the Codex canonical target, a unique non-Codex target, and ambiguous-copy refusal.
 - Resolves Codex operations only through `.agents/skills/universal-project-governance`. An older/noncanonical copy counts as preexisting during install rollback so failed installation does not automatically remove preexisting project files.
-- Regenerates the runtime and qualification freeze because `upg.py` is a frozen deployment surface. Windows Python 3.12 passed 105/105 tests; repository/freeze/bundle/integrity and security checks passed. Two independent packages match SHA-256 `6ac4d1a90ba640c1ec0ac974258cb0a678f0f8e105c348496fa3225e5a627128`. Exact-HEAD hosted CI run #244 was queued at the last check.
+- Regenerates the runtime and qualification freeze because `upg.py` is a frozen deployment surface. Windows Python 3.12 passed 105/105 tests; repository/freeze/bundle/integrity and security checks passed. Two independent packages match SHA-256 `6ac4d1a90ba640c1ec0ac974258cb0a678f0f8e105c348496fa3225e5a627128`. Hosted validation follows the branch head in draft [PR #14](https://github.com/ouroboros965018276-collab/universal-project-governance/pull/14); consult live checks for the current result.
 
 ## 3.0.0-rc.14 — 2026-10-08
 
