@@ -155,6 +155,14 @@ class RC9Tests(unittest.TestCase):
             output = home / 'adapter-output.json'
             task.write_text('bounded task', encoding='utf-8')
             condition.write_text('', encoding='utf-8')
+            doctor_stdout = json.dumps({
+                'checks': {'sandbox.helpers': {
+                    'status': 'ok', 'summary': 'sandbox 配置 readable',
+                    'details': {'sandbox backend': 'elevated', 'sandbox provisioning': 'complete'},
+                }},
+            }, ensure_ascii=False).encode('utf-8')
+            doctor = subprocess.CompletedProcess([], 0, doctor_stdout, b'')
+            turn = subprocess.CompletedProcess([], 0, b'{"type":"turn.completed"}\n', b'')
             with patch('qualification.adapters.codex_cli.sys.platform', 'win32'), patch.dict(
                 os.environ, {'CODEX_HOME': td, 'CODEX_CLI_PATH': ''}, clear=False
             ), patch(
@@ -165,11 +173,13 @@ class RC9Tests(unittest.TestCase):
                 }),
             ), patch('qualification.adapters.codex_cli.shutil.which', return_value='codex.exe'), patch(
                 'qualification.adapters.codex_cli.subprocess.run',
-                return_value=subprocess.CompletedProcess([], 0, '{"type":"turn.completed"}\n', ''),
+                side_effect=[doctor, turn],
             ) as run:
                 from qualification.adapters.codex_cli import run as run_codex
                 self.assertEqual(run_codex(td, task, condition, output, 'single', 'gpt-5.5', None), 0)
-                command = run.call_args.args[0]
+                preflight = run.call_args_list[0].args[0]
+                self.assertEqual(preflight[-2:], ['doctor', '--json'])
+                command = run.call_args_list[1].args[0]
                 self.assertEqual(command[:8], [
                     'codex.exe', '-c', 'windows.sandbox="elevated"',
                     '--enable', 'respect_system_proxy', '-c', 'suppress_unstable_features_warning=true', 'exec',
@@ -183,6 +193,47 @@ class RC9Tests(unittest.TestCase):
                     'windows_sandbox': 'elevated',
                     'respect_system_proxy': True,
                 })
+                self.assertEqual(result['sandbox_preflight'], {
+                    'backend': 'elevated', 'provisioning': 'complete',
+                })
+                self.assertEqual(result['events']['host_adaptation'], result['host_adaptation'])
+                self.assertEqual(result['events']['sandbox_preflight'], result['sandbox_preflight'])
+                self.assertIn('sandbox 配置 readable', output.with_suffix('.preflight.stdout.raw').read_text(encoding='utf-8'))
+                self.assertEqual(output.with_suffix('.preflight.stdout.raw').read_bytes(), doctor_stdout)
+                self.assertNotIn('text', run.call_args_list[0].kwargs)
+                self.assertNotIn('text', run.call_args_list[1].kwargs)
+                self.assertIsInstance(run.call_args_list[1].kwargs['input'], bytes)
+
+    def test_windows_codex_sandbox_preflight_stops_before_model_on_failure(self):
+        with tempfile.TemporaryDirectory() as td:
+            home = pathlib.Path(td)
+            task = home / 'task.txt'
+            condition = home / 'condition.md'
+            output = home / 'adapter-output.json'
+            task.write_text('bounded task', encoding='utf-8')
+            condition.write_text('', encoding='utf-8')
+            failed = subprocess.CompletedProcess([], 1, json.dumps({
+                'checks': {'sandbox.helpers': {
+                    'status': 'fail', 'summary': 'sandbox unavailable',
+                    'details': {'sandbox provisioning': 'failed', 'error code': 'helper_sandbox_lock_failed'},
+                }},
+            }), 'raw private diagnostic')
+            with patch('qualification.adapters.codex_cli.sys.platform', 'win32'), patch.dict(
+                os.environ, {'CODEX_HOME': td, 'CODEX_CLI_PATH': ''}, clear=False
+            ), patch(
+                'qualification.adapters.codex_cli.tomllib',
+                SimpleNamespace(loads=lambda _: {'windows': {'sandbox': 'elevated'}}),
+            ), patch('qualification.adapters.codex_cli.shutil.which', return_value='codex.exe'), patch(
+                'qualification.adapters.codex_cli.subprocess.run', return_value=failed
+            ) as run:
+                from qualification.adapters.codex_cli import run as run_codex
+                self.assertEqual(run_codex(td, task, condition, output, 'single', 'gpt-5.5', None), 78)
+            self.assertEqual(run.call_count, 1)
+            result = json.loads(output.read_text(encoding='utf-8'))
+            self.assertFalse(result['sandbox_preflight']['model_invoked'])
+            self.assertIn('helper_sandbox_lock_failed', result['events']['sandbox_preflight']['reason'])
+            self.assertNotIn('raw private diagnostic', json.dumps(result))
+            self.assertEqual(output.with_suffix('.preflight.stderr.raw').read_text(encoding='utf-8'), 'raw private diagnostic')
 
     def test_command_adapter_does_not_forward_undeclared_host_environment(self):
         adapter = CommandAdapter({'environment_passthrough': ['CODEX_HOME', 'HTTPS_PROXY']})
@@ -195,6 +246,9 @@ class RC9Tests(unittest.TestCase):
         self.assertEqual(env['HTTPS_PROXY'], 'http://proxy.invalid:8080')
         self.assertNotIn('CODEX_THREAD_ID', env)
         self.assertNotIn('CODEX_SHELL', env)
+        with tempfile.TemporaryDirectory() as td:
+            values = adapter._control_values(pathlib.Path(td), pathlib.Path(td) / 'task', '', None, None, None, 'single')
+        self.assertEqual(values['python'], sys.executable)
 
     def test_unknown_project_profile_keeps_universal_scope_and_rules(self):
         base={'operation':'edit','domains':['content'],'profiles':[],'signals':[],'risk':{}}

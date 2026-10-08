@@ -4,7 +4,7 @@ description: Govern maintained-project changes with task-bounded integration, pr
 license: Apache-2.0
 compatibility: Core kernel needs no runtime. Optional deterministic planner/state/integrity helpers use Python 3.8+.
 metadata:
-  version: "3.0.0-rc.12"
+  version: "3.0.0-rc.14"
   standard: "agentskills.io"
   maturity: "release-candidate"
   architecture: "compiled-governance"
@@ -48,7 +48,7 @@ Create a typed task context and compile the task-specific plan:
 python3 scripts/plan_governance.py --project-root /path/to/project --context /path/to/task-context.json
 ```
 
-The planner reads the healthy project binding so its field-report obligation reflects the actual project setting. Unknown profile hints fall back to universal task/risk rules; profiles never exclude a project. The plan returns the change mode (`local` or `structural`), an explicit scope guard, active rule closure, required evidence, report level, and whether handoff state is required. Execute that plan; do not load unrelated governance policy.
+The planner validates the full task-context schema and reads the healthy project binding so its field-report obligation reflects the actual project setting. Unknown optional profiles fall back to universal task/risk rules; profiles never exclude a project. The plan returns the change mode (`local` or `structural`), an explicit scope guard, active rule closure, required evidence, report level, and whether handoff state is required. Execute that plan; do not load unrelated governance policy.
 
 If helpers are unavailable, read `policy-index.json` and apply only rules matching the task operation/domains/signals plus their `requires` closure.
 
@@ -75,7 +75,7 @@ Abrupt interruption is a supported continuity mode, not an exceptional assumptio
 
 Use causal parent/revision references and persistent sequence for order. Tool `recorded_at` is observation time, never invented work/commit time. Preserve the previous change and tie validation to the actually tested state; a stale handoff is evidence to reconcile, not authority to overwrite current truth.
 
-When the project binding has `field_test_reporting=true`, every completed modifying workflow must append exactly one field-test report through `scripts/project_tool.py report <project-root> --input <report.json>` before completion is claimed. Include `workflow_id` and `change` metadata. Identical retries are idempotent; conflicting retries fail. Export and verify evidence before explicit epoch rotation; sequence never resets, and task IDs are unique within the declared retention epoch. The ledger stores metadata/evidence summaries only, never source contents, secrets, or private chain-of-thought. With reporting disabled, do not create a field ledger or report merely to satisfy the ordinary governance-note level.
+For tracked non-trivial work, use `scripts/project_tool.py finish <project-root> --input <report.json>` to record completion. It shares one reconciliation path across reporting modes: with `field_test_reporting=true` it appends exactly one report; otherwise it advances bounded latest/previous state without creating a ledger. Partial or blocked work remains active for recovery. Include `workflow_id` and `change` metadata. Identical retries are idempotent; conflicting retries fail. Export and verify evidence before explicit epoch rotation; sequence never resets, and task IDs are unique within the declared retention epoch. The ledger stores metadata/evidence summaries only, never source contents, secrets, or private chain-of-thought. With reporting disabled, do not create a field ledger or report merely to satisfy the ordinary governance-note level.
 
 ## Integrity
 

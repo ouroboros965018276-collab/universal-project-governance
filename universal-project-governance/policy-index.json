@@ -899,7 +899,7 @@
     "release_operation_forces": "audit"
   },
   "schema_version": 1,
-  "source_sha256": "63f8441c3eaea37f23db05a200c1a2f1433edbfee6dd245b594bb321c37c597c",
+  "source_sha256": "c38ad35c7e93c33144cb6a5b2e61b2a35bbe8cd7f08576e64b805f1935b3be5a",
   "structural_integration": {
     "exempt_operations": [
       "release"
@@ -953,5 +953,5 @@
       "governance_upgrade"
     ]
   },
-  "version": "3.0.0-rc.12"
+  "version": "3.0.0-rc.14"
 }
