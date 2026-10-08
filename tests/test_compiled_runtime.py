@@ -45,7 +45,7 @@ class CompiledRuntimeTests(unittest.TestCase):
             (stale / "SKILL.md").write_text("stale copy\n", encoding="utf-8")
             (installed / "SKILL.md").write_text("current Codex install\n", encoding="utf-8")
 
-            self.assertEqual(UPG.find_installed(project), installed)
+            self.assertEqual(UPG.find_installed(project), installed.resolve())
 
     def test_top_level_installer_does_not_treat_old_copy_as_codex_install(self):
         with tempfile.TemporaryDirectory() as td:
@@ -63,7 +63,7 @@ class CompiledRuntimeTests(unittest.TestCase):
             installed.mkdir(parents=True)
             (installed / "SKILL.md").write_text("single copy\n", encoding="utf-8")
 
-            self.assertEqual(UPG.find_installed(project, "claude"), installed)
+            self.assertEqual(UPG.find_installed(project, "claude"), installed.resolve())
 
     def test_top_level_installer_fails_closed_on_ambiguous_non_codex_copies(self):
         with tempfile.TemporaryDirectory() as td:
