@@ -10,6 +10,11 @@ import subprocess
 import sys
 import time
 
+if __package__:
+    from .diagnostics import redact_text
+else:
+    from diagnostics import redact_text
+
 try:
     import tomllib
 except ImportError:
@@ -91,7 +96,79 @@ def _usage(stdout):
     return result
 
 
-def _diagnostics(stdout, last_message, return_code, timed_out):
+def _decode_output(value):
+    if value is None:
+        return ""
+    if isinstance(value, bytes):
+        return value.decode("utf-8", errors="replace")
+    return value
+
+
+def _host_config_args(preferences):
+    args = []
+    if preferences.get("windows_sandbox"):
+        args.extend(["-c", 'windows.sandbox="%s"' % preferences["windows_sandbox"]])
+    if preferences.get("respect_system_proxy"):
+        args.extend([
+            "--enable", "respect_system_proxy",
+            "-c", "suppress_unstable_features_warning=true",
+        ])
+    return args
+
+
+class PreflightTimeoutError(RuntimeError):
+    """Windows sandbox preflight timed out before any Agent invocation."""
+
+
+def _preflight_windows_sandbox(codex, preferences, output_file=None, timeout_seconds=None):
+    if sys.platform != "win32":
+        return None
+    command = [codex] + _host_config_args(preferences) + ["doctor", "--json"]
+    raw_paths = None
+    if output_file is not None:
+        output_path = pathlib.Path(output_file)
+        raw_paths = (
+            output_path.with_suffix(".preflight.stdout.raw"),
+            output_path.with_suffix(".preflight.stderr.raw"),
+        )
+    try:
+        checked = subprocess.run(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=30 if timeout_seconds is None else timeout_seconds,
+            check=False,
+        )
+    except subprocess.TimeoutExpired as exc:
+        if raw_paths:
+            _write_raw(raw_paths[0], exc.stdout)
+            _write_raw(raw_paths[1], exc.stderr)
+        raise PreflightTimeoutError("Codex Windows sandbox preflight timed out") from exc
+    stdout = _decode_output(checked.stdout)
+    stderr = _decode_output(checked.stderr)
+    if raw_paths:
+        _write_raw(raw_paths[0], checked.stdout)
+        _write_raw(raw_paths[1], checked.stderr)
+    try:
+        report = json.loads(stdout)
+    except (TypeError, json.JSONDecodeError) as exc:
+        raise RuntimeError("Codex Windows sandbox preflight returned invalid diagnostics") from exc
+    checks = report.get("checks") if isinstance(report, dict) else None
+    sandbox = checks.get("sandbox.helpers") if isinstance(checks, dict) else None
+    details = sandbox.get("details") if isinstance(sandbox, dict) else None
+    if not isinstance(details, dict):
+        raise RuntimeError("Codex Windows sandbox preflight omitted sandbox diagnostics")
+    provisioning = details.get("sandbox provisioning")
+    if checked.returncode != 0 or sandbox.get("status") != "ok" or provisioning != "complete":
+        reason = details.get("error code") or sandbox.get("summary") or "sandbox status unavailable"
+        raise RuntimeError("Codex Windows sandbox preflight failed: " + str(reason))
+    return {
+        "backend": details.get("sandbox backend"),
+        "provisioning": provisioning,
+    }
+
+
+def _diagnostics(stdout, last_message, return_code, timed_out, stderr=""):
     event_counts = {}
     errors = []
     for line in stdout.splitlines():
@@ -105,7 +182,7 @@ def _diagnostics(stdout, last_message, return_code, timed_out):
         item = event.get("item", {})
         message = event.get("message") if event_type == "error" else item.get("message") if item.get("type") == "error" else None
         if isinstance(message, str) and len(errors) < 5:
-            errors.append(message[:300])
+            errors.append(redact_text(message)[:300])
     result = {
         "exit_code": return_code,
         "timed_out": timed_out,
@@ -113,11 +190,23 @@ def _diagnostics(stdout, last_message, return_code, timed_out):
         "errors": errors,
         "last_message_exists": last_message.is_file(),
     }
+    if stderr:
+        result["stderr_excerpt"] = redact_text(stderr[-1000:])
     if last_message.is_file():
         data = last_message.read_bytes()
         result["last_message_bytes"] = len(data)
         result["last_message_sha256"] = "sha256:" + hashlib.sha256(data).hexdigest()
     return result
+
+
+def _write_raw(path, value):
+    if value is None:
+        data = b""
+    else:
+        data = value if isinstance(value, bytes) else value.encode("utf-8", errors="replace")
+    path = pathlib.Path(path)
+    path.write_bytes(data)
+    return len(data), hashlib.sha256(data).hexdigest()
 
 
 def run(workspace, task_file, condition_file, output_file, phase, model_id, skill_path):
@@ -140,15 +229,47 @@ def run(workspace, task_file, condition_file, output_file, phase, model_id, skil
         part for part in [skill, condition, "Task:\n" + task, "Evaluation phase: " + phase] if part
     )
     host_preferences = _host_preferences()
+    output_path = pathlib.Path(output_file)
+    preflight_started = time.monotonic()
+    try:
+        preflight_timeout = float(os.environ.get("UPG_ADAPTER_PREFLIGHT_TIMEOUT_SECONDS", "30"))
+        sandbox_preflight = _preflight_windows_sandbox(codex, host_preferences, output_path, preflight_timeout)
+    except (OSError, RuntimeError) as exc:
+        reason = redact_text(str(exc))
+        elapsed = time.monotonic() - preflight_started
+        timed_out = isinstance(exc, PreflightTimeoutError)
+        exit_code = 124 if timed_out else 78
+        failure_category = "preflight_timed_out" if timed_out else "preflight_failed"
+        payload = {
+            "usage": {"usage_available": False, "wall_time_seconds": elapsed},
+            "events": {
+                "exit_code": exit_code,
+                "timed_out": timed_out,
+                "failure_category": failure_category,
+                "timeout_phase": "windows_sandbox_preflight" if timed_out else None,
+                "sandbox_preflight": {
+                    "status": "timed_out" if timed_out else "failed",
+                    "reason": reason,
+                    "failure_category": failure_category,
+                    "timed_out": timed_out,
+                    "model_invoked": False,
+                },
+            },
+            "host_adaptation": host_preferences,
+            "sandbox_preflight": {
+                "status": "timed_out" if timed_out else "failed",
+                "reason": reason,
+                "failure_category": failure_category,
+                "timed_out": timed_out,
+                "model_invoked": False,
+            },
+        }
+        output_path.write_text(json.dumps(payload), encoding="utf-8")
+        print("error: " + reason, file=sys.stderr)
+        return exit_code
     last_message = pathlib.Path(output_file).with_suffix(".last-message.txt")
     command = [codex]
-    if host_preferences.get("windows_sandbox"):
-        command.extend(["-c", 'windows.sandbox="%s"' % host_preferences["windows_sandbox"]])
-    if host_preferences.get("respect_system_proxy"):
-        command.extend([
-            "--enable", "respect_system_proxy",
-            "-c", "suppress_unstable_features_warning=true",
-        ])
+    command.extend(_host_config_args(host_preferences))
     command.extend([
         "exec",
         "--cd",
@@ -170,34 +291,45 @@ def run(workspace, task_file, condition_file, output_file, phase, model_id, skil
     try:
         completed = subprocess.run(
             command,
-            input=prompt,
-            text=True,
+            input=prompt.encode("utf-8"),
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            timeout=900,
+            timeout=float(os.environ.get("UPG_ADAPTER_TIMEOUT_SECONDS", "870")),
             check=False,
         )
-        stdout = completed.stdout
-        stderr = completed.stderr or ""
+        stdout_raw = completed.stdout
+        stderr_raw = completed.stderr
+        stdout = _decode_output(stdout_raw)
+        stderr = _decode_output(stderr_raw)
         return_code = completed.returncode
     except subprocess.TimeoutExpired as exc:
-        stdout = exc.stdout or ""
-        if isinstance(stdout, bytes):
-            stdout = stdout.decode("utf-8", errors="replace")
-        stderr = exc.stderr or ""
-        if isinstance(stderr, bytes):
-            stderr = stderr.decode("utf-8", errors="replace")
+        stdout_raw = exc.stdout
+        stderr_raw = exc.stderr
+        stdout = _decode_output(stdout_raw)
+        stderr = _decode_output(stderr_raw)
         return_code = 124
         timed_out = True
     usage = _usage(stdout)
     usage["wall_time_seconds"] = time.monotonic() - started
+    stdout_bytes, stdout_sha = _write_raw(output_path.with_suffix(".stdout.raw"), stdout_raw)
+    stderr_bytes, stderr_sha = _write_raw(output_path.with_suffix(".stderr.raw"), stderr_raw)
+    events = _diagnostics(stdout, last_message, return_code, timed_out, stderr)
+    events["host_adaptation"] = host_preferences
+    events["sandbox_preflight"] = sandbox_preflight
     payload = {
         "usage": usage,
-        "events": _diagnostics(stdout, last_message, return_code, timed_out),
+        "events": events,
         "host_adaptation": host_preferences,
-        "stderr": stderr[-8000:],
+        "sandbox_preflight": sandbox_preflight,
+        "stderr": redact_text(stderr[-8000:]),
+        "diagnostics": {
+            "stdout_bytes": stdout_bytes,
+            "stdout_sha256": "sha256:" + stdout_sha,
+            "stderr_bytes": stderr_bytes,
+            "stderr_sha256": "sha256:" + stderr_sha,
+        },
     }
-    pathlib.Path(output_file).write_text(json.dumps(payload), encoding="utf-8")
+    output_path.write_text(json.dumps(payload), encoding="utf-8")
     if timed_out:
         print("error: Codex CLI exceeded the 900-second task timeout", file=sys.stderr)
     return return_code

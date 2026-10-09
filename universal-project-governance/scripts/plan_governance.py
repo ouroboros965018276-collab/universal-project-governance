@@ -6,7 +6,7 @@ import argparse
 import json
 from pathlib import Path
 import sys
-from project_tool import status as project_status
+from project_tool import status as project_status, validate_node
 
 REPORT_ORDER = {"none": 0, "change-note": 1, "engineering": 2, "audit": 3}
 
@@ -38,6 +38,8 @@ def normalize_context(args: argparse.Namespace) -> dict:
             "explicit_audit": args.audit,
             "risk": risk,
         }
+    if not isinstance(data, dict):
+        raise ValueError("task context must be an object")
     data.setdefault("signals", [])
     data.setdefault("profiles", [])
     data.setdefault("unfinished", False)
@@ -47,23 +49,22 @@ def normalize_context(args: argparse.Namespace) -> dict:
 
 
 def validate_context(ctx: dict, index: dict) -> None:
-    allowed_ops = set(index["task_contract"]["operations"])
-    allowed_domains = set(index["task_contract"]["domains"])
-    if ctx.get("operation") not in allowed_ops:
-        raise ValueError("unknown operation: %r" % ctx.get("operation"))
-    if not isinstance(ctx.get("domains"), list) or any(x not in allowed_domains for x in ctx["domains"]):
-        raise ValueError("domains must be a list of known domain IDs")
-    if "field_test_reporting" in ctx and type(ctx["field_test_reporting"]) is not bool:
-        raise ValueError("field_test_reporting must be boolean")
+    if not isinstance(ctx, dict):
+        raise ValueError("task context must be an object")
     dims = index["risk_model"]["dimensions"]
-    for key, value in ctx.get("risk", {}).items():
-        if key not in dims:
-            raise ValueError(
-                "unknown risk dimension: %s (expected one of: %s)"
-                % (key, ", ".join(sorted(dims)))
-            )
-        if (not isinstance(value, int) or isinstance(value, bool)) or value < 0 or value > dims[key]["max"]:
-            raise ValueError("invalid risk dimension/value: %s=%r" % (key, value))
+    risk_values = ctx.get("risk", {})
+    if isinstance(risk_values, dict):
+        for key, value in risk_values.items():
+            if key not in dims:
+                raise ValueError(
+                    "unknown risk dimension: %s (expected one of: %s)"
+                    % (key, ", ".join(sorted(dims)))
+                )
+    schema_path = Path(__file__).resolve().parents[1] / "schemas" / "task-context.schema.json"
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    errors = validate_node(ctx, schema)
+    if errors:
+        raise ValueError("invalid task context: " + "; ".join(errors))
 
 
 def trigger_matches(policy: dict, ctx: dict) -> bool:

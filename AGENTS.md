@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Current candidate: **3.0.0-rc.12 — Qualification Evidence Refresh**.
+Current candidate: **3.0.0-rc.15 — Deterministic Skill Target Resolution**.
 
 ## First modifying activation
 
@@ -32,9 +32,9 @@ New project bindings default field-test reporting off. Qualification A2 workspac
 
 RC9 binding v2 records in-place adoption, handoff-or-reconstruct continuity, capability handshake, and whether the project existed before adoption. Never rewrite these paths outside the project-tool lifecycle.
 
-## Completion report
+## Completion
 
-While field-test reporting is enabled, every completed modifying workflow records **exactly one** report before completion is claimed. Reports contain bounded metadata/evidence summaries only; never copy source bodies, credentials, secrets, customer/private data, or private chain-of-thought into them.
+For tracked non-trivial work, begin and finish through `project_tool.py`. The `finish` command records one completion path in both reporting modes: reporting on appends exactly one bounded field report; reporting off advances the existing latest/previous checkpoints without creating a ledger. Partial or blocked work remains active for recovery. Do not copy source bodies, credentials, secrets, customer/private data, or private chain-of-thought into reports.
 
 ## Continuity
 

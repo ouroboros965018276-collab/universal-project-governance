@@ -1,8 +1,8 @@
 # Publishing and Test-Freeze Gates
 
-Current candidate: **3.0.0-rc.12**
+Current candidate: **3.0.0-rc.15 — Deterministic Skill Target Resolution**
 
-RC12 is an evidence-refresh candidate with no runtime semantic or qualification-threshold changes from RC11. Current micro-project functional/receipt checks pass 5/5, but historical governance remains 1 FAIL + 4 BLOCKED. Its registered real-Agent smoke is FAIL; locked qualification is NOT RUN; empirical qualification and Stable are NOT ACHIEVED. See [PROJECT_STATE.md](PROJECT_STATE.md) for the evidence boundary and current host constraints.
+RC15 fixes a verified duplicate-copy selection defect in the top-level installer. Codex resolves only `.agents/skills/universal-project-governance`; other Agent targets remain supported when unique and reject ambiguous copies. This change is in the deployment freeze surface, so RC15 has a new generated runtime and qualification fingerprint. It does not change qualification thresholds. RC14 evidence in [PROJECT_STATE.md](PROJECT_STATE.md) remains historical; RC15 must complete its own checks and hosted review. The formal locked run remains NOT RUN; empirical qualification and Stable are NOT ACHIEVED.
 
 ## Engineering gate before real-Agent testing
 

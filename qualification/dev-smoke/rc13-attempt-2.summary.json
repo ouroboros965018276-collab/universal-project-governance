@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "record_type": "prospective-formal-development-smoke-diagnostic",
+  "smoke_id": "dev-smoke-c42c634ad96240df9ccb547bcac38f0b",
+  "trial_id": "d589d70a-c2e6-5e32-9154-9ea6145828f9",
+  "observed_at": "2026-10-08",
+  "observation_time_source": "Read-only inspection after execution-session reconnect; exact execution and completion times were not retained.",
+  "candidate_version": "3.0.0-rc.13",
+  "status": "INCOMPLETE",
+  "release_eligible": false,
+  "qualification_fingerprint": "sha256:31f754a18bd07cd07339eb148e726ac6df817032f71dc65506f63461e75234a7",
+  "behavioral_fingerprint": "sha256:5762c1b487bcccc6fefb298738dea325b09e891a976ce16b173a1c47a4f400f8",
+  "agent": {
+    "family": "codex",
+    "model_id": "gpt-6-luna",
+    "scaffold_version": "codex-cli-0.162.0-alpha.20"
+  },
+  "host_tool": {
+    "name": "Codex CLI",
+    "version": "0.162.0-alpha.20"
+  },
+  "adapter_identity": {
+    "adapter_id": "codex-cli-windows-0.162.0-alpha.20",
+    "adapter_config_sha256": "sha256:71b83cb02913358ecee32ad976827595d3a56bc88d4f7b099c5d3357cf18ec9c",
+    "adapter_runtime_sha256": "sha256:ae0956c8c16f8beac637a5760d2b74913467d069af03790009ea616225da6f67"
+  },
+  "scenario_id": "dev-small-typo",
+  "workspace_isolation": "process",
+  "externally_attested_isolation": false,
+  "registration_sha256": "sha256:64e91647a23710e0ef8824a545e0d987d5750807f9dededb0df745c193373291",
+  "failure": {
+    "stage": "execution-session-recovery",
+    "reason": "The execution session disconnected after registration. Follow-up found only registration.json, no trial/summary/raw files, and no matching active Python or Codex process. A later read-only doctor check reported elevated sandbox provisioning incomplete, but cannot establish the interrupted attempt's exact progression.",
+    "model_invocation": "unknown",
+    "usage": "unknown; do not infer zero",
+    "raw_run_artifacts_retained_outside_repository": false
+  },
+  "privacy": {
+    "registration_contents_published": false,
+    "project_source_published": false,
+    "local_paths_published": false
+  }
+}

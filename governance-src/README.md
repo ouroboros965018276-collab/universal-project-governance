@@ -11,9 +11,12 @@ The canonical model defines:
 - task-bounded structural integration;
 - the two-file project binding;
 - opt-in temporary field-test reporting;
+- schema-validated task contexts and shared completion reconciliation;
 - runtime complexity budgets.
 
 Runtime helpers and schemas are compiled from this directory.
+
+`runtime-scripts/project_tool.py` owns the workflow lifecycle. Its `finish` command updates bounded completion state when reporting is disabled and delegates to the same exactly-once ledger path when reporting is enabled. `runtime-scripts/plan_governance.py` validates the complete task-context schema before compiling a plan; unknown optional profile labels remain universal fallbacks.
 
 ## Structural scope rule
 

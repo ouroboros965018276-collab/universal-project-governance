@@ -1,108 +1,29 @@
 # Module Map
 
-Current candidate: **3.0.0-rc.12**.
+Current candidate: **3.0.0-rc.15 — Deterministic Skill Target Resolution**.
 
-This map describes the current tree only. Historical implementations belong in Git history.
+This is the single current-tree map. Git history, `CHANGELOG.md`, and dated audit records retain prior states; generated output and validation artifacts are not alternate sources of policy truth.
 
-## governance-src/
+| Module / concept | Function and reason it exists | Canonical source | Edit / regeneration rule | Change impact |
+|---|---|---|---|---|
+| `governance-src/model/governance-model.json` | Machine-readable policy graph, risk model, scope rules, project binding contract, Hot Path, version, and complexity budgets. One model keeps policy semantics consistent. | This file. | Edit for semantic changes; compile the installable runtime and update its version. | Changes planning behavior, generated runtime, behavioral identity, and qualification identity. |
+| `governance-src/profiles/` | Optional project-type hints let the planner emphasize relevant rules without excluding unnamed project types. | The profile JSON files plus universal rules in the model. | Edit only when a real profile distinction is needed; unknown hints must keep the universal fallback. | Changes profile selection and affected plans; requires planner and fixture coverage. |
+| `governance-src/schemas/` | Contracts define task context, plans, execution, feedback, handoff, audit, and field reports. They bound accepted state and data types. | The schema files. | Edit schemas with their producer/consumer and regression tests; runtime schemas are compiler-generated. | Changes input acceptance, state compatibility, and validation outcomes. |
+| `governance-src/runtime-scripts/` | Deterministic planner, project lifecycle, state, and integrity helpers implement behavior that should not be duplicated in prompts. | These Python sources. | Edit source only; regenerate `universal-project-governance/` with `compiler/compile_governance.py`. | Changes runtime behavior and the qualification identity; requires relevant lifecycle and schema regressions. |
+| `governance-src/templates/` | The Skill template gives the Agent concise operating instructions and points to canonical helpers instead of restating policy bodies. | Template Markdown and the model/schema references it names. | Edit the template, then compile and validate the generated Skill. | Changes Agent instructions and behavioral identity. |
+| `compiler/` | Deterministic compilation converts model, schemas, helpers, and template into an installable Skill. | Compiler code plus canonical sources above. | Change only for a compiler defect; regenerate, then run compiler check and bundle/integrity checks. | Can alter every runtime file and qualification fingerprints. |
+| `universal-project-governance/` | Generated host-consumable Skill bundle: instructions, policy index, schemas, helpers, and integrity manifest. | `governance-src/` plus `compiler/`. | Generated only; never hand-edit. | Package and installed Skill bytes change; integrity and version must match the source candidate. |
+| `upg.py` | Repository-local command-line wrapper exposes project install/status/export/purge/remove while delegating ownership and semantics to the runtime lifecycle helper. | `upg.py` for command routing; generated `project_tool.py` for lifecycle rules. | Edit routing here, semantic state transitions in canonical runtime source. | Changes CLI/deployment behavior; verify wrapper and installed lifecycle paths. |
+| `qualification/protocol/` | Frozen q3 experiment contract defines arms, scenarios, sampling, inference, safety, deployment, efficiency, subgroup semantics, and release gates. | Protocol and threshold files; `qualification/lib/contracts.py` enforces candidate identity and allowed settings. | Freeze before a result round; any protocol edit creates a new qualification fingerprint and invalidates evidence under the old identity. | Changes what evidence can support a release decision. |
+| `qualification/fixtures/` | Development and locked labs turn task/governance/safety expectations into explicit, reviewable scenarios. | Fixture JSON and scope contracts. | Edit only with a justified scenario change and matching evaluator review; refreeze before a new round. | Changes trial workload, safety exposure, and qualification identity. |
+| `qualification/lib/` | Registration, identity, execution, artifact retention, deployment checks, schema contracts, and timestamp utilities coordinate trial state. | The contracts and helper modules; protocol remains the source of thresholds. | Edit only for a verified contract or execution defect; update affected tests and freeze. | Changes evidence registration/admission/retention and can invalidate prior-round identity. |
+| `qualification/adapters/diagnostics.py` | One shared redaction implementation sanitizes public adapter events while raw logs stay in local evidence storage. | This helper. | Edit its patterns once; adapter runtime identity includes it wherever used. Add synthetic secret/path regressions. | Changes what diagnostic content can enter public summaries and manifests. |
+| `qualification/adapters/` and trial runners | Adapters invoke real Agent hosts; `run_trial.py`, handoff/trigger runners, and `dev_smoke.py` bind execution to registration and preserve diagnostics. | Adapter configs/runtime sources and runner code; host configuration is observed, not inferred. | Edit adapters/runners before a round, preserve raw output locally, publish sanitized summaries, then regenerate freeze. | Changes Agent identity, execution, safety isolation, timeout, usage, and artifact evidence. |
+| `qualification/analysis/`, `graders/`, and `mutations/` | Graders score tasks, analysis applies registered gates/inference, and mutations check evaluator sensitivity. Separation prevents evaluator logic from being confused with Agent execution. | Protocol thresholds, grader definitions, analysis code, and known-bad mutation fixtures. | Change only for a demonstrated scoring/evaluator defect; add mutation/regression evidence and refreeze. | Changes measured outcomes and release decisions. |
+| `qualification/dev-smoke/`, `pilots/`, and `results/` | Path-free smoke/pilot summaries and completed experiment records document observations; raw outputs stay local. `results/` is empty until real execution. | Registered trial artifacts and their sanitized summaries; these are evidence, not runtime policy. | Preserve completed evidence; never backfill unknown events or publish raw source/logs. | Changes the audit record, not governance behavior. A development smoke cannot establish locked or empirical qualification. |
+| `tools/` | Repository, lint, qualification, freeze, security, bundle, integrity, and deterministic packaging checks establish candidate evidence. | Each check's own source; release criteria remain in the protocol. | Fix scoped tool defects and rerun affected checks; the freeze identity tool itself is fingerprinted. | Changes validation evidence, packaging, or qualification identity. |
+| `tests/` | Deterministic regressions cover compiler/runtime, project lifecycle, privacy, qualification contracts, and statistics before costly real-Agent runs. | Test code mirrors, but does not replace, canonical runtime/protocol contracts. | Add/adjust tests alongside source fixes; tests are not shipped in the Skill. | Changes engineering evidence; source changes are still required to change behavior. |
+| Root docs and `audits/` | `README.md` explains use; `AGENTS.md` governs repository work; `CONTRIBUTING.md` and `PUBLISHING.md` define workflows; `PROJECT_STATE.md` records current state; `MODULE_MAP.md` is this map; `CHANGELOG.md` and dated audits retain factual history. | Runtime/protocol source for behavior; observed Git, validation, and retained evidence for state/history. | Keep current docs factual and non-duplicative; mark unknown times/causes as unknown. Do not create a second chronology database. | Changes user expectations, contributor actions, release claims, and handoff clarity. |
+| `.governance/` | Per-checkout binding, current handoff, and optional bounded field-report ledger let work recover across actors without chat memory. | The project's own files as observed; lifecycle semantics come from generated `project_tool.py`. | Manage only through lifecycle commands; local project state is not repository release source. | Changes a project's recoverability/report state. Never commit it or treat it as a runtime artifact. |
 
-**Function:** canonical governance, interoperability, project-binding, and field-report semantics.  
-**Why it exists:** one editable source prevents policy/runtime/document drift.  
-**Change rule:** semantic changes require regeneration, full validation, and a new qualification identity.
-
-### model/governance-model.json
-
-**Function:** canonical version, Hot Path, policy graph, risk model, task-bounded structural integration, binding v2, and complexity budgets.  
-**Why:** runtime behavior must have one authoritative machine-readable definition.
-
-### profiles/
-
-**Function:** optional project-type activation hints.  
-**Why:** different maintained-project forms benefit from different policy emphasis without forking governance semantics.  
-**Current coverage:** software, data, infrastructure, ML/AI, automation, docs/knowledge, design systems, research/evidence, content/editorial, product/specification, operations/runbooks, and mixed projects.  
-**Boundary:** an unknown type still works through universal defaults and task/risk triggers; profiles are not an allowlist.
-
-### runtime-scripts/
-
-Source for generated deterministic helpers:
-
-- `plan_governance.py` — compiles typed task context into the smallest active rule closure, risk, change mode, scope guard, evidence, report level, field-report obligation, and handoff obligations.
-- `project_tool.py` — owns bounded binding v2 lifecycle, non-destructive legacy adoption, opt-in reporting, status/report/export/purge/remove, and field-report secret hygiene.
-- `state_tool.py` — validates/renders/compacts/exports schema-first governance state.
-- `validate_integrity.py` — checks generated Skill integrity.
-
-### schemas/
-
-Machine contracts for task context/plans, handoff, execution, feedback, audit, and field reports.
-
-### templates/
-
-Single installable-Skill instruction template. It defines the Agent operating contract without duplicating canonical policy bodies.
-
-## compiler/
-
-**Function:** deterministic canonical-source → installable-runtime compilation.  
-**Why:** `universal-project-governance/` must never become an independently edited truth.
-
-## universal-project-governance/
-
-**Function:** compiler-generated Agent Skill consumed by host systems.  
-**Rule:** never hand-edit. Integrity manifest covers the generated runtime.
-
-The runtime uses capability negotiation rather than vendor-specific behavior and supports in-place adoption plus handoff-or-reconstruct continuity.
-
-## upg.py
-
-**Function:** one-command project-scoped install/status/export/purge/remove wrapper.  
-**Why:** expose a simple lifecycle without duplicating ownership semantics.  
-**Boundary:** project state remains delegated to generated `project_tool.py`; failed fresh installs attempt owned-state and Skill rollback.
-
-## qualification/
-
-**Function:** repository-only causal real-Agent qualification. Never shipped as runtime.
-
-### protocol/
-
-The q3 protocol: minimum three Agent families, hierarchical inference, safety exposures, structural-overreach cohorts, deployment/report rules, reproducibility identity, thresholds, and stopping rules. Formal dev smoke is registered separately and never release-admitted.
-
-### fixtures/
-
-Development and locked labs, including cross-domain trigger cases and handoff tasks. Fixtures carry explicit scope and safety contracts. `qualification/lib/contracts.py` supplies the canonical frozen candidate and settings contract to round planning, locked execution and evidence admission; the analyzer dispatches that admission gate.
-
-### analysis/
-
-- `metrics.py` — pairing/statistical primitives and hierarchical bootstrap.
-- `coverage.py` — locked matrix completeness plus adapter/host identity requirements.
-- `gates.py` — one non-compensatory implementation per release criterion, including exactly-one completion reporting.
-- `analyze.py` — orchestration only.
-
-### adapters/
-
-**Function:** provider/host-neutral bridge to real Agents.  
-**Identity:** Agent/model/scaffold, adapter config SHA-256, adapter runtime SHA-256, host-tool name/version, capabilities, tool profile, budget profile, and isolation.  
-**Cross-Agent handoff:** source and receiving execution identities are both preserved.
-
-### mutations/
-
-Known-bad policy variants used to prove evaluator sensitivity.
-
-### results/
-
-Absent until real execution. Completed locked rounds are immutable.
-
-### pilots/
-
-Desensitized diagnostic field-pilot summaries. These records may explain what was learned and what was absorbed, but they are not locked qualification results and do not contain source bodies or raw traces.
-
-## tests/
-
-**Function:** deterministic preflight regression for compiler/runtime, binding/adoption, privacy hygiene, qualification contracts, statistics, and lifecycle.  
-**Why:** cheap engineering defects must be found before expensive or user-facing trials.
-
-## audits/
-
-**Function:** current threat model and current RC9 readiness evidence only. Superseded readiness audits do not stay in the current tree.
-
-## tools/
-
-Repository/governance/qualification validation, freeze identity, security audit, bundle validation, and deterministic packaging.
+The current project state and qualification boundary live in [`PROJECT_STATE.md`](PROJECT_STATE.md); release instructions and unpassed gates live in [`PUBLISHING.md`](PUBLISHING.md). Historical cause/effect belongs in the changelog and dated evidence records, not duplicated in this map.
