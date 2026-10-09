@@ -7,7 +7,7 @@
 - 已核实工程证据 / Verified engineering evidence: RC15 源提交 [`0808842`](https://github.com/ouroboros965018276-collab/universal-project-governance/commit/0808842e759763c722f77a2fd9b464842480a290) 的本地测试为 105/105；文档后续提交 [`606f8d1`](https://github.com/ouroboros965018276-collab/universal-project-governance/commit/606f8d16d85274b6837e1d4faa2dbc28676330a0) 的 [CI #252](https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/37874780805) 已通过。这些结果不代表本次首页修改已通过检查，也不证明治理提效。
 - 发布状态 / Release status: **候选，非 Stable**。尚无完整的 DeepSeek A0/A1/A2 工程试验或评测结果；一条 RC14 观察性 A1 请求状态仍未知，后续尝试在执行前受阻。真实跨 Agent 对照、交接、成本与资格门槛仍须验证。
 
-状态核对 / Status checked: **2026-10-09 UTC**。下文描述 main 的 RC12 行为与证据；RC15 的当前事实以候选项目状态为准。
+状态核对 / Status checked: **2026-10-09 UTC**。默认分支正文描述 RC12；候选分支正文描述 RC15。各分支运行时版本以该分支的 VERSION.md 为准。
 
 Universal Project Governance is a model-agnostic, host-agnostic Agent Skill for maintained-project governance across software, data, infrastructure, research, content, product/specification, operations, design systems, automation, ML/AI, documentation, and mixed projects.
 
