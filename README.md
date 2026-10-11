@@ -2,11 +2,13 @@
 
 ## 当前版本与开发进度 | Version status
 
-- 本分支候选 / This branch candidate: **3.0.0-rc.16 — Workflow Outcomes and Validation Continuity**，基于 [RC15 / PR #14](https://github.com/ouroboros965018276-collab/universal-project-governance/pull/14)。RC16 的检查与限制见 [PROJECT_STATE.md](PROJECT_STATE.md)；历史 RC15 的 105 项测试不作为 RC16 通过凭据。
-- 默认分支 / Main: **3.0.0-rc.12**。候选分支源码和全局已安装副本是不同状态；检出或打包不会自动升级其他项目的 Skill。
-- 发布状态 / Release: **候选，非 Stable**。历史加载、配对成本收益、真实跨 Agent 接手与锁定资格验证仍有缺口；工程修复不会消除这些证据限制。
+本分支候选 / Candidate: **3.0.0-rc.17 — Budgeted Offline Evolution**。本次整合最新 RC16 修复与固定版本的 Microsoft SkillOpt，增加四算子协同离线优化、统一预算、断点恢复及独立采纳门控。
 
-状态核对 / Status checked: **2026-10-11 Asia/Shanghai**。运行时版本以本分支 [VERSION.md](universal-project-governance/VERSION.md) 为准。
+发布状态 / Release: **候选，非 Stable**。工程实现、真实任务提效与正式资格分别验收；未建立 25% 上下文 token、15% 总 token 或 10% 时间节省的实证结论。版本以 [VERSION.md](universal-project-governance/VERSION.md) 为准，检查结果见 [PROJECT_STATE.md](PROJECT_STATE.md)。
+
+离线引擎使用 Python 3.10+；日常 Skill 无新增模型调用，原有辅助脚本继续支持 Python 3.8+。见[离线优化说明](docs/offline-evolution.md)。本地已有 Skill 不会因远端合并自动更新。
+
+状态日期：**2026-10-12 Asia/Shanghai**。
 
 Universal Project Governance is a model-agnostic, host-agnostic Agent Skill for maintained-project governance across software, data, infrastructure, research, content, product/specification, operations, design systems, automation, ML/AI, documentation, and mixed projects.
 

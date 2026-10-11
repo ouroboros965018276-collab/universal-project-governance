@@ -1,8 +1,22 @@
 # Project State
 
-Current candidate: **3.0.0-rc.16 — Workflow Outcomes and Validation Continuity**.
+Current candidate: **3.0.0-rc.17 — Budgeted Offline Evolution**.
 
-## RC16 candidate
+## RC17 candidate
+
+The upgrade starts from remote main `272861ab9d925e7943fd84cbd6ff210bdb68841d` and integrates the latest public RC16 candidate `9c0efc1165a0e648622d8a4c02c2b1ddbd4986fb` through merge `24ad60309f01e787c2cedb1c258ac8e517e6a953`. The original RC12 checkout and its uncommitted adapter changes are preserved outside this worktree.
+
+RC17 directly reuses pinned MIT SkillOpt code and adds a hash-bound source bridge, shared budgets, deterministic checkpoints, chaotic annealing, adaptive differential evolution, trusted negative-curvature proposals, real-task/selection adapters, independent evidence admission and a nine-arm development matrix. Legal presentation parameters can reorder required closures and evidence, while mandatory rules, dependency closure, safety, reporting and handoff requirements remain intact. The optimizer stays outside the installable runtime and adds no daily model calls or project-managed files.
+
+Final local engineering validation passed: 214/214 tests on Windows Python 3.12.10 and all eight static/release gates. Two deterministic packages match SHA-256 `1683cd8c709c7925fa9c5a22b39d85a82308bfaefca6283799fc2304292ae90e`. The three-round search checked 60 unique executable candidates; the nine-arm development smoke completed, including exact RC15/RC16 historical baselines. The best fixture context-byte objective equals the baseline (12728.25): no improvement was observed. See the [RC17 audit](audits/rc17-offline-evolution.audit.json). Hosted checks and integration are recorded against exact revisions on GitHub.
+
+Source, numerical and development-matrix tests are engineering evidence. No real frozen holdout has run: the existing AI-lab entry has no registered project or usable provider credential. No account settings were changed or login material copied. Context bytes are not token measurements; token/time savings, causal module contribution and break-even remain unknown. Locked qualification remains NOT RUN; empirical qualification and Stable remain NOT ACHIEVED. Promotion rejects missing independent evidence.
+
+An isolated project install verified all 17 RC17 bundle files. Its binding was removed, but Skills CLI 1.7.0 crashes during Windows uninstall; automatic approval review rejected the verified narrow manual deletion with `blocked by policy`, including after renewed owner authorization. The remaining copy is confined to ignored `eval-workspaces/install-rc17/.agents/skills/universal-project-governance`; review/removal is pending resolution of that external restriction.
+
+The user-level installed Skill was RC16 when this task began and was not replaced by this repository upgrade. Existing projects need an explicit install/update from the desired branch. Historical evidence below retains its original version and scope.
+
+## RC16 historical candidate
 
 This candidate is based on the unmerged RC15 branch at public revision `42a72ff7efb0b830b9ef89d79c0cc399baff1b74`. It repairs the independently reproduced finish mismatch and adds optional checked references to one validation truth source. The original RC12 checkout and its unrelated uncommitted adapter changes are outside this task. The prior global RC15 Skill was backed up and all 17 files verified before replacement. The current user-level installation is RC16, its 16-file integrity manifest passes, and all 17 installed bundle files equal the compiled candidate. This verifies current disk state; automatic/historical Skill activation remains unmeasured. No private project repair or historical backfill was performed.
 

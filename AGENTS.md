@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Current candidate: **3.0.0-rc.16 — Workflow Outcomes and Validation Continuity**.
+Current candidate: **3.0.0-rc.17 — Budgeted Offline Evolution**.
 
 ## First modifying activation
 

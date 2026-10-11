@@ -1,8 +1,8 @@
 # Publishing and Test-Freeze Gates
 
-Current candidate: **3.0.0-rc.16 — Workflow Outcomes and Validation Continuity**
+Current candidate: **3.0.0-rc.17 — Budgeted Offline Evolution**
 
-RC16 repairs workflow outcome reconciliation and adds optional canonical validation references. Its runtime and schemas have a new qualification fingerprint; thresholds and historical evidence are unchanged. See [PROJECT_STATE.md](PROJECT_STATE.md) and the RC16 audit for candidate checks. Publish a candidate only after its own compile, regression, integrity, isolated lifecycle, deterministic-package and privacy checks pass. Locked qualification remains NOT RUN; empirical qualification and Stable remain NOT ACHIEVED.
+RC17 integrates RC16's continuity fixes and adds budgeted offline evolution with fail-closed independent promotion. Its runtime and schemas have a new qualification fingerprint; thresholds and historical evidence are unchanged. See [PROJECT_STATE.md](PROJECT_STATE.md) and the RC17 audit for candidate checks. Publish a candidate only after its own compile, regression, integrity, isolated lifecycle, deterministic-package and privacy checks pass. Locked qualification remains NOT RUN; empirical qualification and Stable remain NOT ACHIEVED.
 
 ## Engineering gate before real-Agent testing
 

@@ -1,6 +1,19 @@
 # Active Design Decisions
 
-Only current RC11 decisions are documented here.
+Current design decisions, including RC17's offline evolution boundary, are documented here.
+
+## Evolution is offline and independently admitted
+
+SkillOpt's pinned MIT source supplies the existing text-learning stages. UPG adds
+the source bridge, three numerical searches, one budgeted controller and evidence
+admission. Candidate text and normalized runtime presentation parameters are
+separate from optimizer controls. Core rules, dependencies and thresholds cannot
+be selected away. Daily tasks execute compiled rules without optimizer calls.
+
+Search acceptance, engineering validation, empirical efficacy and formal
+qualification are separate decisions. Actual provider receipts include failures
+and retries; unknowns remain unknown. An optimizer cannot edit its protocol or
+final evidence, and a development matrix cannot approve its own candidate.
 
 ## Continuity is reconstructable, not handoff-dependent
 

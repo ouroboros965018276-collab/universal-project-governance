@@ -721,6 +721,26 @@
       }
     }
   ],
+  "presentation": {
+    "policy_order": [
+      "CLEANUP_OBSOLETE",
+      "COMPATIBILITY_BOUND",
+      "CONTRACT_VALIDATE",
+      "DATA_RETENTION",
+      "DEBT_BOUNDARY",
+      "EVIDENCE_AFFECTED",
+      "EXPLAIN_SIGNIFICANT_UNIT",
+      "GENERATED_SOURCE",
+      "GOVERNANCE_UPGRADE",
+      "HANDOFF_CONTINUITY",
+      "MIGRATION_CUTOVER",
+      "RELEASE_AUDIT",
+      "SAFE_DELETE",
+      "SECURITY_ASSURANCE",
+      "STRUCTURAL_INTEGRATION",
+      "TRUTH_CURRENT"
+    ]
+  },
   "profiles": {
     "automation": {
       "activates": [
@@ -899,7 +919,7 @@
     "release_operation_forces": "audit"
   },
   "schema_version": 1,
-  "source_sha256": "f231b13a665e449262177ae2be80fe8f8e3daab229a8d8016b1dd558a4fc8922",
+  "source_sha256": "2b2a9fd55dd79ac13dfafda941d635d4419f5ffbff0955eccdc5e4ecb8275784",
   "structural_integration": {
     "exempt_operations": [
       "release"
@@ -953,5 +973,5 @@
       "governance_upgrade"
     ]
   },
-  "version": "3.0.0-rc.16"
+  "version": "3.0.0-rc.17"
 }

@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.0.0-rc.17 — 2026-10-12
+
+- Integrates the latest RC16 candidate into the current default-branch ancestry, preserving historical qualification outcomes.
+- Reuses pinned MIT SkillOpt source directly, with atomic hash-bound policy edits and a shared metered backend.
+- Adds seeded chaotic annealing, adaptive differential evolution and evidence-checked negative-curvature search in one checkpointed offline controller.
+- Compiles only legal policy presentation permutations; required policy selection, dependency closure and evidence contracts remain unchanged.
+- Adds independent holdout/cost/quality/ablation admission and fail-closed promotion; engineering fixtures never establish efficacy or qualification.
+
 ## 3.0.0-rc.16 — 2026-10-11
 
 - Allows observed completion outcomes to evolve from the start checkpoint while preserving immutable identity, original facts, honest unknowns and conflicting-retry protection in both reporting modes. Partial/blocked checkpoints retain recoverable active state.

@@ -140,7 +140,10 @@ def compile_plan(index: dict, ctx: dict) -> dict:
     if unknown_profiles:
         warnings.append("unknown optional profiles use universal task/risk rules: " + ", ".join(unknown_profiles))
 
-    for rule_id in sorted(active):
+    order = index.get("presentation", {}).get("policy_order", sorted(policies))
+    if not isinstance(order, list) or len(order) != len(policies) or set(order) != set(policies):
+        raise ValueError("invalid presentation policy permutation")
+    for rule_id in (rid for rid in order if rid in active):
         p = policies[rule_id]
         closures.append("%s: %s" % (rule_id, p["closure"]))
         for item in p.get("evidence", []):

@@ -1,6 +1,6 @@
 # Contributing
 
-Current candidate: **3.0.0-rc.16 — Workflow Outcomes and Validation Continuity**. RC16 closes outcome and validation continuity gaps from retrospective feedback. Change canonical source, regenerate the runtime, and retain independent engineering and efficacy evidence boundaries. Qualification thresholds remain unchanged; current candidate evidence lives in [PROJECT_STATE.md](PROJECT_STATE.md).
+Current candidate: **3.0.0-rc.17 — Budgeted Offline Evolution**. RC17 carries forward RC16's continuity fixes and adds the repository-only optimizer. Change canonical source, regenerate the runtime, and retain independent engineering and efficacy evidence boundaries. Qualification thresholds remain unchanged; current candidate evidence lives in [PROJECT_STATE.md](PROJECT_STATE.md).
 
 ## Structural contribution rule
 

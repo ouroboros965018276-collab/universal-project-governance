@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "protocol_id": "upg-offline-evolution-v1",
+  "status": "preregistered-engineering-specification",
+  "seed": 1729,
+  "baseline": {
+    "rc15_revision": "0808842e759763c722f77a2fd9b464842480a290",
+    "latest_release": "3.0.0-rc.16",
+    "latest_revision": "9c0efc1165a0e648622d8a4c02c2b1ddbd4986fb"
+  },
+  "priority": ["safety-and-truth", "task-and-governance-quality", "handoff-and-compatibility", "tokens-time-tools"],
+  "budget": {"model_calls": 120, "tokens": 1200000, "wall_seconds": 7200, "candidates": 128},
+  "search": {"iterations": 3, "population": 8, "retries": 1, "dimensions": 3, "archive_size": 128},
+  "splits": {
+    "unit": ["project_id", "task_family"],
+    "training_fraction": 0.6,
+    "selection_fraction": 0.2,
+    "final_fraction": 0.2,
+    "final_feedback_allowed": false,
+    "final_reuse_after_failure_allowed": false,
+    "minimum_model_families": 3,
+    "minimum_task_families": 12,
+    "minimum_pairs_per_family": 8,
+    "minimum_handoff_task_families": 6,
+    "model_family_weights": "freeze-before-first-model-call",
+    "task_family_weights": "freeze-before-first-model-call"
+  },
+  "arms": {
+    "rc15": {"role": "primary-baseline", "search_modules": []},
+    "latest_baseline": {"role": "current-version-regression-baseline", "search_modules": []},
+    "skillopt_only": {"role": "learning-baseline", "search_modules": ["skillopt"]},
+    "full": {"role": "treatment", "search_modules": ["skillopt", "chaos", "de", "curvature"]},
+    "without_skillopt": {"role": "conditional-ablation", "search_modules": ["chaos", "de", "curvature"]},
+    "without_chaos": {"role": "conditional-ablation", "search_modules": ["skillopt", "de", "curvature"]},
+    "without_de": {"role": "conditional-ablation", "search_modules": ["skillopt", "chaos", "curvature"]},
+    "without_curvature": {"role": "conditional-ablation", "search_modules": ["skillopt", "chaos", "de"]},
+    "ordinary_annealing": {"role": "chaos-mechanism-control", "search_modules": ["skillopt", "ordinary_annealing", "de", "curvature"]}
+  },
+  "ablation": {
+    "equal_budget_required": true,
+    "unused_module_budget": "redistribute-to-remaining-modules",
+    "same_task_distribution_required": true,
+    "derive_contributions_from_raw_paired_observations": true,
+    "negative_or_uncertain_contribution": "report-scope-and-block-universal-value-claim"
+  },
+  "thresholds": {
+    "governance_context_ratio_max": 0.75,
+    "full_task_tokens_ratio_max": 0.85,
+    "wall_time_ratio_max": 0.9,
+    "cost_ratio_ci_upper_exclusive": 1.0,
+    "quality_noninferiority_margin": 0.0,
+    "core_requirement_failure_max": 0,
+    "critical_failure_max": 0
+  },
+  "inference": {"method": "paired-family-stratified-bootstrap", "confidence": 0.95, "repetitions": 4000, "seed": 1729},
+  "evidence": {
+    "real_model_tasks_only": true,
+    "provider_usage_required_for_every_attempt": true,
+    "failed_retried_reworked_calls_included": true,
+    "cache_hits_are_independent_samples": false,
+    "candidate_and_protocol_hashes_required": true,
+    "independent_holdout_freeze_required": true,
+    "trusted_freeze_git_revision_required": true,
+    "grader_executable_and_artifact_hashes_required": true,
+    "manual_pass_flags_are_evidence": false,
+    "synthetic_results_are_release_evidence": false,
+    "context_bytes_are_token_measurements": false
+  },
+  "hard_constraints": {
+    "core_closure_preserved": true,
+    "all_required_policies_and_dependencies_preserved": true,
+    "legal_theta_changes_presentation_only": true,
+    "optimizer_phi_not_runtime": true,
+    "runtime_complexity_and_project_state_boundaries_preserved": true,
+    "generated_runtime_never_hand_edited": true
+  },
+  "completion": {
+    "engineering": "compile-lint-integrity-regression-algorithm-checks",
+    "empirical": "independent-frozen-real-holdout-and-all-cost-quality-ablation-gates",
+    "formal_qualification": "qualification-protocol-only; never granted by evolution"
+  }
+}

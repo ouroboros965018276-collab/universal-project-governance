@@ -40,6 +40,11 @@ def render_skill(src: Path, model: dict) -> str:
 
 
 def compile_index(src: Path, model: dict) -> dict:
+    ids = sorted(p["id"] for p in model["policies"])
+    order = model.get("presentation", {}).get("policy_order", ids)
+    if (not isinstance(order, list) or any(not isinstance(x, str) for x in order)
+            or len(order) != len(ids) or sorted(order) != ids):
+        raise ValueError("presentation policy_order must include every policy exactly once")
     profiles = {}
     for path in sorted((src / "profiles").glob("*.json")):
         item = read_json(path)
@@ -57,6 +62,7 @@ def compile_index(src: Path, model: dict) -> dict:
         "project_binding": model["project_binding"],
         "default_rules": model["default_rules"],
         "policies": model["policies"],
+        "presentation": {"policy_order": order},
         "profiles": profiles,
         "complexity_budget": model["complexity_budget"],
         "task_contract": {
