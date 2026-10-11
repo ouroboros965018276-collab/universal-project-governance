@@ -18,7 +18,7 @@ def load_index() -> dict:
 
 def normalize_context(args: argparse.Namespace) -> dict:
     if args.context:
-        data = json.loads(Path(args.context).read_text(encoding="utf-8"))
+        data = json.loads(Path(args.context).read_text(encoding="utf-8-sig"))
     else:
         risk = {}
         for item in args.risk:

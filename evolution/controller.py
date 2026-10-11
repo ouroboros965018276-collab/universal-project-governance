@@ -20,6 +20,46 @@ from .search import AdaptiveDE, ChaoticAnnealing, local_sample_points, negative_
 OPERATORS = ("skillopt", "annealing", "de", "curvature")
 
 
+class CandidateLimitReached(RuntimeError):
+    """Exploration is full; reserved model/time budgets may still select."""
+
+
+def task_loss(observations, reference=None):
+    """Cost is eligible only with complete hard and paired quality evidence.
+
+    The task grader owns the loss. A cheap failed task, unknown quality, or
+    regression on any matched task cannot become a feasible search incumbent.
+    Development feasibility does not substitute for independent admission.
+    """
+    if not observations:
+        return None
+    reference_by_task = ({row["task_id"]: row for row in reference}
+                         if reference is not None else None)
+    losses = []
+    for row in observations:
+        outcome = row.get("outcome") or {}
+        hard, soft, loss = (outcome.get(key) for key in ("hard", "soft", "loss"))
+        if row.get("status") != "completed" or any(
+                type(value) not in (int, float) or not math.isfinite(value)
+                for value in (hard, soft, loss)):
+            return None
+        if hard != 1 or not 0 <= soft <= 1:
+            return None
+        for key in ("critical_failures", "core_requirement_failures"):
+            if key in outcome and (type(outcome[key]) is not int or outcome[key] != 0):
+                return None
+        if reference_by_task is not None:
+            control = reference_by_task.get(row.get("task_id"))
+            control_soft = (control.get("outcome") or {}).get("soft") if control else None
+            if (type(control_soft) not in (int, float) or not math.isfinite(control_soft)
+                    or soft < control_soft):
+                return None
+        losses.append(loss)
+    if reference_by_task is not None and set(reference_by_task) != {row["task_id"] for row in observations}:
+        return None
+    return sum(losses) / len(losses)
+
+
 @contextmanager
 def checkpoint_lock(path):
     """One writer per checkpoint; stale locks require explicit reconciliation."""
@@ -118,11 +158,13 @@ def _run_search(repo, protocol, output, *, runner=None, backend=None, resume=Fal
     if any(split_ids[left] & split_ids[right] for left, right in
            (("training", "selection"), ("training", "final"), ("selection", "final"))):
         raise ValueError("task identity leaks across development/selection/final splits")
-    if runner is not None and active_count and not registered.get("selection"):
+    if runner is not None and not registered.get("selection"):
         raise ValueError("real candidate search requires a separate registered selection split")
     identities = {"source": source_hash(repo), "engine": engine_identity(repo),
                   "runner": callable_identity(runner), "backend": callable_identity(backend),
                   "disabled": sorted(disabled), "ordinary": ordinary}
+    execution_artifact = {"compiler": (repo / "compiler/compile_governance.py").read_bytes().decode("utf-8"),
+                          "license": (repo / "LICENSE").read_bytes().decode("utf-8")}
     if resume:
         run = json.loads(output.read_text(encoding="utf-8"))
         if run["protocol_sha256"] != digest(protocol) or run["identities"] != identities:
@@ -150,6 +192,9 @@ def _run_search(repo, protocol, output, *, runner=None, backend=None, resume=Fal
 
     def checkpoint():
         run["budget"] = budget.state()
+        overrun = budget.overruns(run["budget"])
+        if run["status"] == "completed" and overrun:
+            run.update(status="budget-exhausted", budget_overrun=overrun)
         save_run(output, run)
 
     def event(operator, kind, **values):
@@ -169,7 +214,7 @@ def _run_search(repo, protocol, output, *, runner=None, backend=None, resume=Fal
             event(operator, "compiled-candidate-cache-hit", candidate_id=identity)
             return found
         if len(run["candidates"]) >= max_candidates:
-            raise BudgetExceeded("candidate budget exhausted")
+            raise CandidateLimitReached("candidate limit reached")
         validation = validate_candidate(candidate, repo)
         observations = []
         loss = None
@@ -188,6 +233,7 @@ def _run_search(repo, protocol, output, *, runner=None, backend=None, resume=Fal
                                            config=protocol.get("runner_config", {}), deps=identities,
                                            runner_identity=identities["runner"], cache=run["cache"], budget=budget,
                                            source=candidate_source(candidate, repo),
+                                           execution_artifact=execution_artifact,
                                            retries=int(protocol.get("search", {}).get("retries", 0)))
                     observations.append(observation)
                     run["pending"] = ({"kind": "unreconciled-usage", "candidate_id": identity,
@@ -196,11 +242,15 @@ def _run_search(repo, protocol, output, *, runner=None, backend=None, resume=Fal
                     checkpoint()
                     if budget.unknown_usage:
                         raise BudgetExceeded("actual task usage unknown; independent reconciliation required")
-                # A real loss must be supplied by the prespecified task grader.
-                losses = [(x.get("outcome") or {}).get("loss") for x in observations]
-                if all(x.get("status") == "completed" for x in observations) and all(isinstance(x, (int, float)) and not isinstance(x, bool)
-                       and __import__("math").isfinite(x) for x in losses):
-                    loss = sum(losses) / len(losses)
+                    overrun = budget.overruns()
+                    if overrun:
+                        run["budget_overrun"] = overrun
+                        run["stopped_evaluation"] = {"id": identity, "candidate": copy.deepcopy(candidate),
+                            "operator": operator, "evaluation": validation, "observations": observations, "loss": None}
+                        checkpoint()
+                        raise BudgetExceeded("observed training call exceeded hard budget")
+                control = next((x for x in run["candidates"] if x["operator"] == "baseline"), None)
+                loss = task_loss(observations, control["observations"] if control else None)
         item = {"id": identity, "candidate": copy.deepcopy(candidate), "operator": operator,
                 "evaluation": validation, "observations": observations, "loss": loss}
         run["candidates"].append(item)
@@ -220,140 +270,153 @@ def _run_search(repo, protocol, output, *, runner=None, backend=None, resume=Fal
             event("controller", "baseline-rejected")
             checkpoint()
             return run
-        if not active_count:
+        if not active_count and runner is None:
             run.update(status="completed", best_candidate_id=base["id"], empirical_status="unverified")
             checkpoint()
             return run
-        state = run["search_state"]
-        if not state:
-            seed = int(protocol.get("seed", 1729))
-            rng = random.Random(seed)
-            pools = {}
-            if "de" not in disabled:
-                population = [[0.5, 0.5, 0.5]] + [[rng.random() for _ in range(3)] for _ in range(population_size - 1)]
-                initial = [assess(dict(run["baseline"], theta=point), "initialization") for point in population]
-                de = AdaptiveDE(seed, population, [numeric(item) for item in initial])
-                pools[digest(base["candidate"]["model"])] = de.state()
-            annealing = ChaoticAnnealing(seed, 3)
-            state.update(current=copy.deepcopy(base["candidate"]), current_loss=numeric(base),
-                         annealing=annealing.state(), pools=pools, memory={})
-        for iteration in range(run["iteration"], iterations):
-            current = copy.deepcopy(state["current"])
-            annealing = ChaoticAnnealing.from_state(state["annealing"])
-            if "skillopt" not in disabled:
-                from .skillopt_adapter import SkillOptLearner, SourceBridge, RolloutResult, fixture_backend
-                bridge = SourceBridge(current["model"])
-                learner = SkillOptLearner(backend or fixture_backend, budget, bridge)
-                learner.slow_update_context = state.get("memory", {}).get("slow_update", "")
-                learner.meta_skill_context = state.get("memory", {}).get("meta_skill", "")
-                if runner is None:
-                    rollouts = [RolloutResult(id=x["id"], hard=float(x["evaluation"]["ok"]),
-                                              soft=float(x["evaluation"]["ok"]),
-                                              task_description="synthetic compiler/planner engineering fixture",
-                                              extras={"kind": mode, "measurement": "synthetic"})
-                                for x in run["candidates"][-4:]]
-                else:
-                    rollouts = []
-                    for candidate in run["candidates"][-4:]:
-                        for observation in candidate["observations"]:
+        try:
+            if active_count and len(run["candidates"]) >= max_candidates:
+                raise CandidateLimitReached("candidate limit reached")
+            state = run["search_state"]
+            if not state:
+                seed = int(protocol.get("seed", 1729))
+                rng = random.Random(seed)
+                pools = {}
+                if "de" not in disabled:
+                    population = [[0.5, 0.5, 0.5]] + [[rng.random() for _ in range(3)] for _ in range(population_size - 1)]
+                    initial = [assess(dict(run["baseline"], theta=point), "initialization") for point in population]
+                    de = AdaptiveDE(seed, population, [numeric(item) for item in initial])
+                    pools[digest(base["candidate"]["model"])] = de.state()
+                annealing = ChaoticAnnealing(seed, 3)
+                state.update(current=copy.deepcopy(base["candidate"]), current_loss=numeric(base),
+                             annealing=annealing.state(), pools=pools, memory={})
+            for iteration in range(run["iteration"], iterations if active_count else 0):
+                if len(run["candidates"]) >= max_candidates:
+                    raise CandidateLimitReached("candidate limit reached")
+                current = copy.deepcopy(state["current"])
+                annealing = ChaoticAnnealing.from_state(state["annealing"])
+                if "skillopt" not in disabled:
+                    from .skillopt_adapter import SkillOptLearner, SourceBridge, RolloutResult, fixture_backend
+                    bridge = SourceBridge(current["model"])
+                    learner = SkillOptLearner(backend or fixture_backend, budget, bridge,
+                                              max_retries=int(protocol.get("search", {}).get("retries", 0)))
+                    learner.slow_update_context = state.get("memory", {}).get("slow_update", "")
+                    learner.meta_skill_context = state.get("memory", {}).get("meta_skill", "")
+                    if runner is None:
+                        rollouts = [RolloutResult(id=x["id"], hard=float(x["evaluation"]["ok"]),
+                                                  soft=float(x["evaluation"]["ok"]),
+                                                  task_description="synthetic compiler/planner engineering fixture",
+                                                  extras={"kind": mode, "measurement": "synthetic"})
+                                    for x in run["candidates"][-4:]]
+                    else:
+                        rollouts = []
+                        for candidate in run["candidates"][-4:]:
+                            for observation in candidate["observations"]:
+                                outcome = observation.get("outcome") or {}
+                                if "hard" not in outcome or "soft" not in outcome:
+                                    raise ValueError("real learning requires actual task-grader hard/soft evidence")
+                                rollouts.append(RolloutResult(id=observation["task_id"], hard=outcome["hard"],
+                                                              soft=outcome["soft"], fail_reason=outcome.get("fail_reason", ""),
+                                                              task_description=outcome.get("task_description", ""),
+                                                              predicted_answer=outcome.get("predicted_answer", ""),
+                                                              extras={"observations": observation}))
+                    run["pending"] = {"kind": "learning", "iteration": iteration}
+                    checkpoint()
+                    patch = learner.learn(rollouts)
+                    run["pending"] = None
+                    proposal = dict(current, model=bridge.apply(patch), operator="skillopt")
+                    item = assess(proposal, "skillopt")
+                    event("skillopt", "patch", patch=patch.to_dict(), trace=learner.last_trace)
+                    def memory_rows(record):
+                        if runner is None:
+                            return [RolloutResult(id="compiler-planner", hard=float(record["evaluation"]["ok"]),
+                                                  soft=float(record["evaluation"]["ok"]),
+                                                  extras={"measurement": "synthetic"})]
+                        rows = []
+                        for observation in record["observations"]:
                             outcome = observation.get("outcome") or {}
                             if "hard" not in outcome or "soft" not in outcome:
-                                raise ValueError("real learning requires actual task-grader hard/soft evidence")
-                            rollouts.append(RolloutResult(id=observation["task_id"], hard=outcome["hard"],
-                                                          soft=outcome["soft"], fail_reason=outcome.get("fail_reason", ""),
-                                                          task_description=outcome.get("task_description", ""),
-                                                          predicted_answer=outcome.get("predicted_answer", ""),
-                                                          extras={"observations": observation}))
-                run["pending"] = {"kind": "learning", "iteration": iteration}
-                checkpoint()
-                patch = learner.learn(rollouts)
-                run["pending"] = None
-                proposal = dict(current, model=bridge.apply(patch), operator="skillopt")
-                item = assess(proposal, "skillopt")
-                event("skillopt", "patch", patch=patch.to_dict(), trace=learner.last_trace)
-                def memory_rows(record):
-                    if runner is None:
-                        return [RolloutResult(id="compiler-planner", hard=float(record["evaluation"]["ok"]),
-                                              soft=float(record["evaluation"]["ok"]),
-                                              extras={"measurement": "synthetic"})]
-                    rows = []
-                    for observation in record["observations"]:
-                        outcome = observation.get("outcome") or {}
-                        if "hard" not in outcome or "soft" not in outcome:
-                            raise ValueError("paired memory requires actual task-grader evidence")
-                        rows.append(RolloutResult(id=observation["task_id"], hard=outcome["hard"],
-                                                  soft=outcome["soft"], extras={"observation": observation}))
-                    return rows
-                previous_item = next(x for x in run["candidates"] if x["id"] == candidate_id(current))
-                if item["evaluation"]["ok"] and (runner is None or item["observations"]):
-                    run["pending"] = {"kind": "memory-update", "iteration": iteration}
-                    checkpoint()
-                    memory = learner.update_memory(memory_rows(previous_item), memory_rows(item),
-                                                   previous_view=bridge.export_view(),
-                                                   current_view=SourceBridge(proposal["model"]).export_view())
-                    run["pending"] = None
-                    state["memory"] = {"slow_update": learner.slow_update_context,
-                                       "meta_skill": learner.meta_skill_context}
-                    event("skillopt", "optimizer-memory", memory=memory)
-                else:
-                    event("skillopt", "memory-skipped", reason="hard rejection has no paired replay")
-                if numeric(item) < state["current_loss"]:
-                    current, state["current_loss"] = proposal, numeric(item)
-                    run["operator_counts"]["skillopt"]["accepted"] += 1
-            if "annealing" not in disabled:
-                theta = annealing.propose(current["theta"])
-                if ordinary:
-                    rng = random.Random(int(protocol.get("seed", 1729)) + iteration)
-                    theta = [min(1.0, max(0.0, x + rng.uniform(-0.2, 0.2))) for x in current["theta"]]
-                proposal = dict(current, theta=theta, operator="annealing")
-                item = assess(proposal, "annealing")
-                accepted = annealing.accept(state["current_loss"], numeric(item),
-                                            hard_ok=item["evaluation"]["ok"] and item["loss"] is not None)
-                if accepted:
-                    current, state["current_loss"] = proposal, numeric(item)
-                    run["operator_counts"]["annealing"]["accepted"] += 1
-                event("annealing", "exploration-decision", accepted=accepted, candidate_id=item["id"])
-            if "de" not in disabled:
-                structure = digest(current["model"])
-                if structure not in state["pools"]:
-                    rng = random.Random(int(protocol.get("seed", 1729)) + iteration)
-                    population = [current["theta"]] + [[rng.random() for _ in range(3)] for _ in range(population_size - 1)]
-                    items = [assess(dict(current, theta=p), "de") for p in population]
-                    de = AdaptiveDE(iteration, population, [numeric(x) for x in items])
-                else:
-                    de = AdaptiveDE.from_state(state["pools"][structure])
-                proposals = de.propose()
-                items = [assess(dict(current, theta=p, operator="de"), "de") for p in proposals]
-                before = min(de.losses)
-                de.select(proposals, [numeric(x) for x in items])
-                state["pools"][structure] = de.state()
-                best = min(items, key=numeric)
-                if numeric(best) < state["current_loss"]:
-                    current, state["current_loss"] = best["candidate"], numeric(best)
-                if min(de.losses) < before:
-                    run["operator_counts"]["de"]["accepted"] += 1
-            if "curvature" not in disabled:
-                samples = []
-                for point in local_sample_points(current["theta"], radius=0.2):
-                    item = assess(dict(current, theta=point, operator="curvature"), "curvature")
-                    if item["loss"] is not None:
-                        samples.append((point, item["loss"]))
-                curvature = negative_curvature_candidates(samples, current["theta"], radius=0.2)
-                event("curvature", "surrogate-diagnostics", result=curvature)
-                for theta in curvature["candidates"]:
-                    item = assess(dict(current, theta=theta, operator="curvature"), "curvature")
+                                raise ValueError("paired memory requires actual task-grader evidence")
+                            rows.append(RolloutResult(id=observation["task_id"], hard=outcome["hard"],
+                                                      soft=outcome["soft"], extras={"observation": observation}))
+                        return rows
+                    previous_item = next(x for x in run["candidates"] if x["id"] == candidate_id(current))
+                    if item["evaluation"]["ok"] and (runner is None or item["observations"]):
+                        run["pending"] = {"kind": "memory-update", "iteration": iteration}
+                        checkpoint()
+                        memory = learner.update_memory(memory_rows(previous_item), memory_rows(item),
+                                                       previous_view=bridge.export_view(),
+                                                       current_view=SourceBridge(proposal["model"]).export_view())
+                        run["pending"] = None
+                        state["memory"] = {"slow_update": learner.slow_update_context,
+                                           "meta_skill": learner.meta_skill_context}
+                        event("skillopt", "optimizer-memory", memory=memory)
+                    else:
+                        event("skillopt", "memory-skipped", reason="hard rejection has no paired replay")
                     if numeric(item) < state["current_loss"]:
-                        current, state["current_loss"] = item["candidate"], numeric(item)
-                        run["operator_counts"]["curvature"]["accepted"] += 1
-            state.update(current=current, annealing=annealing.state())
-            run["iteration"] = iteration + 1
-            checkpoint()
-            if stop_after is not None and run["iteration"] >= stop_after:
-                run["status"] = "checkpointed"
+                        current, state["current_loss"] = proposal, numeric(item)
+                        run["operator_counts"]["skillopt"]["accepted"] += 1
+                if "annealing" not in disabled:
+                    theta = annealing.propose(current["theta"])
+                    if ordinary:
+                        rng = random.Random(int(protocol.get("seed", 1729)) + iteration)
+                        theta = [min(1.0, max(0.0, x + rng.uniform(-0.2, 0.2))) for x in current["theta"]]
+                    proposal = dict(current, theta=theta, operator="annealing")
+                    item = assess(proposal, "annealing")
+                    accepted = annealing.accept(state["current_loss"], numeric(item),
+                                                hard_ok=item["evaluation"]["ok"] and item["loss"] is not None)
+                    if accepted:
+                        current, state["current_loss"] = proposal, numeric(item)
+                        run["operator_counts"]["annealing"]["accepted"] += 1
+                    event("annealing", "exploration-decision", accepted=accepted, candidate_id=item["id"])
+                if "de" not in disabled:
+                    structure = digest(current["model"])
+                    if structure not in state["pools"]:
+                        rng = random.Random(int(protocol.get("seed", 1729)) + iteration)
+                        population = [current["theta"]] + [[rng.random() for _ in range(3)] for _ in range(population_size - 1)]
+                        items = [assess(dict(current, theta=p), "de") for p in population]
+                        de = AdaptiveDE(iteration, population, [numeric(x) for x in items])
+                    else:
+                        de = AdaptiveDE.from_state(state["pools"][structure])
+                    proposals = de.propose()
+                    items = [assess(dict(current, theta=p, operator="de"), "de") for p in proposals]
+                    before = min(de.losses)
+                    de.select(proposals, [numeric(x) for x in items])
+                    state["pools"][structure] = de.state()
+                    best = min(items, key=numeric)
+                    if numeric(best) < state["current_loss"]:
+                        current, state["current_loss"] = best["candidate"], numeric(best)
+                    if min(de.losses) < before:
+                        run["operator_counts"]["de"]["accepted"] += 1
+                if "curvature" not in disabled:
+                    samples = []
+                    for point in local_sample_points(current["theta"], radius=0.2):
+                        item = assess(dict(current, theta=point, operator="curvature"), "curvature")
+                        if item["loss"] is not None:
+                            samples.append((point, item["loss"]))
+                    curvature = negative_curvature_candidates(samples, current["theta"], radius=0.2)
+                    event("curvature", "surrogate-diagnostics", result=curvature)
+                    for theta in curvature["candidates"]:
+                        item = assess(dict(current, theta=theta, operator="curvature"), "curvature")
+                        if numeric(item) < state["current_loss"]:
+                            current, state["current_loss"] = item["candidate"], numeric(item)
+                            run["operator_counts"]["curvature"]["accepted"] += 1
+                state.update(current=current, annealing=annealing.state())
+                run["iteration"] = iteration + 1
                 checkpoint()
-                return run
+                if stop_after is not None and run["iteration"] >= stop_after:
+                    run["status"] = "checkpointed"
+                    checkpoint()
+                    return run
+        except CandidateLimitReached:
+            run["termination_reason"] = "candidate-limit"
+            event("controller", "exploration-stop", reason="candidate-limit")
+            checkpoint()
         if runner is not None:
-            finalists = sorted((x for x in run["candidates"] if x["loss"] is not None), key=numeric)[:3]
+            # Always score the control on the same selection tasks first. Its
+            # quality is a paired floor, not an optimizer feedback channel.
+            finalists = [base] + sorted((x for x in run["candidates"]
+                                        if x["loss"] is not None and x["id"] != base["id"]), key=numeric)[:2]
             selection = []
             for finalist in finalists:
                 observations = []
@@ -364,6 +427,7 @@ def _run_search(repo, protocol, output, *, runner=None, backend=None, resume=Fal
                                            model=protocol.get("model", "unknown"), config=protocol.get("runner_config", {}),
                                            deps=identities, runner_identity=identities["runner"], cache=run["cache"],
                                            budget=budget, source=candidate_source(finalist["candidate"], repo),
+                                           execution_artifact=execution_artifact,
                                            retries=int(protocol.get("search", {}).get("retries", 0)))
                     observations.append(observation)
                     run["pending"] = ({"kind": "unreconciled-selection-usage", "observation": observation}
@@ -371,17 +435,29 @@ def _run_search(repo, protocol, output, *, runner=None, backend=None, resume=Fal
                     checkpoint()
                     if budget.unknown_usage:
                         raise BudgetExceeded("selection usage unknown; independent reconciliation required")
-                losses = [(x.get("outcome") or {}).get("loss") for x in observations]
-                loss = (sum(losses) / len(losses) if all(x.get("status") == "completed" for x in observations)
-                        and all(type(x) in (int, float) and math.isfinite(x) for x in losses) else None)
+                    overrun = budget.overruns()
+                    if overrun:
+                        run["budget_overrun"] = overrun
+                        run["selection"] = selection + [{"candidate_id": finalist["id"],
+                                                         "loss": None, "observations": observations}]
+                        checkpoint()
+                        raise BudgetExceeded("observed selection call exceeded hard budget")
+                loss = task_loss(observations, selection[0]["observations"] if selection else None)
                 selection.append({"candidate_id": finalist["id"], "loss": loss, "observations": observations})
                 event("selection", "independent-development-selection", candidate_id=finalist["id"], loss=loss)
             run["selection"] = selection
             feasible = [x for x in selection if x["loss"] is not None]
             run["selected_candidate_id"] = min(feasible, key=lambda x: x["loss"])["candidate_id"] if feasible else None
         run["status"] = "completed" if runner is None or run.get("selected_candidate_id") else "selection-rejected"
+        overrun = budget.overruns()
+        if overrun:
+            run["budget_overrun"] = overrun
+            raise BudgetExceeded("observed search exceeded hard budget")
     except BudgetExceeded as exc:
         run["status"] = "budget-exhausted"
+        overrun = budget.overruns()
+        if overrun:
+            run["budget_overrun"] = overrun
         # Unknown usage can follow a charged failure inside a retrying callback.
         # Keep its fence until a human/independent receipt reconciles the call.
         if not budget.unknown_usage:

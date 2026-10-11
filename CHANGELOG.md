@@ -1,5 +1,16 @@
 # Changelog
 
+## 3.0.0-rc.18 — 2026-10-12 — candidate
+
+Grader Validity and Measured Runtime Compression. Engineering validation and real measurement outcomes are pending; formal qualification thresholds and historical results remain unchanged.
+
+- Repairs refactor, dependency-upgrade and interoperability false positives with positive functional/target checks; invalid or empty checks fail closed. Exposed labs remain regression evidence.
+- Compacts the canonical Skill template while retaining governance obligations and adds guidance for selecting an actual available Python entry. Generated runtime remains compiler-owned.
+- Accepts UTF-8 BOM JSON in planner, project lifecycle and state helpers.
+- Adds explicit native-CLI development callbacks and file-artifact grading with exact source/compiler/configuration identities, shared selection budgets and replayed learning accounting.
+- Plans a nine-arm development comparison and eight paired RC17/candidate artifact tasks. Model identity, reported token/time results and provider-internal retry coverage must retain their measured limits; no tool-execution, cross-Agent handoff, efficacy or Stable claim follows from these tasks alone.
+- Records the explicit local RC17 upgrade and fresh official host discovery separately from the still-uninstalled RC18 candidate and from historical activation evidence.
+
 ## 3.0.0-rc.17 — 2026-10-12
 
 - Integrates the latest RC16 candidate into the current default-branch ancestry, preserving historical qualification outcomes.

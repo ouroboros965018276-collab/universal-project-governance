@@ -23,7 +23,7 @@ def load_callable(name):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
-    for name in ("run", "ablate"):
+    for name in ("run", "ablate", "paired"):
         sub = commands.add_parser(name)
         sub.add_argument("--spec", default="evolution/protocol/upg-evolution.json")
         sub.add_argument("--repo", default=".")
@@ -43,10 +43,13 @@ def main(argv=None):
             sub.add_argument("--output", required=True)
     args = parser.parse_args(argv)
     try:
-        if args.command in {"run", "ablate"}:
+        if args.command in {"run", "ablate", "paired"}:
             from .controller import run_search
             protocol = json.loads(Path(args.spec).read_text(encoding="utf-8"))
-            if args.command == "ablate":
+            if args.command == "paired":
+                from .paired import collect, summarize as summarize_pairs
+                result = summarize_pairs(collect(args.repo, protocol, args.output, load_callable(args.runner)))
+            elif args.command == "ablate":
                 from .ablation import run_matrix
                 result = run_matrix(args.repo, protocol, args.output, runner=load_callable(args.runner),
                                     backend=load_callable(args.backend))

@@ -126,6 +126,23 @@ class Budget:
                              "measurement": usage.get("measurement", "provider"),
                              "fixture": usage.get("fixture", False)})
 
+    def release_replayed_reservation(self):
+        """A verified local receipt did not dispatch another provider attempt."""
+        if self.calls != len(self.records) + 1:
+            raise ValueError("replay must match one outstanding reservation")
+        self.calls -= 1
+
+    def overruns(self, state=None):
+        """Observe post-call overruns without discarding a charged result."""
+        observed = state if state is not None else {
+            "calls": self.calls, "total_tokens": self.total_tokens,
+            "elapsed_seconds": self.elapsed_seconds + time.monotonic() - self._start}
+        metrics = {"model_calls": (observed["calls"], self.max_calls),
+                   "tokens": (observed["total_tokens"], self.max_total_tokens),
+                   "wall_seconds": (observed["elapsed_seconds"], self.max_seconds)}
+        return {name: {"actual": actual, "limit": limit, "excess": actual - limit}
+                for name, (actual, limit) in metrics.items() if actual > limit}
+
     def state(self):
         return {"max_calls": self.max_calls, "max_total_tokens": self.max_total_tokens,
                 "max_seconds": self.max_seconds, "calls": self.calls,

@@ -1,8 +1,24 @@
 # Project State
 
-Current candidate: **3.0.0-rc.17 — Budgeted Offline Evolution**.
+Current candidate: **3.0.0-rc.18 — Grader Validity and Measured Runtime Compression**.
 
-## RC17 candidate
+## RC18 candidate — validation and measurements pending
+
+The default branch already contains RC17 through [PR #18](https://github.com/ouroboros965018276-collab/universal-project-governance/pull/18), merge `e63f438bdee2b9d65c49db6c621e968d6b185e56`. RC18 continues from that release. The prior RC17/RC16 records below describe their original stages; their test counts, failures, unknowns and qualification outcomes are retained.
+
+This candidate repairs three reproduced grader false positives: an emptied refactor module, removal of the required database driver from both dependency files, and an interoperability no-op. Checks now require bounded pure-function behavior, exact complete dependency targets, and the implementation/documentation change respectively. Diagnosed development and locked labs are exposed regression fixtures; they cannot establish a new independent holdout result. Generated model code is not executed by these probes.
+
+The canonical Skill template is compacted while preserving its obligations and Hot Path. The development draft targeted roughly one-third fewer template bytes; final compiled byte/token measurements are pending after the real Python entry guidance and all candidate changes are included. Three runtime helpers accept UTF-8 JSON with a BOM. Native-CLI development callbacks bind configuration, binary, grader, canonical source and compiler; selection caps and replayed learning accounting belong to the same budget boundary.
+
+Candidate engineering checks, hosted CI, deterministic packaging and detailed audit are pending. Planned real measurements comprise the nine-arm development comparison and eight paired RC17/candidate file-artifact tasks with training/selection separation and no final-feedback reuse. No result, token/time improvement, quality nonregression or causal operator contribution is claimed before the corresponding retained receipts and analysis exist. Requested `gpt-6-luna` identity is not yet provider-confirmed; native provider-internal retry usage coverage remains unknown. JSON artifact repair covers neither actual tool execution nor a complete cross-Agent handoff.
+
+Local installation has advanced separately: the user-level Skill is now RC17, with a recoverable RC16 backup, all 17 bundle files matching that compiled release, passing runtime integrity, matching planner output in eight fixture contexts, and one enabled UPG entry found by a fresh official CLI process with forced reload and no discovery errors. This establishes disk/helper behavior and host discovery, not historical or causal model activation. RC18 is not yet installed; installation follows candidate verification and review of measured outcomes. The prior ignored RC17 trial-copy cleanup exception remains a separately retained observation.
+
+Independent final promotion and formal qualification remain BLOCKED by missing qualifying evidence. Locked qualification is NOT RUN; empirical qualification and Stable are NOT ACHIEVED. Thresholds and completed historical result rounds are unchanged. Current development measurements cannot replace the required independent model-family, task-family, isolation, safety, cost and handoff evidence.
+
+## RC17 historical implementation stage
+
+The following record is retained from the RC17 implementation stage, before its later merge and the explicit user-level installation recorded above.
 
 The upgrade starts from remote main `272861ab9d925e7943fd84cbd6ff210bdb68841d` and integrates the latest public RC16 candidate `9c0efc1165a0e648622d8a4c02c2b1ddbd4986fb` through merge `24ad60309f01e787c2cedb1c258ac8e517e6a953`. The original RC12 checkout and its uncommitted adapter changes are preserved outside this worktree.
 

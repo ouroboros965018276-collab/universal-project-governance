@@ -2,11 +2,13 @@
 
 ## 当前版本与开发进度 | Version status
 
-本分支候选 / Candidate: **3.0.0-rc.17 — Budgeted Offline Evolution**。本次整合最新 RC16 修复与固定版本的 Microsoft SkillOpt，增加四算子协同离线优化、统一预算、断点恢复及独立采纳门控。
+本分支候选 / Candidate: **3.0.0-rc.18 — Grader Validity and Measured Runtime Compression**。本轮修复三类任务评分假阳性、精简治理指令，并接入绑定真实源码与编译器的原生 CLI 实测，按实际 token、耗时和任务质量评估优化。
 
-发布状态 / Release: **候选，非 Stable**。工程实现、真实任务提效与正式资格分别验收；未建立 25% 上下文 token、15% 总 token 或 10% 时间节省的实证结论。版本以 [VERSION.md](universal-project-governance/VERSION.md) 为准，检查结果见 [PROJECT_STATE.md](PROJECT_STATE.md)。
+发布状态 / Release: **候选，非 Stable**。RC17 已通过 [PR #18](https://github.com/ouroboros965018276-collab/universal-project-governance/pull/18) 合并到默认分支；RC18 的候选验证、九组开发消融及八对 RC17/候选文件任务实测结果均待记录。尚未建立 25% 上下文 token、15% 总 token 或 10% 时间节省的实证结论。版本以 [VERSION.md](universal-project-governance/VERSION.md) 为准，当前状态见 [PROJECT_STATE.md](PROJECT_STATE.md)。
 
-离线引擎使用 Python 3.10+；日常 Skill 无新增模型调用，原有辅助脚本继续支持 Python 3.8+。见[离线优化说明](docs/offline-evolution.md)。本地已有 Skill 不会因远端合并自动更新。
+离线引擎使用 Python 3.10+；日常 Skill 无新增模型调用，原有辅助脚本继续支持 Python 3.8+。见[离线优化说明](docs/offline-evolution.md)。本轮已将用户本地 Skill 更新到 RC17，并验证文件完整性和全新官方 CLI 的技能发现；RC18 尚未安装。远端合并不会自动更新其他本地副本。
+
+本轮文件任务只评估模型返回的 JSON/源码内容，不执行生成代码，不能代替真实工具操作或跨 Agent 交接实证。请求的 `gpt-6-luna` 名称尚待实际提供方确认，内部重试的完整用量核算仍未知；正式资格门禁保持不变。
 
 状态日期：**2026-10-12 Asia/Shanghai**。
 

@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Current candidate: **3.0.0-rc.17 — Budgeted Offline Evolution**.
+Current candidate: **3.0.0-rc.18 — Grader Validity and Measured Runtime Compression**.
 
 ## First modifying activation
 
@@ -49,5 +49,7 @@ This applies across human/AI boundaries, sessions, vendors, and Agent classes.
 Formal locked trials use fresh strong-isolation workspaces. Real trial evidence binds Agent/model/scaffold plus adapter configuration/runtime and host-tool identity. Handoff trials bind both source and receiving conditions.
 
 Do not edit a frozen surface after a real result round begins.
+
+Exposed regression fixtures cannot become an independent holdout again. Keep RC18's bounded native-CLI artifact tasks separate from real tool execution, cross-Agent handoff, and formal qualification evidence. Requested model names, reported completed-turn usage, and provider-internal attempt coverage must retain their observed limits.
 
 Evidence overrides desired release outcomes.

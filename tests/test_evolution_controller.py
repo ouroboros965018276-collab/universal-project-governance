@@ -96,6 +96,43 @@ class ControllerTests(unittest.TestCase):
         return {"ok": True, "errors": [], "context_bytes": 1000,
                 "candidate_id": candidate_id(candidate)}
 
+    def test_task_cost_cannot_reward_hard_failure_or_unknown_quality(self):
+        good = {"task_id": "task", "status": "completed",
+                "outcome": {"hard": 1.0, "soft": 0.9, "loss": 100}}
+        self.assertEqual(controller.task_loss([good]), 100)
+        for field, value in (("hard", 0), ("hard", True), ("soft", None),
+                             ("soft", math.nan), ("critical_failures", 1),
+                             ("core_requirement_failures", 1)):
+            bad = copy.deepcopy(good)
+            bad["outcome"].update({field: value, "loss": 1})
+            self.assertIsNone(controller.task_loss([bad]), (field, value))
+
+    def test_quality_floor_is_paired_per_task_not_an_average(self):
+        def row(task, soft, loss):
+            return {"task_id": task, "status": "completed",
+                    "outcome": {"hard": 1, "soft": soft, "loss": loss}}
+        controls = [row("one", 0.5, 100), row("two", 0.9, 100)]
+        improved_average = [row("one", 1.0, 1), row("two", 0.8, 1)]
+        self.assertIsNone(controller.task_loss(improved_average, controls))
+        self.assertIsNone(controller.task_loss([row("unmatched", 1.0, 1)], controls))
+        self.assertEqual(controller.task_loss([row("one", 0.5, 80), row("two", 1.0, 80)], controls), 80)
+
+    def test_cheap_failed_candidate_cannot_become_search_or_selection_winner(self):
+        control_id = candidate_id({"model": json.loads(
+            (ROOT / "governance-src/model/governance-model.json").read_text()), "theta": [0.5] * 3})
+        def cheap_failure(request):
+            result = measured_runner(request)
+            if candidate_id(request["candidate"]) != control_id:
+                result["outcome"].update(hard=0.0, soft=0.0, loss=-1000)
+            return result
+        with self.fast_engine():
+            run = controller.run_search(ROOT, self.protocol(iterations=1), self.output,
+                                        runner=cheap_failure, backend=measured_backend,
+                                        disabled=("annealing", "de", "curvature"))
+        self.assertEqual(run["best_candidate_id"], control_id)
+        self.assertTrue(all(item["loss"] is None for item in run["candidates"] if item["id"] != control_id))
+        self.assertEqual(run["selection"][0]["candidate_id"], control_id)
+
     @contextlib.contextmanager
     def fast_engine(self):
         with patch.object(controller, "validate_candidate", side_effect=self.engineering_validation), \
@@ -151,13 +188,13 @@ class ControllerTests(unittest.TestCase):
         near = dict(baseline, theta=[0.50001, 0.50002, 0.50003])
         self.assertEqual(candidate_id(near), candidate_id(baseline))
 
-    def test_real_runner_has_bound_source_and_training_only_receipts(self):
+    def test_real_runner_has_bound_source_and_separate_selection_receipts(self):
         with self.fast_engine():
             run = controller.run_search(ROOT, self.protocol(iterations=1), self.output,
                                         runner=measured_runner, disabled=controller.OPERATORS)
         self.assertEqual(run["status"], "completed")
         self.assertGreater(len(REQUESTS), 0)
-        self.assertEqual({request["task"]["id"] for request in REQUESTS}, {"training-fixture"})
+        self.assertEqual({request["task"]["id"] for request in REQUESTS}, {"training-fixture", "selection-must-not-leak"})
         observations = [observation for item in run["candidates"] for observation in item["observations"]]
         self.assertTrue(all(observation["source_sha256"] for observation in observations))
         self.assertTrue(all(observation["empirical_eligible"] for observation in observations))
@@ -205,7 +242,7 @@ class ControllerTests(unittest.TestCase):
                                       disabled=controller.OPERATORS, resume=True)
         self.assertEqual(len(REQUESTS), 1)
 
-    def test_zero_call_and_candidate_budgets_stop_before_dispatch(self):
+    def test_zero_calls_exhaust_budget_and_candidate_cap_stops_exploration(self):
         protocol = self.protocol()
         protocol["budget"]["model_calls"] = 0
         with self.fast_engine():
@@ -220,7 +257,8 @@ class ControllerTests(unittest.TestCase):
         with self.fast_engine():
             run = controller.run_search(ROOT, protocol, self.output.with_name("candidate-limit.json"),
                                         disabled=("skillopt",))
-        self.assertEqual(run["status"], "budget-exhausted")
+        self.assertEqual(run["status"], "completed")
+        self.assertEqual(run["termination_reason"], "candidate-limit")
         self.assertEqual(len(run["candidates"]), 1)
 
     def test_hard_invalid_baseline_never_enters_search_or_corrupts_json(self):

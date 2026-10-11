@@ -13,10 +13,11 @@ import subprocess
 import sys
 import tarfile
 import tempfile
+import time
 
-from .contracts import canonical_bytes, digest
-from .controller import callable_identity, checkpoint_lock, engine_identity, run_search, save_run
-from .evaluator import source_hash
+from .contracts import Budget, BudgetExceeded, canonical_bytes, digest
+from .controller import callable_identity, checkpoint_lock, engine_identity, run_search, save_run, task_loss
+from .evaluator import canonical_source, evaluate, source_hash
 
 MODULES = {"skillopt", "annealing", "de", "curvature"}
 
@@ -29,7 +30,7 @@ def _command(command, cwd):
             "returncode": observed.returncode, "stdout": observed.stdout, "stderr": observed.stderr}
 
 
-def _baseline(repo, revision):
+def _baseline(repo, revision, *, include_source=False):
     """Observe the actual historical runtime, without modern materialization."""
     if not isinstance(revision, str) or len(revision) != 40 or any(c not in "0123456789abcdef" for c in revision):
         raise ValueError("baseline must pin a full Git commit")
@@ -59,13 +60,138 @@ def _baseline(repo, revision):
             plan = json.loads(observed["stdout"])
             routed.append(len(canonical_bytes({key: plan[key] for key in ("required_closures", "evidence")})))
         model = json.loads((isolated / "governance-src/model/governance-model.json").read_text(encoding="utf-8"))
-        return {"stage": "historical-baseline-engineering", "revision": revision,
+        result = {"stage": "historical-baseline-engineering", "revision": revision,
                 "version": model["version"], "source_sha256": source_hash(isolated),
                 "engineering": "PASS" if routed and all(check["returncode"] == 0 for check in checks) else "FAIL",
                 "checks": checks, "fixture_contexts": len(routed),
                 "context_bytes": len((runtime / "SKILL.md").read_bytes()) + sum(routed) / len(routed) if routed else None,
                 "measurement": "skill-bytes-plus-unweighted-mean-fixture-plan-bytes; not tokens",
                 "actual_task_usage": None, "independent_holdout": False}
+        if include_source:
+            # This exact archive is dispatched directly. Never run the current
+            # materializer over historical source or claim it was that release.
+            result["source"] = canonical_source(isolated)
+            result["model"] = model
+            result["execution_artifact"] = {
+                "compiler": (isolated / "compiler/compile_governance.py").read_bytes().decode("utf-8"),
+                "license": (isolated / "LICENSE").read_bytes().decode("utf-8"),
+                "runtime": {path.relative_to(runtime).as_posix(): path.read_bytes().decode("utf-8")
+                            for path in sorted(runtime.rglob("*")) if path.is_file()
+                            and "__pycache__" not in path.parts and path.suffix not in {".pyc", ".pyo"}}}
+        return result
+
+
+def _real_baseline(repo, revision, protocol, output, runner):
+    """Replay a pinned historical release with the same development tasks.
+
+    Per-call pending fences survive process interruption. Unknown charged usage
+    cannot be replayed by resuming either the arm or the enclosing matrix.
+    """
+    with checkpoint_lock(output):
+        started = time.monotonic()
+        historical = _baseline(repo, revision, include_source=True)
+        source, model = historical.pop("source"), historical.pop("model")
+        execution_artifact = historical.pop("execution_artifact")
+        identities = {"revision": revision, "source": source_hash(source),
+                      "execution_artifact": digest(execution_artifact),
+                      "protocol": digest(protocol), "engine": engine_identity(repo),
+                      "runner": callable_identity(runner)}
+        candidate_identity = digest({"historical_revision": revision,
+                                     "source_sha256": identities["source"]})
+        output = Path(output)
+        if output.exists():
+            run = json.loads(output.read_text(encoding="utf-8"))
+            if run.get("identities") != identities:
+                raise ValueError("historical checkpoint source/protocol/engine/runner identity mismatch")
+            if run.get("pending"):
+                raise ValueError("historical callback has uncertain usage; reconcile its receipt before resuming")
+            budget = Budget.from_state(run["budget"])
+            if run["status"] in {"completed", "budget-exhausted", "no-feasible-baseline"}:
+                return run
+        else:
+            spec = protocol["budget"]
+            budget = Budget(max_calls=int(spec["model_calls"]), max_total_tokens=int(spec["tokens"]),
+                            max_seconds=float(spec["wall_seconds"]))
+            run = {"schema_version": 1, "run_id": output.stem,
+                   "stage": "historical-baseline-real-task", "status": "running",
+                   "identities": identities, "engineering": historical,
+                   "baseline": {"model": model, "operator": "historical-baseline", "revision": revision},
+                   "candidate_id": candidate_identity, "observations": [], "cache": {},
+                   "pending": None, "budget": budget.state(), "independent_holdout": False,
+                   "empirical_status": "BLOCKED"}
+        budget.elapsed_seconds += time.monotonic() - started
+
+        def checkpoint():
+            run["budget"] = budget.state()
+            overrun = budget.overruns(run["budget"])
+            if run["status"] == "completed" and overrun:
+                run.update(status="budget-exhausted", budget_overrun=overrun)
+            save_run(output, run)
+
+        registered = protocol.get("tasks", {})
+        split_ids = {}
+        for split in ("training", "selection", "final"):
+            ids = [row["id"] for row in registered.get(split, [])]
+            if len(ids) != len(set(ids)):
+                raise ValueError("duplicate task in " + split + " split")
+            split_ids[split] = set(ids)
+        if not split_ids["training"] or not split_ids["selection"]:
+            raise ValueError("real historical replay requires registered training and selection tasks")
+        if any(split_ids[left] & split_ids[right] for left, right in
+               (("training", "selection"), ("training", "final"), ("selection", "final"))):
+            raise ValueError("task identity leaks across development/selection/final splits")
+        if historical["engineering"] != "PASS":
+            run["status"] = "no-feasible-baseline"
+            checkpoint()
+            return run
+        checkpoint()
+        observed = {(row["split"], row["observation"]["task_id"]) for row in run["observations"]}
+        try:
+            for split in ("training", "selection"):
+                for task in registered[split]:
+                    if (split, task["id"]) in observed:
+                        continue
+                    run["pending"] = {"kind": "historical-task", "split": split, "task_id": task["id"]}
+                    checkpoint()
+                    observation = evaluate(run["baseline"], task, runner,
+                        model=protocol.get("model", "unknown"), config=protocol.get("runner_config", {}),
+                        deps=identities, runner_identity=identities["runner"], cache=run["cache"],
+                        retries=int(protocol.get("search", {}).get("retries", 0)), source=source,
+                        budget=budget, candidate_identity=candidate_identity,
+                        execution_artifact=execution_artifact)
+                    run["observations"].append({"split": split, "observation": observation})
+                    run["pending"] = ({"kind": "unreconciled-usage", "split": split,
+                                       "task_id": task["id"], "observation": observation}
+                                      if budget.unknown_usage else None)
+                    checkpoint()
+                    if budget.unknown_usage:
+                        raise BudgetExceeded("actual historical task usage unknown; reconciliation required")
+                    overrun = budget.overruns()
+                    if overrun:
+                        run["budget_overrun"] = overrun
+                        raise BudgetExceeded("observed historical call exceeded hard budget")
+            run["status"] = "completed"
+            observations = [row["observation"] for row in run["observations"]]
+            run["execution_status"] = "PASS" if all(row["status"] == "completed" for row in observations) else "FAIL"
+            run["quality_status"] = "PASS" if task_loss(observations) is not None else "FAIL"
+            overrun = budget.overruns()
+            if overrun:
+                run["budget_overrun"] = overrun
+                raise BudgetExceeded("observed historical replay exceeded hard budget")
+        except BudgetExceeded as error:
+            run["status"] = "budget-exhausted"
+            overrun = budget.overruns()
+            if overrun:
+                run["budget_overrun"] = overrun
+            run["stop_reason"] = str(error)
+            if not budget.unknown_usage:
+                run["pending"] = None
+        except Exception:
+            run["status"] = "failed"
+            checkpoint()
+            raise
+        checkpoint()
+        return run
 
 
 def _summary(run):
@@ -76,6 +202,7 @@ def _summary(run):
             "budget_caps": {key: budget.get(key) for key in ("max_calls", "max_total_tokens", "max_seconds")},
             "attempted_calls": budget.get("calls"),
             "actual_task_usage": None if run.get("stage") == "engineering" else budget,
+            "budget_overrun": run.get("budget_overrun"),
             "empirical_status": "BLOCKED"}
 
 
@@ -89,8 +216,8 @@ def _run_matrix(repo, protocol, output, runner=None, backend=None):
 
     Search arms inherit identical caps. The controller reallocates dispatches for
     disabled modules; using a cap is not evidence that actual costs were equal.
-    Historical baseline observations here are engineering checks even when the
-    search arms use real development callbacks.
+    Historical arms use the same training and selection tasks when a real
+    development runner is supplied; their exact archive runtime stays intact.
     """
     repo, output = Path(repo).resolve(), Path(output).resolve()
     identity = {"protocol_sha256": digest(protocol), "source_sha256": source_hash(repo),
@@ -113,12 +240,25 @@ def _run_matrix(repo, protocol, output, runner=None, backend=None):
                   "token_savings": None, "timing_savings": None}
         save_run(matrix_path, matrix)
     for name, definition in protocol["arms"].items():
-        if matrix["arms"].get(name, {}).get("completed"):
+        if matrix["arms"].get(name, {}).get("terminal") or matrix["arms"].get(name, {}).get("completed"):
             continue
         if name in {"rc15", "latest_baseline"}:
             revision = protocol["baseline"]["rc15_revision" if name == "rc15" else "latest_revision"]
-            result = _baseline(repo, revision)
-            matrix["arms"][name] = dict(result, completed=True)
+            if runner is None:
+                result = _baseline(repo, revision)
+                matrix["arms"][name] = dict(result, completed=True, terminal=True)
+            else:
+                arm_path = output / "arms" / (name + ".json")
+                result = _real_baseline(repo, revision, protocol, arm_path, runner)
+                matrix["arms"][name] = {"stage": result["stage"], "status": result["status"],
+                    "execution_status": result.get("execution_status"), "quality_status": result.get("quality_status"),
+                    "budget_overrun": result.get("budget_overrun"),
+                    "revision": revision, "source_sha256": result["identities"]["source"],
+                    "candidate_id": result["candidate_id"], "actual_task_usage": result["budget"],
+                    "observation_count": len(result["observations"]), "empirical_status": "BLOCKED",
+                    "completed": result["status"] == "completed",
+                    "terminal": not result.get("pending") and result["status"] in {"completed", "budget-exhausted", "no-feasible-baseline"},
+                    "checkpoint": "arms/" + name + ".json"}
         else:
             enabled = {"annealing" if module in {"chaos", "ordinary_annealing"} else module
                        for module in definition["search_modules"]}
@@ -128,9 +268,17 @@ def _run_matrix(repo, protocol, output, runner=None, backend=None):
             run = run_search(repo, protocol, arm_path, runner=runner, backend=backend,
                              resume=arm_path.exists(), disabled=tuple(sorted(MODULES - enabled)),
                              ordinary="ordinary_annealing" in definition["search_modules"])
-            matrix["arms"][name] = dict(_summary(run), completed=run.get("status") in {"completed", "budget-exhausted"},
+            matrix["arms"][name] = dict(_summary(run), completed=run.get("status") == "completed",
+                                       terminal=not run.get("pending") and run.get("status") in {"completed", "budget-exhausted", "no-feasible-baseline", "selection-rejected"},
                                        checkpoint="arms/" + name + ".json")
         save_run(matrix_path, matrix)
-    matrix["status"] = "completed" if all(value.get("completed") for value in matrix["arms"].values()) else "checkpointed"
+    if all(value.get("completed") for value in matrix["arms"].values()):
+        matrix["status"] = "completed"
+    elif any(value.get("status") == "budget-exhausted" for value in matrix["arms"].values()):
+        matrix["status"] = "budget-exhausted"
+    elif all(value.get("terminal") for value in matrix["arms"].values()):
+        matrix["status"] = "incomplete"
+    else:
+        matrix["status"] = "checkpointed"
     save_run(matrix_path, matrix)
     return matrix

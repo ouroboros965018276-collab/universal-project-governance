@@ -1,0 +1,908 @@
+{
+  "schema_version": 1,
+  "protocol_id": "upg-rc18-native-development-v1",
+  "status": "preregistered-development-real-artifact-tasks",
+  "seed": 1729,
+  "baseline": {
+    "rc15_revision": "0808842e759763c722f77a2fd9b464842480a290",
+    "latest_release": "3.0.0-rc.17",
+    "latest_revision": "e63f438bdee2b9d65c49db6c621e968d6b185e56"
+  },
+  "priority": [
+    "safety-and-truth",
+    "task-and-governance-quality",
+    "handoff-and-compatibility",
+    "tokens-time-tools"
+  ],
+  "budget": {
+    "model_calls": 45,
+    "tokens": 1200000,
+    "wall_seconds": 7200,
+    "candidates": 32
+  },
+  "search": {
+    "iterations": 1,
+    "population": 4,
+    "retries": 0,
+    "dimensions": 3,
+    "archive_size": 128
+  },
+  "splits": {
+    "unit": [
+      "project_id",
+      "task_family"
+    ],
+    "training_fraction": 0.6,
+    "selection_fraction": 0.2,
+    "final_fraction": 0.2,
+    "final_feedback_allowed": false,
+    "final_reuse_after_failure_allowed": false,
+    "minimum_model_families": 3,
+    "minimum_task_families": 12,
+    "minimum_pairs_per_family": 8,
+    "minimum_handoff_task_families": 6,
+    "model_family_weights": "freeze-before-first-model-call",
+    "task_family_weights": "freeze-before-first-model-call"
+  },
+  "arms": {
+    "rc15": {
+      "role": "primary-baseline",
+      "search_modules": []
+    },
+    "latest_baseline": {
+      "role": "current-version-regression-baseline",
+      "search_modules": []
+    },
+    "skillopt_only": {
+      "role": "learning-baseline",
+      "search_modules": [
+        "skillopt"
+      ]
+    },
+    "full": {
+      "role": "treatment",
+      "search_modules": [
+        "skillopt",
+        "chaos",
+        "de",
+        "curvature"
+      ]
+    },
+    "without_skillopt": {
+      "role": "conditional-ablation",
+      "search_modules": [
+        "chaos",
+        "de",
+        "curvature"
+      ]
+    },
+    "without_chaos": {
+      "role": "conditional-ablation",
+      "search_modules": [
+        "skillopt",
+        "de",
+        "curvature"
+      ]
+    },
+    "without_de": {
+      "role": "conditional-ablation",
+      "search_modules": [
+        "skillopt",
+        "chaos",
+        "curvature"
+      ]
+    },
+    "without_curvature": {
+      "role": "conditional-ablation",
+      "search_modules": [
+        "skillopt",
+        "chaos",
+        "de"
+      ]
+    },
+    "ordinary_annealing": {
+      "role": "chaos-mechanism-control",
+      "search_modules": [
+        "skillopt",
+        "ordinary_annealing",
+        "de",
+        "curvature"
+      ]
+    }
+  },
+  "ablation": {
+    "equal_budget_required": true,
+    "unused_module_budget": "redistribute-to-remaining-modules",
+    "same_task_distribution_required": true,
+    "derive_contributions_from_raw_paired_observations": true,
+    "negative_or_uncertain_contribution": "report-scope-and-block-universal-value-claim"
+  },
+  "thresholds": {
+    "governance_context_ratio_max": 0.75,
+    "full_task_tokens_ratio_max": 0.85,
+    "wall_time_ratio_max": 0.9,
+    "cost_ratio_ci_upper_exclusive": 1.0,
+    "quality_noninferiority_margin": 0.0,
+    "core_requirement_failure_max": 0,
+    "critical_failure_max": 0
+  },
+  "inference": {
+    "method": "paired-family-stratified-bootstrap",
+    "confidence": 0.95,
+    "repetitions": 4000,
+    "seed": 1729
+  },
+  "evidence": {
+    "real_model_tasks_only": true,
+    "provider_usage_required_for_every_attempt": true,
+    "failed_retried_reworked_calls_included": true,
+    "cache_hits_are_independent_samples": false,
+    "candidate_and_protocol_hashes_required": true,
+    "independent_holdout_freeze_required": true,
+    "trusted_freeze_git_revision_required": true,
+    "grader_executable_and_artifact_hashes_required": true,
+    "manual_pass_flags_are_evidence": false,
+    "synthetic_results_are_release_evidence": false,
+    "context_bytes_are_token_measurements": false
+  },
+  "hard_constraints": {
+    "core_closure_preserved": true,
+    "all_required_policies_and_dependencies_preserved": true,
+    "legal_theta_changes_presentation_only": true,
+    "optimizer_phi_not_runtime": true,
+    "runtime_complexity_and_project_state_boundaries_preserved": true,
+    "generated_runtime_never_hand_edited": true
+  },
+  "completion": {
+    "engineering": "compile-lint-integrity-regression-algorithm-checks",
+    "empirical": "independent-frozen-real-holdout-and-all-cost-quality-ablation-gates",
+    "formal_qualification": "qualification-protocol-only; never granted by evolution"
+  },
+  "model": "gpt-6-luna",
+  "development_scope": {
+    "surface": "JSON file-artifact maintenance; generated code is parsed but never executed",
+    "model_identity": "requested gpt-6-luna, not provider-confirmed",
+    "scaffold": "existing authenticated native CLI; host scaffold retained across conditions",
+    "formal_qualification": false,
+    "independent_provider_requests_verified": false,
+    "provider_internal_retry_usage_verified": false,
+    "loss": "actual completed-turn total_tokens + 100 * CLI wall_seconds; only hard=soft=1 is feasible",
+    "primary_comparison": "paired final task input_tokens; total_tokens and wall_seconds reported separately",
+    "final_pairs": 8,
+    "final_order_seed": 18012,
+    "final_feedback_allowed": false,
+    "same_final_set_retry_after_failure_allowed": false,
+    "causal_algorithm_claim": "not established by one bounded nine-arm development run",
+    "formal_thresholds": "unchanged from upg-evolution-v1; this small development round cannot satisfy formal coverage"
+  },
+  "tasks": {
+    "training": [
+      {
+        "id": "train-config-181",
+        "family": "config-update",
+        "plan_context": {
+          "operation": "edit",
+          "domains": [
+            "code"
+          ],
+          "signals": [],
+          "profiles": [
+            "software"
+          ],
+          "risk": {},
+          "unfinished": false
+        },
+        "payload": {
+          "initial_files": {
+            "service.json": "{\"port\":8100,\"name\":\"worker\"}\n"
+          }
+        },
+        "prompt": "Update service port from 8100 to 8200; preserve the service name. Return complete final contents of every supplied file, preserve unrelated content, and return no extra files. No tests or commands can be executed in this artifact-only task: report validation as not_run. Output the requested JSON only.",
+        "output_schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "files": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "path": {
+                    "type": "string"
+                  },
+                  "content": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "path",
+                  "content"
+                ]
+              }
+            },
+            "validation": {
+              "type": "string",
+              "enum": [
+                "not_run"
+              ]
+            }
+          },
+          "required": [
+            "files",
+            "validation"
+          ]
+        },
+        "artifact_checks": [
+          {
+            "path": "service.json",
+            "expected": "{\"port\":8200,\"name\":\"worker\"}\n",
+            "kind": "json",
+            "forbidden_text": []
+          }
+        ]
+      }
+    ],
+    "selection": [
+      {
+        "id": "selection-dependency-182",
+        "family": "dependency-update",
+        "plan_context": {
+          "operation": "edit",
+          "domains": [
+            "code"
+          ],
+          "signals": [],
+          "profiles": [
+            "software"
+          ],
+          "risk": {},
+          "unfinished": false
+        },
+        "payload": {
+          "initial_files": {
+            "requirements.txt": "db-driver==1.7\nother-lib==2.0\n",
+            "requirements.lock": "db-driver==1.7\nother-lib==2.0\n"
+          }
+        },
+        "prompt": "Upgrade db-driver to exactly version 2.4 in manifest and lockfile. Keep other-lib at 2.0 and do not remove any dependency. Return complete final contents of every supplied file, preserve unrelated content, and return no extra files. No tests or commands can be executed in this artifact-only task: report validation as not_run. Output the requested JSON only.",
+        "output_schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "files": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "path": {
+                    "type": "string"
+                  },
+                  "content": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "path",
+                  "content"
+                ]
+              }
+            },
+            "validation": {
+              "type": "string",
+              "enum": [
+                "not_run"
+              ]
+            }
+          },
+          "required": [
+            "files",
+            "validation"
+          ]
+        },
+        "artifact_checks": [
+          {
+            "path": "requirements.txt",
+            "expected": "db-driver==2.4\nother-lib==2.0\n",
+            "kind": "text",
+            "forbidden_text": []
+          },
+          {
+            "path": "requirements.lock",
+            "expected": "db-driver==2.4\nother-lib==2.0\n",
+            "kind": "text",
+            "forbidden_text": []
+          }
+        ]
+      }
+    ],
+    "final": [
+      {
+        "id": "final-refactor-0",
+        "family": "pure-function-refactor",
+        "plan_context": {
+          "operation": "edit",
+          "domains": [
+            "code"
+          ],
+          "signals": [],
+          "profiles": [
+            "software"
+          ],
+          "risk": {},
+          "unfinished": false
+        },
+        "payload": {
+          "initial_files": {
+            "module.py": "def value(x):\n    # TODO remove workaround\n    if x is None: return 0 # workaround\n    return x\n"
+          }
+        },
+        "prompt": "Refactor module.py into one conditional return expression (0 if x is None else x), preserving the function name and all behavior. Remove obsolete TODO/workaround comments. Return complete final contents of every supplied file, preserve unrelated content, and return no extra files. No tests or commands can be executed in this artifact-only task: report validation as not_run. Output the requested JSON only.",
+        "output_schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "files": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "path": {
+                    "type": "string"
+                  },
+                  "content": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "path",
+                  "content"
+                ]
+              }
+            },
+            "validation": {
+              "type": "string",
+              "enum": [
+                "not_run"
+              ]
+            }
+          },
+          "required": [
+            "files",
+            "validation"
+          ]
+        },
+        "artifact_checks": [
+          {
+            "path": "module.py",
+            "expected": "def value(x):\n    return 0 if x is None else x\n",
+            "kind": "python-ast",
+            "forbidden_text": [
+              "TODO",
+              "workaround"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "final-refactor-1",
+        "family": "pure-function-refactor",
+        "plan_context": {
+          "operation": "edit",
+          "domains": [
+            "code"
+          ],
+          "signals": [],
+          "profiles": [
+            "software"
+          ],
+          "risk": {},
+          "unfinished": false
+        },
+        "payload": {
+          "initial_files": {
+            "module.py": "def amount(x):\n    # TODO remove workaround\n    if x is None: return 0 # workaround\n    return x\n"
+          }
+        },
+        "prompt": "Refactor module.py into one conditional return expression (0 if x is None else x), preserving the function name and all behavior. Remove obsolete TODO/workaround comments. Return complete final contents of every supplied file, preserve unrelated content, and return no extra files. No tests or commands can be executed in this artifact-only task: report validation as not_run. Output the requested JSON only.",
+        "output_schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "files": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "path": {
+                    "type": "string"
+                  },
+                  "content": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "path",
+                  "content"
+                ]
+              }
+            },
+            "validation": {
+              "type": "string",
+              "enum": [
+                "not_run"
+              ]
+            }
+          },
+          "required": [
+            "files",
+            "validation"
+          ]
+        },
+        "artifact_checks": [
+          {
+            "path": "module.py",
+            "expected": "def amount(x):\n    return 0 if x is None else x\n",
+            "kind": "python-ast",
+            "forbidden_text": [
+              "TODO",
+              "workaround"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "final-dependency-0",
+        "family": "dependency-update",
+        "plan_context": {
+          "operation": "edit",
+          "domains": [
+            "code"
+          ],
+          "signals": [],
+          "profiles": [
+            "software"
+          ],
+          "risk": {},
+          "unfinished": false
+        },
+        "payload": {
+          "initial_files": {
+            "requirements.txt": "db-driver==1.2\nother-lib==7.0\n",
+            "requirements.lock": "db-driver==1.2\nother-lib==7.0\n"
+          }
+        },
+        "prompt": "Upgrade db-driver to exactly 3.1 in both files. Preserve other-lib at 7.0, preserve line order and final newlines; removing the driver is a failed task. Return complete final contents of every supplied file, preserve unrelated content, and return no extra files. No tests or commands can be executed in this artifact-only task: report validation as not_run. Output the requested JSON only.",
+        "output_schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "files": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "path": {
+                    "type": "string"
+                  },
+                  "content": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "path",
+                  "content"
+                ]
+              }
+            },
+            "validation": {
+              "type": "string",
+              "enum": [
+                "not_run"
+              ]
+            }
+          },
+          "required": [
+            "files",
+            "validation"
+          ]
+        },
+        "artifact_checks": [
+          {
+            "path": "requirements.txt",
+            "expected": "db-driver==3.1\nother-lib==7.0\n",
+            "kind": "text",
+            "forbidden_text": []
+          },
+          {
+            "path": "requirements.lock",
+            "expected": "db-driver==3.1\nother-lib==7.0\n",
+            "kind": "text",
+            "forbidden_text": []
+          }
+        ]
+      },
+      {
+        "id": "final-dependency-1",
+        "family": "dependency-update",
+        "plan_context": {
+          "operation": "edit",
+          "domains": [
+            "code"
+          ],
+          "signals": [],
+          "profiles": [
+            "software"
+          ],
+          "risk": {},
+          "unfinished": false
+        },
+        "payload": {
+          "initial_files": {
+            "requirements.txt": "db-driver==1.2\nother-lib==7.0\n",
+            "requirements.lock": "db-driver==1.2\nother-lib==7.0\n"
+          }
+        },
+        "prompt": "Upgrade db-driver to exactly 4.2 in both files. Preserve other-lib at 7.0, preserve line order and final newlines; removing the driver is a failed task. Return complete final contents of every supplied file, preserve unrelated content, and return no extra files. No tests or commands can be executed in this artifact-only task: report validation as not_run. Output the requested JSON only.",
+        "output_schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "files": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "path": {
+                    "type": "string"
+                  },
+                  "content": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "path",
+                  "content"
+                ]
+              }
+            },
+            "validation": {
+              "type": "string",
+              "enum": [
+                "not_run"
+              ]
+            }
+          },
+          "required": [
+            "files",
+            "validation"
+          ]
+        },
+        "artifact_checks": [
+          {
+            "path": "requirements.txt",
+            "expected": "db-driver==4.2\nother-lib==7.0\n",
+            "kind": "text",
+            "forbidden_text": []
+          },
+          {
+            "path": "requirements.lock",
+            "expected": "db-driver==4.2\nother-lib==7.0\n",
+            "kind": "text",
+            "forbidden_text": []
+          }
+        ]
+      },
+      {
+        "id": "final-interop-0",
+        "family": "interop-repair",
+        "plan_context": {
+          "operation": "edit",
+          "domains": [
+            "code"
+          ],
+          "signals": [],
+          "profiles": [
+            "software"
+          ],
+          "risk": {},
+          "unfinished": false
+        },
+        "payload": {
+          "initial_files": {
+            "src/core.py": "VALUE = 1\n",
+            "README.md": "Core value: 1.\n",
+            ".discovery/architecture.json": "{\"canonical_module\":\"src/core.py\"}\n"
+          }
+        },
+        "prompt": "Change VALUE to 9 in the existing canonical src/core.py module and document it in README.md as \"Core value: 9.\" with a final newline. Preserve discovery metadata. Do not add a parallel module or HANDOFF file. Return complete final contents of every supplied file, preserve unrelated content, and return no extra files. No tests or commands can be executed in this artifact-only task: report validation as not_run. Output the requested JSON only.",
+        "output_schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "files": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "path": {
+                    "type": "string"
+                  },
+                  "content": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "path",
+                  "content"
+                ]
+              }
+            },
+            "validation": {
+              "type": "string",
+              "enum": [
+                "not_run"
+              ]
+            }
+          },
+          "required": [
+            "files",
+            "validation"
+          ]
+        },
+        "artifact_checks": [
+          {
+            "path": "src/core.py",
+            "expected": "VALUE = 9\n",
+            "kind": "python-ast",
+            "forbidden_text": []
+          },
+          {
+            "path": "README.md",
+            "expected": "Core value: 9.\n",
+            "kind": "text",
+            "forbidden_text": []
+          },
+          {
+            "path": ".discovery/architecture.json",
+            "expected": "{\"canonical_module\":\"src/core.py\"}\n",
+            "kind": "json",
+            "forbidden_text": []
+          }
+        ]
+      },
+      {
+        "id": "final-interop-1",
+        "family": "interop-repair",
+        "plan_context": {
+          "operation": "edit",
+          "domains": [
+            "code"
+          ],
+          "signals": [],
+          "profiles": [
+            "software"
+          ],
+          "risk": {},
+          "unfinished": false
+        },
+        "payload": {
+          "initial_files": {
+            "src/core.py": "VALUE = 1\n",
+            "README.md": "Core value: 1.\n",
+            ".discovery/architecture.json": "{\"canonical_module\":\"src/core.py\"}\n"
+          }
+        },
+        "prompt": "Change VALUE to 13 in the existing canonical src/core.py module and document it in README.md as \"Core value: 13.\" with a final newline. Preserve discovery metadata. Do not add a parallel module or HANDOFF file. Return complete final contents of every supplied file, preserve unrelated content, and return no extra files. No tests or commands can be executed in this artifact-only task: report validation as not_run. Output the requested JSON only.",
+        "output_schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "files": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "path": {
+                    "type": "string"
+                  },
+                  "content": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "path",
+                  "content"
+                ]
+              }
+            },
+            "validation": {
+              "type": "string",
+              "enum": [
+                "not_run"
+              ]
+            }
+          },
+          "required": [
+            "files",
+            "validation"
+          ]
+        },
+        "artifact_checks": [
+          {
+            "path": "src/core.py",
+            "expected": "VALUE = 13\n",
+            "kind": "python-ast",
+            "forbidden_text": []
+          },
+          {
+            "path": "README.md",
+            "expected": "Core value: 13.\n",
+            "kind": "text",
+            "forbidden_text": []
+          },
+          {
+            "path": ".discovery/architecture.json",
+            "expected": "{\"canonical_module\":\"src/core.py\"}\n",
+            "kind": "json",
+            "forbidden_text": []
+          }
+        ]
+      },
+      {
+        "id": "final-handoff-0",
+        "family": "continuity-truth",
+        "plan_context": {
+          "operation": "edit",
+          "domains": [
+            "code"
+          ],
+          "signals": [
+            "handoff"
+          ],
+          "profiles": [
+            "software"
+          ],
+          "risk": {},
+          "unfinished": true
+        },
+        "payload": {
+          "initial_files": {
+            ".governance/handoff.json": "{\"workflow_id\": \"repair-0\", \"status\": \"in_progress\", \"start_revision\": \"start-a\", \"validation\": {\"tested_revision\": \"prior-b\", \"result\": \"passed\"}, \"next_action\": \"run current tests\"}"
+          }
+        },
+        "prompt": "External service is unavailable and the current change has not been tested. Update only the current handoff: set status to blocked, next_action to exactly \"restore external service; run current tests\", and add current_validation=\"not_run\". Preserve immutable workflow/start facts and the historical validation object unchanged; never claim the current change passed. Return complete final contents of every supplied file, preserve unrelated content, and return no extra files. No tests or commands can be executed in this artifact-only task: report validation as not_run. Output the requested JSON only.",
+        "output_schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "files": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "path": {
+                    "type": "string"
+                  },
+                  "content": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "path",
+                  "content"
+                ]
+              }
+            },
+            "validation": {
+              "type": "string",
+              "enum": [
+                "not_run"
+              ]
+            }
+          },
+          "required": [
+            "files",
+            "validation"
+          ]
+        },
+        "artifact_checks": [
+          {
+            "path": ".governance/handoff.json",
+            "expected": "{\"workflow_id\": \"repair-0\", \"status\": \"blocked\", \"start_revision\": \"start-a\", \"validation\": {\"tested_revision\": \"prior-b\", \"result\": \"passed\"}, \"next_action\": \"restore external service; run current tests\", \"current_validation\": \"not_run\"}",
+            "kind": "json",
+            "forbidden_text": []
+          }
+        ]
+      },
+      {
+        "id": "final-handoff-1",
+        "family": "continuity-truth",
+        "plan_context": {
+          "operation": "edit",
+          "domains": [
+            "code"
+          ],
+          "signals": [
+            "handoff"
+          ],
+          "profiles": [
+            "software"
+          ],
+          "risk": {},
+          "unfinished": true
+        },
+        "payload": {
+          "initial_files": {
+            ".governance/handoff.json": "{\"workflow_id\": \"repair-1\", \"status\": \"in_progress\", \"start_revision\": \"start-a\", \"validation\": {\"tested_revision\": \"prior-b\", \"result\": \"passed\"}, \"next_action\": \"run current tests\"}"
+          }
+        },
+        "prompt": "External service is unavailable and the current change has not been tested. Update only the current handoff: set status to blocked, next_action to exactly \"restore external service; run current tests\", and add current_validation=\"not_run\". Preserve immutable workflow/start facts and the historical validation object unchanged; never claim the current change passed. Return complete final contents of every supplied file, preserve unrelated content, and return no extra files. No tests or commands can be executed in this artifact-only task: report validation as not_run. Output the requested JSON only.",
+        "output_schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "files": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "path": {
+                    "type": "string"
+                  },
+                  "content": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "path",
+                  "content"
+                ]
+              }
+            },
+            "validation": {
+              "type": "string",
+              "enum": [
+                "not_run"
+              ]
+            }
+          },
+          "required": [
+            "files",
+            "validation"
+          ]
+        },
+        "artifact_checks": [
+          {
+            "path": ".governance/handoff.json",
+            "expected": "{\"workflow_id\": \"repair-1\", \"status\": \"blocked\", \"start_revision\": \"start-a\", \"validation\": {\"tested_revision\": \"prior-b\", \"result\": \"passed\"}, \"next_action\": \"restore external service; run current tests\", \"current_validation\": \"not_run\"}",
+            "kind": "json",
+            "forbidden_text": []
+          }
+        ]
+      }
+    ]
+  },
+  "runner_config": {
+    "native_config_sha256": "13e81043a05586eab0e88ffee4d9051f1a01e8fab98c41830d9dc125f1f3e8c6",
+    "grader": {
+      "reference": "evolution.task_benchmark:grade",
+      "source_sha256": "84a4e90fe69d4b5bce7f66fbeefa48de66bca80f33d973047788807f688be109"
+    },
+    "campaign_id": "rc18-development-20261012-v1"
+  },
+  "paired_budget": {
+    "model_calls": 16,
+    "tokens": 400000,
+    "wall_seconds": 3600
+  }
+}

@@ -1,10 +1,18 @@
 # Offline governance evolution
 
-RC17 adds a repository-only optimizer around the compiled UPG runtime. The
+Current candidate: **3.0.0-rc.18 — Grader Validity and Measured Runtime Compression**.
+
+RC17 introduced the repository-only optimizer around the compiled UPG runtime. The
 installed Skill still needs no model backend and its optional helpers support
 Python 3.8+. Evolution needs Python 3.10+ with current security patches (historical
 baseline extraction requires 3.10.12+) and uses the standard library; it never
 installs a model SDK or reads account credentials implicitly.
+
+RC18 repairs demonstrated task-grader false positives, compacts canonical
+instructions, and adds explicitly registered native-CLI artifact measurements.
+Candidate validation, the nine-arm development run and eight paired RC17/candidate
+task results are pending. Template bytes, actual prompt tokens, completed-turn
+tokens, CLI wall time and task quality are separate observations.
 
 ## Candidate and trust boundaries
 
@@ -40,10 +48,12 @@ code does not ship inside the ordinary Skill.
 
 Executable candidates are deduplicated after parameter legalization, including
 presentation plateaus. The same cached evaluation never becomes another sample.
-Call, token, elapsed-time and candidate budgets bound the controller. Failed
-calls and retries consume the same shared budget; unknown provider totals block
-further calls. Backends must honor supplied completion limits and perform one
-attempt per invocation; they must not hide retries or unmetered work.
+Call, token, elapsed-time and candidate budgets bound the controller, including
+selection and replayed learning accounting. Failed calls and retries consume the
+same shared budget; unknown reported totals block further calls. Receipts must
+distinguish requested limits from provider-enforced limits and one adapter
+invocation from provider-internal attempts. Metering after a response is a stop
+threshold, not a guarantee against a request overshooting the remaining tokens.
 
 ## Commands
 
@@ -77,6 +87,33 @@ learner backend receives system/user/stage/completion limit and returns
 `(text, usage)`. Missing usage fields remain unknown. Credentials remain the
 chosen backend's responsibility and follow its official authorization path.
 
+### Native CLI development adapter
+
+`evolution.native_codex:runner` and `evolution.native_codex:backend` reuse an
+explicitly selected, already authenticated official CLI. `UPG_NATIVE_CONFIG`
+must name an absolute local JSON configuration with the registered binary,
+requested model, reasoning effort, artifact directory and timeout. It accepts no
+login material. Freeze the adapter's configuration/binary/grader binding in
+`runner_config` before calls; the runner also binds the exact canonical source,
+compiler, compiled runtime and task artifact. A changed execution input invalidates
+cached evidence.
+
+The development spec is `evolution/protocol/rc18-native-development.json`:
+
+```bash
+python -m evolution ablate --spec evolution/protocol/rc18-native-development.json --output eval-workspaces/evolution/rc18-native-matrix --runner evolution.native_codex:runner --backend evolution.native_codex:backend
+```
+
+This workload asks for complete file contents in JSON, with validation explicitly
+`not_run`; task instructions prohibit tools and the grader never executes generated code. A trusted
+artifact grader checks the requested result and preserved files. The adapter
+retains actual reported completed-turn usage and CLI wall time in local receipts.
+The requested `gpt-6-luna` name is not yet provider-confirmed, provider-internal
+retries are not independently accounted, and the native output token limit is
+an instruction rather than an enforced CLI ceiling. These limits must accompany
+any result. A successful file response establishes neither real tool execution
+nor a cross-Agent handoff or independent multi-family efficacy.
+
 Checkpoints use atomic same-volume replacement and bind source, engine, vendor,
 protocol and callback identities. A callback interrupted in flight leaves a
 pending receipt; resume rejects it until independently reconciled. Exclusive
@@ -86,14 +123,15 @@ task outputs stay in the ignored experiment workspace, outside user projects.
 
 ## Independent admission
 
-`ablate` executes all nine registered arms, including actual RC15/RC16 Git
-archives, with resumable per-arm ledgers. Removing modules reallocates search
+`ablate` executes all nine registered arms, including actual historical Git
+archives selected by the frozen spec, with resumable per-arm ledgers. Removing modules reallocates search
 rounds to remaining modules under the same overall caps. Unused budget stays
 visible; identical caps do not prove identical actual consumption. The matrix is
 a development comparison, not independent final evidence.
 
-`evolution/protocol/upg-evolution.json` fixes RC15 as the primary historical
-baseline and records RC16 as the latest pre-upgrade regression baseline. It
+`evolution/protocol/upg-evolution.json` retains RC17's RC15 primary historical
+baseline and RC16 pre-upgrade regression baseline. The RC18 native development
+spec uses the exact RC17 release as its current-version comparison. The protocol
 specifies isolated training/selection/final families, equal-budget controls and
 ablations, actual provider usage, paired uncertainty and noncompensatory gates.
 Operator-removal controls use `--disable skillopt|annealing|de|curvature`;
@@ -113,5 +151,8 @@ calculated separately for tokens, money and time only when positive, reliable
 per-task savings have been established. No global optimum is claimed for this
 mixed discrete/continuous search.
 
-Current engineering evidence and outstanding empirical requirements are tracked
-in `PROJECT_STATE.md` and the RC17 audit. No registered final trial has begun.
+Current candidate validation and real measurements are pending in
+`PROJECT_STATE.md`; the RC17 audit retains its original engineering-only scope.
+The planned eight-pair development artifact comparison cannot satisfy the
+independent final-evidence or formal qualification contract. No qualifying locked
+trial has run, and formal promotion remains BLOCKED.

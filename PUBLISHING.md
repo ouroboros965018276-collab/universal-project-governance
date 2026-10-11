@@ -1,8 +1,10 @@
 # Publishing and Test-Freeze Gates
 
-Current candidate: **3.0.0-rc.17 — Budgeted Offline Evolution**
+Current candidate: **3.0.0-rc.18 — Grader Validity and Measured Runtime Compression**
 
-RC17 integrates RC16's continuity fixes and adds budgeted offline evolution with fail-closed independent promotion. Its runtime and schemas have a new qualification fingerprint; thresholds and historical evidence are unchanged. See [PROJECT_STATE.md](PROJECT_STATE.md) and the RC17 audit for candidate checks. Publish a candidate only after its own compile, regression, integrity, isolated lifecycle, deterministic-package and privacy checks pass. Locked qualification remains NOT RUN; empirical qualification and Stable remain NOT ACHIEVED.
+RC18 repairs demonstrated task-grader false positives, compacts canonical runtime instructions, accepts UTF-8 BOM JSON in runtime helpers, and binds native development measurements to their exact execution inputs and budgets. Candidate validation and real measurements are pending in [PROJECT_STATE.md](PROJECT_STATE.md); RC17's audit retains its original scope. Publish only after this candidate's own compile, regression, integrity, isolated lifecycle, deterministic-package and privacy checks pass. Qualification thresholds and historical outcomes are unchanged. Formal qualification remains BLOCKED: locked qualification is NOT RUN; empirical qualification and Stable are NOT ACHIEVED.
+
+The planned nine-arm development matrix and eight paired RC17/candidate artifact tasks are bounded measurements. Their model availability, observed usage, timing, task quality and uncertainty must be recorded before benefit claims. Requested `gpt-6-luna` identity is not yet provider-confirmed; completed-turn token reports do not establish provider-internal retry coverage. JSON artifact repair does not establish real tool execution or cross-Agent handoff. None of these observations bypasses the independent final-evidence or formal locked gates.
 
 ## Engineering gate before real-Agent testing
 
@@ -20,7 +22,7 @@ python tools/security_audit.py .
 python -m unittest discover -s tests -v
 ```
 
-CI must also pass Linux Python 3.8/3.11/3.13, Windows Python 3.11/3.13, upstream Agent Skills validation, local lifecycle install/remove, clean Codex-target installation, deterministic packaging, and private default-branch installation after promotion.
+CI must also pass Linux Python 3.8/3.11/3.13, offline-evolution Python 3.10/3.13, Windows Python 3.11/3.13, upstream Agent Skills validation, local lifecycle install/remove, clean Codex-target installation, deterministic packaging, and private default-branch installation after promotion.
 
 ## Real-Agent locked gate
 
