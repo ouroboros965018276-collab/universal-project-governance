@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Current candidate: **3.0.0-rc.15 — Deterministic Skill Target Resolution**.
+Current candidate: **3.0.0-rc.16 — Workflow Outcomes and Validation Continuity**.
 
 ## First modifying activation
 

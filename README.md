@@ -2,16 +2,15 @@
 
 ## 当前版本与开发进度 | Version status
 
-- 最新开发候选 / Latest development candidate: **3.0.0-rc.15 — Deterministic Skill Target Resolution**，见 [PR #14](https://github.com/ouroboros965018276-collab/universal-project-governance/pull/14) 和[候选项目状态](https://github.com/ouroboros965018276-collab/universal-project-governance/blob/codex/rc14-multicopy-path-20261008/PROJECT_STATE.md)。
-- 当前默认分支运行时 / Main branch runtime: **3.0.0-rc.12 — Qualification Evidence Refresh**。RC15 尚未合并；以下安装说明使用当前检出的分支，不会自动切换到 RC15。
-- 已核实工程证据 / Verified engineering evidence: RC15 源提交 [`0808842`](https://github.com/ouroboros965018276-collab/universal-project-governance/commit/0808842e759763c722f77a2fd9b464842480a290) 的本地测试为 105/105；文档后续提交 [`606f8d1`](https://github.com/ouroboros965018276-collab/universal-project-governance/commit/606f8d16d85274b6837e1d4faa2dbc28676330a0) 的 [CI #252](https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/37874780805) 已通过。这些结果不代表本次首页修改已通过检查，也不证明治理提效。
-- 发布状态 / Release status: **候选，非 Stable**。尚无完整的 DeepSeek A0/A1/A2 工程试验或评测结果；一条 RC14 观察性 A1 请求状态仍未知，后续尝试在执行前受阻。真实跨 Agent 对照、交接、成本与资格门槛仍须验证。
+- 本分支候选 / This branch candidate: **3.0.0-rc.16 — Workflow Outcomes and Validation Continuity**，基于 [RC15 / PR #14](https://github.com/ouroboros965018276-collab/universal-project-governance/pull/14)。RC16 的检查与限制见 [PROJECT_STATE.md](PROJECT_STATE.md)；历史 RC15 的 105 项测试不作为 RC16 通过凭据。
+- 默认分支 / Main: **3.0.0-rc.12**。候选分支源码和全局已安装副本是不同状态；检出或打包不会自动升级其他项目的 Skill。
+- 发布状态 / Release: **候选，非 Stable**。历史加载、配对成本收益、真实跨 Agent 接手与锁定资格验证仍有缺口；工程修复不会消除这些证据限制。
 
-状态核对 / Status checked: **2026-10-09 UTC**。默认分支正文描述 RC12；候选分支正文描述 RC15。各分支运行时版本以该分支的 VERSION.md 为准。
+状态核对 / Status checked: **2026-10-11 Asia/Shanghai**。运行时版本以本分支 [VERSION.md](universal-project-governance/VERSION.md) 为准。
 
 Universal Project Governance is a model-agnostic, host-agnostic Agent Skill for maintained-project governance across software, data, infrastructure, research, content, product/specification, operations, design systems, automation, ML/AI, documentation, and mixed projects.
 
-RC15 is an independent follow-up candidate for a verified installer defect: when projects contain duplicate UPG copies, the top-level installer could select a lexically earlier stale copy. Codex operations now resolve only the canonical `.agents/skills/universal-project-governance` target. Other Agent targets remain supported when unique and stop with an explicit ambiguity error when multiple copies exist. RC14 remains the frozen historical candidate; this repair receives a new version and qualification fingerprint. No qualification threshold is changed. See [`PROJECT_STATE.md`](PROJECT_STATE.md) for evidence and remaining host limits.
+RC16 addresses two field-feedback gaps: completion could not replace planned outcomes with observed results, and a handoff could repeat stale validation prose. The lifecycle now separates start facts from evolving outcomes. Optional validation references resolve one named, scoped run from the existing project truth and reject stale digests. Original unknowns remain honest; stage checkpoints do not complete unfinished work. See the [sanitized feedback and evidence limits](docs/field-feedback/rc16-retrospective.md).
 
 The prior frozen RC13 smoke passed registration, schema, artifact, and analyzer-boundary checks but failed closed before model invocation because Windows sandbox provisioning was incomplete; its sanitized record is [`qualification/dev-smoke/rc13-attempt-3.summary.json`](qualification/dev-smoke/rc13-attempt-3.summary.json). RC14 attempt 1 independently reproduced the same preflight blocker after current-freeze registration/schema/artifact checks; the adapter made no Agent call, and its sanitized summary is [`qualification/dev-smoke/rc14-attempt-1.summary.json`](qualification/dev-smoke/rc14-attempt-1.summary.json). The interrupted RC13 attempt has registration only, so invocation and usage remain unknown, not zero ([record](qualification/dev-smoke/rc13-attempt-2.summary.json)). Historical RC12 outcomes remain unchanged: 1 FAIL + 4 BLOCKED, and prospective attempts 13/14 keep their unknown causes. Locked qualification remains NOT RUN; empirical qualification and Stable remain NOT ACHIEVED because reviewed external isolation and three usable independent Agent families are not established.
 
@@ -103,6 +102,19 @@ The planner returns `change_mode` and `scope_guard`.
 - `structural / task-bounded-responsible-layer`: non-trivial work changes the smallest responsible canonical layer and removes superseded in-scope patch paths.
 
 Structural mode never grants permission for unrelated redesign, API/contract changes, architectural migration, or opportunistic refactoring.
+
+## Workflow outcomes and validation references
+
+Start non-trivial work with `project_tool.py begin PROJECT --input workflow.json`. At a real workflow boundary, call `finish PROJECT --input report.json` with the same identity and factual `change.after`, result/validation revision and sourced occurrence time. The original checkpoint is retained as `start_change`; identical completion retries remain idempotent. `unknown` remains valid. Checkpoints with `status=partial` or `blocked` retain active recovery state. An implementation pin alone does not complete the parent workflow or its externally blocked acceptance. Each workflow/status has one immutable receipt: one partial and one blocked outcome can be retained; changed same-status retries are rejected. Split deliberately bounded work at actual workflow boundaries rather than auto-finishing on every pin. Reporting-off retry verification is bounded to the retained latest/previous completion checkpoints.
+
+Execution state may use optional `validation_runs`, with each record containing `run_id`, `scope`, `result` and `tested_revision`; `passed`, `total`, `later_changes` and `pending_retest` add explicit limits. Handoff state may instead carry a `validation_ref` with project-relative `path`, `run_id`, file `sha256` and optional JSON `pointer` to an existing structured record. This supports existing truth files without a parallel validation ledger. Validate or render references using:
+
+```bash
+python universal-project-governance/scripts/state_tool.py validate .governance/handoff.json --schema handoff --project-root .
+python universal-project-governance/scripts/state_tool.py render .governance/handoff.json --schema handoff --project-root . --current-revision ACTUAL_CURRENT_STATE
+```
+
+Use an actual revision/state identifier in place of the examples. A digest mismatch or missing source requires reconciliation; it never certifies a pass. Different scopes remain separate, and later changes are pending retest. Legacy string validation remains supported. See the generated execution/handoff schemas for the precise contract. The tool verifies referenced metadata and freshness, not whether a test genuinely executed. No per-commit hook or default activation logger is installed. State export does not snapshot external referenced sources; retain those files separately when handing off or exporting evidence.
 
 ## Automated lifecycle
 

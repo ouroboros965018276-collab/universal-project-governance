@@ -1,8 +1,8 @@
 # Publishing and Test-Freeze Gates
 
-Current candidate: **3.0.0-rc.15 — Deterministic Skill Target Resolution**
+Current candidate: **3.0.0-rc.16 — Workflow Outcomes and Validation Continuity**
 
-RC15 fixes a verified duplicate-copy selection defect in the top-level installer. Codex resolves only `.agents/skills/universal-project-governance`; other Agent targets remain supported when unique and reject ambiguous copies. This change is in the deployment freeze surface, so RC15 has a new generated runtime and qualification fingerprint. It does not change qualification thresholds. RC14 evidence in [PROJECT_STATE.md](PROJECT_STATE.md) remains historical; RC15 must complete its own checks and hosted review. The formal locked run remains NOT RUN; empirical qualification and Stable are NOT ACHIEVED.
+RC16 repairs workflow outcome reconciliation and adds optional canonical validation references. Its runtime and schemas have a new qualification fingerprint; thresholds and historical evidence are unchanged. See [PROJECT_STATE.md](PROJECT_STATE.md) and the RC16 audit for candidate checks. Publish a candidate only after its own compile, regression, integrity, isolated lifecycle, deterministic-package and privacy checks pass. Locked qualification remains NOT RUN; empirical qualification and Stable remain NOT ACHIEVED.
 
 ## Engineering gate before real-Agent testing
 

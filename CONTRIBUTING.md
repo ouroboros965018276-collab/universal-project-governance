@@ -1,6 +1,6 @@
 # Contributing
 
-Current candidate: **3.0.0-rc.15 — Deterministic Skill Target Resolution**. RC15 corrects duplicate Skill-copy selection in the top-level installer while preserving unique non-Codex targets and failing closed on ambiguity. Qualification thresholds remain unchanged. Current test/freeze/smoke evidence and remaining host limits live in [`PROJECT_STATE.md`](PROJECT_STATE.md); RC14 and earlier outcomes remain historical.
+Current candidate: **3.0.0-rc.16 — Workflow Outcomes and Validation Continuity**. RC16 closes outcome and validation continuity gaps from retrospective feedback. Change canonical source, regenerate the runtime, and retain independent engineering and efficacy evidence boundaries. Qualification thresholds remain unchanged; current candidate evidence lives in [PROJECT_STATE.md](PROJECT_STATE.md).
 
 ## Structural contribution rule
 

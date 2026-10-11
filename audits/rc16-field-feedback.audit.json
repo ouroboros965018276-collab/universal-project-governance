@@ -1,0 +1,55 @@
+{
+  "created_at": "2026-10-11T06:27:40.131980Z",
+  "version": "3.0.0-rc.16",
+  "candidate": "Workflow Outcomes and Validation Continuity; engineering candidate, not Stable",
+  "artifact_sha256": "c7c8b448a687a771f2a7da931e33d337966cad166ae2036c84339cacda47ca86",
+  "gates": [
+    {
+      "name": "Windows Python 3.12.10 unit suite",
+      "result": "pass",
+      "evidence": "136/136; includes18 lifecycle and13 validation-continuity regressions. Earlier130-test run found1 compatibility failure; repaired and final136-test run passed. Raw logs retained locally."
+    },
+    {
+      "name": "Canonical source, bounded runtime and release contracts",
+      "result": "pass",
+      "evidence": "Compiler drift, governance lint, qualification protocol/freeze, repository, bundle,16-file integrity and static security checks passed.16 policies;8 hot-path rules;managed binding/ledger maximum2;104 Skill lines."
+    },
+    {
+      "name": "Deterministic package",
+      "result": "pass",
+      "evidence": "Two independent builds have identical SHA-256 c7c8b448a687a771f2a7da931e33d337966cad166ae2036c84339cacda47ca86; changed text normalized to repository-required LF before final fingerprints and packaging."
+    },
+    {
+      "name": "Current installed runtime",
+      "result": "pass",
+      "evidence": "Previous RC15 backup verified17/17. RC16 staged and installed integrity16/16; installed bundle equals generated runtime17/17. This proves present files, not automatic/historical activation."
+    },
+    {
+      "name": "Independent source cross-review",
+      "result": "pass",
+      "evidence": "Independent cross-review identified two retry-edge defects; both fixes rechecked against original in-memory reproductions and targeted regressions. Source/generated/installed project helper hashes agree. No field efficacy inference."
+    },
+    {
+      "name": "Isolated receiving-agent exercise",
+      "result": "pass",
+      "evidence": "One independent receiving subagent was given only the candidate Skill and isolated synthetic maintenance project, with no expected answer or parent-task conclusions. Existing tests moved2/3 to3/3; outcome and canonical handoff reference reconciled; immutable start retained; active workflow cleared; reporting-off binding healthy. Same-family diagnostic only, no paired cost or qualification inference. Raw project/entry logs remain local."
+    },
+    {
+      "name": "skill-creator quick validator",
+      "result": "pending",
+      "evidence": "Could not start: PyYAML absent in both existing checked Python runtimes. Maintained repository Skill bundle/frontmatter validation passed; no installation workaround."
+    },
+    {
+      "name": "Locked qualification and Stable",
+      "result": "pending",
+      "evidence": "Not run/not achieved. Thresholds unchanged; no causal cost benefit or cross-family generalization."
+    }
+  ],
+  "blockers": [
+    "Real prospective A0/A1/A2 outcome and comparable cost evidence absent",
+    "Reviewed isolation and three independently usable Agent families remain qualification requirements",
+    "Per-round independent host activation receipts unavailable; historical loading unknown",
+    "Current state export does not snapshot external validation_ref sources; preserve them separately",
+    "Same workflow/status has one immutable receipt; repeated changed same-status checkpoints are not supported; reporting-off retry verification is bounded to retained checkpoints"
+  ]
+}
