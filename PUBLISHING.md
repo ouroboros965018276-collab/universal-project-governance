@@ -1,8 +1,8 @@
 # Publishing and Test-Freeze Gates
 
-Current candidate: **3.0.0-rc.12**
+Current candidate: **3.0.0-rc.16 — Workflow Outcomes and Validation Continuity**
 
-RC12 is an evidence-refresh candidate with no runtime semantic or qualification-threshold changes from RC11. Current micro-project functional/receipt checks pass 5/5, but historical governance remains 1 FAIL + 4 BLOCKED. Its registered real-Agent smoke is FAIL; locked qualification is NOT RUN; empirical qualification and Stable are NOT ACHIEVED. See [PROJECT_STATE.md](PROJECT_STATE.md) for the evidence boundary and current host constraints.
+RC16 repairs workflow outcome reconciliation and adds optional canonical validation references. Its runtime and schemas have a new qualification fingerprint; thresholds and historical evidence are unchanged. See [PROJECT_STATE.md](PROJECT_STATE.md) and the RC16 audit for candidate checks. Publish a candidate only after its own compile, regression, integrity, isolated lifecycle, deterministic-package and privacy checks pass. Locked qualification remains NOT RUN; empirical qualification and Stable remain NOT ACHIEVED.
 
 ## Engineering gate before real-Agent testing
 

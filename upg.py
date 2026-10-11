@@ -29,16 +29,36 @@ def run(command, cwd):
         check=False,
     )
 
-def find_installed(project):
+def _installed_copies(project):
     project = Path(project).resolve()
     candidates = sorted(project.glob(".*"))
+    found = []
     for root in candidates:
         if not root.is_dir():
             continue
         for skill in root.glob("**/%s/SKILL.md" % SKILL_NAME):
-            return skill.parent
+            if skill.parent not in found:
+                found.append(skill.parent)
     direct = list(project.glob("**/%s/SKILL.md" % SKILL_NAME))
-    return direct[0].parent if direct else None
+    for skill in direct:
+        if skill.parent not in found:
+            found.append(skill.parent)
+    return found
+
+def find_installed(project, agent="codex"):
+    project = Path(project).resolve()
+    copies = _installed_copies(project)
+    if agent == "codex":
+        # The Skills CLI's project-scoped Codex destination is canonical. Never
+        # select a lexically earlier backup or another agent's nested copy.
+        canonical = project / ".agents" / "skills" / SKILL_NAME
+        return canonical if (canonical / "SKILL.md").is_file() else None
+    if len(copies) > 1:
+        raise RuntimeError(
+            "multiple installed UPG copies found for %s; specify/clean the agent target before proceeding"
+            % agent
+        )
+    return copies[0] if copies else None
 
 def project_tool(skill_dir, project, *args):
     command = [sys.executable, str(skill_dir / "scripts/project_tool.py"), *args, str(Path(project).resolve())]
@@ -53,12 +73,14 @@ def install(project, agent, source, field_test_reporting=False):
         "npx", "-y", SKILLS_CLI, "add", source,
         "--skill", SKILL_NAME, "-a", agent, "--copy", "-y",
     ]
-    preexisting = find_installed(project) is not None
+    # An older or noncanonical copy still counts as preexisting for rollback:
+    # a failed install must not remove files that were already in the project.
+    preexisting = bool(_installed_copies(project))
     cp = run(command, project)
     if cp.returncode != 0:
         raise RuntimeError("Skill installation failed: " + cp.stderr[-2000:])
     try:
-        skill_dir = find_installed(project)
+        skill_dir = find_installed(project, agent)
         if skill_dir is None:
             raise RuntimeError("Skill CLI completed but installed Skill could not be located")
         integrity = run(
@@ -76,7 +98,7 @@ def install(project, agent, source, field_test_reporting=False):
     except RuntimeError as exc:
         if not preexisting:
             cleanup_error = ""
-            skill_dir = find_installed(project)
+            skill_dir = find_installed(project, agent)
             if skill_dir is not None:
                 cleanup = project_tool(skill_dir, project, "remove", "--yes")
                 if cleanup.returncode != 0:
@@ -98,7 +120,7 @@ def install(project, agent, source, field_test_reporting=False):
 
 def remove(project, agent, yes):
     project = Path(project).resolve()
-    skill_dir = find_installed(project)
+    skill_dir = find_installed(project, agent)
     fallback = ROOT / "universal-project-governance"
     tool_dir = skill_dir if skill_dir is not None else fallback
     if not yes:
@@ -120,7 +142,7 @@ def remove(project, agent, yes):
 
 def invoke_project_command(project, command, extra=None):
     project = Path(project).resolve()
-    skill_dir = find_installed(project) or (ROOT / "universal-project-governance")
+    skill_dir = find_installed(project, "codex") or (ROOT / "universal-project-governance")
     tool = skill_dir / "scripts/project_tool.py"
     if not tool.is_file():
         raise RuntimeError("project tool is unavailable; install the Skill first")

@@ -1,5 +1,7 @@
 # Qualification Plane
 
+Current candidate: **3.0.0-rc.14 — Runtime Integrity and Diagnostic Hardening**. RC14 includes RC13 adapter evidence continuity, reporting-independent workflow completion, and full task-context validation, then closes reviewed credential-redaction, preflight-timeout, and opt-in failure-state gaps. It does not alter qualification thresholds or protocol.
+
 Purpose: establish whether the frozen current Skill causally improves maintained-project outcomes enough to justify its behavioral and operational cost.
 
 This directory is repository-only and never ships as Agent runtime.
@@ -15,12 +17,16 @@ Development runs are diagnostic. Stable evidence uses locked trials only.
 `dev_smoke.py` runs one registered A2 development task through the real adapter, temporary workspace, Agent, artifact retention, and release analyzer. Example:
 
 ```bash
-python qualification/dev_smoke.py --adapter /path/to/codex-dev-adapter.json --output-dir qualification/workspaces/dev-smoke-rc12-01
+python qualification/dev_smoke.py --adapter /path/to/codex-dev-adapter.json --output-dir qualification/workspaces/dev-smoke-rc14-01
 ```
 
 The smoke passes only when the development trial executes, its registered identity and retained artifact verify, task checks pass, A2 records exactly one report, and the release analyzer rejects development evidence before inference. `release-analyzer-check.json` is expected to say `FAIL` because development evidence is not release evidence. Local process/workspace separation is not external isolation attestation and cannot authorize a locked trial. Keep smoke workspaces local and publish only reviewed, desensitized summaries.
 
+The prior frozen RC13 smoke is [`rc13-attempt-3.summary.json`](dev-smoke/rc13-attempt-3.summary.json): registration, schema, artifact, and analyzer-boundary checks passed, but the real Agent step failed closed before invocation because Windows sandbox provisioning was incomplete. Its initial attempt exposed a GBK decoder defect and did not invoke the model ([attempt 1](dev-smoke/rc13-attempt-1.summary.json)); the interrupted attempt has registration only and unknown invocation/usage ([attempt 2](dev-smoke/rc13-attempt-2.summary.json)). RC14 attempt 1 ([record](dev-smoke/rc14-attempt-1.summary.json)) passed current-freeze registration, schema, artifact, and analyzer checks, then failed closed at the same Windows sandbox preflight. It did not invoke the Agent. These are engineering diagnostics, not task efficacy or qualification evidence.
+
 The eleventh registered RC12 smoke, on the prior candidate fingerprint, remains recorded unchanged in [`dev-smoke/rc12.summary.json`](dev-smoke/rc12.summary.json); it failed at Codex CLI workspace-routing discovery before task changes. Prospective attempt 12 is summarized in [`dev-smoke/rc12-attempt-12.summary.json`](dev-smoke/rc12-attempt-12.summary.json): native executable selection and Windows environment routing succeeded, but the CLI made zero tool calls and failed task/A2 checks under unrestricted host settings. Prospective attempts [13](dev-smoke/rc12-attempt-13.summary.json) and [14](dev-smoke/rc12-attempt-14.summary.json) exited 1 before structured events or task evidence; exact stderr and usage were not retained, so their cause remains unknown. Those diagnostics do not qualify the candidate. Historical governance remains 1 FAIL + 4 BLOCKED; no current recheck changes those results. Docker Engine runs containers, but external operator-reviewed isolation evidence and three actually usable independent Agent families remain absent. Therefore locked qualification is NOT RUN and empirical qualification/Stable are NOT ACHIEVED.
+
+The preregistered protocol pairs A0 baseline, A1 attention control, and A2 UPG for task/governance, safety, cleanup, handoff, trigger, and cost outcomes (tokens, wall time, and tool calls). Serious safety failures are non-compensatory; zero observed events retain a non-zero upper risk bound. Existing RC12 pilots and smoke attempts do not satisfy this full matrix.
 
 ## Hierarchical inference
 

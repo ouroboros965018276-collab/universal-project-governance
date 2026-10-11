@@ -6,6 +6,13 @@
   "locked_qualification": false,
   "empirical_qualification": false,
   "stable_evidence": false,
+  "historical_protocol": {
+    "candidate": "3.0.0-rc.9",
+    "qualification_fingerprint": "sha256:054864a6c2675610f23dfed718416109346dfd4f3bb47bf38c6323b3de321b86",
+    "registered_at_utc": "2026-10-03T21:13:16.007417Z",
+    "grader_sha256": "sha256:d463c75fbb3913679487c7b846af69ec2bf9e4366c15a66ad135f5cd7055d3d3",
+    "source_record": "https://github.com/ouroboros965018276-collab/universal-project-governance/pull/9 (unmerged RC9 pilot record; aggregate measurements only, no raw artifacts imported)"
+  },
   "task": "Build two as-similar-as-possible offline top-down racing games, one no-skill arm and one full-UPG arm, then run the same mechanical acceptance checks.",
   "arms": {
     "A0-no-skill": {
@@ -36,6 +43,26 @@
     "no external network requests",
     "single root HTML entry"
   ],
+  "measured_costs": {
+    "code_phase_wall_clock_seconds": {
+      "A0-no-skill": 14.5,
+      "A2-full-upg": 72.8,
+      "interpretation": "single-operator n=1 observations; weak diagnostic timing, not a general overhead ratio"
+    },
+    "governance_tool_calls": {
+      "A0-no-skill": 0,
+      "A2-full-upg": 7,
+      "A2_failed_calls": 1,
+      "scope": "governance calls only; experiment grader and product-attributable task calls are not included"
+    },
+    "tokens": {
+      "instrumented": false,
+      "input": null,
+      "output": null,
+      "total": null
+    },
+    "attention_control_arm": false
+  },
   "diagnostic_result": {
     "task_outcome": "both arms passed the frozen mechanical acceptance suite",
     "causal_claim": "none; same-family, single-scenario, non-locked pilot evidence cannot establish UPG efficacy",

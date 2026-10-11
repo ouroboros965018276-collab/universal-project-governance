@@ -1,9 +1,14 @@
 from __future__ import annotations
-import hashlib,json,os,pathlib,re,subprocess,tempfile,time
+import hashlib,json,os,pathlib,re,subprocess,sys,tempfile,time
 from qualification.lib.contracts import validate_node
+from .diagnostics import redact_public
 
 def _expand(items,values):
     return [str(x).format(**values) for x in items]
+
+def _decode_output(value):
+    if value is None: return ""
+    return value.decode("utf-8",errors="replace") if isinstance(value,bytes) else value
 
 class CommandAdapter(object):
     def __init__(self,config,base_dir=None):
@@ -49,6 +54,14 @@ class CommandAdapter(object):
         for name in self.config.get("environment_passthrough",[]):
             if name in os.environ: env[name]=os.environ[name]
         env.update(self.config.get("environment",{}))
+        outer_timeout=float(self.config.get("timeout_seconds",900))
+        grace=max(0.05,min(30.0,outer_timeout*0.05))
+        preflight_timeout=grace
+        model_timeout=outer_timeout-2*grace
+        if model_timeout < 0.05:
+            raise ValueError("timeout budget too small for preflight, model call, and wrapper grace")
+        env["UPG_ADAPTER_PREFLIGHT_TIMEOUT_SECONDS"]=str(preflight_timeout)
+        env["UPG_ADAPTER_TIMEOUT_SECONDS"]=str(model_timeout)
         if skill_path: env["UPG_SKILL_PATH"]=str(pathlib.Path(skill_path).resolve())
         return env
     def _control_values(self,control,workspace,task,condition,skill_path,checkpoint,phase):
@@ -56,7 +69,7 @@ class CommandAdapter(object):
         condition_file=control/"condition.md"; condition_file.write_text(condition or "",encoding="utf-8")
         checkpoint_file=control/"checkpoint.json"; checkpoint_file.write_text(json.dumps(checkpoint or {},indent=2),encoding="utf-8")
         output_file=control/"adapter-output.json"
-        values={"workspace":str(workspace),"task_file":str(task_file),"condition_file":str(condition_file),"output_file":str(output_file),"checkpoint_file":str(checkpoint_file),"phase":phase,"skill_path":str(pathlib.Path(skill_path).resolve()) if skill_path else ""}
+        values={"workspace":str(workspace),"task_file":str(task_file),"condition_file":str(condition_file),"output_file":str(output_file),"checkpoint_file":str(checkpoint_file),"phase":phase,"skill_path":str(pathlib.Path(skill_path).resolve()) if skill_path else "","python":sys.executable}
         return values
     def prepare_skill(self,workspace,task,condition,skill_path,checkpoint=None,phase="single"):
         if not skill_path or not self.config.get("skill_install_command"):
@@ -69,7 +82,7 @@ class CommandAdapter(object):
             if cp.returncode!=0: raise RuntimeError("skill installation failed: "+cp.stderr[-2000:])
     def _execute(self,key,workspace,task,condition,skill_path=None,raw_dir=None,checkpoint=None,phase="single",skill_prepared=False):
         workspace=pathlib.Path(workspace).resolve()
-        timeout=int(self.config.get("timeout_seconds",900))
+        timeout=float(self.config.get("timeout_seconds",900))
         env=self._environment(skill_path)
         if skill_path and not skill_prepared:
             self.prepare_skill(workspace,task,condition,skill_path,checkpoint,phase)
@@ -80,22 +93,65 @@ class CommandAdapter(object):
             command=self.config.get(key)
             if not command: raise ValueError("adapter missing %s" % key)
             started=time.monotonic()
-            cp=subprocess.run(_expand(command,values),cwd=str(workspace),env=env,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=timeout,check=False)
+            timed_out=False
+            try:
+                cp=subprocess.run(_expand(command,values),cwd=str(workspace),env=env,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=timeout,check=False)
+                stdout=_decode_output(cp.stdout); stderr=_decode_output(cp.stderr); exit_code=cp.returncode
+            except subprocess.TimeoutExpired as exc:
+                stdout=_decode_output(exc.stdout); stderr=_decode_output(exc.stderr); exit_code=124; timed_out=True
             elapsed=time.monotonic()-started
             usage={}; events={}
             usage_name=self.config.get("usage_file")
             if usage_name and (workspace/usage_name).is_file():
                 usage=json.loads((workspace/usage_name).read_text(encoding="utf-8"))
             if output_file.is_file():
-                meta=json.loads(output_file.read_text(encoding="utf-8")); usage.update(meta.get("usage",{})); events=meta.get("events",{})
+                try:
+                    meta=json.loads(output_file.read_text(encoding="utf-8"))
+                    if not isinstance(meta,dict): raise ValueError("adapter metadata must be an object")
+                    if isinstance(meta.get("usage"),dict): usage.update(meta["usage"])
+                    events=redact_public(meta.get("events",{}))
+                except (OSError,ValueError,json.JSONDecodeError):
+                    events={"adapter_metadata_invalid":True}
+            if not isinstance(events,dict): events={"adapter_events":events}
+            events["outer_exit_code"]=exit_code
+            events["outer_timed_out"]=timed_out
+            if timed_out:
+                events["timed_out"]=True
+                events["runner_status"]="outer_timed_out"
+            elif events.get("timed_out") is True or exit_code == 124:
+                events["runner_status"]="inner_timed_out"
+            elif exit_code != 0:
+                events["runner_status"]="failed"
+            else:
+                events.setdefault("runner_status","completed")
+            if exit_code != 0 and stderr:
+                events["error_excerpt"]=redact_public(stderr[-1000:])
             usage.setdefault("wall_time_seconds",elapsed)
             def h(text): return hashlib.sha256(text.encode("utf-8",errors="replace")).hexdigest()
-            evidence={"stdout_sha256":h(cp.stdout),"stderr_sha256":h(cp.stderr),"exit_code":cp.returncode}
+            evidence={"stdout_sha256":h(stdout),"stderr_sha256":h(stderr),"exit_code":exit_code,"timed_out":timed_out}
             if raw_dir:
                 raw=pathlib.Path(raw_dir); raw.mkdir(parents=True,exist_ok=True)
-                (raw/(phase+"-stdout.txt")).write_text(cp.stdout,encoding="utf-8")
-                (raw/(phase+"-stderr.txt")).write_text(cp.stderr,encoding="utf-8")
-            return {"exit_code":cp.returncode,"usage":usage,"events":events,"evidence":evidence}
+                (raw/(phase+"-stdout.txt")).write_text(stdout,encoding="utf-8")
+                (raw/(phase+"-stderr.txt")).write_text(stderr,encoding="utf-8")
+                for suffix,label in [
+                    (".stdout.raw","inner-stdout"),
+                    (".stderr.raw","inner-stderr"),
+                    (".preflight.stdout.raw","preflight-stdout"),
+                    (".preflight.stderr.raw","preflight-stderr"),
+                ]:
+                    source=output_file.with_suffix(suffix)
+                    if source.is_file():
+                        data=source.read_bytes(); (raw/(phase+"-"+label+".txt")).write_bytes(data)
+                        evidence[label.replace("-","_")+"_sha256"]=hashlib.sha256(data).hexdigest()
+            for suffix,label in [
+                (".stdout.raw","inner_stdout"),
+                (".stderr.raw","inner_stderr"),
+                (".preflight.stdout.raw","preflight_stdout"),
+                (".preflight.stderr.raw","preflight_stderr"),
+            ]:
+                source=output_file.with_suffix(suffix)
+                if source.is_file(): evidence[label+"_sha256"]=hashlib.sha256(source.read_bytes()).hexdigest()
+            return {"exit_code":exit_code,"usage":usage,"events":events,"evidence":evidence}
     def run(self,workspace,task,condition,skill_path=None,raw_dir=None,phase="single",skill_prepared=False):
         return self._execute("command",workspace,task,condition,skill_path,raw_dir,None,phase,skill_prepared)
     def run_checkpointed(self,workspace,task,condition,checkpoint,skill_path=None,raw_dir=None,phase="agent-a",skill_prepared=False):

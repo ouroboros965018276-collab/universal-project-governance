@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "smoke_id": "dev-smoke-81f7725b71394dca815a5076ce990cf4",
+  "attempt": 1,
+  "started_at_utc": "2026-10-08T16:22:48.623922Z",
+  "completed_at_utc": "2026-10-08T16:22:50.016400Z",
+  "status": "FAIL",
+  "stage": "windows-sandbox-preflight",
+  "candidate_version": "3.0.0-rc.14",
+  "behavioral_fingerprint": "sha256:b82114f143db8076bdd6d1da58148e9c1f60fc02144a71227352b59597dbd83e",
+  "qualification_fingerprint": "sha256:e6e2bce7d6127655f49e88fd8d9e90e3ef2c0535c03fef1df5e2d6446d258b45",
+  "trial_id": "92969bdf-e77b-570f-ad22-80b4a9507420",
+  "scenario_id": "dev-small-typo",
+  "agent": {
+    "family": "codex",
+    "model_id": "gpt-6-luna",
+    "scaffold_version": "codex-cli-0.162.0-alpha.20"
+  },
+  "host_tool": {
+    "name": "Codex CLI",
+    "version": "0.162.0-alpha.20"
+  },
+  "workspace_isolation": "process",
+  "externally_attested_isolation": false,
+  "checks": {
+    "registered_before_execution": true,
+    "trial_schema_valid": true,
+    "artifact_retained_and_verified": true,
+    "release_analyzer_rejects_dev_evidence": true,
+    "real_agent_process_succeeded": false,
+    "task_and_governance_checks_passed": false,
+    "a2_binding_and_single_report_passed": false
+  },
+  "preflight": {
+    "failure_category": "preflight_failed",
+    "reason": "Codex doctor reported elevated Windows sandbox provisioning incomplete or outdated",
+    "model_invoked": false,
+    "task_workspace_changed_files": 0,
+    "agent_tool_calls": null
+  },
+  "usage": {
+    "usage_available": false,
+    "input_tokens": null,
+    "output_tokens": null,
+    "total_tokens": null,
+    "agent_wall_time_seconds": null,
+    "model_cost": 0,
+    "note": "No model was invoked; this zero is a no-call fact, not a measured usage record."
+  },
+  "raw_local_evidence": {
+    "path_policy": "Raw diagnostics remain in the local temporary smoke folder and are not committed.",
+    "preflight_stdout_bytes": 15323,
+    "preflight_stdout_sha256": "d53a6118722920385965217217d30a829d8d15daa8a950f9a48cdb71f546b723",
+    "preflight_stderr_bytes": 0,
+    "preflight_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "artifact_manifest_sha256": "sha256:e55a93053f7379c9620d081d0a2627732be4e498d2e0a7f0474ae44acce3a993"
+  },
+  "release_eligible": false
+}
