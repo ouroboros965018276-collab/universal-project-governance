@@ -63,6 +63,11 @@ def main():
     if len(ids) != len(set(ids)):
         errors.append("G001 duplicate policy ID")
     by_id = {p["id"]: p for p in policies if isinstance(p.get("id"), str)}
+    if "presentation" in model:
+        order = model["presentation"].get("policy_order")
+        if (not isinstance(order, list) or any(not isinstance(x, str) for x in order)
+                or len(order) != len(ids) or set(order) != set(ids)):
+            errors.append("G033 presentation must contain each policy exactly once")
     for pid in ids:
         if not isinstance(pid, str) or not ID_RE.fullmatch(pid):
             errors.append("G002 invalid stable policy ID: %r" % pid)

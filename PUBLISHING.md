@@ -1,8 +1,8 @@
 # Publishing and Test-Freeze Gates
 
-Current candidate: **3.0.0-rc.12**
+Current candidate: **3.0.0-rc.17 — Budgeted Offline Evolution**
 
-RC12 is an evidence-refresh candidate with no runtime semantic or qualification-threshold changes from RC11. Current micro-project functional/receipt checks pass 5/5, but historical governance remains 1 FAIL + 4 BLOCKED. Its registered real-Agent smoke is FAIL; locked qualification is NOT RUN; empirical qualification and Stable are NOT ACHIEVED. See [PROJECT_STATE.md](PROJECT_STATE.md) for the evidence boundary and current host constraints.
+RC17 integrates RC16's continuity fixes and adds budgeted offline evolution with fail-closed independent promotion. Its runtime and schemas have a new qualification fingerprint; thresholds and historical evidence are unchanged. See [PROJECT_STATE.md](PROJECT_STATE.md) and the RC17 audit for candidate checks. Publish a candidate only after its own compile, regression, integrity, isolated lifecycle, deterministic-package and privacy checks pass. Locked qualification remains NOT RUN; empirical qualification and Stable remain NOT ACHIEVED.
 
 ## Engineering gate before real-Agent testing
 

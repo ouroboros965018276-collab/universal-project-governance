@@ -261,6 +261,88 @@
           "minLength": 1
         }
       }
+    },
+    "start_change": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "function",
+        "before",
+        "after",
+        "rationale",
+        "source",
+        "base_revision",
+        "result_revision",
+        "validation_revision",
+        "occurred_at",
+        "time_source",
+        "parent_event_id"
+      ],
+      "properties": {
+        "function": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "before": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "after": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "base_revision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "pattern": "^(unknown|[0-9a-f]{40}|sha256:[0-9a-f]{64})$"
+        },
+        "result_revision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "pattern": "^(unknown|[0-9a-f]{40}|sha256:[0-9a-f]{64})$"
+        },
+        "validation_revision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "pattern": "^(unknown|[0-9a-f]{40}|sha256:[0-9a-f]{64})$"
+        },
+        "time_source": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "occurred_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "parent_event_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        }
+      },
+      "description": "Tool-owned immutable workflow start facts, retained beside the actual outcome."
     }
   }
 }

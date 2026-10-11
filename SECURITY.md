@@ -8,7 +8,7 @@ The Skill is compiler-generated and SHA-256 integrity checked. The manifest dete
 
 ## Project binding safety
 
-UPG owns `.governance/upg.json` and, only while RC7 field reporting is enabled, `.governance/field-reports.json`.
+UPG owns `.governance/upg.json` and, only while field-test reporting is enabled, `.governance/field-reports.json`.
 
 Project lifecycle tooling refuses symlinked governance/managed paths, refuses removal of drifted/unowned binding state, writes managed JSON atomically, and preserves unrelated project governance files. Reporting retirement refuses to discard a non-empty ledger; failed fresh installs attempt owned-state rollback followed by Skill rollback.
 

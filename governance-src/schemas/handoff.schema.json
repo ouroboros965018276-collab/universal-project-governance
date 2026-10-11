@@ -72,6 +72,17 @@
         "type": "string"
       }
     },
+    "validation_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "run_id", "sha256"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1, "maxLength": 1024},
+        "run_id": {"type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"},
+        "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "pointer": {"type": "string", "maxLength": 1024, "pattern": "^(?:/.*)?$"}
+      }
+    },
     "canonical_sources": {
       "type": "array",
       "items": {

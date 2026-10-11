@@ -1,5 +1,5 @@
 {
-  "id": "codex-cli-windows-0.160.0",
+  "id": "codex-cli-windows-0.162.0-alpha.20",
   "kind": "command",
   "sandboxed": false,
   "workspace_isolation": "process",
@@ -7,11 +7,11 @@
     "skill_injection"
   ],
   "adapter_runtime_files": [
-    "codex_cli.py"
+    "codex_cli.py",
+    "diagnostics.py"
   ],
   "command": [
-    "py",
-    "-3",
+    "{python}",
     "{skill_path}/../qualification/adapters/codex_cli.py",
     "run",
     "{workspace}",
@@ -19,12 +19,11 @@
     "{condition_file}",
     "{output_file}",
     "{phase}",
-    "gpt-5.5",
+    "gpt-6-luna",
     "{skill_path}"
   ],
   "skill_install_command": [
-    "py",
-    "-3",
+    "{python}",
     "{skill_path}/../qualification/adapters/codex_cli.py",
     "install",
     "{workspace}",
@@ -55,11 +54,11 @@
   "timeout_seconds": 900,
   "agent": {
     "family": "codex",
-    "model_id": "gpt-5.5",
-    "scaffold_version": "codex-cli-0.160.0"
+    "model_id": "gpt-6-luna",
+    "scaffold_version": "codex-cli-0.162.0-alpha.20"
   },
   "host_tool": {
     "name": "Codex CLI",
-    "version": "0.160.0"
+    "version": "0.162.0-alpha.20"
   }
 }

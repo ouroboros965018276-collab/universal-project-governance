@@ -14,6 +14,18 @@
     "complexity_budget"
   ],
   "properties": {
+    "presentation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["policy_order"],
+      "properties": {
+        "policy_order": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string"}
+        }
+      }
+    },
     "schema_version": {
       "const": 1
     },

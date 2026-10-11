@@ -1,6 +1,19 @@
 # Active Design Decisions
 
-Only current RC11 decisions are documented here.
+Current design decisions, including RC17's offline evolution boundary, are documented here.
+
+## Evolution is offline and independently admitted
+
+SkillOpt's pinned MIT source supplies the existing text-learning stages. UPG adds
+the source bridge, three numerical searches, one budgeted controller and evidence
+admission. Candidate text and normalized runtime presentation parameters are
+separate from optimizer controls. Core rules, dependencies and thresholds cannot
+be selected away. Daily tasks execute compiled rules without optimizer calls.
+
+Search acceptance, engineering validation, empirical efficacy and formal
+qualification are separate decisions. Actual provider receipts include failures
+and retries; unknowns remain unknown. An optimizer cannot edit its protocol or
+final evidence, and a development matrix cannot approve its own candidate.
 
 ## Continuity is reconstructable, not handoff-dependent
 
@@ -75,3 +88,9 @@ Superseded protocols, readiness audits, and obsolete implementation notes belong
 Workflow IDs bind retries, active checkpoints, completion evidence, and latest/previous change references. Event IDs combine reporting epoch, workflow ID, and status; sequence is monotonic across purge. Explicit export must remain hash-verifiable before epoch rotation. The bounded ledger does not promise duplicate detection beyond an explicitly rotated retention epoch; archival evidence preserves that boundary. Runtime serializes mutations with a transient lock directory; abrupt-stop lock residue fails closed until an operator inspects and removes the stale lock. No persistent third state file is introduced.
 
 Occurrence times require a source; unknown prior intent/time/commit remain unknown. Recorded timestamps do not establish causal order. Validate tested revision and reconcile current state before trusting an old handoff. When helpers are absent, the contract uses existing observable host state and reports its verification limits. Universal architecture is not a claim of empirically proven benefit across every domain.
+
+## RC16 outcome and validation continuity
+
+A workflow starts with immutable identity and baseline facts; results become known later. Completion therefore retains its original start checkpoint and accepts updated outcome facts, while the completed payload remains immutable for retries. Partial/blocked checkpoints keep the workflow active; a stage pin cannot certify an unfinished parent workflow.
+
+Validation facts remain in one project source. An optional digest-bound handoff reference resolves a named scoped run (or a structured run at a JSON Pointer) and exposes changed state as pending retest. No automatic history reconstruction, global activation logging, private-project migration or extra mandatory state file is introduced. Engineering regressions establish these contracts; separate prospective paired trials are required for efficacy and cost claims.

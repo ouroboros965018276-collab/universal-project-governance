@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "candidate_version": "3.0.0-rc.14",
+  "installed_path_pattern": "~/.codex/skills/universal-project-governance",
+  "install_result": "PASS",
+  "installed_manifest_files": 16,
+  "skill_md_sha256": "17f18cb6ecc8ea378465f2470ef9b330a6f6493cea28ef4defd0aa25d2b9f30f",
+  "integrity_manifest_sha256": "7200be139aaa8c74faa9578a87a8799a83098da6552fc74e6184c0099410c0fc",
+  "manifest_tree_sha256": "sha256:744883bad16c96acf7fe83c99e0116ea4f5bc713e39c0bb7a469258246797087",
+  "candidate_file_tree_matches_install": true,
+  "installed_integrity_check": "PASS",
+  "temporary_runtime_task": {
+    "default_reporting_off": true,
+    "unknown_optional_profile_fallback": true,
+    "reporting_opt_in_and_status": true,
+    "finish_sequence": 1,
+    "exported_report_count": 1,
+    "verified_purge_epoch": 1,
+    "status_after_purge": true,
+    "remove_managed_state": true,
+    "user_owned_readme_preserved": true
+  },
+  "current_session_skill_catalog": {
+    "discovered_path_pattern": "skill://codex-home-skills/<user>/.codex/skills/universal-project-governance",
+    "list_and_read_snapshot_version": "3.0.0-rc.12",
+    "disk_version": "3.0.0-rc.14",
+    "status": "host skill tools returned the session-start RC12 snapshot after the on-disk update; refreshed discovery is not yet verified"
+  },
+  "backup_verified_identical_before_install": true,
+  "only_removed_installed_extra": "scripts/__pycache__/state_tool.cpython-312.pyc",
+  "global_app_or_security_settings_changed": false
+}

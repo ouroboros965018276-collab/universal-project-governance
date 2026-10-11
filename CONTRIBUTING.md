@@ -1,6 +1,6 @@
 # Contributing
 
-Current candidate: **3.0.0-rc.12 — Qualification Evidence Refresh**. The historical eleventh RC12 development smoke failed at workspace routing. Prospective attempt 12 completed with zero tool calls and failed task/A2 checks under unrestricted host settings. Attempts 13/14 exited 1 before task evidence and did not retain exact stderr or usage, leaving causes unknown. See their separate summaries under `qualification/dev-smoke/`. Locked qualification still requires externally enforced isolation, reviewed attestation, and at least three actually usable independent Agent families.
+Current candidate: **3.0.0-rc.17 — Budgeted Offline Evolution**. RC17 carries forward RC16's continuity fixes and adds the repository-only optimizer. Change canonical source, regenerate the runtime, and retain independent engineering and efficacy evidence boundaries. Qualification thresholds remain unchanged; current candidate evidence lives in [PROJECT_STATE.md](PROJECT_STATE.md).
 
 ## Structural contribution rule
 

@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "record_type": "formal-development-smoke",
+  "smoke_id": "dev-smoke-b5e43f68c5954e4cb2b0b30d7f4c33da",
+  "trial_id": "670128fc-4bd1-5993-bce7-5776423f2818",
+  "observed_at": "2026-10-08T15:59:29.384590Z",
+  "observation_time_source": "trial.completed_at; observed execution completion, not commit time",
+  "candidate_version": "3.0.0-rc.13",
+  "status": "FAIL",
+  "release_eligible": false,
+  "qualification_fingerprint": "sha256:31f754a18bd07cd07339eb148e726ac6df817032f71dc65506f63461e75234a7",
+  "behavioral_fingerprint": "sha256:5762c1b487bcccc6fefb298738dea325b09e891a976ce16b173a1c47a4f400f8",
+  "agent": {
+    "family": "codex",
+    "model_id": "gpt-6-luna",
+    "scaffold_version": "codex-cli-0.162.0-alpha.20"
+  },
+  "host_tool": {
+    "name": "Codex CLI",
+    "version": "0.162.0-alpha.20"
+  },
+  "adapter_identity": {
+    "adapter_id": "codex-cli-windows-0.162.0-alpha.20",
+    "adapter_config_sha256": "sha256:71b83cb02913358ecee32ad976827595d3a56bc88d4f7b099c5d3357cf18ec9c",
+    "adapter_runtime_sha256": "sha256:ae0956c8c16f8beac637a5760d2b74913467d069af03790009ea616225da6f67"
+  },
+  "scenario_id": "dev-small-typo",
+  "workspace_isolation": "process",
+  "externally_attested_isolation": false,
+  "checks": {
+    "registered_before_execution": true,
+    "real_agent_process_succeeded": false,
+    "trial_schema_valid": true,
+    "artifact_retained_and_verified": true,
+    "task_and_governance_checks_passed": false,
+    "a2_binding_and_single_report_passed": false,
+    "release_analyzer_rejects_dev_evidence_before_inference": true
+  },
+  "failure": {
+    "stage": "windows-sandbox-preflight",
+    "reason": "Codex doctor reports sandbox.helpers status warning and elevated sandbox provisioning incomplete. The adapter fails closed before model invocation. The diagnostic task made no changes.",
+    "runner_exit_code": 78,
+    "model_invoked": false,
+    "changed_files": 0,
+    "tool_calls": 0,
+    "token_usage_recorded": false,
+    "observed_wall_time_seconds": 0.112,
+    "raw_local_evidence": [
+      {
+        "file": "single-preflight-stdout.txt",
+        "bytes": 15323,
+        "sha256": "sha256:b56ce4aaead0c39b6bed7dc34406ed4fa96744d2ee9840c09eca712b09854796"
+      },
+      {
+        "file": "single-preflight-stderr.txt",
+        "bytes": 0,
+        "sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "file": "single-stderr.txt",
+        "bytes": 112,
+        "sha256": "sha256:12ee04f2e9e0dadd9392d7c0703a8d3a0783562ae0e74558aa5af44245425338"
+      }
+    ]
+  },
+  "release_analyzer_status": "FAIL",
+  "release_analyzer_rejected_before_inference": true,
+  "release_admission_reasons": [
+    "round randomization contract missing",
+    "development evidence cannot promote release",
+    "locked execution requires enforced sandboxing",
+    "locked execution requires strong workspace isolation",
+    "locked execution requires a valid operator isolation attestation",
+    "unknown locked scenario",
+    "reviewable artifact identity missing or execution failed"
+  ],
+  "privacy": {
+    "raw_agent_output_published": false,
+    "project_source_published": false,
+    "local_paths_published": false,
+    "raw_run_artifacts_retained_outside_repository": true
+  }
+}

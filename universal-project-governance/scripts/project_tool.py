@@ -154,8 +154,8 @@ def validate_binding(value):
     if value.get("project_origin") not in {"new", "existing"}:
         errors.append("project_origin drift detected")
     return errors
-def ledger_default():
-    return {"schema_version": 1, "runtime_version": index()["version"], "epoch": 0, "next_sequence": 1, "reports": []}
+def ledger_default(epoch=0, next_sequence=1):
+    return {"schema_version": 1, "runtime_version": index()["version"], "epoch": epoch, "next_sequence": next_sequence, "reports": []}
 
 @serialized
 def ensure(project, field_test_reporting=None):
@@ -191,8 +191,8 @@ def ensure(project, field_test_reporting=None):
         for key in ["active_workflow", "latest_change", "previous_change", "export_receipt"]:
             if key in current:
                 binding[key] = current[key]
-    write_json_atomic(binding_path, binding)
     if not reporting:
+        write_json_atomic(binding_path, binding)
         return {
             "binding": str(binding_path),
             "field_test_reporting": False,
@@ -211,8 +211,16 @@ def ensure(project, field_test_reporting=None):
         if any(type(n) is not int or n < 1 for n in sequences) or type(ledger["epoch"]) is not int or ledger["epoch"] < 0 or type(ledger["next_sequence"]) is not int or ledger["next_sequence"] <= max(sequences or [0]):
             raise ValueError("invalid ledger sequence/epoch; reconcile preserved evidence before writing")
     else:
-        ledger = ledger_default()
+        latest = current.get("latest_change", {}) if isinstance(current, dict) else {}
+        if not isinstance(latest, dict):
+            raise ValueError("latest completion state is invalid; reconcile preserved project state before enabling reporting")
+        latest_sequence = latest.get("sequence", 0)
+        latest_epoch = latest.get("epoch", 0)
+        if type(latest_sequence) is not int or latest_sequence < 0 or type(latest_epoch) is not int or latest_epoch < 0:
+            raise ValueError("latest completion sequence/epoch is invalid; reconcile preserved project state before enabling reporting")
+        ledger = ledger_default(epoch=latest_epoch, next_sequence=latest_sequence + 1)
     write_json_atomic(report_path, ledger)
+    write_json_atomic(binding_path, binding)
     return {
         "binding": str(binding_path),
         "field_test_reporting": True,
@@ -255,10 +263,26 @@ def status(project):
         "latest_change": binding.get("latest_change"),
         "previous_change": binding.get("previous_change"),
     }
-def validate_report(report):
-    encoded = json.dumps(report, ensure_ascii=False)
+def _metadata_errors(value):
+    encoded = json.dumps(value, ensure_ascii=False)
+    errors = []
     if len(encoded.encode("utf-8")) > 65536:
-        raise ValueError("field report exceeds 64 KiB metadata limit")
+        errors.append("field report exceeds 64 KiB metadata limit")
+    sensitive_patterns = [
+        r"-----BEGIN (?:[A-Z0-9 ]+ )?PRIVATE KEY-----",
+        r"g" + r"hp_[A-Za-z0-9]{20,}",
+        r"github" + r"_pat_[A-Za-z0-9_]{20,}",
+        r"AK" + r"IA[0-9A-Z]{16}",
+        r"(?i)\bBearer\s+[A-Za-z0-9._~+/-]{16,}={0,2}",
+        r"\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\b",
+        r"(?i)\b(?:password|passwd|pwd|secret|api[_-]?key|access[_-]?token|refresh[_-]?token)\s*[:=]\s*[^,;\s]{6,}",
+        r"(?i)\b(?:postgres(?:ql)?|mysql|mongodb(?:\+srv)?|redis)://[^/\s:@]+:[^@\s]+@",
+    ]
+    if any(re.search(pattern, encoded) for pattern in sensitive_patterns):
+        errors.append("field report appears to contain credential or secret material")
+    return errors
+
+def validate_report(report):
     required = {
         "task": str,
         "status": str,
@@ -274,7 +298,7 @@ def validate_report(report):
         "handoff": str,
         "feedback": list,
     }
-    errors = []
+    errors = _metadata_errors(report)
     schema = load_json(ROOT / "schemas/field-report.schema.json")
     candidate = dict(report, schema_version=1, sequence=1, epoch=0, event_id="validation", recorded_at="2000-01-01T00:00:00Z", runtime_version=index()["version"])
     errors += validate_node(candidate, schema)
@@ -334,31 +358,83 @@ def validate_report(report):
                 string_values.extend(x for x in scope[key] if isinstance(x, str))
     if any(len(value) > 1000 for value in string_values):
         errors.append("field report metadata entries must be <= 1000 characters")
-    sensitive_patterns = [
-        r"-----BEGIN (?:[A-Z0-9 ]+ )?PRIVATE KEY-----",
-        r"g" + r"hp_[A-Za-z0-9]{20,}",
-        r"github" + r"_pat_[A-Za-z0-9_]{20,}",
-        r"AK" + r"IA[0-9A-Z]{16}",
-        r"(?i)\bBearer\s+[A-Za-z0-9._~+/-]{16,}={0,2}",
-        r"\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\b",
-        r"(?i)\b(?:password|passwd|pwd|secret|api[_-]?key|access[_-]?token|refresh[_-]?token)\s*[:=]\s*[^,;\s]{6,}",
-        r"(?i)\b(?:postgres(?:ql)?|mysql|mongodb(?:\+srv)?|redis)://[^/\s:@]+:[^@\s]+@",
-    ]
-    if any(re.search(pattern, encoded) for pattern in sensitive_patterns):
-        errors.append("field report appears to contain credential or secret material")
     if errors:
         raise ValueError("; ".join(errors))
 
+def _completion_payload_sha256(entry):
+    auto_fields = {"schema_version", "sequence", "epoch", "event_id", "recorded_at", "runtime_version", "start_change"}
+    payload = {key: value for key, value in entry.items() if key not in auto_fields}
+    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+    return hashlib.sha256(canonical).hexdigest()
+
+def _read_report(input_path):
+    payload = json.load(sys.stdin) if input_path == "-" else load_json(input_path)
+    if isinstance(payload, dict) and "start_change" in payload:
+        raise ValueError("start_change is tool-owned; preserve the observed workflow start")
+    validate_report(payload)
+    return payload
+
+def _check_workflow_change(active, payload):
+    if active.get("workflow_id") != payload["workflow_id"]:
+        raise ValueError("completion does not match the active workflow")
+    # Outcomes can become known during work. The observed task, basis and cause
+    # remain immutable; the original full start is retained beside the outcome.
+    outcome_fields = {"after", "result_revision", "validation_revision", "occurred_at", "time_source"}
+    start = active.get("change", {})
+    if {k: v for k, v in start.items() if k not in outcome_fields} != {
+        k: v for k, v in payload["change"].items() if k not in outcome_fields
+    }:
+        raise ValueError("completion changes immutable workflow start facts")
+
+def _checkpoint_retry(binding, payload):
+    for previous in [binding.get("latest_change", {}), binding.get("previous_change", {})]:
+        if not isinstance(previous, dict):
+            continue
+        event_id = "%d:%s:%s" % (previous.get("epoch", 0), payload["workflow_id"], payload["status"])
+        if previous.get("event_id") == event_id:
+            if previous.get("payload_sha256") != _completion_payload_sha256(payload):
+                raise ValueError("conflicting or unverifiable retry for workflow completion identity")
+            return previous
+    return None
+
 def _reconcile_completion(project, entry):
-    if entry["status"] != "complete":
-        return
     binding_path = resolve(project, config()["binding_file"])
     binding = load_json(binding_path)
     latest = binding.get("latest_change", {})
+    payload_sha256 = _completion_payload_sha256(entry)
+    active = binding.get("active_workflow", {})
+    if entry["status"] != "complete":
+        if active.get("workflow_id") != entry["workflow_id"]:
+            return
+        receipts = active.setdefault("outcome_receipts", {})
+        previous = receipts.get(entry["status"])
+        if previous:
+            if previous["payload_sha256"] != payload_sha256:
+                raise ValueError("conflicting retry for workflow report identity")
+            return
+        receipts[entry["status"]] = {"event_id": entry["event_id"], "payload_sha256": payload_sha256}
+        last = active.get("last_outcome", {})
+        if entry["sequence"] >= last.get("sequence", 0):
+            active["last_outcome"] = {key: entry[key] for key in [
+                "event_id", "sequence", "recorded_at", "status", "change", "validation",
+                "changed_files", "cleanup", "integrity", "handoff", "feedback",
+            ]}
+        write_json_atomic(binding_path, binding)
+        return
+    if latest.get("event_id") == entry["event_id"]:
+        if latest.get("payload_sha256") and latest["payload_sha256"] != payload_sha256:
+            raise ValueError("conflicting retry for workflow completion identity")
+        if binding.get("active_workflow", {}).get("workflow_id") == entry["workflow_id"]:
+            binding.pop("active_workflow", None)
+            write_json_atomic(binding_path, binding)
+        return
     if latest.get("event_id") != entry["event_id"] and entry["sequence"] > latest.get("sequence", 0):
         if latest:
             binding["previous_change"] = latest
         binding["latest_change"] = {key: entry[key] for key in ["event_id", "workflow_id", "sequence", "epoch", "recorded_at", "change"]}
+        if "start_change" in entry:
+            binding["latest_change"]["start_change"] = entry["start_change"]
+        binding["latest_change"]["payload_sha256"] = payload_sha256
     if binding.get("active_workflow", {}).get("workflow_id") == entry["workflow_id"]:
         binding.pop("active_workflow", None)
     write_json_atomic(binding_path, binding)
@@ -368,9 +444,11 @@ def begin_workflow(project, input_path):
     payload = load_json(input_path)
     if not isinstance(payload, dict) or not isinstance(payload.get("workflow_id"), str) or not payload["workflow_id"]:
         raise ValueError("workflow_id required")
+    if {"observed_at", "last_outcome", "outcome_receipts", "start_change"}.intersection(payload):
+        raise ValueError("workflow observation and recovery fields are tool-owned")
     # Validate the same change contract used at completion; no separate history database.
     change_schema = load_json(ROOT / "schemas/field-report.schema.json")["properties"]["change"]
-    errors = validate_node(payload.get("change"), change_schema)
+    errors = validate_node(payload.get("change"), change_schema) + _metadata_errors(payload)
     if errors:
         raise ValueError("; ".join(errors))
     ensure(project)
@@ -380,9 +458,17 @@ def begin_workflow(project, input_path):
     if active and active.get("workflow_id") != payload["workflow_id"]:
         raise ValueError("another workflow is unfinished; reconstruct it before replacing its identity")
     if active:
-        if {k: v for k, v in active.items() if k != "observed_at"} != payload:
+        if {k: v for k, v in active.items() if k not in {"observed_at", "last_outcome", "outcome_receipts"}} != payload:
             raise ValueError("conflicting workflow start; preserve the original observed checkpoint")
         return {"active_workflow": active, "idempotent": True}
+    if any(isinstance(value, dict) and value.get("workflow_id") == payload["workflow_id"]
+           for value in [binding.get("latest_change"), binding.get("previous_change")]):
+        raise ValueError("workflow identity already completed; use a new workflow_id")
+    if binding.get("field_test_reporting") is True:
+        ledger = load_json(resolve(project, config()["field_report_file"]))
+        if any(isinstance(value, dict) and value.get("epoch") == ledger["epoch"]
+               and value.get("workflow_id") == payload["workflow_id"] for value in ledger["reports"]):
+            raise ValueError("workflow identity already recorded in this epoch; use a new workflow_id")
     parent = binding.get("latest_change", {}).get("event_id")
     if parent and payload["change"].get("parent_event_id") != parent:
         raise ValueError("new workflow must reference the latest completed event")
@@ -395,37 +481,43 @@ def begin_workflow(project, input_path):
 
 @serialized
 def record_report(project, input_path):
+    if ensure(project)["field_test_reporting"] is not True:
+        raise ValueError("field-test reporting is disabled for this project; opt in during install")
+    return _record_report_payload(project, _read_report(input_path))
+
+def _record_report_payload(project, payload, require_active=False):
     ensured = ensure(project)
     binding = load_json(resolve(project, config()["binding_file"]))
     if binding.get("field_test_reporting") is not True:
         raise ValueError("field-test reporting is disabled for this project; opt in during install")
-    if input_path == "-":
-        payload = json.load(sys.stdin)
-    else:
-        payload = load_json(input_path)
-    validate_report(payload)
     cfg = config()
     report_path = resolve(project, cfg["field_report_file"])
     ledger = load_json(report_path)
     binding = load_json(resolve(project, cfg["binding_file"]))
     active = binding.get("active_workflow")
-    if active and active.get("workflow_id") != payload["workflow_id"]:
-        raise ValueError("completion does not match the active workflow")
     event_id = "%d:%s:%s" % (ledger["epoch"], payload["workflow_id"], payload["status"])
-    auto_fields = {"schema_version", "sequence", "epoch", "event_id", "recorded_at", "runtime_version"}
     for previous in ledger["reports"]:
         if previous.get("event_id") == event_id:
-            old_payload = {k: v for k, v in previous.items() if k not in auto_fields}
-            if old_payload != payload:
+            if _completion_payload_sha256(previous) != _completion_payload_sha256(payload):
                 raise ValueError("conflicting retry for workflow report identity")
             _reconcile_completion(project, previous)
             return {"sequence": previous["sequence"], "report_count": len(ledger["reports"]), "idempotent": True, "event_id": event_id}
+    if require_active:
+        previous = _checkpoint_retry(binding, payload)
+        if previous:
+            return {"sequence": previous["sequence"], "event_id": previous["event_id"], "idempotent": True, "field_test_reporting": True}
+    if active:
+        _check_workflow_change(active, payload)
+    elif require_active:
+        raise ValueError("completion does not match an active workflow")
     parent = binding.get("latest_change", {}).get("event_id")
     if parent and payload["change"].get("parent_event_id") != parent:
         raise ValueError("completion must reference the latest completed event")
     if len(ledger["reports"]) >= int(cfg["max_reports"]):
         raise ValueError("field report ledger is full; export and purge it before recording more reports")
     entry = dict(payload)
+    if active:
+        entry["start_change"] = active["change"]
     entry["schema_version"] = 1
     entry["sequence"] = ledger["next_sequence"]
     entry["epoch"] = ledger["epoch"]
@@ -436,11 +528,65 @@ def record_report(project, input_path):
     if previous_time and datetime.fromisoformat(entry["recorded_at"].replace("Z", "+00:00")) < datetime.fromisoformat(previous_time.replace("Z", "+00:00")):
         raise ValueError("observed clock moved backwards; reconcile clock/source before recording")
     entry["runtime_version"] = index()["version"]
+    validate_report(entry)
     ledger["runtime_version"] = index()["version"]
     ledger["reports"].append(entry)
     write_json_atomic(report_path, ledger)
     _reconcile_completion(project, entry)
     return {"sequence": entry["sequence"], "report_count": len(ledger["reports"]), "path": str(report_path), "binding": ensured["binding"]}
+
+@serialized
+def finish_workflow(project, input_path):
+    payload = _read_report(input_path)
+    ensured = ensure(project)
+    cfg = config()
+    binding_path = resolve(project, cfg["binding_file"])
+    binding = load_json(binding_path)
+    if binding.get("field_test_reporting") is True:
+        return _record_report_payload(project, payload, require_active=True)
+    active = binding.get("active_workflow")
+    latest = binding.get("latest_change", {})
+    if not isinstance(latest, dict):
+        raise ValueError("latest completion state is invalid; reconcile preserved project state before finishing")
+    workflow_id = payload["workflow_id"]
+    event_id = "%d:%s:%s" % (latest.get("epoch", 0), workflow_id, payload["status"])
+    payload_sha256 = _completion_payload_sha256(payload)
+
+    previous = _checkpoint_retry(binding, payload)
+    if previous:
+        return {"sequence": previous["sequence"], "event_id": previous["event_id"], "idempotent": True, "field_test_reporting": False}
+    if not isinstance(active, dict) or active.get("workflow_id") != workflow_id:
+        raise ValueError("completion does not match an active workflow")
+    _check_workflow_change(active, payload)
+    previous = active.get("outcome_receipts", {}).get(payload["status"])
+    if previous:
+        if previous["payload_sha256"] != payload_sha256:
+            raise ValueError("conflicting retry for workflow report identity")
+        return {"status": payload["status"], "completed": False, "idempotent": True, "active_workflow": active, "field_test_reporting": False}
+    parent = latest.get("event_id") if isinstance(latest, dict) else None
+    if parent and payload["change"].get("parent_event_id") != parent:
+        raise ValueError("completion must reference the latest completed event")
+    sequence = latest.get("sequence", 0) + 1 if isinstance(latest, dict) else 1
+    epoch = latest.get("epoch", 0) if isinstance(latest, dict) else 0
+    if type(sequence) is not int or sequence < 1 or type(epoch) is not int or epoch < 0:
+        raise ValueError("latest completion sequence/epoch is invalid; reconcile preserved project state before finishing")
+    entry = dict(payload)
+    entry["start_change"] = active["change"]
+    entry["schema_version"] = 1
+    entry["sequence"] = sequence
+    entry["epoch"] = epoch
+    entry["event_id"] = event_id
+    entry["recorded_at"] = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    previous_time = latest.get("recorded_at") if isinstance(latest, dict) else None
+    if previous_time and datetime.fromisoformat(entry["recorded_at"].replace("Z", "+00:00")) < datetime.fromisoformat(previous_time.replace("Z", "+00:00")):
+        raise ValueError("observed clock moved backwards; reconcile clock/source before finishing")
+    entry["runtime_version"] = index()["version"]
+    validate_report(entry)
+    _reconcile_completion(project, entry)
+    if payload["status"] != "complete":
+        return {"status": payload["status"], "completed": False, "active_workflow": load_json(binding_path)["active_workflow"], "field_test_reporting": False}
+    return {"sequence": sequence, "event_id": event_id, "field_test_reporting": False, "binding": ensured["binding"]}
+
 @serialized
 def export_reports(project, output):
     state = status(project)
@@ -559,6 +705,9 @@ def main():
     workflow = sub.add_parser("begin")
     workflow.add_argument("project", nargs="?", default=".")
     workflow.add_argument("--input", required=True)
+    finish = sub.add_parser("finish")
+    finish.add_argument("project", nargs="?", default=".")
+    finish.add_argument("--input", required=True)
     export = sub.add_parser("export")
     export.add_argument("project", nargs="?", default=".")
     export.add_argument("--output", required=True)
@@ -584,6 +733,8 @@ def main():
             result = record_report(args.project, args.input)
         elif args.cmd == "begin":
             result = begin_workflow(args.project, args.input)
+        elif args.cmd == "finish":
+            result = finish_workflow(args.project, args.input)
         elif args.cmd == "export":
             result = export_reports(args.project, args.output)
         elif args.cmd == "purge-reports":
