@@ -1,5 +1,12 @@
 # Changelog
 
+## 3.0.0-rc.16 — 2026-10-11
+
+- Allows observed completion outcomes to evolve from the start checkpoint while preserving immutable identity, original facts, honest unknowns and conflicting-retry protection in both reporting modes. Partial/blocked checkpoints retain recoverable active state.
+- Adds optional structured validation runs and digest-bound handoff references; checks freshness, scope, tested state and pending retest without summing overlapping test counts or duplicating a project truth source. Legacy state remains supported.
+- Clarifies stage checkpoints versus whole-workflow completion and records sanitized retrospective feedback with its provenance and limits. No private project state or historical result is backfilled.
+- Keeps 16 policies, 8 hot-path rules, at most 2 managed binding/ledger files and unchanged qualification thresholds. No causal cost benefit or Stable promotion is claimed. Candidate validation belongs to the RC16 audit.
+
 ## 3.0.0-rc.15 — 2026-10-08
 
 Deterministic Skill Target Resolution. Qualification thresholds and the A0/A1/A2 protocol remain unchanged.

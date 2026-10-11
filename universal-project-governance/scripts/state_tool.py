@@ -8,6 +8,8 @@ from pathlib import Path
 import sys
 import re
 import math
+import hashlib
+from pathlib import PurePosixPath, PureWindowsPath
 from datetime import datetime
 
 
@@ -88,10 +90,93 @@ def validate_node(value, schema, where="$"):
     return errors
 
 
-def validate_file(path: Path, schema_name: str) -> list:
+def validation_run_errors(runs) -> list:
+    schema = load(schema_root() / "execution.schema.json")["properties"]["validation_runs"]
+    errors = validate_node(runs, schema, "$.validation_runs")
+    if errors:
+        return errors
+    seen = set()
+    for run in runs:
+        if run["run_id"] in seen:
+            errors.append("duplicate validation run_id: %s" % run["run_id"])
+        seen.add(run["run_id"])
+        passed, total = run.get("passed"), run.get("total")
+        if passed is not None and (total is None or passed > total):
+            errors.append("validation run %s needs a denominator at least as large as passed" % run["run_id"])
+        if run["result"] == "passed" and passed is not None and passed != total:
+            errors.append("validation run %s cannot pass with incomplete passing count" % run["run_id"])
+    return errors
+
+
+def reference_path(ref, project_root: Path) -> Path:
+    if project_root is None:
+        raise ValueError("validation_ref requires --project-root")
+    relative = ref["path"]
+    posix, windows = PurePosixPath(relative), PureWindowsPath(relative)
+    if posix.is_absolute() or windows.drive or windows.root or "\\" in relative or ":" in relative or any(p in {"..", ".", ""} for p in relative.split("/")):
+        raise ValueError("validation_ref.path must be a project-relative path without traversal")
+    root = Path(project_root).resolve()
+    target = (root / relative).resolve()
+    try:
+        target.relative_to(root)
+    except ValueError:
+        raise ValueError("validation_ref.path escapes project root")
+    if not target.is_file():
+        raise ValueError("validation_ref file unavailable: %s" % relative)
+    return target
+
+
+def resolve_validation_ref(ref, project_root: Path) -> dict:
+    schema = load(schema_root() / "handoff.schema.json")["properties"]["validation_ref"]
+    errors = validate_node(ref, schema, "$.validation_ref")
+    if errors:
+        raise ValueError("; ".join(errors))
+    target = reference_path(ref, project_root)
+    with target.open("rb") as stream:
+        raw = stream.read(4 * 1024 * 1024 + 1)
+    if len(raw) > 4 * 1024 * 1024:
+        raise ValueError("validation_ref source exceeds the 4 MiB read limit")
+    if hashlib.sha256(raw).hexdigest() != ref["sha256"]:
+        raise ValueError("stale validation_ref: source SHA-256 changed; reconcile from canonical truth")
+    source = json.loads(raw.decode("utf-8"))
+    if "pointer" in ref:
+        run = source
+        pointer = ref["pointer"]
+        if pointer:
+            for token in pointer[1:].split("/"):
+                if re.search(r"~(?![01])", token):
+                    raise ValueError("malformed validation_ref JSON pointer escape")
+                token = token.replace("~1", "/").replace("~0", "~")
+                if isinstance(run, dict) and token in run:
+                    run = run[token]
+                elif isinstance(run, list) and re.fullmatch(r"0|[1-9][0-9]*", token) and int(token) < len(run):
+                    run = run[int(token)]
+                else:
+                    raise ValueError("validation_ref pointer unavailable")
+        runs = [run]
+    else:
+        runs = source.get("validation_runs") if isinstance(source, dict) else None
+    errors = validation_run_errors(runs)
+    if errors:
+        raise ValueError("unsupported canonical validation record: " + "; ".join(errors))
+    matches = [run for run in runs if run["run_id"] == ref["run_id"]]
+    if len(matches) != 1:
+        raise ValueError("stale validation_ref: run_id unavailable or ambiguous")
+    return matches[0]
+
+
+def validate_file(path: Path, schema_name: str, project_root: Path = None) -> list:
     schema = load(schema_root() / (schema_name + ".schema.json"))
     data = load(path)
-    return validate_node(data, schema)
+    errors = validate_node(data, schema)
+    if not errors and "validation_runs" in data:
+        errors += validation_run_errors(data["validation_runs"])
+    if not errors and "validation_ref" in data:
+        try:
+            resolve_validation_ref(data["validation_ref"], project_root)
+        except (OSError, ValueError) as exc:
+            errors.append(str(exc))
+    return errors
 
 
 def bullet_list(title, values):
@@ -104,7 +189,21 @@ def bullet_list(title, values):
     return lines
 
 
-def render(path: Path, schema_name: str) -> str:
+def render_validation_runs(runs, current_revision=None):
+    lines = ["## Canonical validation runs", "", "Each result applies to its stated scope and tested revision; scopes are not added together.", ""]
+    for run in runs:
+        pending = run.get("pending_retest", False) or bool(run.get("later_changes")) or (current_revision is not None and current_revision != run["tested_revision"])
+        counts = "%s/%s passed" % (run.get("passed", "unknown"), run.get("total", "unknown"))
+        counts = counts.replace("None", "unknown")
+        lines += ["- **Run:** %s; **Scope:** %s; **Historical result:** %s; **Count:** %s; **Tested revision:** %s; **Retest:** %s." % (run["run_id"], run["scope"], run["result"], counts, run["tested_revision"], "pending" if pending else "not marked pending")]
+        if current_revision is not None:
+            lines.append("  - Current revision supplied: %s." % current_revision)
+        for change in run.get("later_changes", []):
+            lines.append("  - Later change: %s" % change)
+    return lines + [""]
+
+
+def render(path: Path, schema_name: str, project_root: Path = None, current_revision=None) -> str:
     data = load(path)
     if schema_name == "handoff":
         lines = ["# Project Handoff", "", "- **Updated:** %s" % data["updated_at"], "- **Goal:** %s" % data["goal"], "- **Status:** %s" % data["status"], ""]
@@ -113,12 +212,25 @@ def render(path: Path, schema_name: str) -> str:
             ("invariants", "Invariants"), ("risks", "Risks / gaps"), ("next_actions", "Next actions"),
             ("validation", "Validation"), ("canonical_sources", "Canonical sources"),
         ]:
+            if key == "validation" and "validation_ref" in data:
+                title = "Legacy validation notes (canonical results below)"
             lines += bullet_list(title, data[key])
+        if "validation_ref" in data:
+            run = resolve_validation_ref(data["validation_ref"], project_root)
+            lines += ["Canonical reference: %s (run %s)." % (data["validation_ref"]["path"], data["validation_ref"]["run_id"]), ""]
+            lines += render_validation_runs([run], current_revision)
         return "\n".join(lines).rstrip() + "\n"
     if schema_name == "execution":
         lines = ["# Engineering Execution Evidence", "", "- **Updated:** %s" % data["updated_at"], "- **Level:** %s" % data["level"], "- **Task:** %s" % data["task"], "- **Status:** %s" % data["status"], ""]
         for key, title in [("actions","Actions"),("cleanup","Cleanup"),("validation","Validation"),("findings","Findings"),("governance_feedback","Governance feedback")]:
+            if key == "validation" and "validation_runs" in data:
+                title = "Legacy validation notes (canonical results below)"
             lines += bullet_list(title, data[key])
+        if "validation_runs" in data:
+            errors = validation_run_errors(data["validation_runs"])
+            if errors:
+                raise ValueError("; ".join(errors))
+            lines += render_validation_runs(data["validation_runs"], current_revision)
         return "\n".join(lines).rstrip() + "\n"
     if schema_name == "feedback":
         lines = ["# Governance Feedback", "", "- **Updated:** %s" % data["updated_at"], ""]
@@ -155,10 +267,17 @@ def infer_schema(path: Path) -> str:
 def compact(root: Path, apply: bool, close_handoff: bool) -> list:
     gov = root / ".governance"
     actions = []
+    handoff = gov / "handoff.json"
+    referenced = None
+    if handoff.is_file():
+        ref = load(handoff).get("validation_ref")
+        if ref is not None:
+            resolve_validation_ref(ref, root)
+            referenced = reference_path(ref, root)
     execution = gov / "execution" / "latest.json"
     if execution.is_file():
         data = load(execution)
-        if data.get("status") == "complete" and data.get("durable_summary_recorded") and not data.get("retain_for_audit"):
+        if execution.resolve() != referenced and data.get("status") == "complete" and data.get("durable_summary_recorded") and not data.get("retain_for_audit"):
             actions.append("remove completed execution/latest.json after durable reconciliation")
             if apply:
                 execution.unlink()
@@ -174,7 +293,6 @@ def compact(root: Path, apply: bool, close_handoff: bool) -> list:
                     feedback.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
                 else:
                     feedback.unlink()
-    handoff = gov / "handoff.json"
     if close_handoff and handoff.is_file():
         data = load(handoff)
         if data.get("status") == "ready" and not data.get("in_progress") and not data.get("next_actions"):
@@ -202,8 +320,8 @@ def export_bundle(root: Path, output: Path) -> None:
 def main() -> int:
     ap = argparse.ArgumentParser()
     sub = ap.add_subparsers(dest="cmd", required=True)
-    v = sub.add_parser("validate"); v.add_argument("path"); v.add_argument("--schema")
-    r = sub.add_parser("render"); r.add_argument("path"); r.add_argument("--schema"); r.add_argument("--output")
+    v = sub.add_parser("validate"); v.add_argument("path"); v.add_argument("--schema"); v.add_argument("--project-root")
+    r = sub.add_parser("render"); r.add_argument("path"); r.add_argument("--schema"); r.add_argument("--output"); r.add_argument("--project-root"); r.add_argument("--current-revision")
     c = sub.add_parser("compact"); c.add_argument("root", nargs="?", default="."); c.add_argument("--apply", action="store_true"); c.add_argument("--close-handoff", action="store_true")
     e = sub.add_parser("export"); e.add_argument("root", nargs="?", default="."); e.add_argument("--output", required=True)
     args = ap.parse_args()
@@ -211,14 +329,14 @@ def main() -> int:
         if args.cmd in {"validate","render"}:
             path = Path(args.path)
             schema_name = args.schema or infer_schema(path)
-            errors = validate_file(path, schema_name)
+            errors = validate_file(path, schema_name, Path(args.project_root) if args.project_root else None)
             if errors:
                 for err in errors: print("error: " + err, file=sys.stderr)
                 return 1
             if args.cmd == "validate":
                 print("Governance state validation passed: %s" % schema_name)
             else:
-                text_out = render(path, schema_name)
+                text_out = render(path, schema_name, Path(args.project_root) if args.project_root else None, args.current_revision)
                 if args.output:
                     Path(args.output).write_text(text_out, encoding="utf-8")
                 else:

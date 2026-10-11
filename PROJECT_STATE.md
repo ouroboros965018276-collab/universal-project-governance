@@ -1,8 +1,18 @@
 # Project State
 
-Current candidate: **3.0.0-rc.15 — Deterministic Skill Target Resolution**.
+Current candidate: **3.0.0-rc.16 — Workflow Outcomes and Validation Continuity**.
 
-## RC15 candidate work (in progress)
+## RC16 candidate
+
+This candidate is based on the unmerged RC15 branch at public revision `42a72ff7efb0b830b9ef89d79c0cc399baff1b74`. It repairs the independently reproduced finish mismatch and adds optional checked references to one validation truth source. The original RC12 checkout and its unrelated uncommitted adapter changes are outside this task. The prior global RC15 Skill was backed up and all 17 files verified before replacement. The current user-level installation is RC16, its 16-file integrity manifest passes, and all 17 installed bundle files equal the compiled candidate. This verifies current disk state; automatic/historical Skill activation remains unmeasured. No private project repair or historical backfill was performed.
+
+Final local engineering validation passed: 136/136 tests on Windows Python 3.12.10; compiler, lint, qualification/freeze, repository, bundle, integrity and security checks passed. Two packages match SHA-256 `c7c8b448a687a771f2a7da931e33d337966cad166ae2036c84339cacda47ca86`. See the [RC16 audit](audits/rc16-field-feedback.audit.json). The skill-creator quick validator could not start because existing Python runtimes lack PyYAML; the maintained bundle/frontmatter validator passed instead. No tool was reinstalled. Retrospective reports are summarized in [the sanitized feedback](docs/field-feedback/rc16-retrospective.md); supplied test counts and behavior observations are not causal evidence, independent task counts or current reruns.
+
+One independent receiving-subagent synthetic maintenance exercise passed: existing tests2/3 before and3/3 after, shared validation reference reconciled, start facts retained and workflow completed. This same-family diagnostic is not a paired cost or locked handoff trial.
+
+Locked qualification remains NOT RUN; empirical qualification and Stable remain NOT ACHIEVED. Optional host activation receipts, prospective paired token/time/tool costs and real two/three-Agent handoff evidence remain outstanding. The qualification protocol and thresholds are unchanged.
+
+## RC15 historical candidate checkpoint
 
 The top-level installer previously returned the first recursive match for `universal-project-governance/SKILL.md`. A stale copy under an earlier-sorting hidden directory could therefore be selected ahead of Codex's installed project target. A no-model-cost regression reproduced the defect. RC15 changes the Codex lookup to the canonical `.agents/skills/universal-project-governance` path, treats noncanonical copies as preexisting for safe rollback, preserves unique non-Codex lookup, and rejects ambiguous non-Codex copies. Windows Python 3.12 passed 105/105 unit tests; repository, compiler, lint, qualification, freeze, bundle, integrity, and security checks passed. Two deterministic package builds matched SHA-256 `6ac4d1a90ba640c1ec0ac974258cb0a678f0f8e105c348496fa3225e5a627128`. Hosted validation runs on the current branch head of draft [PR #14](https://github.com/ouroboros965018276-collab/universal-project-governance/pull/14); consult the live PR checks for the current result. RC14 evidence below is historical and its fingerprint does not cover this candidate.
 

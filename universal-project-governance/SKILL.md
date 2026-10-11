@@ -4,7 +4,7 @@ description: Govern maintained-project changes with task-bounded integration, pr
 license: Apache-2.0
 compatibility: Core kernel needs no runtime. Optional deterministic planner/state/integrity helpers use Python 3.8+.
 metadata:
-  version: "3.0.0-rc.15"
+  version: "3.0.0-rc.16"
   standard: "agentskills.io"
   maturity: "release-candidate"
   architecture: "compiled-governance"
@@ -65,17 +65,19 @@ Do not create a permanent general-purpose governance report for every task. Fiel
 - `engineering`: maintain `.governance/execution/latest.json`.
 - `audit`: use a frozen release/audit record.
 
-For non-trivial or cross-session work, record a stable workflow ID and the minimal active checkpoint with `scripts/project_tool.py begin <project-root> --input <workflow.json>` when available. Use the report schema change contract for function, before/after, rationale/source, base/result/validated revision, known occurrence time/source and parent event; unknown values stay explicit. Reuse existing project evidence, not a new history database.
+For non-trivial or cross-session work, record a stable workflow ID and the minimal active checkpoint with `scripts/project_tool.py begin <project-root> --input <workflow.json>` when available. Start facts stay immutable; `after`, result/validation revision and sourced occurrence time may evolve into observed outcomes. Unknown values stay explicit. Use actual Git committer time only for that commit, never as an inferred work start. Reuse existing project evidence, not a new history database.
 
 Schema-first governance state is canonical. Markdown is a rendered view, not a second editable truth. Use `scripts/state_tool.py` to validate/render/compact/export governance state.
 
-A current handoff is required when work is unfinished or deliberately crosses an agent/session boundary, when the actor can write one. Keep at most one current handoff.
+A current handoff is required when work is unfinished or deliberately crosses an agent/session boundary, when the actor can write one. Keep at most one current handoff. Reference one validation fact source: retain run identity, scope/denominator, tested state, result and pending retest; do not add overlapping counts or turn a focused pass into a full-regression claim. Optional structured validation references are checked by `state_tool.py validate/render --project-root <project-root>`.
 
 Abrupt interruption is a supported continuity mode, not an exceptional assumption. If a prior actor disappeared before writing a handoff, the next actor must reconstruct before modifying: inspect canonical project truth, VCS/worktree or equivalent observable changes, existing validation/evidence, current UPG state, and unresolved artifacts. Separate observed facts from inferred possibilities, mark prior intent that cannot be recovered as unknown, then continue from the smallest safe next action. Never require private chat memory or chain-of-thought for recovery.
 
 Use causal parent/revision references and persistent sequence for order. Tool `recorded_at` is observation time, never invented work/commit time. Preserve the previous change and tie validation to the actually tested state; a stale handoff is evidence to reconcile, not authority to overwrite current truth.
 
-For tracked non-trivial work, use `scripts/project_tool.py finish <project-root> --input <report.json>` to record completion. It shares one reconciliation path across reporting modes: with `field_test_reporting=true` it appends exactly one report; otherwise it advances bounded latest/previous state without creating a ledger. Partial or blocked work remains active for recovery. Include `workflow_id` and `change` metadata. Identical retries are idempotent; conflicting retries fail. Export and verify evidence before explicit epoch rotation; sequence never resets, and task IDs are unique within the declared retention epoch. The ledger stores metadata/evidence summaries only, never source contents, secrets, or private chain-of-thought. With reporting disabled, do not create a field ledger or report merely to satisfy the ordinary governance-note level.
+For tracked non-trivial work, call `scripts/project_tool.py finish <project-root> --input <report.json>` at the actual workflow boundary, including the same workflow identity and an observed outcome `change`. A stage pin is not whole-workflow completion: checkpoint unfinished work as `partial`/`blocked`, preserving its active identity. Reporting on appends exactly one completion report; reporting off advances bounded latest/previous state without a ledger. Original start facts are retained; identical retries are idempotent and conflicting retries fail. Each workflow/status has one immutable receipt; use bounded workflow scopes rather than rewriting stage history. Export and verify evidence before epoch rotation; sequence never resets. Store bounded metadata/evidence summaries only, never source contents, secrets or private reasoning. Check binding status after finish; helper unavailability is an explicit verification gap, not permission to backfill historical success.
+
+Installation, helper receipts and matching engineering behavior do not prove historical Skill loading or causal benefit. Use optional existing host activation receipts when available; keep missing evidence unknown. Evaluate cost/benefit prospectively with matched baseline/attention-control/UPG tasks, actual token/time/tool cost and cross-Agent handoff results; test counts alone are not effectiveness evidence.
 
 ## Integrity
 
