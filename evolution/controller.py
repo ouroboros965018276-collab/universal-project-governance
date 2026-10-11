@@ -297,6 +297,7 @@ def _run_search(repo, protocol, output, *, runner=None, backend=None, resume=Fal
                 annealing = ChaoticAnnealing.from_state(state["annealing"])
                 if "skillopt" not in disabled:
                     from .skillopt_adapter import SkillOptLearner, SourceBridge, RolloutResult, fixture_backend
+                    from .source_bridge import SourceBridgeError
                     bridge = SourceBridge(current["model"])
                     learner = SkillOptLearner(backend or fixture_backend, budget, bridge,
                                               max_retries=int(protocol.get("search", {}).get("retries", 0)))
@@ -322,40 +323,62 @@ def _run_search(repo, protocol, output, *, runner=None, backend=None, resume=Fal
                                                               extras={"observations": observation}))
                     run["pending"] = {"kind": "learning", "iteration": iteration}
                     checkpoint()
-                    patch = learner.learn(rollouts)
-                    run["pending"] = None
-                    proposal = dict(current, model=bridge.apply(patch), operator="skillopt")
-                    item = assess(proposal, "skillopt")
-                    event("skillopt", "patch", patch=patch.to_dict(), trace=learner.last_trace)
-                    def memory_rows(record):
-                        if runner is None:
-                            return [RolloutResult(id="compiler-planner", hard=float(record["evaluation"]["ok"]),
-                                                  soft=float(record["evaluation"]["ok"]),
-                                                  extras={"measurement": "synthetic"})]
-                        rows = []
-                        for observation in record["observations"]:
-                            outcome = observation.get("outcome") or {}
-                            if "hard" not in outcome or "soft" not in outcome:
-                                raise ValueError("paired memory requires actual task-grader evidence")
-                            rows.append(RolloutResult(id=observation["task_id"], hard=outcome["hard"],
-                                                      soft=outcome["soft"], extras={"observation": observation}))
-                        return rows
-                    previous_item = next(x for x in run["candidates"] if x["id"] == candidate_id(current))
-                    if item["evaluation"]["ok"] and (runner is None or item["observations"]):
-                        run["pending"] = {"kind": "memory-update", "iteration": iteration}
-                        checkpoint()
-                        memory = learner.update_memory(memory_rows(previous_item), memory_rows(item),
-                                                       previous_view=bridge.export_view(),
-                                                       current_view=SourceBridge(proposal["model"]).export_view())
+                    learning_receipt_start = len(budget.records)
+                    try:
+                        patch = learner.learn(rollouts)
+                        proposal = dict(current, model=bridge.apply(patch), operator="skillopt")
+                    except SourceBridgeError as error:
+                        # A syntactically returned, charged proposal can fail the
+                        # source contract. Provider/unknown/budget failures still
+                        # retain their original fail-closed behavior.
+                        if learner.backend.terminal_error is not None:
+                            raise
+                        if budget.unknown_usage:
+                            raise BudgetExceeded("rejected proposal has unknown learning usage; reconciliation required") from error
+                        overrun = budget.overruns()
+                        if overrun:
+                            run["budget_overrun"] = overrun
+                            raise BudgetExceeded("rejected proposal exceeded hard budget") from error
                         run["pending"] = None
-                        state["memory"] = {"slow_update": learner.slow_update_context,
-                                           "meta_skill": learner.meta_skill_context}
-                        event("skillopt", "optimizer-memory", memory=memory)
+                        run["operator_counts"]["skillopt"]["attempted"] += 1
+                        event("skillopt", "proposal-rejected", error_type=type(error).__name__,
+                              reason=str(error), source_hash=bridge.source_hash,
+                              trace=copy.deepcopy(learner.last_trace),
+                              budget_receipt_attempts=[row["attempt"] for row in budget.records[learning_receipt_start:]])
+                        checkpoint()
                     else:
-                        event("skillopt", "memory-skipped", reason="hard rejection has no paired replay")
-                    if numeric(item) < state["current_loss"]:
-                        current, state["current_loss"] = proposal, numeric(item)
-                        run["operator_counts"]["skillopt"]["accepted"] += 1
+                        run["pending"] = None
+                        item = assess(proposal, "skillopt")
+                        event("skillopt", "patch", patch=patch.to_dict(), trace=learner.last_trace)
+                        def memory_rows(record):
+                            if runner is None:
+                                return [RolloutResult(id="compiler-planner", hard=float(record["evaluation"]["ok"]),
+                                                      soft=float(record["evaluation"]["ok"]),
+                                                      extras={"measurement": "synthetic"})]
+                            rows = []
+                            for observation in record["observations"]:
+                                outcome = observation.get("outcome") or {}
+                                if "hard" not in outcome or "soft" not in outcome:
+                                    raise ValueError("paired memory requires actual task-grader evidence")
+                                rows.append(RolloutResult(id=observation["task_id"], hard=outcome["hard"],
+                                                          soft=outcome["soft"], extras={"observation": observation}))
+                            return rows
+                        previous_item = next(x for x in run["candidates"] if x["id"] == candidate_id(current))
+                        if item["evaluation"]["ok"] and (runner is None or item["observations"]):
+                            run["pending"] = {"kind": "memory-update", "iteration": iteration}
+                            checkpoint()
+                            memory = learner.update_memory(memory_rows(previous_item), memory_rows(item),
+                                                           previous_view=bridge.export_view(),
+                                                           current_view=SourceBridge(proposal["model"]).export_view())
+                            run["pending"] = None
+                            state["memory"] = {"slow_update": learner.slow_update_context,
+                                               "meta_skill": learner.meta_skill_context}
+                            event("skillopt", "optimizer-memory", memory=memory)
+                        else:
+                            event("skillopt", "memory-skipped", reason="hard rejection has no paired replay")
+                        if numeric(item) < state["current_loss"]:
+                            current, state["current_loss"] = proposal, numeric(item)
+                            run["operator_counts"]["skillopt"]["accepted"] += 1
                 if "annealing" not in disabled:
                     theta = annealing.propose(current["theta"])
                     if ordinary:
