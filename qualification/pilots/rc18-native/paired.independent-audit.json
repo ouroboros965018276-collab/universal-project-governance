@@ -1,0 +1,1011 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-10-11T20:38:52.327466+00:00",
+  "status": "PASS",
+  "scope": "read-only independent audit; only JSON/AST mechanical task grading; no model calls or model-code execution",
+  "frozen_revision": "e08faff3c37bb2736e387a5ca743b3b20644f9dd",
+  "protocol_sha256": "92e233fecf20c039064729c3794d2f2babcc7f86cd549108cd72b0433c03dcdf",
+  "run_sha256": "986e655a867cf0d1efda9076cb8431ec22e7e3c14409c4086045ccbce0540125",
+  "raw_native_turns": 16,
+  "distinct_cli_threads": 16,
+  "distinct_harness_ids": 16,
+  "actual_total_tokens": 216759,
+  "quality_passed": 16,
+  "runtime_sha256": {
+    "control": "1469c263b4ff8620cb6a642f2c64abfd31b984d17b0ffbf053591faf1f6ed9d4",
+    "treatment": "ffc3ae2c02238630de4441b4f3f58f8f190268c78ee8fb4e4222ea2c79e2bef6"
+  },
+  "analysis_seed": 1729,
+  "analysis_repetitions": 4000,
+  "raw_evidence_audit_sha256": "34a1271806f689fefed387c6923ed2005094f2dc6a489abe95dcb9f7bdfc34c3",
+  "checks": [
+    {
+      "name": "frozen-protocol-exact-bytes",
+      "pass": true
+    },
+    {
+      "name": "protocol-digest",
+      "pass": true
+    },
+    {
+      "name": "frozen-runner-identity",
+      "pass": true
+    },
+    {
+      "name": "grader-current-and-frozen-source",
+      "pass": true
+    },
+    {
+      "name": "frozen-engine-digest",
+      "pass": true
+    },
+    {
+      "name": "exact-source-control",
+      "pass": true
+    },
+    {
+      "name": "exact-artifact-control",
+      "pass": true
+    },
+    {
+      "name": "exact-source-treatment",
+      "pass": true
+    },
+    {
+      "name": "exact-artifact-treatment",
+      "pass": true
+    },
+    {
+      "name": "prespecified-neutral-candidate",
+      "pass": true
+    },
+    {
+      "name": "exact-control-candidate",
+      "pass": true
+    },
+    {
+      "name": "preregistered-condition-order",
+      "pass": true
+    },
+    {
+      "name": "complete-fresh-budget",
+      "pass": true
+    },
+    {
+      "name": "1-treatment-final-handoff-1-order",
+      "pass": true
+    },
+    {
+      "name": "1-treatment-final-handoff-1-one-fresh-attempt",
+      "pass": true
+    },
+    {
+      "name": "1-treatment-final-handoff-1-receipt-exact",
+      "pass": true
+    },
+    {
+      "name": "1-treatment-final-handoff-1-raw-and-result-hashes",
+      "pass": true
+    },
+    {
+      "name": "1-treatment-final-handoff-1-native-turn",
+      "pass": true
+    },
+    {
+      "name": "1-treatment-final-handoff-1-actual-usage",
+      "pass": true
+    },
+    {
+      "name": "1-treatment-final-handoff-1-budget-charge",
+      "pass": true
+    },
+    {
+      "name": "1-treatment-final-handoff-1-identity-binding",
+      "pass": true
+    },
+    {
+      "name": "1-treatment-final-handoff-1-capability-binding",
+      "pass": true
+    },
+    {
+      "name": "1-treatment-final-handoff-1-honest-cli-scope",
+      "pass": true
+    },
+    {
+      "name": "1-treatment-final-handoff-1-after-freeze",
+      "pass": true
+    },
+    {
+      "name": "1-treatment-final-handoff-1-actual-prompt-input",
+      "pass": true
+    },
+    {
+      "name": "1-treatment-final-handoff-1-compiled-plan-closures",
+      "pass": true
+    },
+    {
+      "name": "1-treatment-final-handoff-1-mechanically-regraded",
+      "pass": true
+    },
+    {
+      "name": "2-control-final-handoff-1-order",
+      "pass": true
+    },
+    {
+      "name": "2-control-final-handoff-1-one-fresh-attempt",
+      "pass": true
+    },
+    {
+      "name": "2-control-final-handoff-1-receipt-exact",
+      "pass": true
+    },
+    {
+      "name": "2-control-final-handoff-1-raw-and-result-hashes",
+      "pass": true
+    },
+    {
+      "name": "2-control-final-handoff-1-native-turn",
+      "pass": true
+    },
+    {
+      "name": "2-control-final-handoff-1-actual-usage",
+      "pass": true
+    },
+    {
+      "name": "2-control-final-handoff-1-budget-charge",
+      "pass": true
+    },
+    {
+      "name": "2-control-final-handoff-1-identity-binding",
+      "pass": true
+    },
+    {
+      "name": "2-control-final-handoff-1-capability-binding",
+      "pass": true
+    },
+    {
+      "name": "2-control-final-handoff-1-honest-cli-scope",
+      "pass": true
+    },
+    {
+      "name": "2-control-final-handoff-1-after-freeze",
+      "pass": true
+    },
+    {
+      "name": "2-control-final-handoff-1-actual-prompt-input",
+      "pass": true
+    },
+    {
+      "name": "2-control-final-handoff-1-compiled-plan-closures",
+      "pass": true
+    },
+    {
+      "name": "2-control-final-handoff-1-mechanically-regraded",
+      "pass": true
+    },
+    {
+      "name": "3-control-final-dependency-0-order",
+      "pass": true
+    },
+    {
+      "name": "3-control-final-dependency-0-one-fresh-attempt",
+      "pass": true
+    },
+    {
+      "name": "3-control-final-dependency-0-receipt-exact",
+      "pass": true
+    },
+    {
+      "name": "3-control-final-dependency-0-raw-and-result-hashes",
+      "pass": true
+    },
+    {
+      "name": "3-control-final-dependency-0-native-turn",
+      "pass": true
+    },
+    {
+      "name": "3-control-final-dependency-0-actual-usage",
+      "pass": true
+    },
+    {
+      "name": "3-control-final-dependency-0-budget-charge",
+      "pass": true
+    },
+    {
+      "name": "3-control-final-dependency-0-identity-binding",
+      "pass": true
+    },
+    {
+      "name": "3-control-final-dependency-0-capability-binding",
+      "pass": true
+    },
+    {
+      "name": "3-control-final-dependency-0-honest-cli-scope",
+      "pass": true
+    },
+    {
+      "name": "3-control-final-dependency-0-after-freeze",
+      "pass": true
+    },
+    {
+      "name": "3-control-final-dependency-0-actual-prompt-input",
+      "pass": true
+    },
+    {
+      "name": "3-control-final-dependency-0-compiled-plan-closures",
+      "pass": true
+    },
+    {
+      "name": "3-control-final-dependency-0-mechanically-regraded",
+      "pass": true
+    },
+    {
+      "name": "4-treatment-final-dependency-0-order",
+      "pass": true
+    },
+    {
+      "name": "4-treatment-final-dependency-0-one-fresh-attempt",
+      "pass": true
+    },
+    {
+      "name": "4-treatment-final-dependency-0-receipt-exact",
+      "pass": true
+    },
+    {
+      "name": "4-treatment-final-dependency-0-raw-and-result-hashes",
+      "pass": true
+    },
+    {
+      "name": "4-treatment-final-dependency-0-native-turn",
+      "pass": true
+    },
+    {
+      "name": "4-treatment-final-dependency-0-actual-usage",
+      "pass": true
+    },
+    {
+      "name": "4-treatment-final-dependency-0-budget-charge",
+      "pass": true
+    },
+    {
+      "name": "4-treatment-final-dependency-0-identity-binding",
+      "pass": true
+    },
+    {
+      "name": "4-treatment-final-dependency-0-capability-binding",
+      "pass": true
+    },
+    {
+      "name": "4-treatment-final-dependency-0-honest-cli-scope",
+      "pass": true
+    },
+    {
+      "name": "4-treatment-final-dependency-0-after-freeze",
+      "pass": true
+    },
+    {
+      "name": "4-treatment-final-dependency-0-actual-prompt-input",
+      "pass": true
+    },
+    {
+      "name": "4-treatment-final-dependency-0-compiled-plan-closures",
+      "pass": true
+    },
+    {
+      "name": "4-treatment-final-dependency-0-mechanically-regraded",
+      "pass": true
+    },
+    {
+      "name": "5-control-final-refactor-1-order",
+      "pass": true
+    },
+    {
+      "name": "5-control-final-refactor-1-one-fresh-attempt",
+      "pass": true
+    },
+    {
+      "name": "5-control-final-refactor-1-receipt-exact",
+      "pass": true
+    },
+    {
+      "name": "5-control-final-refactor-1-raw-and-result-hashes",
+      "pass": true
+    },
+    {
+      "name": "5-control-final-refactor-1-native-turn",
+      "pass": true
+    },
+    {
+      "name": "5-control-final-refactor-1-actual-usage",
+      "pass": true
+    },
+    {
+      "name": "5-control-final-refactor-1-budget-charge",
+      "pass": true
+    },
+    {
+      "name": "5-control-final-refactor-1-identity-binding",
+      "pass": true
+    },
+    {
+      "name": "5-control-final-refactor-1-capability-binding",
+      "pass": true
+    },
+    {
+      "name": "5-control-final-refactor-1-honest-cli-scope",
+      "pass": true
+    },
+    {
+      "name": "5-control-final-refactor-1-after-freeze",
+      "pass": true
+    },
+    {
+      "name": "5-control-final-refactor-1-actual-prompt-input",
+      "pass": true
+    },
+    {
+      "name": "5-control-final-refactor-1-compiled-plan-closures",
+      "pass": true
+    },
+    {
+      "name": "5-control-final-refactor-1-mechanically-regraded",
+      "pass": true
+    },
+    {
+      "name": "6-treatment-final-refactor-1-order",
+      "pass": true
+    },
+    {
+      "name": "6-treatment-final-refactor-1-one-fresh-attempt",
+      "pass": true
+    },
+    {
+      "name": "6-treatment-final-refactor-1-receipt-exact",
+      "pass": true
+    },
+    {
+      "name": "6-treatment-final-refactor-1-raw-and-result-hashes",
+      "pass": true
+    },
+    {
+      "name": "6-treatment-final-refactor-1-native-turn",
+      "pass": true
+    },
+    {
+      "name": "6-treatment-final-refactor-1-actual-usage",
+      "pass": true
+    },
+    {
+      "name": "6-treatment-final-refactor-1-budget-charge",
+      "pass": true
+    },
+    {
+      "name": "6-treatment-final-refactor-1-identity-binding",
+      "pass": true
+    },
+    {
+      "name": "6-treatment-final-refactor-1-capability-binding",
+      "pass": true
+    },
+    {
+      "name": "6-treatment-final-refactor-1-honest-cli-scope",
+      "pass": true
+    },
+    {
+      "name": "6-treatment-final-refactor-1-after-freeze",
+      "pass": true
+    },
+    {
+      "name": "6-treatment-final-refactor-1-actual-prompt-input",
+      "pass": true
+    },
+    {
+      "name": "6-treatment-final-refactor-1-compiled-plan-closures",
+      "pass": true
+    },
+    {
+      "name": "6-treatment-final-refactor-1-mechanically-regraded",
+      "pass": true
+    },
+    {
+      "name": "7-control-final-interop-0-order",
+      "pass": true
+    },
+    {
+      "name": "7-control-final-interop-0-one-fresh-attempt",
+      "pass": true
+    },
+    {
+      "name": "7-control-final-interop-0-receipt-exact",
+      "pass": true
+    },
+    {
+      "name": "7-control-final-interop-0-raw-and-result-hashes",
+      "pass": true
+    },
+    {
+      "name": "7-control-final-interop-0-native-turn",
+      "pass": true
+    },
+    {
+      "name": "7-control-final-interop-0-actual-usage",
+      "pass": true
+    },
+    {
+      "name": "7-control-final-interop-0-budget-charge",
+      "pass": true
+    },
+    {
+      "name": "7-control-final-interop-0-identity-binding",
+      "pass": true
+    },
+    {
+      "name": "7-control-final-interop-0-capability-binding",
+      "pass": true
+    },
+    {
+      "name": "7-control-final-interop-0-honest-cli-scope",
+      "pass": true
+    },
+    {
+      "name": "7-control-final-interop-0-after-freeze",
+      "pass": true
+    },
+    {
+      "name": "7-control-final-interop-0-actual-prompt-input",
+      "pass": true
+    },
+    {
+      "name": "7-control-final-interop-0-compiled-plan-closures",
+      "pass": true
+    },
+    {
+      "name": "7-control-final-interop-0-mechanically-regraded",
+      "pass": true
+    },
+    {
+      "name": "8-treatment-final-interop-0-order",
+      "pass": true
+    },
+    {
+      "name": "8-treatment-final-interop-0-one-fresh-attempt",
+      "pass": true
+    },
+    {
+      "name": "8-treatment-final-interop-0-receipt-exact",
+      "pass": true
+    },
+    {
+      "name": "8-treatment-final-interop-0-raw-and-result-hashes",
+      "pass": true
+    },
+    {
+      "name": "8-treatment-final-interop-0-native-turn",
+      "pass": true
+    },
+    {
+      "name": "8-treatment-final-interop-0-actual-usage",
+      "pass": true
+    },
+    {
+      "name": "8-treatment-final-interop-0-budget-charge",
+      "pass": true
+    },
+    {
+      "name": "8-treatment-final-interop-0-identity-binding",
+      "pass": true
+    },
+    {
+      "name": "8-treatment-final-interop-0-capability-binding",
+      "pass": true
+    },
+    {
+      "name": "8-treatment-final-interop-0-honest-cli-scope",
+      "pass": true
+    },
+    {
+      "name": "8-treatment-final-interop-0-after-freeze",
+      "pass": true
+    },
+    {
+      "name": "8-treatment-final-interop-0-actual-prompt-input",
+      "pass": true
+    },
+    {
+      "name": "8-treatment-final-interop-0-compiled-plan-closures",
+      "pass": true
+    },
+    {
+      "name": "8-treatment-final-interop-0-mechanically-regraded",
+      "pass": true
+    },
+    {
+      "name": "9-control-final-dependency-1-order",
+      "pass": true
+    },
+    {
+      "name": "9-control-final-dependency-1-one-fresh-attempt",
+      "pass": true
+    },
+    {
+      "name": "9-control-final-dependency-1-receipt-exact",
+      "pass": true
+    },
+    {
+      "name": "9-control-final-dependency-1-raw-and-result-hashes",
+      "pass": true
+    },
+    {
+      "name": "9-control-final-dependency-1-native-turn",
+      "pass": true
+    },
+    {
+      "name": "9-control-final-dependency-1-actual-usage",
+      "pass": true
+    },
+    {
+      "name": "9-control-final-dependency-1-budget-charge",
+      "pass": true
+    },
+    {
+      "name": "9-control-final-dependency-1-identity-binding",
+      "pass": true
+    },
+    {
+      "name": "9-control-final-dependency-1-capability-binding",
+      "pass": true
+    },
+    {
+      "name": "9-control-final-dependency-1-honest-cli-scope",
+      "pass": true
+    },
+    {
+      "name": "9-control-final-dependency-1-after-freeze",
+      "pass": true
+    },
+    {
+      "name": "9-control-final-dependency-1-actual-prompt-input",
+      "pass": true
+    },
+    {
+      "name": "9-control-final-dependency-1-compiled-plan-closures",
+      "pass": true
+    },
+    {
+      "name": "9-control-final-dependency-1-mechanically-regraded",
+      "pass": true
+    },
+    {
+      "name": "10-treatment-final-dependency-1-order",
+      "pass": true
+    },
+    {
+      "name": "10-treatment-final-dependency-1-one-fresh-attempt",
+      "pass": true
+    },
+    {
+      "name": "10-treatment-final-dependency-1-receipt-exact",
+      "pass": true
+    },
+    {
+      "name": "10-treatment-final-dependency-1-raw-and-result-hashes",
+      "pass": true
+    },
+    {
+      "name": "10-treatment-final-dependency-1-native-turn",
+      "pass": true
+    },
+    {
+      "name": "10-treatment-final-dependency-1-actual-usage",
+      "pass": true
+    },
+    {
+      "name": "10-treatment-final-dependency-1-budget-charge",
+      "pass": true
+    },
+    {
+      "name": "10-treatment-final-dependency-1-identity-binding",
+      "pass": true
+    },
+    {
+      "name": "10-treatment-final-dependency-1-capability-binding",
+      "pass": true
+    },
+    {
+      "name": "10-treatment-final-dependency-1-honest-cli-scope",
+      "pass": true
+    },
+    {
+      "name": "10-treatment-final-dependency-1-after-freeze",
+      "pass": true
+    },
+    {
+      "name": "10-treatment-final-dependency-1-actual-prompt-input",
+      "pass": true
+    },
+    {
+      "name": "10-treatment-final-dependency-1-compiled-plan-closures",
+      "pass": true
+    },
+    {
+      "name": "10-treatment-final-dependency-1-mechanically-regraded",
+      "pass": true
+    },
+    {
+      "name": "11-control-final-handoff-0-order",
+      "pass": true
+    },
+    {
+      "name": "11-control-final-handoff-0-one-fresh-attempt",
+      "pass": true
+    },
+    {
+      "name": "11-control-final-handoff-0-receipt-exact",
+      "pass": true
+    },
+    {
+      "name": "11-control-final-handoff-0-raw-and-result-hashes",
+      "pass": true
+    },
+    {
+      "name": "11-control-final-handoff-0-native-turn",
+      "pass": true
+    },
+    {
+      "name": "11-control-final-handoff-0-actual-usage",
+      "pass": true
+    },
+    {
+      "name": "11-control-final-handoff-0-budget-charge",
+      "pass": true
+    },
+    {
+      "name": "11-control-final-handoff-0-identity-binding",
+      "pass": true
+    },
+    {
+      "name": "11-control-final-handoff-0-capability-binding",
+      "pass": true
+    },
+    {
+      "name": "11-control-final-handoff-0-honest-cli-scope",
+      "pass": true
+    },
+    {
+      "name": "11-control-final-handoff-0-after-freeze",
+      "pass": true
+    },
+    {
+      "name": "11-control-final-handoff-0-actual-prompt-input",
+      "pass": true
+    },
+    {
+      "name": "11-control-final-handoff-0-compiled-plan-closures",
+      "pass": true
+    },
+    {
+      "name": "11-control-final-handoff-0-mechanically-regraded",
+      "pass": true
+    },
+    {
+      "name": "12-treatment-final-handoff-0-order",
+      "pass": true
+    },
+    {
+      "name": "12-treatment-final-handoff-0-one-fresh-attempt",
+      "pass": true
+    },
+    {
+      "name": "12-treatment-final-handoff-0-receipt-exact",
+      "pass": true
+    },
+    {
+      "name": "12-treatment-final-handoff-0-raw-and-result-hashes",
+      "pass": true
+    },
+    {
+      "name": "12-treatment-final-handoff-0-native-turn",
+      "pass": true
+    },
+    {
+      "name": "12-treatment-final-handoff-0-actual-usage",
+      "pass": true
+    },
+    {
+      "name": "12-treatment-final-handoff-0-budget-charge",
+      "pass": true
+    },
+    {
+      "name": "12-treatment-final-handoff-0-identity-binding",
+      "pass": true
+    },
+    {
+      "name": "12-treatment-final-handoff-0-capability-binding",
+      "pass": true
+    },
+    {
+      "name": "12-treatment-final-handoff-0-honest-cli-scope",
+      "pass": true
+    },
+    {
+      "name": "12-treatment-final-handoff-0-after-freeze",
+      "pass": true
+    },
+    {
+      "name": "12-treatment-final-handoff-0-actual-prompt-input",
+      "pass": true
+    },
+    {
+      "name": "12-treatment-final-handoff-0-compiled-plan-closures",
+      "pass": true
+    },
+    {
+      "name": "12-treatment-final-handoff-0-mechanically-regraded",
+      "pass": true
+    },
+    {
+      "name": "13-control-final-interop-1-order",
+      "pass": true
+    },
+    {
+      "name": "13-control-final-interop-1-one-fresh-attempt",
+      "pass": true
+    },
+    {
+      "name": "13-control-final-interop-1-receipt-exact",
+      "pass": true
+    },
+    {
+      "name": "13-control-final-interop-1-raw-and-result-hashes",
+      "pass": true
+    },
+    {
+      "name": "13-control-final-interop-1-native-turn",
+      "pass": true
+    },
+    {
+      "name": "13-control-final-interop-1-actual-usage",
+      "pass": true
+    },
+    {
+      "name": "13-control-final-interop-1-budget-charge",
+      "pass": true
+    },
+    {
+      "name": "13-control-final-interop-1-identity-binding",
+      "pass": true
+    },
+    {
+      "name": "13-control-final-interop-1-capability-binding",
+      "pass": true
+    },
+    {
+      "name": "13-control-final-interop-1-honest-cli-scope",
+      "pass": true
+    },
+    {
+      "name": "13-control-final-interop-1-after-freeze",
+      "pass": true
+    },
+    {
+      "name": "13-control-final-interop-1-actual-prompt-input",
+      "pass": true
+    },
+    {
+      "name": "13-control-final-interop-1-compiled-plan-closures",
+      "pass": true
+    },
+    {
+      "name": "13-control-final-interop-1-mechanically-regraded",
+      "pass": true
+    },
+    {
+      "name": "14-treatment-final-interop-1-order",
+      "pass": true
+    },
+    {
+      "name": "14-treatment-final-interop-1-one-fresh-attempt",
+      "pass": true
+    },
+    {
+      "name": "14-treatment-final-interop-1-receipt-exact",
+      "pass": true
+    },
+    {
+      "name": "14-treatment-final-interop-1-raw-and-result-hashes",
+      "pass": true
+    },
+    {
+      "name": "14-treatment-final-interop-1-native-turn",
+      "pass": true
+    },
+    {
+      "name": "14-treatment-final-interop-1-actual-usage",
+      "pass": true
+    },
+    {
+      "name": "14-treatment-final-interop-1-budget-charge",
+      "pass": true
+    },
+    {
+      "name": "14-treatment-final-interop-1-identity-binding",
+      "pass": true
+    },
+    {
+      "name": "14-treatment-final-interop-1-capability-binding",
+      "pass": true
+    },
+    {
+      "name": "14-treatment-final-interop-1-honest-cli-scope",
+      "pass": true
+    },
+    {
+      "name": "14-treatment-final-interop-1-after-freeze",
+      "pass": true
+    },
+    {
+      "name": "14-treatment-final-interop-1-actual-prompt-input",
+      "pass": true
+    },
+    {
+      "name": "14-treatment-final-interop-1-compiled-plan-closures",
+      "pass": true
+    },
+    {
+      "name": "14-treatment-final-interop-1-mechanically-regraded",
+      "pass": true
+    },
+    {
+      "name": "15-treatment-final-refactor-0-order",
+      "pass": true
+    },
+    {
+      "name": "15-treatment-final-refactor-0-one-fresh-attempt",
+      "pass": true
+    },
+    {
+      "name": "15-treatment-final-refactor-0-receipt-exact",
+      "pass": true
+    },
+    {
+      "name": "15-treatment-final-refactor-0-raw-and-result-hashes",
+      "pass": true
+    },
+    {
+      "name": "15-treatment-final-refactor-0-native-turn",
+      "pass": true
+    },
+    {
+      "name": "15-treatment-final-refactor-0-actual-usage",
+      "pass": true
+    },
+    {
+      "name": "15-treatment-final-refactor-0-budget-charge",
+      "pass": true
+    },
+    {
+      "name": "15-treatment-final-refactor-0-identity-binding",
+      "pass": true
+    },
+    {
+      "name": "15-treatment-final-refactor-0-capability-binding",
+      "pass": true
+    },
+    {
+      "name": "15-treatment-final-refactor-0-honest-cli-scope",
+      "pass": true
+    },
+    {
+      "name": "15-treatment-final-refactor-0-after-freeze",
+      "pass": true
+    },
+    {
+      "name": "15-treatment-final-refactor-0-actual-prompt-input",
+      "pass": true
+    },
+    {
+      "name": "15-treatment-final-refactor-0-compiled-plan-closures",
+      "pass": true
+    },
+    {
+      "name": "15-treatment-final-refactor-0-mechanically-regraded",
+      "pass": true
+    },
+    {
+      "name": "16-control-final-refactor-0-order",
+      "pass": true
+    },
+    {
+      "name": "16-control-final-refactor-0-one-fresh-attempt",
+      "pass": true
+    },
+    {
+      "name": "16-control-final-refactor-0-receipt-exact",
+      "pass": true
+    },
+    {
+      "name": "16-control-final-refactor-0-raw-and-result-hashes",
+      "pass": true
+    },
+    {
+      "name": "16-control-final-refactor-0-native-turn",
+      "pass": true
+    },
+    {
+      "name": "16-control-final-refactor-0-actual-usage",
+      "pass": true
+    },
+    {
+      "name": "16-control-final-refactor-0-budget-charge",
+      "pass": true
+    },
+    {
+      "name": "16-control-final-refactor-0-identity-binding",
+      "pass": true
+    },
+    {
+      "name": "16-control-final-refactor-0-capability-binding",
+      "pass": true
+    },
+    {
+      "name": "16-control-final-refactor-0-honest-cli-scope",
+      "pass": true
+    },
+    {
+      "name": "16-control-final-refactor-0-after-freeze",
+      "pass": true
+    },
+    {
+      "name": "16-control-final-refactor-0-actual-prompt-input",
+      "pass": true
+    },
+    {
+      "name": "16-control-final-refactor-0-compiled-plan-closures",
+      "pass": true
+    },
+    {
+      "name": "16-control-final-refactor-0-mechanically-regraded",
+      "pass": true
+    },
+    {
+      "name": "sixteen-unique-turn-identities",
+      "pass": true
+    },
+    {
+      "name": "raw-folder-denominator",
+      "pass": true
+    },
+    {
+      "name": "eight-complete-quality-pairs",
+      "pass": true
+    },
+    {
+      "name": "charged-token-sum",
+      "pass": true
+    },
+    {
+      "name": "preregistered-analysis-reproduces-public-summary",
+      "pass": true
+    },
+    {
+      "name": "input_tokens-scope-supported",
+      "pass": true
+    },
+    {
+      "name": "total_tokens-scope-supported",
+      "pass": true
+    },
+    {
+      "name": "wall_seconds-speedup-not-established",
+      "pass": true
+    },
+    {
+      "name": "cli_wall_seconds-speedup-not-established",
+      "pass": true
+    },
+    {
+      "name": "formal-status-remains-blocked",
+      "pass": true
+    }
+  ]
+}

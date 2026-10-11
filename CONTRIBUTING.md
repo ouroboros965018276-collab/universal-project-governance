@@ -1,6 +1,6 @@
 # Contributing
 
-Current candidate: **3.0.0-rc.17 — Budgeted Offline Evolution**. RC17 carries forward RC16's continuity fixes and adds the repository-only optimizer. Change canonical source, regenerate the runtime, and retain independent engineering and efficacy evidence boundaries. Qualification thresholds remain unchanged; current candidate evidence lives in [PROJECT_STATE.md](PROJECT_STATE.md).
+Current candidate: **3.0.0-rc.18 — Grader Validity and Measured Runtime Compression**. Change canonical source, regenerate the runtime, and keep engineering, bounded development measurements, independent efficacy evidence, and formal qualification distinct. Qualification thresholds remain unchanged; current checks and measurements are pending in [PROJECT_STATE.md](PROJECT_STATE.md).
 
 ## Structural contribution rule
 
@@ -23,6 +23,8 @@ Project ownership is limited to the paths declared in the canonical binding. New
 Protocol, fixtures, statistics, graders, mutations, adapters, runners, analyzer, deployment wrapper, canonical source, compiler, and generated runtime are frozen evidence surfaces.
 
 After real testing starts, modifying any frozen surface invalidates the affected result round.
+
+Grader repairs must reject demonstrated false positives and accept legitimate task results. Never execute untrusted returned code to repair a scoring gap; use the bounded fixture contract or reviewed isolation. Labs exposed by diagnosis remain regression fixtures and cannot supply new independent holdout claims. Runtime text compression must preserve obligations and be assessed against actual task quality and metered cost; byte counts alone do not establish token or time savings.
 
 ## Evidence rules
 

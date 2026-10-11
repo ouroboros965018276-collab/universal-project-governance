@@ -1,6 +1,20 @@
 # Active Design Decisions
 
-Current design decisions, including RC17's offline evolution boundary, are documented here.
+Current design decisions include RC18's grader validity and measured-compression boundaries; RC17's offline evolution contract remains in force.
+
+## Task success requires positive outcomes
+
+Removing obsolete text cannot certify that a requested function, dependency, or implementation survives. Refactor grading includes bounded pure-function behavior probes; dependency grading requires explicit complete target pins; interoperability grading requires the implementation and documentation change alongside namespace preservation. Invalid or empty checks fail closed. Diagnosed labs are exposed regression evidence, not reusable independent holdouts. Generated code is parsed or interpreted within the bounded fixture evaluator, never executed as unrestricted host code.
+
+## Runtime compression preserves the governance contract
+
+Compress repeated instructions in the canonical Skill template, leaving Hot Path rules, lifecycle semantics, evidence obligations, recovery, and qualification boundaries intact. Compile and validate the generated runtime. Smaller UTF-8 text is an engineering observation; token, timing, quality and handoff effects require prospective matched measurements. Install only a validated candidate with recoverable backup and verify disk integrity separately from host discovery and actual activation.
+
+## Native development measurements bind actual execution inputs
+
+An explicitly registered native CLI, existing official login, grader, exact canonical source and compiler determine the measured condition. Candidate cache identity and receipts must bind those inputs. Selection and replayed learning work consume their declared search accounting; local receipt reuse is not another independent sample. Unknown calls stop further dispatch until reconciled.
+
+Report the requested model separately from provider-confirmed identity. The adapter performs one CLI invocation per attempt; provider-internal retries and completed-turn usage coverage remain unknown until independently established. A requested output limit is not a native CLI hard token cap. The bounded JSON artifact matrix cannot establish real tool execution, cross-Agent handoff or broad algorithm contribution. Independent final admission and formal qualification retain their original coverage, safety and uncertainty requirements.
 
 ## Evolution is offline and independently admitted
 

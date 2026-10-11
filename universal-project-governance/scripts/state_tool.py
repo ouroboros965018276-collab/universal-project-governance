@@ -14,7 +14,7 @@ from datetime import datetime
 
 
 def load(path: Path):
-    return json.loads(path.read_text(encoding="utf-8"))
+    return json.loads(path.read_text(encoding="utf-8-sig"))
 
 
 def schema_root() -> Path:

@@ -28,7 +28,7 @@ USAGE_FIELDS = ("input_tokens", "output_tokens", "cached_tokens", "reasoning_tok
 def canonical_source(repo: Path | str) -> dict:
     """Exact UTF-8 canonical source, including scripts/schemas/templates/profiles."""
     root = Path(repo) / "governance-src"
-    return {p.relative_to(root).as_posix(): p.read_text(encoding="utf-8")
+    return {p.relative_to(root).as_posix(): p.read_bytes().decode("utf-8")
             for p in sorted(root.rglob("*")) if p.is_file()
             and "__pycache__" not in p.parts and p.suffix not in {".pyc", ".pyo"}}
 
@@ -44,11 +44,14 @@ def candidate_source(candidate: dict, repo: Path | str) -> dict:
 
 
 def cache_key(candidate: dict, task: dict, model: str, config: dict,
-              deps: dict, runner_identity: dict, source: dict | None = None) -> str:
+              deps: dict, runner_identity: dict, source: dict | None = None,
+              candidate_identity: str | None = None,
+              execution_artifact: dict | None = None) -> str:
     """Bind every execution input; cache reuse never adds a sample."""
-    return digest({"candidate": candidate_id(candidate), "source": source,
+    return digest({"candidate": candidate_identity or candidate_id(candidate), "source": source,
                    "task": task, "model": model, "config": config,
-                   "dependencies": deps, "runner": runner_identity})
+                   "dependencies": deps, "runner": runner_identity,
+                   "execution_artifact": execution_artifact})
 
 
 def _protected_model(model: dict) -> dict:
@@ -155,10 +158,16 @@ def _sum_usage(attempts: list) -> dict:
             for values in [[attempt["usage"][field] for attempt in attempts]]}
 
 
+def _zero_usage():
+    return {field: 0.0 if field == "cost_usd" else 0 for field in USAGE_FIELDS}
+
+
 def evaluate(candidate: dict, task: dict, runner: Callable | None = None, *,
              model: str = "unknown", config: dict | None = None, deps: dict | None = None,
              runner_identity: dict | None = None, cache: MutableMapping | None = None,
-             retries: int = 0, source: dict | None = None, budget=None) -> dict:
+             retries: int = 0, source: dict | None = None, budget=None,
+             candidate_identity: str | None = None,
+             execution_artifact: dict | None = None) -> dict:
     """Runner(request)->dict with provider usage and task-specific grading evidence.
 
     Runner exceptions may expose ``usage`` for charged failed calls. All attempts
@@ -168,15 +177,23 @@ def evaluate(candidate: dict, task: dict, runner: Callable | None = None, *,
     config, deps, runner_identity = config or {}, deps or {}, runner_identity or {}
     if type(retries) is not int or retries < 0:
         raise ValueError("retries must be a nonnegative integer")
-    identity = cache_key(candidate, task, model, config, deps, runner_identity, source)
+    if candidate_identity is not None and (not isinstance(candidate_identity, str)
+            or len(candidate_identity) != 64 or any(x not in "0123456789abcdef" for x in candidate_identity)):
+        raise ValueError("exact candidate identity must be a SHA-256 digest")
+    identity = cache_key(candidate, task, model, config, deps, runner_identity, source,
+                         candidate_identity=candidate_identity, execution_artifact=execution_artifact)
     if cache is not None and identity in cache:
         result = copy.deepcopy(cache[identity])
-        result.update(cache_hit=True, independent_sample=False)
+        result.update(cache_hit=True, independent_sample=False, charged_in_this_run=0,
+                      charged_usage=_zero_usage(), empirical_eligible=False)
+        for attempt in result.get("attempts", []):
+            attempt.update(charged_in_this_run=0, charged_usage=_zero_usage())
         return result
-    result = {"schema_version": 1, "candidate_id": candidate_id(candidate), "cache_key": identity,
+    result = {"schema_version": 1, "candidate_id": candidate_identity or candidate_id(candidate), "cache_key": identity,
               "task_sha256": digest(task), "task_id": task.get("id"), "model": model,
               "runner_identity": runner_identity, "config_sha256": digest(config),
               "dependencies_sha256": digest(deps), "source_sha256": digest(source) if source is not None else None,
+              "execution_artifact_sha256": digest(execution_artifact) if execution_artifact is not None else None,
               "cache_hit": False, "independent_sample": runner is not None, "attempts": []}
     if runner is None:
         return dict(result, kind="development_engineering", status="NOT_RUN",
@@ -190,7 +207,10 @@ def evaluate(candidate: dict, task: dict, runner: Callable | None = None, *,
             budget.reserve()
         attempt_started = time.perf_counter()
         try:
-            raw = runner({"candidate": copy.deepcopy(candidate), "task": copy.deepcopy(task),
+            raw = runner({"candidate": copy.deepcopy(candidate), "source": copy.deepcopy(source),
+                          "execution_artifact": copy.deepcopy(execution_artifact),
+                          "source_sha256": result["source_sha256"],
+                          "candidate_id": result["candidate_id"], "task": copy.deepcopy(task),
                           "model": model, "config": copy.deepcopy(config), "attempt": attempt_number,
                           "cache_key": identity})
             if not isinstance(raw, dict):
@@ -207,14 +227,26 @@ def evaluate(candidate: dict, task: dict, runner: Callable | None = None, *,
                        "error": "%s: %s" % (type(error).__name__, error),
                        "wall_seconds": time.perf_counter() - attempt_started}
         result["attempts"].append(attempt)
+        receipt = attempt["provider_receipt"]
+        replayed = isinstance(receipt, dict) and receipt.get("replayed_from_local_receipt") is True
+        attempt.update(replayed_from_local_receipt=replayed, charged_in_this_run=0 if replayed else 1,
+                       charged_usage=_zero_usage() if replayed else copy.deepcopy(attempt["usage"]))
         if budget is not None:
-            budget.record(attempt["usage"], attempt["wall_seconds"], attempt["error"])
+            if replayed:
+                budget.release_replayed_reservation()
+            else:
+                budget.record(attempt["usage"], attempt["wall_seconds"], attempt["error"])
         if attempt["status"] == "completed":
             break
     result.update(kind="real_model_task", status=result["attempts"][-1]["status"],
                   wall_seconds=time.perf_counter() - started, usage=_sum_usage(result["attempts"]),
                   outcome=result["attempts"][-1]["outcome"])
-    result["empirical_eligible"] = bool(source is not None and all(attempt["provider_receipt"]
+    result["replayed_from_local_receipt"] = any(attempt["replayed_from_local_receipt"] for attempt in result["attempts"])
+    if result["replayed_from_local_receipt"]:
+        result.update(cache_hit=True, independent_sample=False)
+    result["charged_in_this_run"] = sum(attempt["charged_in_this_run"] for attempt in result["attempts"])
+    result["charged_usage"] = _sum_usage([{"usage": attempt["charged_usage"]} for attempt in result["attempts"]])
+    result["empirical_eligible"] = bool(result["independent_sample"] and source is not None and all(attempt["provider_receipt"]
                                         and attempt["usage"]["total_tokens"] is not None for attempt in result["attempts"]))
     if cache is not None:
         cache[identity] = copy.deepcopy(result)

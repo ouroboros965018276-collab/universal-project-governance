@@ -1,8 +1,38 @@
 # Project State
 
-Current candidate: **3.0.0-rc.17 — Budgeted Offline Evolution**.
+Current candidate: **3.0.0-rc.18 — Grader Validity and Measured Runtime Compression**.
 
-## RC17 candidate
+## RC18 candidate — paired measurements and nine-arm matrix completed
+
+The default branch already contains RC17 through [PR #18](https://github.com/ouroboros965018276-collab/universal-project-governance/pull/18), merge `e63f438bdee2b9d65c49db6c621e968d6b185e56`. RC18 continues from that release. The prior RC17/RC16 records below describe their original stages; their test counts, failures, unknowns and qualification outcomes are retained.
+
+This candidate repairs three reproduced grader false positives: an emptied refactor module, removal of the required database driver from both dependency files, and an interoperability no-op. Checks now require bounded pure-function behavior, exact complete dependency targets, and the implementation/documentation change respectively. Diagnosed development and locked labs are exposed regression fixtures; they cannot establish a new independent holdout result. Generated model code is not executed by these probes.
+
+The canonical Skill template is compacted while preserving its obligations and Hot Path. Compiled `SKILL.md` shrinks from 11144 to 7940 UTF-8 bytes, a 28.75% reduction; these bytes are distinct from the observed prompt-token reduction below. Three runtime helpers accept UTF-8 JSON with a BOM. Native-CLI development callbacks bind configuration, binary, grader, canonical source and compiler; selection caps and replayed learning accounting belong to the same budget boundary.
+
+The [paired artifact summary](qualification/pilots/rc18-native/paired.summary.json) records eight prespecified RC17/candidate task pairs at source `e08faff3c37bb2736e387a5ca743b3b20644f9dd`: 16 fresh calls, all positive task checks passing, 216759 completed-turn tokens in total. Input tokens fall from 109950 to 105715 (3.85175%); total tokens fall from 110504 to 106255 (3.84511%). Full evaluator callback time, including isolated compilation, planning and grading, rises from 70.98168 to 87.80255 seconds (point estimate +23.6975%); its ratio 1.23697 has a paired-family bootstrap 95% interval of [0.95923, 1.51345]. No timing improvement is established. This is bounded artifact-task evidence in one requested model, without a causal operator-contribution or generalization claim.
+
+The [v1 round summary](qualification/pilots/rc18-native/round-v1.summary.json) retains 39 completed-turn calls and 553938 tokens, including the 16 paired calls above. Its development matrix stopped in the full arm with `SourceBridgeError`: an invalid learner edit was safely rejected, but the controller wrongly aborted the arm; five arms did not run. Original checkpoints and costs are preserved. After repairing charged invalid-proposal handling, the [fresh v2 nine-arm protocol](evolution/protocol/rc18-native-development-v2.json) completed 9/9 arms and passed independent audit of the experiment records. Its 188 actual CLI turns comprise 158 task calls and 30 learner calls, consuming 2684192 tokens. All 158 raw task results pass mechanical regrading; final-task dispatch is 0. This establishes the bounded development execution, without a causal algorithm-benefit claim.
+
+Two Windows checkpoint `Path.replace` operations were temporarily denied during v2. Each recovery reconciled already charged calls before resuming the same frozen protocol and engine; additional calls are included in the shared budgets and totals. The occupying process and specific cause remain unconfirmed. Repository-only bounded checkpoint-I/O retry hardening was added after measurement, without changing the runtime, algorithm or protocol. Final local regression passes 299/299 tests in 98.700 seconds and all eight local release gates pass. The measured v2 engine SHA-256 is `a4cccff429ac43ee062859ee494b5378492efabef89f56a1ac8ac4780ee7bf1e`; the release engine is `1d113d87c50641b4d35de00a366cb15438b5a6489cbe6b3789dd955698512acd`. Measured evidence is not rebound to the repaired release engine. Runtime Skill and task grader remain those of the paired tested revision, and final-task feedback is not reused. See the [real-evaluation report](qualification/pilots/rc18-native/README.md) and [release audit](audits/rc18-real-evaluation.audit.json); hosted CI passes 11/11 at measured freeze `8d1cb51945c5d98bf3db7c2e72557d7e50274275`, with final PR/main CI recorded separately. Requested `gpt-6-luna` identity is not yet provider-confirmed; native provider-internal retry usage coverage remains unknown. JSON artifact repair covers neither actual tool execution nor a complete cross-Agent handoff.
+
+| Cost scope | Actual CLI turns | Reported tokens |
+|---|---:|---:|
+| v1, including the 16 paired calls / 216759 tokens | 39 | 553938 |
+| v2 nine-arm development round | 188 | 2684192 |
+| Trials subtotal | 227 | 3238130 |
+| Separate capability probe | 1 | 14921 |
+| Total including probe | 228 | 3253051 |
+
+Pre-merge installation snapshot: the user-level Skill is RC17, with a recoverable RC16 backup, all 17 bundle files matching that compiled release, passing runtime integrity, matching planner output in eight fixture contexts, and one enabled UPG entry found by a fresh official CLI process with forced reload and no discovery errors. This establishes disk/helper behavior and host discovery, not historical or causal model activation. RC18's package and recoverable RC17 backup are prepared but not installed at this snapshot; installation follows candidate verification, measured-outcome review and default-branch integration. Later deployment must retain its own observed acceptance record. The prior ignored RC17 trial-copy cleanup exception remains a separately retained observation.
+
+Independent empirical admission remains BLOCKED and formal qualification is UNASSESSED. No learned candidate is promoted. Locked qualification is NOT RUN; empirical qualification and Stable are NOT ACHIEVED. Thresholds and completed historical result rounds are unchanged. Current development measurements cannot replace the required independent model-family, task-family, isolation, safety, cost and handoff evidence.
+
+Final release-only I/O review also repaired the controller's outer exception path: a persistent checkpoint replacement failure propagates without a second `save_run`, preserving the same six-attempt bound and complete temporary bytes. The focused I/O suite passes 46 tests, including seven added methods covering 12 fault scenarios; independent read-only code review passes. This does not alter the measured engine, canonical governance, installed runtime, task grader or protocol.
+
+## RC17 historical implementation stage
+
+The following record is retained from the RC17 implementation stage, before its later merge and the explicit user-level installation recorded above.
 
 The upgrade starts from remote main `272861ab9d925e7943fd84cbd6ff210bdb68841d` and integrates the latest public RC16 candidate `9c0efc1165a0e648622d8a4c02c2b1ddbd4986fb` through merge `24ad60309f01e787c2cedb1c258ac8e517e6a953`. The original RC12 checkout and its uncommitted adapter changes are preserved outside this worktree.
 

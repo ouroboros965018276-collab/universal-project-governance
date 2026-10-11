@@ -158,7 +158,11 @@ class BudgetedBackend:
 
     def _record(self, usage, elapsed_seconds, error=None):
         try:
-            self.budget.record(usage, elapsed_seconds=elapsed_seconds, error=error)
+            receipt = usage.get("native_receipt") if isinstance(usage, dict) else None
+            if isinstance(receipt, dict) and receipt.get("replayed_from_local_receipt") is True:
+                self.budget.release_replayed_reservation()
+            else:
+                self.budget.record(usage, elapsed_seconds=elapsed_seconds, error=error)
         except Exception as exc:
             self.terminal_error = exc
             raise

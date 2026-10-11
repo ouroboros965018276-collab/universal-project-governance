@@ -386,7 +386,8 @@ class RC9Tests(unittest.TestCase):
     def test_freeze_is_identical_after_repository_relocation(self):
         with tempfile.TemporaryDirectory() as td:
             target=pathlib.Path(td)/'moved'
-            shutil.copytree(ROOT,target,ignore=shutil.ignore_patterns('.git','.governance','__pycache__','*.pyc','dist'))
+            # Project-local TEMP must not recursively copy its own destination.
+            shutil.copytree(ROOT,target,ignore=shutil.ignore_patterns('.git','.governance','__pycache__','*.pyc','dist','eval-workspaces'))
             self.assertEqual(expected(ROOT),expected(target))
 
     def test_all_initial_python_and_json_files_parse(self):

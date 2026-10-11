@@ -2,11 +2,17 @@
 
 ## 当前版本与开发进度 | Version status
 
-本分支候选 / Candidate: **3.0.0-rc.17 — Budgeted Offline Evolution**。本次整合最新 RC16 修复与固定版本的 Microsoft SkillOpt，增加四算子协同离线优化、统一预算、断点恢复及独立采纳门控。
+本分支候选 / Candidate: **3.0.0-rc.18 — Grader Validity and Measured Runtime Compression**。本轮修复三类任务评分假阳性、精简治理指令，并接入绑定真实源码与编译器的原生 CLI 实测，按实际 token、耗时和任务质量评估优化。
 
-发布状态 / Release: **候选，非 Stable**。工程实现、真实任务提效与正式资格分别验收；未建立 25% 上下文 token、15% 总 token 或 10% 时间节省的实证结论。版本以 [VERSION.md](universal-project-governance/VERSION.md) 为准，检查结果见 [PROJECT_STATE.md](PROJECT_STATE.md)。
+发布状态 / Release: **候选，非 Stable**。RC17 已通过 [PR #18](https://github.com/ouroboros965018276-collab/universal-project-governance/pull/18) 合并到默认分支。RC18 已完成八对 RC17/候选文件任务测量；首轮九组开发消融中止，修复后重新预注册的 v2 已完成 **9/9 组**并通过实验记录独立审计。尚未达到 25% 上下文 token、15% 总 token 或 10% 时间节省的目标。版本以 [VERSION.md](universal-project-governance/VERSION.md) 为准，当前状态见 [PROJECT_STATE.md](PROJECT_STATE.md)。
 
-离线引擎使用 Python 3.10+；日常 Skill 无新增模型调用，原有辅助脚本继续支持 Python 3.8+。见[离线优化说明](docs/offline-evolution.md)。本地已有 Skill 不会因远端合并自动更新。
+[八对测量](qualification/pilots/rc18-native/paired.summary.json)包含 16 次全新调用，全部任务检查通过：输入 token 减少 **3.85175%**，总 token 减少 **3.84511%**。包含隔离编译、规划和评分的完整回调耗时点估计增加 **23.6975%**，时间比的 95% 区间包含 1，未证实耗时改善。编译后 `SKILL.md` 从 11144 减至 7940 个 UTF-8 字节（**28.75%**），字节缩减与 token 缩减分别记录。[首轮记录](qualification/pilots/rc18-native/round-v1.summary.json)保留无效学习编辑被安全拒绝、控制器却错误中止整组的失败；[v2 协议](evolution/protocol/rc18-native-development-v2.json)不复用最终任务反馈。实证准入仍为 **BLOCKED**，正式资格为 **UNASSESSED**，未提升任何学习候选。
+
+v2 记录 188 次实际 CLI turn（158 次任务、30 次学习），共 2684192 tokens；158/158 原始任务结果机械重评分通过，最终任务分派为 0。两次 Windows 检查点替换临时拒绝均在核清已付费调用后按同一冻结协议和引擎恢复，额外调用全部计入预算，具体占用进程或原因未确认。v1 与 v2 合计 227 次调用、3238130 tokens；另有能力探针 1 次、14921 tokens，含探针总计 228 次、3253051 tokens。发布阶段另加入有界检查点 I/O 重试，最终本地回归 **299/299 通过（98.700 秒）**、发布门禁 **8/8 通过**，未追溯更改实测引擎。实测冻结版本 `8d1cb51945c5d98bf3db7c2e72557d7e50274275` 的托管 CI 为 **11/11 通过**；最终 PR/main CI 另行记录。九组完成不建立算法因果收益，详见[实测报告](qualification/pilots/rc18-native/README.md)。
+
+离线引擎使用 Python 3.10+；日常 Skill 无新增模型调用，原有辅助脚本继续支持 Python 3.8+。见[离线优化说明](docs/offline-evolution.md)。**合并前安装快照**：用户本地 Skill 为 RC17，文件完整性和全新官方 CLI 技能发现已验证；RC18 安装包及备份已准备，此快照时尚未安装。后续实际部署以部署验收记录为准，远端合并不会自动更新其他本地副本。
+
+本轮文件任务只评估模型返回的 JSON/源码内容，不执行生成代码，不能代替真实工具操作或跨 Agent 交接实证。请求的 `gpt-6-luna` 名称尚待实际提供方确认，内部重试的完整用量核算仍未知；正式资格门禁保持不变。
 
 状态日期：**2026-10-12 Asia/Shanghai**。
 

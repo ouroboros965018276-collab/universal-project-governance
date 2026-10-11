@@ -1,0 +1,174 @@
+{
+  "cache_resume_reconciliation": [
+    {
+      "arm": "ordinary_annealing",
+      "cache_key": "46cbd6a6dbe3eea9a90d22c86d38f4e38a770d6b6fe3cb76ac62d46148fc91a9",
+      "candidate_id": "a0cf6a00c6faf59c5fe3c081ba5d98910f4ca6422a943163ae90cb255a35240d",
+      "final_row_is_zero_charge_cache_copy": true,
+      "original_cache_entry_sha256": "41942d176f284d58e948e29104f0aca8bfb98aabe6e7db0a003f3d3ec29ae3ae",
+      "original_charged_once": true,
+      "original_total_tokens": 13174
+    }
+  ],
+  "checkpoint_interruption_reconciliations": [
+    {
+      "actual_total_tokens": 1561562,
+      "budget_total_tokens": 1561562,
+      "incomplete_call_directories": 0,
+      "interfering_process": "unknown",
+      "private_receipt_sha256": "bafb7db5b74db401f948973b2916b45d1ca83f95f1c4c26a47297e473808bc8f",
+      "raw_completed_cli_turns": 109,
+      "status": "PASS-known-usage-reconciled",
+      "unknown_call_fence": false,
+      "usage_multiset_exact_match": true
+    },
+    {
+      "actual_total_tokens": 2526133,
+      "budget_total_tokens": 2526133,
+      "incomplete_call_directories": 0,
+      "interfering_process": "unknown",
+      "private_receipt_sha256": "6722554173a041125e4babf037af539539c67aa54401ebb9f734dbc025098659",
+      "raw_completed_cli_turns": 177,
+      "status": "PASS-known-usage-reconciled",
+      "unknown_call_fence": false,
+      "usage_multiset_exact_match": true
+    }
+  ],
+  "checks": {
+    "all_budget_usage_multisets_match_raw_turns": true,
+    "all_raw_stdout_stderr_prompt_result_hashes_verified": true,
+    "all_raw_task_receipts_referenced": true,
+    "all_raw_task_results_mechanically_regraded": true,
+    "completed_turn_usage_matches_receipts_and_results": true,
+    "final_data_used_in_matrix": false,
+    "frozen_engine_full_file_set_byte_exact_at_audit": true,
+    "owner_config_binary_runner_grader_identities_verified": true,
+    "pending_or_unknown_usage_present": false,
+    "task_source_compiler_runtime_and_cache_key_bindings_verified": true
+  },
+  "count_correction": {
+    "actual_raw_task_turns": 158,
+    "cache_hit_checkpoint_rows": 1,
+    "cached_original_charged_once": true,
+    "final_checkpoint_rows": 158,
+    "fresh_marked_checkpoint_rows": 157,
+    "original_paid_result_retained_in_cache_and_budget": true,
+    "previous_chat_total_159_was_arithmetic_error": true,
+    "unreferenced_raw_task_receipts": 0
+  },
+  "distinct_cli_threads": 188,
+  "distinct_harness_ids": 188,
+  "limitations": [
+    "Bounded nine-arm development matrix with one training task and one separate selection task; not independent locked holdout qualification.",
+    "Model identity is requested gpt-6-luna only; provider-confirmed model and provider request IDs are unknown. CLI thread uniqueness does not verify provider-request independence.",
+    "Completed-turn token usage and budget accounting are verified; provider-internal retries and billing are not independently observed. Adapter retries are zero.",
+    "Input tokens include reported cached input. Token totals do not measure dollar cost; no provider token pre-cap was enforced.",
+    "Learner receipts bind capability and unique invocation but do not directly name arm, candidate, or source; learner reconciliation uses global budget accounting.",
+    "Recorded task quality is artifact correctness and truthful not_run reporting; no full tool-executed agent task or generated-code execution occurred.",
+    "Actual arm costs differ despite equal caps. Development search acceptances and selection losses do not establish causal algorithm contribution, universal benefit, speedup, or Stable readiness.",
+    "Two checkpoint replacement interruptions were reconciled and resumed under the same frozen measurement engine/protocol. The interfering process or exact filesystem cause is unknown.",
+    "Post-measurement release-engine IO fixes are outside this matrix measurement.",
+    "Final checkpoints have 158 observation rows: 157 fresh-marked plus one zero-charge cache row. That row references an original paid CLI task whose fresh observation remains in the arm cache and budget. All 158 distinct raw task turns remain referenced; no raw task result is missing and no duplicate dispatch/charge is inferred."
+  ],
+  "measurement_identities": {
+    "binary_sha256": "bd970316b98c725f01cbfb92fdd3a952cb0e45425e15b7fb81d1927a60992f1a",
+    "canonical_source_sha256": "6aa8a9562d24f74a48bce082100c2ba1069f4c56a900ce0924f23869b36bdd81",
+    "engine_byte_exact_at_final_audit": true,
+    "engine_sha256": "a4cccff429ac43ee062859ee494b5378492efabef89f56a1ac8ac4780ee7bf1e",
+    "final_audit_recorded_at": "2026-10-11T21:16:37.711211+00:00",
+    "grader_sha256": "84a4e90fe69d4b5bce7f66fbeefa48de66bca80f33d973047788807f688be109",
+    "measurement_revision": "8d1cb51945c5d98bf3db7c2e72557d7e50274275",
+    "native_config_sha256": "5c8a2beb2a2b63f634bd947f000edc37233909f67ba8e304822eb7e366e36116",
+    "protocol_sha256": "b2f236aaa92e2b3147c3e119689c7cb30e2e859da56eccd48e5d343f050db3d6",
+    "runner_sha256": "1897f46e58c073bdfeb1d6d6361afd757d6e11d08864b9e093d2c0386ae6e6d4"
+  },
+  "observation_accounting_by_arm": {
+    "full": {
+      "actual_learner_cli_turns": 1,
+      "actual_task_cli_turns": 24,
+      "cache_hit_observation_rows": 0,
+      "fresh_marked_observation_rows": 24,
+      "recorded_observation_rows": 24
+    },
+    "latest_baseline": {
+      "actual_learner_cli_turns": 0,
+      "actual_task_cli_turns": 2,
+      "cache_hit_observation_rows": 0,
+      "fresh_marked_observation_rows": 2,
+      "recorded_observation_rows": 2
+    },
+    "ordinary_annealing": {
+      "actual_learner_cli_turns": 4,
+      "actual_task_cli_turns": 33,
+      "cache_hit_observation_rows": 1,
+      "fresh_marked_observation_rows": 32,
+      "recorded_observation_rows": 33
+    },
+    "rc15": {
+      "actual_learner_cli_turns": 0,
+      "actual_task_cli_turns": 2,
+      "cache_hit_observation_rows": 0,
+      "fresh_marked_observation_rows": 2,
+      "recorded_observation_rows": 2
+    },
+    "skillopt_only": {
+      "actual_learner_cli_turns": 12,
+      "actual_task_cli_turns": 2,
+      "cache_hit_observation_rows": 0,
+      "fresh_marked_observation_rows": 2,
+      "recorded_observation_rows": 2
+    },
+    "without_chaos": {
+      "actual_learner_cli_turns": 2,
+      "actual_task_cli_turns": 25,
+      "cache_hit_observation_rows": 0,
+      "fresh_marked_observation_rows": 25,
+      "recorded_observation_rows": 25
+    },
+    "without_curvature": {
+      "actual_learner_cli_turns": 4,
+      "actual_task_cli_turns": 16,
+      "cache_hit_observation_rows": 0,
+      "fresh_marked_observation_rows": 16,
+      "recorded_observation_rows": 16
+    },
+    "without_de": {
+      "actual_learner_cli_turns": 7,
+      "actual_task_cli_turns": 22,
+      "cache_hit_observation_rows": 0,
+      "fresh_marked_observation_rows": 22,
+      "recorded_observation_rows": 22
+    },
+    "without_skillopt": {
+      "actual_learner_cli_turns": 0,
+      "actual_task_cli_turns": 32,
+      "cache_hit_observation_rows": 0,
+      "fresh_marked_observation_rows": 32,
+      "recorded_observation_rows": 32
+    }
+  },
+  "observed_error_or_turn_failed_events": 0,
+  "provenance": {
+    "previous_private_audit_sha256": "c15303c3bfedb1f127365ac81b40ed21248f9a4e21594e4163b7cab121958ea7",
+    "private_evidence_available_to_owner": true,
+    "private_final_summary_sha256": "2a8432695da518775a063bc1d248feaac14440b0f870a53087bcdfacaaaa8a31",
+    "private_independent_audit_sha256": "fb175c51f53431666513c0883eab3e5c8e9a84e71818efa4389509d8c21f3dd5",
+    "raw_receipts_published": false
+  },
+  "recorded_at": "2026-10-11T21:16:37.711211+00:00",
+  "reviewer": "independent-subagent",
+  "schema_version": 1,
+  "scope": "sanitized independent audit of the frozen development matrix",
+  "status": "PASS",
+  "totals": {
+    "actual_cli_turns": 188,
+    "actual_learner_cli_turns": 30,
+    "actual_raw_task_turns_regraded_pass": 158,
+    "actual_task_cli_turns": 158,
+    "cache_hit_observation_rows": 1,
+    "charged_total_tokens": 2684192,
+    "final_task_dispatches": 0,
+    "fresh_marked_observation_rows": 157,
+    "recorded_observation_rows": 158
+  }
+}

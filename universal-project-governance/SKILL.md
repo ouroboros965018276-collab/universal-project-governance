@@ -4,7 +4,7 @@ description: Govern maintained-project changes with task-bounded integration, pr
 license: Apache-2.0
 compatibility: Core kernel needs no runtime. Optional deterministic planner/state/integrity helpers use Python 3.8+.
 metadata:
-  version: "3.0.0-rc.17"
+  version: "3.0.0-rc.18"
   standard: "agentskills.io"
   maturity: "release-candidate"
   architecture: "compiled-governance"
@@ -13,17 +13,13 @@ metadata:
 
 # Universal Project Governance
 
-A compiled governance runtime. The canonical governance model lives outside the installed Skill; this directory is generated and integrity-checked.
-
 ## Activation
 
-Use for any maintained-project state change. Do not activate for read-only explanation/review/research that makes no project change.
+At first modification, resolve the installed Skill; with filesystem/Python run `scripts/project_tool.py ensure <project-root>`: idempotent in-place adoption adding only UPG-owned state. Preserve binding-listed infrastructure during cleanup; uninstall explicitly. New bindings default empirical field reporting off; owner opt-in: `scripts/project_tool.py install <project-root> --field-test-reporting`. Preserve existing settings/ledger. Without helpers, govern through host/project state; disclose binding/report gaps. Never fabricate files or block unrelated authorized work for tooling.
 
-At the first modifying activation, resolve this installed Skill and run `scripts/project_tool.py ensure <project-root>` when filesystem and Python are available. New project bindings keep empirical field-test reporting disabled by default; an owner can explicitly opt in with `scripts/project_tool.py install <project-root> --field-test-reporting`. Existing bindings preserve their current setting and ledger. Otherwise apply the same rules through existing host/project state and explicitly report unavailable binding/report verification; do not fabricate files or block unrelated authorized work merely to install tooling. This idempotently adopts both new and pre-existing projects in place: it adds only UPG-owned state and does not restructure legacy project content. Files listed by that binding are managed UPG infrastructure: preserve them during ordinary cleanup and remove them only through the explicit uninstall path.
+Before mutation, inventory available/unavailable filesystem/VCS/search/test/build/browser/app capabilities. Assume no vendor/model/interface/tool class; claim only possible, observed validation.
 
-Before changing project state, perform a capability handshake from observable host facts: identify available filesystem/VCS/search/test/build/browser/app tools and unavailable capabilities. Govern the task with what exists; never assume a specific vendor, model, interface, or tool class, and never fabricate a validation that the current host cannot perform.
-
-For an existing project that predates UPG, treat current project artifacts as evidence, not automatically as correct design. Locate the smallest existing canonical sources of truth, preserve working contracts, mark unknown history/intent as unknown, and make governance effective on the current task immediately. Do not demand a project-wide migration merely to adopt UPG.
+Adopt legacy projects now without restructuring/migration: artifacts are evidence; locate smallest canonical truth, preserve contracts; unknown history/intent stays unknown.
 
 ## Hot path
 
@@ -38,67 +34,61 @@ For an existing project that predates UPG, treat current project artifacts as ev
 
 ## Execution
 
-For a truly local low-risk edit, apply the hot path directly and keep evidence proportional. Do not manufacture architecture work for a typo or equivalent isolated correction.
+Local low-risk edits use the hot path and proportional evidence; no architecture work for isolated corrections.
 
-For non-trivial work, prefer structural integration at the smallest responsible canonical layer over patch stacking. Structural mode is task-bounded: it does **not** authorize unrelated redesign, API/contract changes, migrations, or opportunistic refactors. Remove superseded shims, duplicate branches, temporary compatibility paths, and detached fixes only inside the justified task surface.
+Integrate non-trivial work at the smallest responsible canonical layer; remove superseded shims/branches/compatibility paths/detached fixes in scope. No unrelated redesign, API/contract change, migration, or refactor.
 
-Create a typed task context and compile the task-specific plan:
+Use a verified Python 3.8+ interpreter for helpers; on Windows resolve `py -3` or its full executable path rather than assuming `python3` works. Substitute that interpreter for `python` below. Compile typed context:
 
 ```bash
-python3 scripts/plan_governance.py --project-root /path/to/project --context /path/to/task-context.json
+python scripts/plan_governance.py --project-root /path/to/project --context /path/to/task-context.json
 ```
 
-The planner validates the full task-context schema and reads the healthy project binding so its field-report obligation reflects the actual project setting. Unknown optional profiles fall back to universal task/risk rules; profiles never exclude a project. The plan returns the change mode (`local` or `structural`), an explicit scope guard, active rule closure, required evidence, report level, and whether handoff state is required. Execute that plan; do not load unrelated governance policy.
+The planner validates full context schema and healthy binding/reporting. Follow change mode, scope guard, rule closure, evidence, report level, and handoff; no unrelated policy. Unknown optional profiles use universal task/risk rules; exclude no projects.
 
-If helpers are unavailable, read `policy-index.json` and apply only rules matching the task operation/domains/signals plus their `requires` closure.
+Without helpers, match `policy-index.json` operation/domains/signals plus `requires` closure.
 
-## Risk context
-
-Use observable facts, not model confidence. Risk dimensions are scope, reversibility, security, data impact, external consumers, migration, contract change, unknowns, and handoff need. File/line counts are secondary signals only.
+Use observable scope/reversibility/security/data impact/external consumers/migration/contract change/unknowns/handoff need. Model confidence is not evidence; file/line counts are secondary.
 
 ## Evidence and reports
 
-Do not create a permanent general-purpose governance report for every task. Field-test reporting is an explicit, temporary evaluation mode, disabled by default for new projects; opted-in bindings maintain one bounded ledger.
+Field reporting is temporary, explicit, with one bounded opted-in ledger; no permanent general report per task.
 
-- `none`: concise final response/VCS evidence is enough.
-- `change-note`: compact persistent note only if the project needs it.
-- `engineering`: maintain `.governance/execution/latest.json`.
-- `audit`: use a frozen release/audit record.
+- `none`: final response/VCS evidence.
+- `change-note`: compact persistent note if needed.
+- `engineering`: `.governance/execution/latest.json`.
+- `audit`: frozen release/audit record.
 
-For non-trivial or cross-session work, record a stable workflow ID and the minimal active checkpoint with `scripts/project_tool.py begin <project-root> --input <workflow.json>` when available. Start facts stay immutable; `after`, result/validation revision and sourced occurrence time may evolve into observed outcomes. Unknown values stay explicit. Use actual Git committer time only for that commit, never as an inferred work start. Reuse existing project evidence, not a new history database.
+Non-trivial/cross-session work: stable workflow ID, minimal checkpoint via `scripts/project_tool.py begin <project-root> --input <workflow.json>` when available. Start facts stay immutable; update observed `after`, result/validation revisions, sourced occurrence time only. Unknowns stay explicit; Git committer time dates its commit, never work start. Reuse evidence, not another history database.
 
-Schema-first governance state is canonical. Markdown is a rendered view, not a second editable truth. Use `scripts/state_tool.py` to validate/render/compact/export governance state.
+Schema-first state is canonical; Markdown is rendered. Use `scripts/state_tool.py` to validate/render/compact/export.
 
-A current handoff is required when work is unfinished or deliberately crosses an agent/session boundary, when the actor can write one. Keep at most one current handoff. Reference one validation fact source: retain run identity, scope/denominator, tested state, result and pending retest; do not add overlapping counts or turn a focused pass into a full-regression claim. Optional structured validation references are checked by `state_tool.py validate/render --project-root <project-root>`.
+When writable, keep one current handoff for unfinished work/planned agent/session transitions. One validation fact source: run ID, scope/denominator, tested state, result, pending retest. No overlapping counts or focused-pass/full-regression conflation. Check optional references: `state_tool.py validate/render --project-root <project-root>`.
 
-Abrupt interruption is a supported continuity mode, not an exceptional assumption. If a prior actor disappeared before writing a handoff, the next actor must reconstruct before modifying: inspect canonical project truth, VCS/worktree or equivalent observable changes, existing validation/evidence, current UPG state, and unresolved artifacts. Separate observed facts from inferred possibilities, mark prior intent that cannot be recovered as unknown, then continue from the smallest safe next action. Never require private chat memory or chain-of-thought for recovery.
+After interruption without handoff, reconstruct before mutation: canonical truth, VCS/worktree/equivalent changes, validation/evidence, UPG state, unresolved artifacts. Separate facts/inferences; unrecoverable intent stays unknown. Take the smallest safe action without private chat memory/reasoning.
 
-Use causal parent/revision references and persistent sequence for order. Tool `recorded_at` is observation time, never invented work/commit time. Preserve the previous change and tie validation to the actually tested state; a stale handoff is evidence to reconcile, not authority to overwrite current truth.
+Order by causal parents/revisions and persistent sequence; `recorded_at` is observation time. Preserve previous change; validate tested state. Reconcile stale handoffs against current truth.
 
-For tracked non-trivial work, call `scripts/project_tool.py finish <project-root> --input <report.json>` at the actual workflow boundary, including the same workflow identity and an observed outcome `change`. A stage pin is not whole-workflow completion: checkpoint unfinished work as `partial`/`blocked`, preserving its active identity. Reporting on appends exactly one completion report; reporting off advances bounded latest/previous state without a ledger. Original start facts are retained; identical retries are idempotent and conflicting retries fail. Each workflow/status has one immutable receipt; use bounded workflow scopes rather than rewriting stage history. Export and verify evidence before epoch rotation; sequence never resets. Store bounded metadata/evidence summaries only, never source contents, secrets or private reasoning. Check binding status after finish; helper unavailability is an explicit verification gap, not permission to backfill historical success.
+At tracked non-trivial boundaries, use `scripts/project_tool.py finish <project-root> --input <report.json>` when available: same workflow ID, observed `change`. Stage pins leave unfinished work `partial`/`blocked`, ID active. Reporting on: exactly one appended report; off: bounded latest/previous, no ledger. Start facts immutable; identical retries idempotent, conflicts fail; one immutable workflow/status receipt. Bound scopes; retain stage history. Export/verify before epoch rotation; sequence never resets. Bounded metadata/evidence only, no source bodies/secrets/private reasoning. Recheck binding; unavailable helpers leave verification gaps, never backfilled historical success.
 
-Installation, helper receipts and matching engineering behavior do not prove historical Skill loading or causal benefit. Use optional existing host activation receipts when available; keep missing evidence unknown. Evaluate cost/benefit prospectively with matched baseline/attention-control/UPG tasks, actual token/time/tool cost and cross-Agent handoff results; test counts alone are not effectiveness evidence.
+Installation/receipts/matching behavior/test counts prove neither historical loading nor causal benefit. Use optional host activation receipts; missing stays unknown. Evaluate matched baseline/attention-control/UPG tasks prospectively with actual token/time/tool costs and cross-agent handoffs.
 
 ## Integrity
 
-This installed runtime is generated. During ordinary project work do not edit it.
+Never hand-edit generated runtime in ordinary work.
 
 ```bash
-python3 scripts/validate_integrity.py .
+python scripts/validate_integrity.py .
 ```
 
-If integrity fails, stop treating the modified runtime as authoritative. Authorized Skill evolution happens in canonical governance source, followed by compilation, complexity/static checks, tests, install validation, and a new audit candidate.
+Failed integrity suspends runtime authority. Authorized evolution: external canonical source, compilation, complexity/static checks, tests, install validation, new audit candidate.
 
 ## Completion
 
-A modifying task is complete only when applicable behavior, cleanup, truth, evidence, continuity, integrity, project-binding, and active field-test-report obligations are satisfied. State unresolved blockers precisely; never expand a local review into a project-wide debt-free claim.
+Completion requires applicable behavior/cleanup/truth/evidence/continuity/integrity/binding/active field reporting. State blockers; local review proves no project-wide debt clearance.
 
-For uninstall, remove project-managed UPG state before removing the Skill. The repository convenience CLI performs both steps automatically; the runtime-safe fallback is `scripts/project_tool.py remove <project-root> --yes` followed by the host Skills CLI removal.
+Uninstall project UPG state before the Skill. Repository CLI handles both; fallback: `scripts/project_tool.py remove <project-root> --yes`, then host Skills CLI removal.
 
-## Interoperability
+Respect project truth/specialized Skills; reuse canonical governance structures, no parallel documents for filenames.
 
-Respect existing project sources of truth and specialized Skills. Governance semantics may live in existing canonical project structures; do not create parallel documentation merely to match a filename.
-
-## Final rule
-
-Governance capability may grow, but runtime cognitive load must remain bounded. One semantic rule has one canonical definition; complexity belongs in the compiler, not in agent context.
+Bound context: one canonical definition per semantic rule; complexity stays in compiler.

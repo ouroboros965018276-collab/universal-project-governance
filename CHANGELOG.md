@@ -1,5 +1,20 @@
 # Changelog
 
+## 3.0.0-rc.18 — 2026-10-12 — candidate
+
+Grader Validity and Measured Runtime Compression. Eight paired artifact measurements and all nine v2 development arms are complete; experiment-record audit passes. Final local regression passes 299/299 tests in 98.700 seconds and all eight release gates pass. Hosted CI passes 11/11 at measured freeze `8d1cb51945c5d98bf3db7c2e72557d7e50274275`; final PR/main CI is recorded separately. Formal qualification thresholds and historical results remain unchanged.
+
+- Repairs refactor, dependency-upgrade and interoperability false positives with positive functional/target checks; invalid or empty checks fail closed. Exposed labs remain regression evidence.
+- Compacts the canonical Skill template while retaining governance obligations and adds guidance for selecting an actual available Python entry. Compiled `SKILL.md` is 11144 → 7940 UTF-8 bytes (28.75% fewer bytes, distinct from token savings). Generated runtime remains compiler-owned.
+- Accepts UTF-8 BOM JSON in planner, project lifecycle and state helpers.
+- Adds explicit native-CLI development callbacks and file-artifact grading with exact source/compiler/configuration identities, shared selection budgets and replayed learning accounting.
+- Records eight RC17/candidate artifact-task pairs with 16 fresh calls and all task checks passing: input tokens decrease 3.85175%, total tokens decrease 3.84511%, and full evaluator callback time has a +23.6975% point estimate. The time-ratio 95% interval includes 1; no timing improvement is established. Requested model identity and complete provider-internal retry accounting remain unknown; these artifact tasks do not establish tool execution, cross-Agent handoff or formal qualification.
+- Preserves the v1 matrix failure: an invalid learner edit was safely rejected, but the controller incorrectly aborted the full arm, leaving five arms unrun. The v1 total is 39 completed-turn calls and 553938 tokens, including the paired measurements. After charged invalid-proposal handling was repaired, the fresh preregistered v2 round completed 9/9 arms: 188 actual CLI turns (158 task, 30 learner), 2684192 tokens, 158/158 raw task results passing mechanical regrading, and 0 final-task dispatches. No final feedback is reused or causal algorithm benefit claimed.
+- Retains two temporary Windows checkpoint replacement denials and their reconciled, same-freeze recoveries. All additional calls count toward budgets; the occupying process and specific cause remain unknown. Adds repository-only bounded checkpoint-I/O retry after measurement, separately identified from the measured engine without changing the runtime, algorithm or protocol.
+- Prevents the controller exception handler from saving again after persistent checkpoint replacement failure, retaining the six-attempt I/O bound and complete temporary bytes. The focused I/O suite passes 46 tests; independent read-only code review passes.
+- Reports trials totaling 227 turns / 3238130 tokens; a separate 1-turn / 14921-token capability probe brings the total to 228 turns / 3253051 tokens. The paired 16 turns / 216759 tokens are already included in v1.
+- Retains a pre-merge installation snapshot: local RC17 upgrade and fresh official host discovery passed, while RC18's package and backup were prepared and RC18 was not yet installed at that snapshot. Later deployment requires its own acceptance record. Empirical admission remains BLOCKED, formal qualification UNASSESSED, and no learned candidate or Stable release is promoted.
+
 ## 3.0.0-rc.17 — 2026-10-12
 
 - Integrates the latest RC16 candidate into the current default-branch ancestry, preserving historical qualification outcomes.
