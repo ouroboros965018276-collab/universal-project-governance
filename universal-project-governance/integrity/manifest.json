@@ -5,7 +5,7 @@
     "LICENSE": "50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a",
     "SKILL.md": "e81e5af7f3219bd916936006ac675d15bdd56421d22274ec3420f020ac6e5687",
     "VERSION.md": "ddf59a9260433be9291e6b491e7fed29d29ed2043e17d57b99cf2453e8024b07",
-    "policy-index.json": "d5a06254bdc9ff75334e01f262f6fbda2d83020be448026cc49e25797513ffd1",
+    "policy-index.json": "3e5ff8f92a5f9d9e78dc6e0cdcda837ff83985927534a76b288b79aef6f9c697",
     "schemas/audit.schema.json": "a5e15c26eff86e3c4e2e174fb121ef22981628307f09cf18d09a589e738ea889",
     "schemas/execution.schema.json": "d2a7cddc9d98c8101294df302259ba18217c27b9e7c8fee43d96c82ff6bde1d7",
     "schemas/feedback.schema.json": "22da61a114a1e89ee641ac25e90e23d6231003351df15918d4265f9900091954",
@@ -20,5 +20,5 @@
   },
   "generated_for_version": "3.0.0-rc.18",
   "schema_version": 1,
-  "source_sha256": "751269a146b638ed39c14fed7d9bedb8519fa39cd1c8b34389ad7b0922865ceb"
+  "source_sha256": "d342157008ec0dd41c1dc9af1b2fe7220afe2053f882cbfe4ddf00ce801d6731"
 }
