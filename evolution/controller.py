@@ -80,6 +80,21 @@ def checkpoint_lock(path):
             lock.unlink()
 
 
+def _replace_checkpoint(temporary, path):
+    """Retry only bounded Windows replacement denials over unchanged bytes."""
+    delays = (0.02, 0.04, 0.08, 0.16, 0.24)
+    for attempt in range(len(delays) + 1):
+        try:
+            temporary.replace(path)
+        except PermissionError as error:
+            if (sys.platform != "win32" or getattr(error, "winerror", None) not in {5, 32, 33}
+                    or attempt == len(delays)):
+                raise
+            time.sleep(delays[attempt])
+        else:
+            return
+
+
 def save_run(path, run):
     """Atomic same-volume checkpoints; a failed replace preserves last state."""
     path = Path(path)
@@ -91,7 +106,7 @@ def save_run(path, run):
         stream.flush()
         import os
         os.fsync(stream.fileno())
-    temporary.replace(path)
+    _replace_checkpoint(temporary, path)
 
 
 def engine_identity(repo):
@@ -190,12 +205,19 @@ def _run_search(repo, protocol, output, *, runner=None, backend=None, resume=Fal
                "iteration": 0, "status": "running", "pending": None,
                "search_state": {}, "budget": budget.state()}
 
+    checkpoint_error = None
+
     def checkpoint():
+        nonlocal checkpoint_error
         run["budget"] = budget.state()
         overrun = budget.overruns(run["budget"])
         if run["status"] == "completed" and overrun:
             run.update(status="budget-exhausted", budget_overrun=overrun)
-        save_run(output, run)
+        try:
+            save_run(output, run)
+        except OSError as error:
+            checkpoint_error = error
+            raise
 
     def event(operator, kind, **values):
         run["events"].append({"sequence": len(run["events"]) + 1,
@@ -487,6 +509,8 @@ def _run_search(repo, protocol, output, *, runner=None, backend=None, resume=Fal
             run["pending"] = None
         event("controller", "budget-stop", reason=str(exc))
     except Exception as exc:
+        if exc is checkpoint_error:
+            raise
         run["status"] = "failed"
         event("controller", "failure", error=type(exc).__name__)
         checkpoint()

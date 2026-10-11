@@ -1,0 +1,308 @@
+{
+  "status": "completed",
+  "pairs": 8,
+  "task_quality_pass": true,
+  "all_samples_new_calls": true,
+  "actual_charged_usage": {
+    "calls": 16,
+    "elapsed_seconds": 159.18799999999464,
+    "max_calls": 16,
+    "max_seconds": 3600,
+    "max_total_tokens": 400000,
+    "records": [
+      {
+        "attempt": 1,
+        "elapsed_seconds": 10.175447299989173,
+        "error": null,
+        "fixture": false,
+        "measurement": "provider",
+        "usage": {
+          "cached_tokens": 0,
+          "input_tokens": 13320,
+          "output_tokens": 83,
+          "reasoning_tokens": 0,
+          "total_tokens": 13403
+        }
+      },
+      {
+        "attempt": 2,
+        "elapsed_seconds": 10.350130500009982,
+        "error": null,
+        "fixture": false,
+        "measurement": "provider",
+        "usage": {
+          "cached_tokens": 0,
+          "input_tokens": 13846,
+          "output_tokens": 97,
+          "reasoning_tokens": 0,
+          "total_tokens": 13943
+        }
+      },
+      {
+        "attempt": 3,
+        "elapsed_seconds": 10.93973559999722,
+        "error": null,
+        "fixture": false,
+        "measurement": "provider",
+        "usage": {
+          "cached_tokens": 0,
+          "input_tokens": 13705,
+          "output_tokens": 64,
+          "reasoning_tokens": 0,
+          "total_tokens": 13769
+        }
+      },
+      {
+        "attempt": 4,
+        "elapsed_seconds": 27.0447519000154,
+        "error": null,
+        "fixture": false,
+        "measurement": "provider",
+        "usage": {
+          "cached_tokens": 0,
+          "input_tokens": 13232,
+          "output_tokens": 64,
+          "reasoning_tokens": 0,
+          "total_tokens": 13296
+        }
+      },
+      {
+        "attempt": 5,
+        "elapsed_seconds": 7.746225300012156,
+        "error": null,
+        "fixture": false,
+        "measurement": "provider",
+        "usage": {
+          "cached_tokens": 0,
+          "input_tokens": 13712,
+          "output_tokens": 45,
+          "reasoning_tokens": 0,
+          "total_tokens": 13757
+        }
+      },
+      {
+        "attempt": 6,
+        "elapsed_seconds": 9.416422999987844,
+        "error": null,
+        "fixture": false,
+        "measurement": "provider",
+        "usage": {
+          "cached_tokens": 9984,
+          "input_tokens": 13170,
+          "output_tokens": 45,
+          "reasoning_tokens": 0,
+          "total_tokens": 13215
+        }
+      },
+      {
+        "attempt": 7,
+        "elapsed_seconds": 7.495582100003958,
+        "error": null,
+        "fixture": false,
+        "measurement": "provider",
+        "usage": {
+          "cached_tokens": 7936,
+          "input_tokens": 13716,
+          "output_tokens": 71,
+          "reasoning_tokens": 0,
+          "total_tokens": 13787
+        }
+      },
+      {
+        "attempt": 8,
+        "elapsed_seconds": 8.726264299999457,
+        "error": null,
+        "fixture": false,
+        "measurement": "provider",
+        "usage": {
+          "cached_tokens": 0,
+          "input_tokens": 13180,
+          "output_tokens": 71,
+          "reasoning_tokens": 0,
+          "total_tokens": 13251
+        }
+      },
+      {
+        "attempt": 9,
+        "elapsed_seconds": 8.65498750002007,
+        "error": null,
+        "fixture": false,
+        "measurement": "provider",
+        "usage": {
+          "cached_tokens": 0,
+          "input_tokens": 13709,
+          "output_tokens": 64,
+          "reasoning_tokens": 0,
+          "total_tokens": 13773
+        }
+      },
+      {
+        "attempt": 10,
+        "elapsed_seconds": 9.585357900010422,
+        "error": null,
+        "fixture": false,
+        "measurement": "provider",
+        "usage": {
+          "cached_tokens": 9984,
+          "input_tokens": 13165,
+          "output_tokens": 64,
+          "reasoning_tokens": 0,
+          "total_tokens": 13229
+        }
+      },
+      {
+        "attempt": 11,
+        "elapsed_seconds": 7.02909080000245,
+        "error": null,
+        "fixture": false,
+        "measurement": "provider",
+        "usage": {
+          "cached_tokens": 9984,
+          "input_tokens": 13846,
+          "output_tokens": 97,
+          "reasoning_tokens": 0,
+          "total_tokens": 13943
+        }
+      },
+      {
+        "attempt": 12,
+        "elapsed_seconds": 7.387574699998368,
+        "error": null,
+        "fixture": false,
+        "measurement": "provider",
+        "usage": {
+          "cached_tokens": 7936,
+          "input_tokens": 13308,
+          "output_tokens": 97,
+          "reasoning_tokens": 0,
+          "total_tokens": 13405
+        }
+      },
+      {
+        "attempt": 13,
+        "elapsed_seconds": 8.180441500007873,
+        "error": null,
+        "fixture": false,
+        "measurement": "provider",
+        "usage": {
+          "cached_tokens": 0,
+          "input_tokens": 13716,
+          "output_tokens": 71,
+          "reasoning_tokens": 0,
+          "total_tokens": 13787
+        }
+      },
+      {
+        "attempt": 14,
+        "elapsed_seconds": 7.376314399996772,
+        "error": null,
+        "fixture": false,
+        "measurement": "provider",
+        "usage": {
+          "cached_tokens": 0,
+          "input_tokens": 13174,
+          "output_tokens": 71,
+          "reasoning_tokens": 0,
+          "total_tokens": 13245
+        }
+      },
+      {
+        "attempt": 15,
+        "elapsed_seconds": 8.090122399997199,
+        "error": null,
+        "fixture": false,
+        "measurement": "provider",
+        "usage": {
+          "cached_tokens": 0,
+          "input_tokens": 13166,
+          "output_tokens": 45,
+          "reasoning_tokens": 0,
+          "total_tokens": 13211
+        }
+      },
+      {
+        "attempt": 16,
+        "elapsed_seconds": 10.585172899998724,
+        "error": null,
+        "fixture": false,
+        "measurement": "provider",
+        "usage": {
+          "cached_tokens": 9984,
+          "input_tokens": 13700,
+          "output_tokens": 45,
+          "reasoning_tokens": 0,
+          "total_tokens": 13745
+        }
+      }
+    ],
+    "total_tokens": 216759,
+    "unknown_usage": false
+  },
+  "empirical_status": "BLOCKED",
+  "formal_qualification": "UNASSESSED",
+  "metrics": {
+    "input_tokens": {
+      "control_total": 109950,
+      "treatment_total": 105715,
+      "ratio": 0.9614824920418372,
+      "savings_fraction": 0.03851750795816278,
+      "paired_family_bootstrap_95_interval": [
+        0.9607151301311314,
+        0.9622500773191187
+      ]
+    },
+    "output_tokens": {
+      "control_total": 554,
+      "treatment_total": 540,
+      "ratio": 0.9747292418772563,
+      "savings_fraction": 0.02527075812274371,
+      "paired_family_bootstrap_95_interval": [
+        0.9494584837545126,
+        1.0
+      ]
+    },
+    "total_tokens": {
+      "control_total": 110504,
+      "treatment_total": 106255,
+      "ratio": 0.9615489032071237,
+      "savings_fraction": 0.03845109679287628,
+      "paired_family_bootstrap_95_interval": [
+        0.9608215707564242,
+        0.962262443438914
+      ]
+    },
+    "wall_seconds": {
+      "control_total": 70.98168259998783,
+      "treatment_total": 87.80255220000981,
+      "ratio": 1.2369747938325832,
+      "savings_fraction": -0.23697479383258324,
+      "paired_family_bootstrap_95_interval": [
+        0.9592260030625546,
+        1.5134470173998122
+      ]
+    },
+    "cli_wall_seconds": {
+      "control_total": 60.485354799980996,
+      "treatment_total": 71.1183509999828,
+      "ratio": 1.1757945577927755,
+      "savings_fraction": -0.17579455779277553,
+      "paired_family_bootstrap_95_interval": [
+        0.9226577695851387,
+        1.433300200605749
+      ]
+    }
+  },
+  "inference_scope": "Eight prespecified artifact-task pairs in one requested model; no cross-family Agent/provider or tool-execution claim",
+  "analysis_seed": 1729,
+  "analysis_repetitions": 4000,
+  "protocol_sha256": "92e233fecf20c039064729c3794d2f2babcc7f86cd549108cd72b0433c03dcdf",
+  "tested_source_revision": "e08faff3c37bb2736e387a5ca743b3b20644f9dd",
+  "wall_seconds_definition": "full evaluator callback, including isolated compile/plan/grading; cli_wall_seconds measures native process separately",
+  "limitations": [
+    "one requested model without confirmed provider model identity",
+    "no verified complete provider-internal retry billing",
+    "file-artifact tasks without tool execution",
+    "eight prespecified task pairs; no generalization or Stable claim",
+    "formal gate thresholds and coverage unchanged"
+  ]
+}
