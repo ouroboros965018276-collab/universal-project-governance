@@ -171,6 +171,29 @@ The 18-file runtime Skill is 8814 bytes, still larger than RC18's 7940.
 There are no new model results or efficiency claims for this candidate. New v8,
 native A4 and nine-arm development registrations are required before dispatch.
 
+At source `0bd647a79a7270c674238916217385c4e749a399`, hosted PR verification
+[run 38292522683](https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/38292522683)
+passed 11/11 jobs, including all 500 tests on Windows Python 3.13 and the
+Python 3.8 compatibility discovery (257 executed passes, 243 skips).
+The [v8 capability probe](docs/rc19-tools-capability-recovery-v8.md) passed four
+strict tool tasks: token/time points improved 16.4199%/12.4302%, but its one-family
+scope fails the unchanged independent net-benefit gate. The subsequent
+[v8 development collection](docs/rc19-tools-development-v8.md) stopped after
+twelve strict passing completed turns and an unknown-usage connection failure.
+Its completed prefix regressed 4.9995% in tokens and 1.7636% in callback time;
+these incomplete diagnostic points establish no benefit. Retained actual CLI
+totals are 77 completed turns / 5685732 known reported tokens plus three unknown
+dispatches. Provider invoices and failed-partial usage remain unobserved.
+
+The newly attempted independent A4 collector stopped at its first worker input
+validation with a Windows Unicode decoding error, before the native callback.
+Its original reservation, pending state and raw worker logs are retained for
+independent reconciliation; no result is admitted as model evidence. A separately
+frozen encoding correction is required. Nine-arm native development and sealed
+Tool B have no new dispatches. Default main and the installed Skill remain RC18;
+neither the passing engineering checks nor the development probe authorize
+promotion without the required independent token/time/quality evidence.
+
 ## RC18 candidate — paired measurements and nine-arm matrix completed
 
 The default branch already contains RC17 through [PR #18](https://github.com/ouroboros965018276-collab/universal-project-governance/pull/18), merge `e63f438bdee2b9d65c49db6c621e968d6b185e56`. RC18 continues from that release. The prior RC17/RC16 records below describe their original stages; their test counts, failures, unknowns and qualification outcomes are retained.
