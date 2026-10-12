@@ -98,6 +98,25 @@ replaces the executable third-party dependency. Source backups and historical
 license/provenance remain recoverable. Full regression, new protocol freezes and
 independent net-benefit measurement remain required before integration/deployment.
 
+Candidate source `60c8b0f44d7290f15e92a45de346be1c7d0a0aea` now passes
+473 tests (471 executed passes, two Windows link-privilege skips) and all eight
+release checks. Two package builds match SHA256
+`bc245bfc3af5e6a01149f8825f03631b5bed63e974bace31cd2353f250100e7f`.
+The runtime contains 18 files; its Skill is 8843 bytes versus RC18's 7940.
+No byte-saving claim is made. Native reflection and recovery received independent
+source review, including the repaired Git clean-filter execution boundary.
+
+The [fresh v6 recovery probe](docs/rc19-capability-recovery-v6.md) completed four
+new calls on requested `gpt-6-sol` and `gpt-6-luna`: strict quality 4/4,
+12/12 positive checks, 28 real tools, 424417 reported tokens. Pooled token point
+improves 7.84%; callback time improves only 0.24%, with Sol time regressing
+2.43%. Net benefit remains FAIL. Cumulative metered RC19 experiments now have
+54 completed turns / 3686974 reported tokens plus one preserved unknown dispatch.
+Development conversation and subagent usage are not included in those totals.
+The next six-family development protocol and independent native A v2 protocol
+are preregistered at `cf9f5dcd2c227a2717c303d4f4acacd8bbfb91d1`; neither has
+dispatched a model at this checkpoint. Independent tool fixtures remain sealed.
+
 ## RC18 candidate — paired measurements and nine-arm matrix completed
 
 The default branch already contains RC17 through [PR #18](https://github.com/ouroboros965018276-collab/universal-project-governance/pull/18), merge `e63f438bdee2b9d65c49db6c621e968d6b185e56`. RC18 continues from that release. The prior RC17/RC16 records below describe their original stages; their test counts, failures, unknowns and qualification outcomes are retained.
