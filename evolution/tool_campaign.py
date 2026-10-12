@@ -96,6 +96,25 @@ def _order(models, task_ids, seed):
     return order
 
 
+def _family_order(models, task_ids, seed, private_tasks):
+    """Shuffle matched pairs, alternating the first arm within each stratum."""
+    rng = random.Random(seed)
+    pairs = [(model, task_id) for model in models for task_id in task_ids]
+    rng.shuffle(pairs)
+    first, seen, order = {}, {}, []
+    for pair_index, (model, task_id) in enumerate(pairs):
+        group = (model, private_tasks[task_id]["family"])
+        if group not in first:
+            first[group], seen[group] = rng.randrange(2), 0
+        start = (first[group] + seen[group]) % 2
+        seen[group] += 1
+        conditions = CONDITIONS if start == 0 else tuple(reversed(CONDITIONS))
+        for condition in conditions:
+            order.append({"model": model, "task_id": task_id, "condition": condition,
+                          "pair_index": pair_index, "sample_index": len(order)})
+    return order
+
+
 def _validate(protocol, private_tasks, configs):
     if not isinstance(protocol, dict) or not isinstance(protocol.get("protocol_id"), str) or not protocol["protocol_id"]:
         raise ValueError("explicit protocol_id is required")
@@ -107,11 +126,16 @@ def _validate(protocol, private_tasks, configs):
             raise ValueError(name + " must contain unique explicit IDs")
     if type(protocol.get("seed")) is not int:
         raise ValueError("campaign requires an integer order seed")
+    if "order_stratification" in protocol:
+        if not isinstance(protocol["order_stratification"], str) or protocol["order_stratification"] != "model-task-family":
+            raise ValueError("unsupported order_stratification; use model-task-family or omit the field")
     if not isinstance(configs, dict) or set(configs) != set(models):
         raise ValueError("configs must match every requested model exactly")
     if any(not isinstance(config, dict) or config.get("model") != model for model, config in configs.items()):
         raise ValueError("native config/model identity mismatch")
     _tasks(private_tasks)
+    if "order_stratification" in protocol and any(not task["family"].strip() for task in private_tasks.values()):
+        raise ValueError("model-task-family ordering requires explicit nonempty task families")
     if set(task_ids) != set(private_tasks) or digest(private_tasks) != protocol.get("task_manifest_sha256"):
         raise ValueError("private task manifest differs from preregistration")
     revision = protocol.get("baseline_revision")
@@ -243,7 +267,10 @@ def collect(repo, protocol, private_tasks, configs, output, *, expected_capabili
     identities = {"protocol_sha256": digest(protocol), "task_manifest_sha256": digest(private_tasks),
                   "configs_sha256": digest(configs), "capabilities_sha256": digest(capabilities),
                   "engine_sha256": engine_identity(repo), "conditions_sha256": digest(protocol["conditions"])}
-    order = _order(protocol["models"], protocol["task_ids"], protocol["seed"])
+    if "order_stratification" in protocol:
+        order = _family_order(protocol["models"], protocol["task_ids"], protocol["seed"], private_tasks)
+    else:
+        order = _order(protocol["models"], protocol["task_ids"], protocol["seed"])
     identities["order_sha256"] = digest(order)
     with checkpoint_lock(output):
         if output.exists():
@@ -252,6 +279,8 @@ def collect(repo, protocol, private_tasks, configs, output, *, expected_capabili
                 raise ValueError("campaign checkpoint protocol/task/config/capability/engine mismatch")
             if run.get("joint_family_intervals_required") is not True:
                 raise ValueError("campaign checkpoint lacks required joint-family interval contract")
+            if "order_stratification" in protocol and run.get("order_stratification") != protocol["order_stratification"]:
+                raise ValueError("campaign checkpoint lacks preregistered order stratification")
             if run.get("pending"):
                 raise ValueError("campaign pending call requires independent reconciliation; never automatic replay")
             if run.get("status") != "running":
@@ -271,6 +300,8 @@ def collect(repo, protocol, private_tasks, configs, output, *, expected_capabili
                    "source_preparation": protocol.get("source_preparation", {"status": "not measured by collector; source prepared before task calls"}),
                    "collector_setup_seconds": time.perf_counter() - setup_started,
                    "budget_scope": "actual new CLI attempts; token/time stop thresholds are checked after each measured call"}
+            if "order_stratification" in protocol:
+                run["order_stratification"] = protocol["order_stratification"]
 
         def checkpoint():
             # Publish one advancing budget snapshot everywhere in this write.

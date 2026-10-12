@@ -9,8 +9,12 @@ The completed [v10 tool comparison](docs/rc19-tools-development-v10.md) retains
 raw/statistical audit passed: treatment quality 16/16, control 15/16; tokens
 fell 5.4389% with both registered interval upper bounds below one, while callback
 time increased 0.6230% and both requested model timing points regressed. The
-unchanged net-benefit gate remains FAIL. Cumulative known usage is 353 completed
-turns / 12,028,747 tokens, plus four unknown dispatches (357 actual CLI calls).
+unchanged net-benefit gate remains FAIL. Subsequent [v11 focused development](docs/rc19-tools-development-v11.md) completed
+16 fresh calls and 1,473,594 tokens, with both arms 8/8 strict passes. Tokens fell
+8.5078% and callback time 14.2532%; both models improved. The original token
+interval [0.804729, 1.051075] still crosses one, so net admission remains FAIL.
+Cumulative known usage is 369 completed turns / 13,502,341 tokens, plus four
+unknown dispatches (373 actual CLI calls).
 
 Source `ff30c8a8f93b6bc12214bd5c73a875efb44b28c1` passed hosted PR run
 38307551411, all 11 jobs including both real Skill loaders; Windows discovered
@@ -24,9 +28,12 @@ failed/later-edit exceptions remain mandatory when applicable. This single
 canonical clause was independently reviewed, compiled into an 8,303-byte Skill,
 and passed eight local gates under freeze
 `eb2312969d63541c4269ab9afc386c5673466f863465ef84beaa66b3b96aa9d1`.
-It does not establish performance benefit. A new focused development v11 will
-cover four exposed recovery tasks on both requested models (16 fresh calls).
-The sealed six-family final B, original statistical/quality gates, default
+These are exposed development tasks and do not establish independent benefit.
+The same candidate was registered for final B at `f384851`, with hosted CI11/11.
+Before any final call, review found model-balanced order but four model/family
+strata with two same-first arms. The v11 final registration remains zero-call;
+a new opt-in family-balanced v12 will retain the seed, candidate and 48-call
+budget. The sealed six-family final B, original statistical/quality gates, default
 main RC18, global installed RC18 and all old unknown fences remain unchanged.
 Native preparation is repository-only and cannot be inserted into installed
 Skill timing or combined retrospectively with v10 to claim joint benefit.

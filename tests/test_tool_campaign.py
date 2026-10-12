@@ -144,6 +144,98 @@ class CampaignTests(unittest.TestCase):
         for left, right in zip(run["order"][::2], run["order"][1::2]):
             self.assertEqual((left["model"], left["task_id"]), (right["model"], right["task_id"]))
 
+    def test_legacy_order_without_stratification_preserves_frozen_bytes(self):
+        run = self.collect()
+        self.assertNotIn("order_stratification", run)
+        # Captured from the pre-stratification implementation, not recomputed
+        # from a duplicate of the sorting algorithm.
+        self.assertEqual(digest(run["order"]), "5b6a80366adfe38cd28e285b3aae063fd87a0970e2efa49e1f8a2f2bbcbecd12")
+
+    def test_family_order_balances_every_model_family_with_adjacent_unique_pairs(self):
+        tasks = {"%s-%s" % (family, number): {"family": family}
+                 for family in ("json", "python", "text", "toml", "recovery", "current-truth")
+                 for number in range(2)}
+        models, ids = self.protocol["models"], list(tasks)
+        order = tool_campaign._family_order(models, ids, 19012, tasks)
+        self.assertEqual(order, tool_campaign._family_order(models, ids, 19012, tasks))
+        self.assertEqual(len(order), 48)
+        self.assertEqual([row["sample_index"] for row in order], list(range(48)))
+        self.assertEqual([(row["model"], row["task_id"]) for row in order[::2]],
+                         [(row["model"], row["task_id"]) for row in tool_campaign._order(models, ids, 19012)[::2]])
+        self.assertEqual({(row["model"], row["task_id"], row["condition"]) for row in order},
+                         {(model, task, condition) for model in models for task in ids for condition in tool_campaign.CONDITIONS})
+        for index, (left, right) in enumerate(zip(order[::2], order[1::2])):
+            self.assertEqual((left["model"], left["task_id"], left["pair_index"]),
+                             (right["model"], right["task_id"], right["pair_index"]))
+            self.assertEqual(left["pair_index"], index)
+            self.assertEqual({left["condition"], right["condition"]}, set(tool_campaign.CONDITIONS))
+        for model in models:
+            firsts = [row for row in order[::2] if row["model"] == model]
+            self.assertEqual(sum(row["condition"] == "control" for row in firsts), 6)
+            for family in {task["family"] for task in tasks.values()}:
+                self.assertEqual(sorted(row["condition"] for row in firsts if tasks[row["task_id"]]["family"] == family),
+                                 ["control", "treatment"])
+
+    def test_family_order_seed_randomizes_initial_arm_and_odd_groups_alternate(self):
+        tasks = {str(number): {"family": "odd"} for number in range(3)}
+        first_arms = set()
+        for seed in range(20):
+            order = tool_campaign._family_order(["synthetic-model"], list(tasks), seed, tasks)
+            firsts = [row["condition"] for row in order[::2]]
+            self.assertNotEqual(firsts[0], firsts[1])
+            self.assertEqual(firsts[0], firsts[2])
+            first_arms.add(firsts[0])
+        self.assertEqual(first_arms, set(tool_campaign.CONDITIONS))
+
+    def test_family_order_opt_in_is_preregistered_and_resume_cannot_change_it(self):
+        self.tasks["b"]["family"] = self.tasks["a"]["family"]
+        self.protocol["task_manifest_sha256"] = digest(self.tasks)
+        self.protocol["order_stratification"] = "model-task-family"
+        run = self.collect()
+        self.assertEqual(run["order_stratification"], "model-task-family")
+        self.assertEqual(run["identities"]["protocol_sha256"], digest(self.protocol))
+        self.assertEqual(run["order"], tool_campaign._family_order(self.protocol["models"], self.protocol["task_ids"], 19012, self.tasks))
+        self.assertEqual(self.collect(), run)
+        self.assertEqual(len(self.calls), 8)
+        del self.protocol["order_stratification"]
+        with self.assertRaisesRegex(ValueError, "mismatch"):
+            self.collect()
+        self.assertEqual(len(self.calls), 8)
+
+    def test_unknown_or_wrong_type_order_stratification_rejected_before_calls(self):
+        for value in (None, True, 0, [], {}, "", "model", "task-family"):
+            with self.subTest(value=value):
+                self.protocol["order_stratification"] = value
+                with self.assertRaisesRegex(ValueError, "order_stratification"):
+                    self.collect()
+                self.assertFalse(self.output.exists())
+                self.assertFalse(self.calls)
+
+    def test_family_order_missing_or_invalid_family_rejected_before_calls(self):
+        original = copy.deepcopy(self.tasks)
+        self.protocol["order_stratification"] = "model-task-family"
+        for value in (None, 7, [], "", "  "):
+            with self.subTest(value=value):
+                self.tasks = copy.deepcopy(original)
+                if value is None:
+                    del self.tasks["a"]["family"]
+                else:
+                    self.tasks["a"]["family"] = value
+                self.protocol["task_manifest_sha256"] = digest(self.tasks)
+                with self.assertRaisesRegex(ValueError, "famil"):
+                    self.collect()
+                self.assertFalse(self.output.exists())
+                self.assertFalse(self.calls)
+
+    def test_family_order_checkpoint_metadata_cannot_lose_opt_in(self):
+        self.protocol["order_stratification"] = "model-task-family"
+        run = self.collect()
+        del run["order_stratification"]
+        tool_campaign.save_run(self.output, run)
+        with self.assertRaisesRegex(ValueError, "order stratification"):
+            self.collect()
+        self.assertEqual(len(self.calls), 8)
+
     def test_private_list_normalizes_to_preregistered_id_map(self):
         self.tasks = list(self.tasks.values())
         self.assertEqual(self.collect()["status"], "completed")
