@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "protocol_id": "upg-rc19-tools-development-v10",
+  "stage": "development",
+  "seed": 19012,
+  "models": [
+    "gpt-6-sol",
+    "gpt-6-luna"
+  ],
+  "task_ids": [
+    "development-registry-01",
+    "development-toml-01",
+    "development-python-01",
+    "development-documentation-01",
+    "dev-current-truth-17",
+    "dev-recovery-17",
+    "dev-current-truth-29",
+    "dev-recovery-29"
+  ],
+  "task_manifest_sha256": "b32bd47d3127aee5433a179bc9fe64b8fe3eebfd21527040f0c35ca20ceb1775",
+  "configuration_sha256": "5ce1d413e575e1a3de855737e3aee94ed1a1f882142afb8bf2c8dfb5ec594429",
+  "baseline_revision": "29cf112b4629d6b90504b079e95a5370c206a4cb",
+  "source_revision": "2179d02549323ed905ab920b06374ff3088a11c9",
+  "budget": {
+    "model_calls": 32,
+    "tokens": 5000000,
+    "wall_seconds": 7200
+  },
+  "acceptance": {
+    "tokens_ci_upper_exclusive": 1.0,
+    "wall_ci_upper_exclusive": 1.0,
+    "per_model_ratio_exclusive": 1.0
+  },
+  "scope": {
+    "provider": "OpenAI",
+    "model_identity": "requested CLI IDs; internal identity unverified",
+    "tool_execution": "real bounded file/Git MCP operations",
+    "application_execution": false,
+    "formal_qualification": "UNASSESSED",
+    "final_feedback_for_tuning": false,
+    "ordinary_retries": "shared request/stream zero and unbounded connection retry disabled",
+    "authentication_recovery": "may issue another request; failed partial billing unknown",
+    "unknown_replay": false,
+    "previous_unknown": "v5 retained; never resumed or charged as zero",
+    "family_generalization": "six known task families; parameterized final instances, shared templates remain known",
+    "preparation_estimand": "outside task callback; native callback timing is a separate experiment"
+  },
+  "source_preparation": {
+    "wall_seconds": 6.902804500015918,
+    "model_calls": 0,
+    "script_sha256": "aff7dd5c934248eb9e4d70f04f60c168fbbbac8e421b52fed102a16f12e42254",
+    "catalog_sha256": "b1b58dc21270ced184a43118e7434b558fb969e30abeedf3664324896025ed73"
+  },
+  "conditions": {
+    "control": {
+      "source_sha256": "6aa8a9562d24f74a48bce082100c2ba1069f4c56a900ce0924f23869b36bdd81",
+      "runtime_sha256": "66c5cc02c02ed3834d9a79c7ac1c395f7e164602aa2a296ed3929520b80f99de",
+      "candidate_sha256": "5c2dcf24974129ca22d1fb65e6a64d61f069646510cc68446797c5825cf60a05",
+      "skill_utf8_bytes": 7940
+    },
+    "treatment": {
+      "source_sha256": "d43c76701643712e6f59e3e9d755fc4356b059b20c37d8a34eff629eae4754e1",
+      "runtime_sha256": "a4de786df29a4af01012253b618e232e892411ab15b8c27eb115dc52dbac2d62",
+      "candidate_sha256": "e3a8396b735818677d829060d9952266528a8d33a312b4ef032cba652485e34a",
+      "skill_utf8_bytes": 8180
+    }
+  },
+  "private_execution_protocol_sha256": "890320f029cf289baf6a5d445a4730c54aefb8cc7770e4fd80ae4ab81cac613a"
+}
