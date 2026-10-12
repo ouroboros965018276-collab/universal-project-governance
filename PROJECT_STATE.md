@@ -23,6 +23,15 @@ No RC19 final independent calls, default-branch merge or local deployment have
 occurred at this checkpoint. The child transport is being corrected before
 a separately frozen development probe.
 
+The [two-call transport probe](docs/rc19-tools-transport-v2.md) subsequently
+confirmed both actual CLI host process paths and retained another 75349 tokens.
+Its registered MCP attempts were denied by the child's approval configuration;
+broker executions and passing tasks remained zero. The ten known failed turns
+therefore cost 283945 tokens in total, with no efficacy claim. A new child
+profile explicitly preapproves only the five authorized broker tools and keeps
+the global approval policy and native tool restrictions. Its separately frozen
+development probe must establish useful tool execution before final testing.
+
 ## RC18 candidate — paired measurements and nine-arm matrix completed
 
 The default branch already contains RC17 through [PR #18](https://github.com/ouroboros965018276-collab/universal-project-governance/pull/18), merge `e63f438bdee2b9d65c49db6c621e968d6b185e56`. RC18 continues from that release. The prior RC17/RC16 records below describe their original stages; their test counts, failures, unknowns and qualification outcomes are retained.

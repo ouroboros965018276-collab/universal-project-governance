@@ -16,6 +16,7 @@ import time
 
 from .contracts import Budget, BudgetExceeded, digest
 from .controller import checkpoint_lock, engine_identity, save_run
+from .tool_broker import TOOLS
 
 CONDITIONS = ("control", "treatment")
 BOOTSTRAP_SEED = 19012
@@ -192,14 +193,38 @@ def _transport_failure(raw):
         if not isinstance(event, dict) or event.get("type") != "item.completed":
             continue
         item = event.get("item")
-        if not isinstance(item, dict) or item.get("type") != "error":
+        if not isinstance(item, dict):
             continue
-        message = item.get("message")
+        kind = item.get("type")
+        message = item.get("message") if kind == "error" else None
         prefix = "Code Mode is unavailable because code-mode host is disabled."
         if isinstance(message, str) and message.startswith(prefix):
             return {"code": "code-mode-host-disabled", "stdout_sha256": expected,
                     "event_line": line_number, "event_type": "item.completed", "item_type": "error",
                     "message": message}
+        if (kind != "mcp_tool_call" or item.get("status") != "failed"
+                or item.get("server") != "upg_repo" or item.get("tool") not in TOOLS):
+            continue
+        error = item.get("error")
+        message = error.get("message") if isinstance(error, dict) else None
+        if message != "MCP tool call requires approval, but approval policy is never":
+            continue
+        arguments = item.get("arguments")
+        if isinstance(arguments, str):
+            try:
+                arguments = json.loads(arguments)
+            except json.JSONDecodeError:
+                continue
+        if not isinstance(arguments, dict):
+            continue
+        try:
+            arguments_sha256 = digest(arguments)
+        except (TypeError, ValueError):
+            continue
+        return {"code": "registered-mcp-approval-policy-never", "stdout_sha256": expected,
+                "event_line": line_number, "event_type": "item.completed", "item_type": kind,
+                "server": item["server"], "tool": item["tool"], "arguments_sha256": arguments_sha256,
+                "message": message}
     return None
 
 

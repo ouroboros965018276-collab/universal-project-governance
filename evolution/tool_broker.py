@@ -359,6 +359,9 @@ class RepoBroker:
 def tool_definitions():
     def definition(name, description, properties, required):
         return {"name": name, "description": description,
+                "annotations": {"readOnlyHint": name != "repo_patch",
+                                "destructiveHint": name == "repo_patch",
+                                "idempotentHint": name != "repo_patch", "openWorldHint": False},
                 "inputSchema": {"type": "object", "properties": properties, "required": required,
                                 "additionalProperties": False}}
     return [

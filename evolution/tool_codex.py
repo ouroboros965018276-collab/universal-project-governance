@@ -234,6 +234,7 @@ class ToolCodex:
                 "cli_version_declared": self.config.get("cli_version"), "isolation_attested": False,
                 "tool_scope": "registered-text-static-contracts-and-fixed-git-status",
                 "tool_transport": "installed-code-mode-v8-required-mcp",
+                "preapproved_broker_tools": list(TOOLS),
                 "code_mode_configuration_enabled": False}
 
     def binding(self):
@@ -281,6 +282,10 @@ class ToolCodex:
             serialized = ('{PYTHONIOENCODING="utf-8",PYTHONDONTWRITEBYTECODE="1"}'
                           if key == "env" else json.dumps(value, ensure_ascii=False))
             command.extend(["-c", "mcp_servers.upg_repo." + key + "=" + serialized])
+        # The owner has authorized these exact bounded synthetic-repository
+        # capabilities. Keep the global policy and every other server unchanged.
+        for tool in TOOLS:
+            command.extend(["-c", 'mcp_servers.upg_repo.tools.' + tool + '.approval_mode="approve"'])
         command.append("-")
         return command
 

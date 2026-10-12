@@ -12,7 +12,7 @@ import unittest
 from unittest import mock
 import uuid
 
-from evolution.tool_broker import RepoBroker, canonical, normalize, relative, sha, validate_task
+from evolution.tool_broker import RepoBroker, TOOLS, canonical, normalize, relative, sha, tool_definitions, validate_task
 from evolution.tool_codex import ToolCodex, ToolCallError, ToolCallPending, _quality, _trace_failures, _usage
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -50,6 +50,14 @@ class BoundedToolsTests(unittest.TestCase):
         result = self.broker.call("repo_patch", {"operations": [{"path": "README.md", "old_sha256": files["README.md"]["sha256"], "new_text": "fixed\n"}]})
         self.assertTrue(result["ok"])
         self.assertTrue(self.broker.call("repo_validate", {})["ok"])
+
+    def test_tool_annotations_truthfully_distinguish_replacement_from_reads(self):
+        definitions = {item["name"]: item for item in tool_definitions()}
+        self.assertEqual(set(definitions), set(TOOLS))
+        for name, definition in definitions.items():
+            patch = name == "repo_patch"
+            self.assertEqual(definition["annotations"], {"readOnlyHint": not patch,
+                             "destructiveHint": patch, "idempotentHint": not patch, "openWorldHint": False})
 
     def test_empty_implementation_deleted_tests_and_noop_fail(self):
         self.assertFalse(self.broker.validate()["ok"])
@@ -250,6 +258,16 @@ class ToolAdapterTests(unittest.TestCase):
         for host in ("relative-host", str(self.root / "missing"), str(self.binary)):
             with self.subTest(host=host), self.assertRaises(ValueError):
                 ToolCodex(dict(self.config, code_mode_host_binary=host))
+
+    def test_preapproval_is_scoped_to_exact_registered_broker_tools(self):
+        arguments = self.adapter._arguments(self.root, self.root / "spec.json")
+        approval_arguments = {argument for argument in arguments if "approval_mode=" in argument}
+        self.assertEqual(approval_arguments, {
+            'mcp_servers.upg_repo.tools.' + name + '.approval_mode="approve"' for name in TOOLS})
+        self.assertNotIn("default_tools_approval_mode", " ".join(arguments))
+        self.assertEqual(arguments[arguments.index("--ask-for-approval") + 1], "never")
+        self.assertEqual(arguments[arguments.index("--sandbox") + 1], "read-only")
+        self.assertEqual(self.adapter.binding()["preapproved_broker_tools"], list(TOOLS))
 
     def test_host_hash_drift_fails_before_dispatch_with_known_zero_usage(self):
         self.assertEqual(self.adapter.binding()["code_mode_host_sha256"], sha(self.code_mode_host.read_bytes()))

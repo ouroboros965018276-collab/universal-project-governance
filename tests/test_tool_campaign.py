@@ -98,6 +98,13 @@ class CampaignTests(unittest.TestCase):
     def cli_error(message):
         return {"type": "item.completed", "item": {"type": "error", "message": message}}
 
+    @staticmethod
+    def mcp_approval_error():
+        return {"type": "item.completed", "item": {"id": "synthetic-tool-call", "type": "mcp_tool_call",
+                "server": "upg_repo", "tool": "repo_read", "arguments": {"paths": ["normalizer.py"]},
+                "result": None, "error": {"message": "MCP tool call requires approval, but approval policy is never"},
+                "status": "failed"}}
+
     def test_prompt_preserves_exact_planner_bytes_and_excludes_private_checks(self):
         plan = '{\n  "key": true\n}\n'
         prompt = tool_campaign.build_prompt("Skill", plan, "task")
@@ -299,6 +306,80 @@ class CampaignTests(unittest.TestCase):
         self.assertIn("tokens", run["actual_budget_overrun"])
         self.assertEqual(len(self.calls), 1)
         self.assertEqual(run["summary"]["actual_charged_usage"], run["budget"])
+
+    def test_registered_failed_mcp_approval_stops_after_known_charge_without_replay(self):
+        diagnostic = self.mcp_approval_error()
+        self.behavior = lambda task, prompt, bindings: self.no_tool_result(bindings, [diagnostic])
+        run = self.collect()
+        self.assertEqual(run["status"], "blocked_transport")
+        self.assertEqual(len(self.calls), 1)
+        self.assertEqual(run["budget"]["calls"], 1)
+        self.assertEqual(run["budget"]["total_tokens"], run["observations"][0]["usage"]["total_tokens"])
+        self.assertIsNone(run["pending"])
+        self.assertTrue(run["new_protocol_required"])
+        failure = run["transport_failure"]
+        self.assertEqual(failure["code"], "registered-mcp-approval-policy-never")
+        self.assertEqual(failure["server"], "upg_repo")
+        self.assertEqual(failure["tool"], "repo_read")
+        self.assertEqual(failure["arguments_sha256"], digest(diagnostic["item"]["arguments"]))
+        self.assertEqual(failure["message"], diagnostic["item"]["error"]["message"])
+        self.assertNotIn("arguments", failure)
+        self.assertEqual(run["summary"]["net_benefit_gate"], "FAIL")
+        self.assertFalse(run["summary"]["gates"]["all_task_quality_pass"])
+        before = self.output.read_bytes()
+        self.assertEqual(self.collect(), run)
+        self.assertEqual(self.output.read_bytes(), before)
+        self.assertEqual(len(self.calls), 1)
+
+    def test_registered_mcp_approval_accepts_each_registered_tool_and_json_object_arguments(self):
+        for tool in tool_campaign.TOOLS:
+            with self.subTest(tool=tool):
+                diagnostic = self.mcp_approval_error()
+                diagnostic["item"].update(tool=tool, arguments='{}')
+                raw = self.no_tool_result({"source_sha256": "1" * 64, "tool": tool}, [diagnostic])
+                failure = tool_campaign._transport_failure(raw)
+                self.assertEqual(failure["code"], "registered-mcp-approval-policy-never")
+                self.assertEqual(failure["tool"], tool)
+                self.assertEqual(failure["arguments_sha256"], digest({}))
+
+    def test_approval_guard_rejects_unregistered_nonfailed_and_argumentless_events(self):
+        variants = []
+        for field, value in (("server", "unregistered-server"), ("tool", "arbitrary_unregistered_tool"),
+                             ("status", "completed"), ("status", "in_progress"), ("arguments", None),
+                             ("arguments", []), ("arguments", '{'), ("arguments", '[]'),
+                             ("arguments", {"invalid": float("nan")}),
+                             ("error", "MCP tool call requires approval, but approval policy is never"),
+                             ("error", {"message": "MCP tool call requires approval"})):
+            event = self.mcp_approval_error()
+            event["item"][field] = value
+            variants.append((field + ":" + repr(value), event))
+        missing = self.mcp_approval_error()
+        missing["item"].pop("arguments")
+        variants.append(("missing-arguments", missing))
+        started = self.mcp_approval_error()
+        started["type"] = "item.started"
+        variants.append(("item-started", started))
+        unrelated = self.cli_error("MCP tool call requires approval, but approval policy is never")
+        variants.append(("unregistered-item-error", unrelated))
+        for name, diagnostic in variants:
+            with self.subTest(name=name):
+                raw = self.no_tool_result({"source_sha256": "1" * 64, "variant": name}, [diagnostic])
+                self.assertIsNone(tool_campaign._transport_failure(raw))
+        raw = self.no_tool_result({"source_sha256": "1" * 64, "variant": "broker-present"}, [self.mcp_approval_error()])
+        raw["tool_events"] = [{"tool": "repo_read"}]
+        self.assertIsNone(tool_campaign._transport_failure(raw))
+
+    def test_tampered_mcp_approval_evidence_keeps_charge_and_nonreplay_fence(self):
+        self.behavior = lambda task, prompt, bindings: self.no_tool_result(bindings, [self.mcp_approval_error()], tampered=True)
+        run = self.collect()
+        self.assertEqual(run["status"], "unknown-call-blocked")
+        self.assertEqual(run["budget"]["calls"], 1)
+        self.assertGreater(run["budget"]["total_tokens"], 0)
+        self.assertEqual(run["pending"]["kind"], "transport-evidence-unconfirmed")
+        self.assertNotIn("transport_failure", run)
+        with self.assertRaisesRegex(ValueError, "pending"):
+            self.collect()
+        self.assertEqual(len(self.calls), 1)
 
     def test_local_receipt_reuse_is_not_a_new_sample_or_new_charge(self):
         self.behavior = lambda task, prompt, bindings: self.result(bindings, replay=True)

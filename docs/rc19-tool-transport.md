@@ -12,6 +12,24 @@ required MCP server with exactly five registered repository tools. It sets
 `suppress_unstable_features_warning=true` to suppress the documented development
 feature warning. Other CLI errors and unknown tool events still fail validation.
 
+The next two development calls reached MCP tool dispatch, but the CLI rejected
+their read/status requests as requiring approval under the child `never` policy.
+No broker calls or edits executed. These failed observations and their known
+usage remain retained. The subsequent child profile preapproves only the five
+exact registered tools with
+`mcp_servers.upg_repo.tools.<tool>.approval_mode="approve"`, applying the owner's
+authorization for this bounded synthetic repository. It does not set a server
+default or change the global `never` policy. The official
+[MCP configuration](https://learn.chatgpt.com/docs/extend/mcp) documents these
+per-tool overrides; the local CLI accepted the key in a no-model parse check.
+
+The tool catalog also reports honest MCP annotations. Read, search, static
+validation, and status are read-only, idempotent, and closed-world tools.
+`repo_patch` is non-read-only, non-idempotent, and has `destructiveHint=true`
+because it replaces existing text. All five have `openWorldHint=false`.
+Annotations describe effects; they do not expand the broker's registered paths,
+operations, or the exact per-tool authorization.
+
 The installed CLI accepted the structured `features.code_mode.enabled=false`
 key in a no-model `features list` check, reporting `code_mode=false` and
 `code_mode_host=true`. The official [configuration reference](https://learn.chatgpt.com/docs/config-file/config-reference)
