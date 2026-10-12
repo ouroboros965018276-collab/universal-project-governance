@@ -3,9 +3,9 @@
   "files": {
     "INTEGRITY.md": "01e1e3eb772940fe8259b0cb125cd7712858c6f50d4f2fdcada420aa73d29ab5",
     "LICENSE": "50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a",
-    "SKILL.md": "e81e5af7f3219bd916936006ac675d15bdd56421d22274ec3420f020ac6e5687",
-    "VERSION.md": "ddf59a9260433be9291e6b491e7fed29d29ed2043e17d57b99cf2453e8024b07",
-    "policy-index.json": "3e5ff8f92a5f9d9e78dc6e0cdcda837ff83985927534a76b288b79aef6f9c697",
+    "SKILL.md": "788c968835101a0de3cb06fd3ffacf332653786ae270d675611e31ef5e8967f5",
+    "VERSION.md": "1033f9c40e480f722ef32d922874d18953a6063d911ebacf36df156b7a0c7be1",
+    "policy-index.json": "e3639d55e2f22f005eae44599c4f65e65e21c5dde5678418a57fca62feafdc1d",
     "schemas/audit.schema.json": "a5e15c26eff86e3c4e2e174fb121ef22981628307f09cf18d09a589e738ea889",
     "schemas/execution.schema.json": "d2a7cddc9d98c8101294df302259ba18217c27b9e7c8fee43d96c82ff6bde1d7",
     "schemas/feedback.schema.json": "22da61a114a1e89ee641ac25e90e23d6231003351df15918d4265f9900091954",
@@ -13,12 +13,12 @@
     "schemas/governance-plan.schema.json": "82c26facfe5b53c5e418ac5309a9aefb678ac4ef9b9551f533304e3a613a5ffc",
     "schemas/handoff.schema.json": "85513abcd9917ae708d2f49b3def30648f1a46cd59554d6d36874ae5216255ba",
     "schemas/task-context.schema.json": "acc323f7d86f8dad5d8694e7fcf566dad6987d077877fbe6dbc819029936ad38",
-    "scripts/plan_governance.py": "3f0eb6bec355d97df5565d2a3624432aa467364bbf1645d28336d4e5748411d7",
+    "scripts/plan_governance.py": "5328d40cdf7bddd6e19ecb95014409de42e95e938112ce94f250c9b7f10dbfe1",
     "scripts/project_tool.py": "960355b2763c5ca3e4a150051e24ff035cb73d06ce37818a87adc90385e03412",
     "scripts/state_tool.py": "f6f41da1576fcfe3d2a611ba82be32f298df0d20e47a5c311005238374f9aae0",
     "scripts/validate_integrity.py": "cf09558e67b4488db88c5ce9836e9f1cf1c8bae97d6e1444bb9d2d80409157c0"
   },
-  "generated_for_version": "3.0.0-rc.18",
+  "generated_for_version": "3.0.0-rc.19",
   "schema_version": 1,
-  "source_sha256": "d342157008ec0dd41c1dc9af1b2fe7220afe2053f882cbfe4ddf00ce801d6731"
+  "source_sha256": "e12862f3178200bd364149778ba1fa42fdf378e84fc0a4246a3516cc2f934689"
 }

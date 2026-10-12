@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.0.0-rc.19 — 2026-10-12 — candidate
+
+- Separates RC18 historical tail latency from reproduced preparation costs; retains the original paired outcome.
+- Reuses exact-configuration native clients and hash-verified deterministic preparation; retains a full binary hash before each dispatch and records phase timings.
+- Compacts planner JSON whitespace without changing plan values; preserves canonical Skill obligations and adds bounded-context, batching and verified-reuse guidance.
+- Adds a required bounded repository MCP broker, positive JSON/TOML/AST/text contracts, real file/Git tool evidence and frozen matched collection across requested models. Submitted application code is not executed; TOML validation requires Python 3.11+.
+- Independent model net benefit and release validation remain pending. Formal qualification is UNASSESSED; no learned candidate or Stable release is promoted.
+
 ## 3.0.0-rc.18 — 2026-10-12 — candidate
 
 Grader Validity and Measured Runtime Compression. Eight paired artifact measurements and all nine v2 development arms are complete; experiment-record audit passes. Final local regression passes 299/299 tests in 98.700 seconds and all eight release gates pass. Hosted CI passes 11/11 at measured freeze `8d1cb51945c5d98bf3db7c2e72557d7e50274275`; final PR/main CI is recorded separately. Formal qualification thresholds and historical results remain unchanged.

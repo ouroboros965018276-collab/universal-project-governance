@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Current candidate: **3.0.0-rc.18 — Grader Validity and Measured Runtime Compression**.
+Current candidate: **3.0.0-rc.19 — Latency Accounting and Bounded Real Tools**.
 
 ## First modifying activation
 

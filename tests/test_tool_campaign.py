@@ -1,0 +1,252 @@
+"""Collector inference, provenance and interruption tests; no model calls."""
+import copy
+import hashlib
+import json
+from pathlib import Path
+import sys
+import tempfile
+import unittest
+from unittest.mock import patch
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.dont_write_bytecode = True
+sys.path.insert(0, str(ROOT))
+if sys.version_info >= (3, 10):
+    from evolution import tool_campaign
+    from evolution.contracts import digest
+
+
+@unittest.skipIf(sys.version_info < (3, 10), "optional real-tool campaign requires Python 3.10+")
+class CampaignTests(unittest.TestCase):
+    def setUp(self):
+        temporary_root = ROOT / "eval-workspaces/tmp-tool-campaign-tests"
+        temporary_root.mkdir(parents=True, exist_ok=True)
+        self.temporary = tempfile.TemporaryDirectory(prefix="campaign-", dir=temporary_root)
+        self.addCleanup(self.temporary.cleanup)
+        self.output = Path(self.temporary.name) / "run.json"
+        self.tasks = {"a": {"id": "a", "family": "json", "prompt": "Synthetic task a", "checks": ["PRIVATE-CHECK"]},
+                      "b": {"id": "b", "family": "python", "prompt": "Synthetic task b", "checks": ["PRIVATE-CHECK"]}}
+        self.configs = {model: {"model": model} for model in ("synthetic-model-1", "synthetic-model-2")}
+        condition = {"skill": "synthetic skill", "plan_text": {key: '{\n "version": "synthetic"\n}\n' for key in self.tasks},
+                     "source_sha256": "1" * 64, "runtime_sha256": "2" * 64, "candidate_sha256": "3" * 64}
+        self.protocol = {"protocol_id": "synthetic-contract-protocol", "stage": "development", "seed": 19012,
+                         "models": list(self.configs), "task_ids": list(self.tasks), "task_manifest_sha256": digest(self.tasks),
+                         "baseline_revision": "4" * 40,
+                         "conditions": {"control": copy.deepcopy(condition), "treatment": copy.deepcopy(condition)},
+                         "budget": {"model_calls": 8, "tokens": 1000, "wall_seconds": 120}}
+        self.protocol["conditions"]["treatment"]["source_sha256"] = "5" * 64
+        self.calls = []
+        self.behavior = None
+        outer = self
+        class FakeToolCodex:
+            def __init__(self, config):
+                self.config = config
+            def binding(self):
+                return {"synthetic_capability": digest(self.config)}
+            def run(self, task, *, prompt, bindings):
+                checkpoint = json.loads(outer.output.read_text())
+                outer.assertIsNotNone(checkpoint["pending"])
+                outer.assertEqual(checkpoint["pending"]["sample_id"], bindings["sample_id"])
+                outer.assertEqual(checkpoint["pending"]["prompt_sha256"], hashlib.sha256(prompt.encode("utf-8")).hexdigest())
+                outer.assertNotIn("PRIVATE-CHECK", prompt)
+                outer.calls.append((task, prompt, bindings))
+                if outer.behavior:
+                    return outer.behavior(task, prompt, bindings)
+                result = outer.result(bindings)
+                result["receipt"]["prompt_sha256"] = hashlib.sha256(prompt.encode("utf-8")).hexdigest()
+                return result
+        self.service_patch = patch("evolution.tool_codex.ToolCodex", FakeToolCodex)
+        self.service_patch.start()
+        self.addCleanup(self.service_patch.stop)
+        self.engine_patch = patch.object(tool_campaign, "engine_identity", return_value="6" * 64)
+        self.engine_patch.start()
+        self.addCleanup(self.engine_patch.stop)
+
+    def result(self, bindings, *, replay=False, quality=True):
+        treatment = bindings["source_sha256"] == "5" * 64
+        return {"status": "completed", "usage": {"input_tokens": 30 if treatment else 40, "output_tokens": 10,
+                                                   "total_tokens": 40 if treatment else 50, "cached_input_tokens": 5,
+                                                   "reasoning_output_tokens": 2},
+                "wall_seconds": 4 if treatment else 5,
+                "timing": {"cli_seconds": 3 if treatment else 4},
+                "quality": {"hard_pass": quality, "task_success": int(quality), "scope_ok": True, "required_tools_ok": True},
+                "tool_events": [1, 2, 3, 4], "final_response_text": "synthetic final text",
+                "receipt": {"receipt_sha256": digest(bindings), "replayed_from_local_receipt": replay,
+                            "cli_thread_id": digest(bindings)[:12], "artifact_directory": "synthetic-local-artifact"}}
+
+    def collect(self):
+        return tool_campaign.collect(ROOT, self.protocol, self.tasks, self.configs, self.output)
+
+    def test_prompt_preserves_exact_planner_bytes_and_excludes_private_checks(self):
+        plan = '{\n  "key": true\n}\n'
+        prompt = tool_campaign.build_prompt("Skill", plan, "task")
+        self.assertIn("\n" + plan + "\n</governance_plan>", prompt)
+        self.assertIn("project_tool unavailable in bounded broker", prompt)
+        self.assertNotIn("batch", prompt.lower())
+
+    def test_collection_complete_budget_and_completed_resume_no_dispatch(self):
+        run = self.collect()
+        self.assertEqual(run["status"], "completed")
+        self.assertEqual(run["budget"]["calls"], 8)
+        self.assertEqual(run["budget"]["total_tokens"], 360)
+        self.assertEqual(len(run["observations"]), 8)
+        self.assertTrue(all(row["usage"]["cached_tokens"] == 5 for row in run["observations"]))
+        self.assertEqual(self.collect(), run)
+        self.assertEqual(len(self.calls), 8)
+
+    def test_prompt_hash_matches_exact_utf8_adapter_receipt(self):
+        run = self.collect()
+        for row, (task, prompt, bindings) in zip(run["observations"], self.calls):
+            actual = hashlib.sha256(prompt.encode("utf-8")).hexdigest()
+            self.assertEqual(row["prompt_sha256"], actual)
+            self.assertEqual(row["result"]["receipt"]["prompt_sha256"], actual)
+            self.assertNotEqual(row["prompt_sha256"], digest(prompt))
+
+    def test_pair_order_deterministic_and_condition_order_balanced_per_model(self):
+        run = self.collect()
+        self.assertEqual(run["order"], tool_campaign._order(self.protocol["models"], self.protocol["task_ids"], 19012))
+        for model in self.protocol["models"]:
+            firsts = [row["condition"] for row in run["order"][::2] if row["model"] == model]
+            self.assertEqual(sorted(firsts), ["control", "treatment"])
+        for left, right in zip(run["order"][::2], run["order"][1::2]):
+            self.assertEqual((left["model"], left["task_id"]), (right["model"], right["task_id"]))
+
+    def test_private_list_normalizes_to_preregistered_id_map(self):
+        self.tasks = list(self.tasks.values())
+        self.assertEqual(self.collect()["status"], "completed")
+
+    def test_changed_manifest_config_protocol_capability_or_engine_rejected(self):
+        self.collect()
+        original = copy.deepcopy(self.protocol)
+        self.protocol["seed"] += 1
+        with self.assertRaises(ValueError):
+            self.collect()
+        self.protocol = original
+        self.configs[self.protocol["models"][0]]["extra"] = "changed"
+        with self.assertRaises(ValueError):
+            self.collect()
+        self.assertEqual(len(self.calls), 8)
+
+    def test_manifest_mismatch_rejected_before_call(self):
+        self.tasks["a"]["prompt"] = "changed"
+        with self.assertRaisesRegex(ValueError, "manifest"):
+            self.collect()
+        self.assertFalse(self.calls)
+
+    def test_abrupt_call_interruption_pending_blocks_restart(self):
+        def interrupted(*args):
+            raise KeyboardInterrupt
+        self.behavior = interrupted
+        with self.assertRaises(KeyboardInterrupt):
+            self.collect()
+        self.behavior = None
+        with self.assertRaisesRegex(ValueError, "pending"):
+            self.collect()
+        self.assertEqual(len(self.calls), 1)
+
+    def test_unknown_usage_stops_without_retries(self):
+        self.behavior = lambda task, prompt, bindings: dict(self.result(bindings), usage=None)
+        run = self.collect()
+        self.assertEqual(run["status"], "unknown-call-blocked")
+        self.assertTrue(run["budget"]["unknown_usage"])
+        self.assertIsNotNone(run["pending"])
+        self.assertEqual(len(self.calls), 1)
+
+    def test_exception_with_known_charge_still_stops_uncertain_dispatch(self):
+        class Uncertain(RuntimeError):
+            usage = {"input_tokens": 30, "output_tokens": 10, "total_tokens": 40}
+            provider_receipt = {"status": "post-dispatch-evidence-unconfirmed"}
+        def uncertain(*args):
+            raise Uncertain("synthetic uncertainty")
+        self.behavior = uncertain
+        run = self.collect()
+        self.assertEqual(run["status"], "unknown-call-blocked")
+        self.assertEqual(run["budget"]["total_tokens"], 40)
+        self.assertEqual(len(self.calls), 1)
+
+    def test_quality_failure_charged_and_cannot_pass(self):
+        self.behavior = lambda task, prompt, bindings: self.result(bindings, quality=False)
+        run = self.collect()
+        self.assertEqual(run["status"], "completed")
+        self.assertEqual(run["budget"]["calls"], 8)
+        self.assertFalse(run["summary"]["gates"]["all_task_quality_pass"])
+        self.assertEqual(run["summary"]["net_benefit_gate"], "FAIL")
+
+    def test_local_receipt_reuse_is_not_a_new_sample_or_new_charge(self):
+        self.behavior = lambda task, prompt, bindings: self.result(bindings, replay=True)
+        run = self.collect()
+        self.assertEqual(run["budget"]["calls"], 0)
+        self.assertEqual(run["budget"]["total_tokens"], 0)
+        self.assertFalse(run["summary"]["gates"]["all_new_model_calls"])
+
+    def test_post_measurement_token_overrun_retains_observation(self):
+        self.protocol["budget"]["tokens"] = 1
+        run = self.collect()
+        self.assertEqual(run["status"], "budget-exhausted")
+        self.assertEqual(len(run["observations"]), 1)
+        self.assertGreater(run["budget"]["total_tokens"], 1)
+        self.assertIn("tokens", run["actual_budget_overrun"])
+
+    def synthetic_summary_run(self, *, regressed_model=None, wall_regression=False):
+        rows = []
+        for model in self.protocol["models"]:
+            for task_id, task in self.tasks.items():
+                for condition in tool_campaign.CONDITIONS:
+                    bindings = {"source_sha256": "5" * 64 if condition == "treatment" else "1" * 64,
+                                "unique": model + task_id + condition}
+                    result = self.result(bindings)
+                    elapsed = result["wall_seconds"]
+                    if condition == "treatment" and model == regressed_model:
+                        result["usage"]["total_tokens"] = 60
+                    if wall_regression and condition == "treatment":
+                        elapsed = 6
+                    rows.append({"model": model, "task_id": task_id, "condition": condition, "family": task["family"],
+                                 "result": result, "usage": result["usage"], "collector_wall_seconds": elapsed,
+                                 "independent_sample": True, "cache_hit": False})
+        return {"status": "completed", "stage": "independent", "models_requested": self.protocol["models"],
+                "task_ids": self.protocol["task_ids"], "observations": rows}
+
+    def test_paired_block_bootstrap_and_scope_gate(self):
+        run = self.synthetic_summary_run()
+        summary = tool_campaign.summarize(run, repetitions=100)
+        self.assertEqual(summary["net_benefit_gate"], "PASS")
+        self.assertAlmostEqual(summary["metrics"]["total_tokens"]["ratio"], .8)
+        self.assertEqual(summary["metrics"]["total_tokens"]["paired_model_family_bootstrap_95_interval"], [.8, .8])
+        self.assertEqual(summary["formal_qualification"], "UNASSESSED")
+        self.assertIn("not multiple provider families", summary["provider_family_scope"])
+
+    def test_pooled_improvement_cannot_hide_model_regression(self):
+        run = self.synthetic_summary_run(regressed_model=self.protocol["models"][0])
+        summary = tool_campaign.summarize(run, repetitions=100)
+        self.assertFalse(summary["gates"]["total_tokens_every_model_point_improves"])
+        self.assertEqual(summary["net_benefit_gate"], "FAIL")
+
+    def test_end_to_end_time_gate_cannot_hide_non_cli_overhead(self):
+        run = self.synthetic_summary_run(wall_regression=True)
+        summary = tool_campaign.summarize(run, repetitions=100)
+        self.assertLess(summary["metrics"]["cli_wall_seconds"]["ratio"], 1)
+        self.assertGreater(summary["metrics"]["wall_seconds"]["ratio"], 1)
+        self.assertEqual(summary["net_benefit_gate"], "FAIL")
+
+    def test_cli_timing_is_separate_from_full_adapter_and_collector_endpoint(self):
+        raw = {"wall_seconds": 10, "timing": {"cli_seconds": 7}}
+        row = {"result": raw, "collector_wall_seconds": 11}
+        self.assertEqual(tool_campaign._value(row, "wall_seconds"), 11)
+        self.assertEqual(tool_campaign._value(row, "cli_wall_seconds"), 7)
+        self.assertEqual(tool_campaign._phase_timings(raw, 11), {
+            "collector_total_seconds": 11, "adapter_seconds": 10, "cli_seconds": 7, "non_cli_seconds": 4})
+        fallback = {"wall_seconds": 10, "receipt": {"timing": {"cli_seconds": 7}}}
+        self.assertEqual(tool_campaign._phase_timings(fallback, 11)["cli_seconds"], 7)
+        self.assertIsNone(tool_campaign._phase_timings({"wall_seconds": 10}, 11)["cli_seconds"])
+
+    def test_duplicate_receipts_and_incomplete_pairs_cannot_pass(self):
+        run = self.synthetic_summary_run()
+        run["observations"][0]["result"]["receipt"]["receipt_sha256"] = run["observations"][1]["result"]["receipt"]["receipt_sha256"]
+        summary = tool_campaign.summarize(run, repetitions=50)
+        self.assertFalse(summary["gates"]["unique_raw_call_receipts"])
+        run["observations"].pop()
+        self.assertFalse(tool_campaign.summarize(run, repetitions=50)["gates"]["complete_matched_collection"])
+
+
+if __name__ == "__main__":
+    unittest.main()

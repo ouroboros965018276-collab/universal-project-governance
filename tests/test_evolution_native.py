@@ -304,6 +304,132 @@ class NativeTests(unittest.TestCase):
             native_codex._text_files(self.root / "source", {"../escape": "forbidden"})
         self.assertFalse((self.root / "escape").exists())
 
+    def test_cold_and_warm_preparation_preserve_prompt_and_independent_calls(self):
+        request = self.request()
+        other = copy.deepcopy(request)
+        other["task"]["id"] = "warm-independent-sample"
+        commands = []
+        with patch.object(native_codex.subprocess, "run", side_effect=self.native_only(stream(), commands)):
+            cold = self.service.runner(request)
+            warm = self.service.runner(other)
+        self.assertFalse(cold["local_timings"]["cache_hit"])
+        self.assertTrue(warm["local_timings"]["cache_hit"])
+        self.assertGreater(cold["local_timings"]["compile_seconds"], 0)
+        self.assertGreater(cold["local_timings"]["plan_seconds"], 0)
+        self.assertEqual(warm["local_timings"]["compile_seconds"], 0)
+        self.assertEqual(warm["local_timings"]["plan_seconds"], 0)
+        prompts = [kwargs["input"] for command, kwargs in commands if command[0] == str(self.binary)]
+        self.assertEqual(prompts[0], prompts[1])
+        self.assertNotEqual(cold["provider_receipt"]["harness_request_id"], warm["provider_receipt"]["harness_request_id"])
+        self.assertEqual(sum("--write" in command for command, unused in commands), 1)
+        self.assertEqual(sum(any(str(arg).endswith("plan_governance.py") for arg in command) for command, unused in commands), 1)
+        for result in (cold, warm):
+            for name in ("prepare_seconds", "cache_verify_seconds", "grade_seconds", "cli_seconds", "total_seconds", "capability_verify_seconds"):
+                self.assertGreaterEqual(result["local_timings"][name], 0)
+            receipt = json.loads((self.service.artifacts / result["provider_receipt"]["raw_artifact_reference"] / "receipt.json").read_text())
+            self.assertEqual(receipt["local_timings"]["cache_hit"], result["local_timings"]["cache_hit"])
+            self.assertEqual(receipt["local_timings"]["capability_verify_seconds"], result["local_timings"]["capability_verify_seconds"])
+
+    def test_preparation_key_binds_source_compiler_license_runtime_and_context(self):
+        request = self.request()
+        request["execution_artifact"]["runtime"] = {
+            p.relative_to(ROOT / "universal-project-governance").as_posix(): p.read_bytes().decode("utf-8")
+            for p in (ROOT / "universal-project-governance").rglob("*") if p.is_file() and "__pycache__" not in p.parts}
+        variants = []
+        source = copy.deepcopy(request)
+        source["source"]["diagnostic.txt"] = "different exact source"
+        source["source_sha256"] = digest(source["source"])
+        variants.append(source)
+        for field in ("compiler", "license"):
+            changed = copy.deepcopy(request)
+            changed["execution_artifact"][field] += "\n# exact artifact difference\n"
+            variants.append(changed)
+        runtime = copy.deepcopy(request)
+        runtime["execution_artifact"]["runtime"]["SKILL.md"] += "\nEXACT RUNTIME DIFFERENCE\n"
+        variants.append(runtime)
+        context = copy.deepcopy(request)
+        context["task"]["plan_context"]["explicit_audit"] = not context["task"]["plan_context"].get("explicit_audit", False)
+        variants.append(context)
+        commands = []
+        with patch.object(native_codex.subprocess, "run", side_effect=self.native_only(stream(), commands)):
+            self.assertFalse(self.service.runner(request)["local_timings"]["cache_hit"])
+            self.assertTrue(self.service.runner(request)["local_timings"]["cache_hit"])
+            for variant in variants:
+                self.assertFalse(self.service.runner(variant)["local_timings"]["cache_hit"])
+        self.assertEqual(len(self.service._preparation_cache), 6)
+        self.assertFalse(any("--write" in command for command, unused in commands))
+        self.assertEqual(sum(any(str(arg).endswith("plan_governance.py") for arg in command) for command, unused in commands), 6)
+
+    def test_tampered_preparation_cache_fails_before_any_execution(self):
+        request = self.request()
+        commands = []
+        with patch.object(native_codex.subprocess, "run", side_effect=self.native_only(stream(), commands)):
+            self.service.runner(request)
+        key = next(iter(self.service._preparation_cache))
+        blob, expected = self.service._preparation_cache[key]
+        self.service._preparation_cache[key] = (blob + b"corrupted", expected)
+        with patch.object(native_codex.subprocess, "run") as invoked:
+            with self.assertRaisesRegex(ValueError, "cache artifact hash mismatch"):
+                self.service.runner(request)
+        invoked.assert_not_called()
+
+    def test_task_and_learner_hash_binary_once_per_dispatch(self):
+        request = self.request()
+        original = Path.read_bytes
+        binary_reads = []
+        def read_bytes(path):
+            if path == self.binary:
+                binary_reads.append(path)
+            return original(path)
+        commands = []
+        with patch.object(Path, "read_bytes", read_bytes), \
+             patch.object(native_codex.subprocess, "run", side_effect=self.native_only(stream(), commands)):
+            self.service.runner(request)
+            self.service.backend(system="system", user="user", max_completion_tokens=40)
+        self.assertEqual(len(binary_reads), 2)
+
+    def test_binary_change_during_preparation_is_rejected_before_model_launch(self):
+        request = self.request()
+        original = self.service._prepare
+        def prepare(*args):
+            result = original(*args)
+            self.binary.write_bytes(b"changed after preparation")
+            return result
+        commands = []
+        with patch.object(self.service, "_prepare", side_effect=prepare), \
+             patch.object(native_codex.subprocess, "run", side_effect=self.native_only(stream(), commands)):
+            with self.assertRaisesRegex(ValueError, "binary changed"):
+                self.service.runner(request)
+        self.assertFalse(any(command[0] == str(self.binary) for command, unused in commands))
+
+    def test_environment_client_reuse_requires_exact_configuration(self):
+        config_path = self.root / "native-config.json"
+        config_path.write_text(json.dumps(self.config), encoding="utf-8")
+        self.addCleanup(native_codex._configured_client.cache_clear)
+        with patch.dict(os.environ, {"UPG_NATIVE_CONFIG": str(config_path)}):
+            first = native_codex.NativeCodex.from_environment()
+            self.assertIs(first, native_codex.NativeCodex.from_environment())
+            config_path.write_text(json.dumps(dict(self.config, effort="medium")), encoding="utf-8")
+            self.assertIsNot(first, native_codex.NativeCodex.from_environment())
+        self.binary.write_bytes(b"mutated binary")
+        with self.assertRaisesRegex(ValueError, "binary changed"):
+            first.binding()
+
+    def test_legacy_receipt_without_timings_replays_without_rewriting(self):
+        with patch.object(native_codex.subprocess, "run", return_value=stream()):
+            first = self.call()
+        path = self.service.artifacts / first["receipt"]["raw_artifact_reference"] / "receipt.json"
+        legacy = json.loads(path.read_text())
+        legacy.pop("local_timings")
+        path.write_text(json.dumps(legacy), encoding="utf-8")
+        before = path.read_bytes()
+        with patch.object(native_codex.subprocess, "run") as invoked:
+            replay = self.call()
+        invoked.assert_not_called()
+        self.assertEqual(path.read_bytes(), before)
+        self.assertNotIn("local_timings", replay["receipt"])
+        self.assertTrue(replay["receipt"]["replayed_from_local_receipt"])
+
 
 if __name__ == "__main__":
     unittest.main()

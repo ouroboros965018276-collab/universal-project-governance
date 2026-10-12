@@ -2,9 +2,11 @@
 
 ## 当前版本与开发进度 | Version status
 
-本分支候选 / Candidate: **3.0.0-rc.18 — Grader Validity and Measured Runtime Compression**。本轮修复三类任务评分假阳性、精简治理指令，并接入绑定真实源码与编译器的原生 CLI 实测，按实际 token、耗时和任务质量评估优化。
+本分支候选 / Candidate: **3.0.0-rc.19 — Latency Accounting and Bounded Real Tools**。从已合并并实装的 RC18 继续查明耗时变化，优化准备流程，并补充两个模型上的真实受限文件工具任务对照。独立实测与本候选发布验收尚待完成。
 
-发布状态 / Release: **候选，非 Stable**。RC17 已通过 [PR #18](https://github.com/ouroboros965018276-collab/universal-project-governance/pull/18) 合并到默认分支。RC18 已完成八对 RC17/候选文件任务测量；首轮九组开发消融中止，修复后重新预注册的 v2 已完成 **9/9 组**并通过实验记录独立审计。尚未达到 25% 上下文 token、15% 总 token 或 10% 时间节省的目标。版本以 [VERSION.md](universal-project-governance/VERSION.md) 为准，当前状态见 [PROJECT_STATE.md](PROJECT_STATE.md)。
+发布状态 / Release: **候选，非 Stable**。RC18 已通过 [PR #19](https://github.com/ouroboros965018276-collab/universal-project-governance/pull/19) 合并到默认分支并完成本地安装验收。RC19 的[耗时诊断](docs/rc19-latency-diagnosis.md)区分单次长尾与可复现的本地开销；局部准备提速不代表真实模型端到端提速。尚未建立 RC19 独立净收益。版本以 [VERSION.md](universal-project-governance/VERSION.md) 为准，当前状态见 [PROJECT_STATE.md](PROJECT_STATE.md)。
+
+### RC18 历史实测（保留原始范围）
 
 [八对测量](qualification/pilots/rc18-native/paired.summary.json)包含 16 次全新调用，全部任务检查通过：输入 token 减少 **3.85175%**，总 token 减少 **3.84511%**。包含隔离编译、规划和评分的完整回调耗时点估计增加 **23.6975%**，时间比的 95% 区间包含 1，未证实耗时改善。编译后 `SKILL.md` 从 11144 减至 7940 个 UTF-8 字节（**28.75%**），字节缩减与 token 缩减分别记录。[首轮记录](qualification/pilots/rc18-native/round-v1.summary.json)保留无效学习编辑被安全拒绝、控制器却错误中止整组的失败；[v2 协议](evolution/protocol/rc18-native-development-v2.json)不复用最终任务反馈。实证准入仍为 **BLOCKED**，正式资格为 **UNASSESSED**，未提升任何学习候选。
 

@@ -1,6 +1,18 @@
 # Project State
 
-Current candidate: **3.0.0-rc.18 — Grader Validity and Measured Runtime Compression**.
+Current candidate: **3.0.0-rc.19 — Latency Accounting and Bounded Real Tools**.
+
+## RC19 candidate — preparation and independent measurement
+
+The default branch contains RC18 through PR #19, merge
+`29cf112b4629d6b90504b079e95a5370c206a4cb`; local RC18 installation was accepted.
+RC19 investigates the reported 23.6975% callback-time increase and prepares a
+new frozen comparison on two catalog-observed OpenAI models with actual bounded
+repository tools. [Diagnosis](docs/rc19-latency-diagnosis.md) records one tail
+pair contributing 95.74% of the historical increase and reproduced redundant
+binary hashing/compilation. Local warm preparation improves; new independent
+model token/time benefit remains pending. Formal qualification is UNASSESSED.
+Historical source, frozen measurements and unresolved limits below remain intact.
 
 ## RC18 candidate — paired measurements and nine-arm matrix completed
 

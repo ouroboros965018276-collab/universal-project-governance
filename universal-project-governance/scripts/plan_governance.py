@@ -239,7 +239,7 @@ def main() -> int:
         print("error: %s" % exc, file=sys.stderr)
         return 2
     if args.json:
-        print(json.dumps(plan, indent=2, ensure_ascii=True))
+        print(json.dumps(plan, separators=(",", ":"), ensure_ascii=True))
     else:
         sys.stdout.write(render_markdown(plan))
     return 0

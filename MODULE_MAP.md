@@ -1,6 +1,6 @@
 # Module Map
 
-Current candidate: **3.0.0-rc.18 — Grader Validity and Measured Runtime Compression**.
+Current candidate: **3.0.0-rc.19 — Latency Accounting and Bounded Real Tools**.
 
 This is the single current-tree map. Git history, `CHANGELOG.md`, and dated audit records retain prior states; generated output and validation artifacts are not alternate sources of policy truth.
 
