@@ -207,6 +207,40 @@ release checks pass, and the new qualification fingerprint is
 `sha256:10f15583bd1c3d7bcfd2168d6f751eac015b3aa421f37afbbef22f829cec965a`.
 New source-bound native and tool experiments are required before any promotion.
 
+The [A5 independent audit](docs/rc19-native-independent-a-v5.md) subsequently
+confirmed 32/32 fresh strict passes and 439193 reported tokens. Full callback
+time fell 21.4946%, with joint-family ratio interval [0.761984, 0.808256].
+Token benefit was not established: its interval crossed one and requested Luna
+regressed 1.2071%. All warnings, the unexplained first Sol control token excess
+and host-load limitations remain recorded. A5 applies to source `1f286516...`;
+it cannot substitute for independent Tool B evidence or certify later text edits.
+
+The [native nine-arm audit](docs/rc19-nine-native-development-v2.md) independently
+reconciled 209 real calls: 173 passing task turns and 36 learner turns, using
+3302409 reported tokens without unknown calls. All nine arms completed under
+equal ceilings. The learner proposed zero distinct edits; accepted search
+steps do not establish causal value. Empirical admission remains BLOCKED,
+formal qualification UNASSESSED, and savings/contributions null.
+
+A [bounded route diagnostic](audits/rc19-child-route-v2.audit.json) then stopped
+after one known 10059-token completion: the fixed JSON was correct but two CLI
+startup errors failed strict admission. No alternate-route call occurred and
+no network conclusion follows. Its original failed record and fence remain.
+Cumulative actual CLI accounting is 319 known completed turns / 9437393 reported
+tokens plus three unknown-usage dispatches; A4's pre-CLI reservation is excluded.
+
+The next reviewed wording candidate compiles to 8172 bytes / 79 Skill lines.
+It restores explicit preservation of all existing settings and ledger, retains
+16 policies / eight identical Hot Path invariants and passes all eight release
+checks. New qualification fingerprint:
+`sha256:9226a53376140b3cd2f3acd9a6adce35bf895b7fe808371889be98e766fdf50c`.
+This text-size change is not measured token/time benefit. Hosted PR
+[run 38303104830](https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/38303104830)
+passed all 11 jobs for the preceding committed candidate, including 504/504
+Windows Python 3.13 tests and 257 executed Python 3.8 passes / 247 skips.
+New source-bound tool testing and independent net admission remain required;
+default main and the installed Skill remain RC18.
+
 ## RC18 candidate — paired measurements and nine-arm matrix completed
 
 The default branch already contains RC17 through [PR #18](https://github.com/ouroboros965018276-collab/universal-project-governance/pull/18), merge `e63f438bdee2b9d65c49db6c621e968d6b185e56`. RC18 continues from that release. The prior RC17/RC16 records below describe their original stages; their test counts, failures, unknowns and qualification outcomes are retained.

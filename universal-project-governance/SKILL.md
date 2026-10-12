@@ -1,8 +1,8 @@
 ---
 name: universal-project-governance
-description: Govern maintained-project changes with task-bounded integration, proportional cleanup, evidence, factual chronology, debt control, and recoverable handoffs across project types and tool-using hosts. Use when modifying maintained project state; exclude read-only Q&A and unrelated one-off artifacts.
+description: Govern maintained-project changes across project types/hosts: task-bounded integration, proportional cleanup, evidence, factual chronology, debt control, recoverable handoffs. Exclude read-only Q&A/unrelated one-offs.
 license: Apache-2.0
-compatibility: Core kernel needs no runtime. Optional deterministic planner/state/integrity helpers use Python 3.8+.
+compatibility: Core needs no runtime. Optional deterministic planner/state/integrity helpers use Python 3.8+.
 metadata:
   version: "3.0.0-rc.19"
   standard: "agentskills.io"
@@ -15,11 +15,11 @@ metadata:
 
 ## Activation
 
-At first modification, resolve the installed Skill. With filesystem/Python run `scripts/project_tool.py ensure <project-root>` for idempotent in-place adoption of UPG-owned state only. Preserve binding-listed infrastructure and existing settings/ledger; uninstall explicitly. New bindings default field reporting off; owner opt-in: `scripts/project_tool.py install <project-root> --field-test-reporting`. Without helpers, use host/project state, disclose binding/report gaps, never fabricate files or block unrelated authorized work for tooling.
+First edit: resolve installed Skill; with filesystem/Python, `scripts/project_tool.py ensure <root>` (idempotent, in-place, UPG-owned state only). Keep binding-listed infrastructure and existing settings/ledger; uninstall explicitly. New bindings: field reporting off; owner opt-in: `scripts/project_tool.py install <root> --field-test-reporting`. No helpers: use host/project state, disclose binding/report gaps; never fabricate files or block unrelated authorized work.
 
-Before mutation, inventory available/unavailable filesystem/VCS/search/test/build/browser/app capabilities. Assume no vendor/model/interface/tool class; claim only observed validation.
+Before mutation inventory available/unavailable filesystem/VCS/search/test/build/browser/app capabilities. Assume no vendor/model/interface/tool class; claim only observed validation.
 
-Adopt legacy projects in place without restructuring/migration: use artifacts as evidence, locate smallest canonical truth, preserve contracts; unknown history/intent stays unknown.
+Legacy adoption: in place, no restructuring/migration. Artifacts are evidence; find smallest canonical truth, keep contracts; unknown history/intent stays unknown.
 
 ## Hot path
 
@@ -34,61 +34,46 @@ Adopt legacy projects in place without restructuring/migration: use artifacts as
 
 ## Execution
 
-Local low-risk edits use the hot path and proportional evidence; no architecture work for isolated corrections. Non-trivial work follows STRUCTURAL_INTEGRATION: remove superseded shims/branches/compatibility paths/detached fixes in scope; no unrelated redesign, API/contract change, migration, or refactor.
+Low-risk local corrections: hot path/proportional evidence, no architecture work. Non-trivial: STRUCTURAL_INTEGRATION; remove in-scope superseded shims/branches/compatibility paths/detached fixes. No unrelated redesign/API/contract change/migration/refactor.
 
-Bound task context; batch known source, consumer, contract, evidence and state reads. Apply related source edits together. Derive records from verified actual-byte edit receipts and current reads of unchanged content. Re-read for missing/stale evidence, failed checks, later edits or required project inspection. Run required checks on the final state of their scope; batch independent checks and applicable status. Reuse content only with matching source/tool/context identities and validated cached bytes. Finish with successful required checks, applicable verified receipts and evidence for acceptance and all governance obligations; preserve task quality.
+Bound context; batch known source/consumer/contract/evidence/state reads and related edits. Derive records from verified actual-byte edit receipts/current unchanged-content reads. Re-read for missing/stale evidence, failed checks, later edits or required project inspection. Run required checks on final scoped state; batch independent checks/applicable status. Reuse only with matching source/tool/context identities and validated cached bytes. Finish with successful required checks, applicable verified receipts and evidence for acceptance/all governance obligations; preserve task quality.
 
-Use verified Python 3.8+ for helpers; on Windows resolve `py -3` or its executable path, never assume `python3` works. Substitute that interpreter below. Compile typed context:
+Helpers: verified Python 3.8+; Windows: resolve `py -3` or its executable, never assume `python3`. Substitute below. Typed context: `python scripts/plan_governance.py --project-root <root> --context <context.json>`.
 
-```bash
-python scripts/plan_governance.py --project-root /path/to/project --context /path/to/task-context.json
-```
+Planner validates context schema/binding/reporting health; follow change mode/scope guard/rule closure/evidence/report level/handoff, no unrelated policy. Unknown optional profiles: universal task/risk rules, exclude no projects. No helpers: match `policy-index.json` operation/domains/signals plus `requires` closure.
 
-The planner validates context schema and binding/reporting health. Follow change mode, scope guard, rule closure, evidence, report level and handoff; no unrelated policy. Unknown optional profiles use universal task/risk rules; exclude no projects.
-
-Without helpers, match `policy-index.json` operation/domains/signals plus `requires` closure.
-
-Assess observable scope/reversibility/security/data impact/external consumers/migration/contract change/unknowns/handoff need. Confidence is not evidence; file/line counts are secondary.
+Assess observable scope/reversibility/security/data impact/external consumers/migration/contract change/unknowns/handoff need. Confidence is not evidence; file/line counts secondary.
 
 ## Evidence and reports
 
-Field reporting is explicit and temporary: one bounded opted-in ledger, no permanent general report per task.
+Field reporting: explicit temporary owner opt-in, one bounded ledger; no permanent general per-task report.
 
-- `none`: final response/VCS evidence.
-- `change-note`: compact persistent note if needed.
-- `engineering`: `.governance/execution/latest.json`.
-- `audit`: frozen release/audit record.
+Task report levels (regardless of field reporting): `none` final response/VCS evidence; `change-note` needed compact persistent note; `engineering` `.governance/execution/latest.json`; `audit` frozen release/audit record.
 
-For non-trivial/cross-session work, use a stable workflow ID and minimal `scripts/project_tool.py begin <project-root> --input <workflow.json>` checkpoint when available. Start facts are immutable; update only observed `after`, result/validation revisions and sourced occurrence time. Keep unknowns explicit; Git committer time dates the commit, never work start. Reuse evidence without another history database.
+Non-trivial/cross-session: stable workflow ID, minimal `scripts/project_tool.py begin <root> --input <workflow.json>` checkpoint when available. Start facts immutable; update only observed `after`, result/validation revisions, sourced occurrence time. Unknowns explicit; Git committer time dates commit, never work start. Reuse evidence, no extra history database.
 
-Schema-first state is canonical; Markdown is rendered. Use `scripts/state_tool.py` to validate/render/compact/export.
+Schema-first state is canonical, Markdown rendered. `scripts/state_tool.py`: validate/render/compact/export.
 
-When writable, keep one current handoff for unfinished work or agent/session transitions. One validation source records run ID, scope/denominator, tested state, result and pending retest. Never overlap counts or equate focused passes with full regression. Check references via `scripts/state_tool.py validate <state.json> --project-root <project-root>`.
+When writable: one current handoff for unfinished work/agent/session transitions. One validation source: run ID/scope/denominator/tested state/result/pending retest. Never overlap counts/equate focused passes with full regression. Check refs: `scripts/state_tool.py validate <state.json> --project-root <root>`.
 
-After interruption/stale/conflicting state, rebuild scoped truth, entry/dependencies, changes, evidence, UPG state and unresolved artifacts before mutation. Optional read-only `scripts/state_tool.py recover <root> --scope <file>` (repeat scope; explicit `--handoff`/registered `--git-binary`) feeds deltas/carried refs to current handoff. Separate static/dynamic evidence and hypotheses: hashes prove fixity, never validity/truth. Missing intent/partial coverage stay unknown; repeated no progress means switch method or bounded blocker. Act minimally without private chat memory/reasoning.
+After interruption/stale/conflict, rebuild scoped truth/entry/dependencies/changes/evidence/UPG state/unresolved artifacts before mutation. Optional read-only `scripts/state_tool.py recover <root> --scope <file>` (repeat scope; explicit `--handoff`/registered `--git-binary`): carry deltas/refs into current handoff. Separate static/dynamic evidence from hypotheses; hashes prove fixity, never validity/truth. Missing intent/partial coverage stay unknown; repeated no progress: change method/bounded blocker. Act minimally without private chat memory/reasoning.
 
-Order by causal parents/revisions and persistent sequence; `recorded_at` is observation time. Preserve previous change, validate tested state, reconcile stale handoffs with current truth.
+Order by causal parents/revisions, persistent sequence; `recorded_at` is observation time. Preserve prior change, validate tested state, reconcile stale handoffs with current truth.
 
-At tracked non-trivial boundaries, use `scripts/project_tool.py finish <project-root> --input <report.json>` when available, with the same ID and observed `change`. Stage pins never complete unfinished work: keep `partial`/`blocked` and ID active. Reporting on appends exactly one report; off keeps bounded latest/previous, no ledger. Preserve start facts and stage history: identical retries are idempotent, conflicts fail, one immutable workflow/status receipt. Bound scopes and metadata/evidence; exclude source bodies/secrets/private reasoning. Export/verify before epoch rotation; never reset sequence. Recheck binding; unavailable helpers leave verification gaps, never backfilled historical success.
+Tracked non-trivial boundaries: `scripts/project_tool.py finish <root> --input <report.json>` when available; same workflow ID/observed `change`. Stage pins keep unfinished work `partial`/`blocked`, ID active. Field reporting on: append exactly one; off: bounded latest/previous, no ledger. Keep start facts/stage history; identical retries idempotent, conflicts fail, one immutable workflow/status receipt. Bound scopes/metadata/evidence; no source bodies/secrets/private reasoning. Export/verify before epoch rotation; never reset sequence. Recheck binding; helper gaps stay verification gaps, no historical-success backfill.
 
-Installation/receipts/matching behavior/test counts do not prove historical loading or causal benefit. Optional host activation receipts: missing stays unknown. Evaluate matched baseline/attention-control/UPG tasks prospectively with actual token/time/tool costs and cross-agent handoffs.
+Installation/receipts/matching behavior/test counts do not establish historical loading or causal benefit. Optional host activation receipts: missing unknown. Prospectively compare matched baseline/attention-control/UPG tasks: actual token/time/tool costs, cross-agent handoffs.
 
 ## Integrity
 
-Never hand-edit generated runtime in ordinary work.
-
-```bash
-python scripts/validate_integrity.py .
-```
-
-Failed integrity suspends runtime authority. Authorized evolution requires external canonical source, compilation, complexity/static checks, tests, install validation and a new audit candidate.
+Never hand-edit generated runtime in ordinary work. `python scripts/validate_integrity.py .`: failure suspends runtime authority. Authorized evolution requires external canonical source/compilation/complexity/static checks/tests/install validation/new audit candidate.
 
 ## Completion
 
-Complete only with applicable behavior/cleanup/truth/evidence/continuity/integrity/binding/active field reporting. State blockers; local review cannot prove project-wide debt clearance.
+Complete only with applicable behavior/cleanup/truth/evidence/continuity/integrity/binding/active field reporting. State blockers; local review does not establish project-wide debt clearance.
 
-Uninstall project UPG state before the Skill using the repository CLI; fallback: `scripts/project_tool.py remove <project-root> --yes`, then host Skills CLI removal.
+Uninstall project UPG state before the Skill via repository CLI; fallback: `scripts/project_tool.py remove <root> --yes`, then host Skills CLI removal.
 
-Respect project truth/specialized Skills; reuse canonical structures without parallel documents for filenames.
+Respect project truth/specialized Skills; reuse canonical structures, no filename-driven parallel documents.
 
-Bound context: one canonical definition per semantic rule; complexity stays in compiler.
+Bound context: one canonical definition per semantic rule; complexity in compiler.
