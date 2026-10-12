@@ -32,6 +32,16 @@ profile explicitly preapproves only the five authorized broker tools and keeps
 the global approval policy and native tool restrictions. Its separately frozen
 development probe must establish useful tool execution before final testing.
 
+The [v3 transport probe](docs/rc19-tools-transport-v3.md) subsequently passed
+2/2 tasks and all four positive checks, with 11 independently reconciled real
+broker calls and both registered host paths observed. Its one-family development
+scope does not establish efficiency; the unchanged coverage gate correctly fails.
+The three rounds total 12 known turns and 431713 tokens. A separately frozen
+16-turn development comparison now covers four known task families on
+`gpt-6-luna` and `gpt-6.1-sol`. Final instances remain unexposed to the models;
+they have distinct initial files and expected checks, while sharing these four
+task families, generic prompt templates and the protected NOTICE sentinel.
+
 ## RC18 candidate — paired measurements and nine-arm matrix completed
 
 The default branch already contains RC17 through [PR #18](https://github.com/ouroboros965018276-collab/universal-project-governance/pull/18), merge `e63f438bdee2b9d65c49db6c621e968d6b185e56`. RC18 continues from that release. The prior RC17/RC16 records below describe their original stages; their test counts, failures, unknowns and qualification outcomes are retained.
