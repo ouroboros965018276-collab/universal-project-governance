@@ -117,6 +117,18 @@ The next six-family development protocol and independent native A v2 protocol
 are preregistered at `cf9f5dcd2c227a2717c303d4f4acacd8bbfb91d1`; neither has
 dispatched a model at this checkpoint. Independent tool fixtures remain sealed.
 
+Hosted CI for `5f57df8ac1dd667e8764b39b0a781478aaed0056` subsequently passed
+8/11 jobs. Python 3.8 exposed an optional offline-test version boundary;
+Windows 3.11 and 3.13 exposed a real reference-identity bug. Safe references now
+use canonical paths after link/reparse/hardlink rejection, preserving evidence
+through short-path and lexical directory aliases. Native offline tests explicitly
+require Python 3.10+, while installed helpers retain Python 3.8+ support.
+Local regression after these changes ran 477 tests (475 passes, two actual
+link-privilege skips), with all eight release checks passing. Hosted verification
+of the corrected source remains pending. Uncalled development v6 and native A v2
+are retained; corrected-source development v7 and native A v3 require new freezes.
+These engineering fixes establish no additional model efficiency result.
+
 ## RC18 candidate — paired measurements and nine-arm matrix completed
 
 The default branch already contains RC17 through [PR #18](https://github.com/ouroboros965018276-collab/universal-project-governance/pull/18), merge `e63f438bdee2b9d65c49db6c621e968d6b185e56`. RC18 continues from that release. The prior RC17/RC16 records below describe their original stages; their test counts, failures, unknowns and qualification outcomes are retained.

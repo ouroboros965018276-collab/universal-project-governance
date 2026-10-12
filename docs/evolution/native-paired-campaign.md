@@ -20,17 +20,22 @@ Thus the historical callback is measured under the common HTTP scaffold,
 not claimed to reproduce historical default transport. No task replay or mocked
 completion counts as a genuine observation.
 
-The shared worker appends exactly five supported CLI `-c` values only for the
+The shared worker appends exactly eight supported CLI `-c` values only for the
 registered official binary's `exec` command: provider `upg_openai_http`, provider
 name `OpenAI`, `wire_api=responses`, `requires_openai_auth=true`, and
-`supports_websockets=false`. It sets no base URL, environment key, authentication
+`supports_websockets=false`, `request_max_retries=0`, `stream_max_retries=0`,
+and `features.unbounded_connection_retries=false`. Ordinary request, stream and
+connection retries are disabled; authentication recovery may still issue another
+request, and failed partial-response billing coverage remains unknown.
+It sets no base URL, environment key, authentication
 or header overrides. It preserves the CLI's own login and changes no host config.
 Compiler/planner subprocess calls pass unchanged. Each dispatch has a durable
 pending and returned/unknown instrumentation trace containing actual argv/hash,
 source hash and raw output hashes. Trace writes and instrumentation run inside
 the measured public callback and CLI wall. Returned process bytes remain intact
 even if post-call trace persistence fails, so native known usage can be retained;
-the parent rejects that incomplete trace after preserving known costs. No retry.
+the parent rejects that incomplete trace after preserving known costs. The
+collector never automatically replays a failed or unknown callback.
 
 Use 32 genuine serial calls: two explicitly preregistered requested model IDs,
 both at low effort, eight newly frozen artifact tasks, two release arms. IDs must

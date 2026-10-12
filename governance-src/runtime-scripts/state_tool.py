@@ -138,7 +138,10 @@ def reference_path(ref, project_root: Path) -> Path:
         raise ValueError("validation_ref.path escapes project root")
     if not target.is_file():
         raise ValueError("validation_ref file unavailable: %s" % relative)
-    return target
+    # Keep reference identity canonical after rejecting unsafe paths. Windows
+    # short/long ancestors and lexical '..' aliases can otherwise make compact
+    # mistake its own referenced execution file for an unreferenced file.
+    return target.resolve(strict=True)
 
 
 def resolve_validation_ref(ref, project_root: Path, source_bytes=None) -> dict:

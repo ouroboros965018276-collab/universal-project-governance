@@ -13,17 +13,22 @@ from unittest.mock import patch
 REPO=Path(__file__).resolve().parents[1]
 HERE=REPO/"evolution/experiments/native_paired"
 TESTROOT=REPO/"eval-workspaces"
-TESTROOT.mkdir(exist_ok=True)
-P=runpy.run_path(str(HERE/'parent.py'))
-PREP=runpy.run_path(str(HERE/'prepare.py'))
-W=runpy.run_path(str(HERE/'worker.py'))
-T=runpy.run_path(str(HERE/'transport.py'))
-sha,digest=P['sha'],P['digest']
+# This repository-only experiment uses offline evolution's Python 3.10+
+# contract, not the installed Skill helpers' separate Python 3.8+ contract.
+OFFLINE_SUPPORTED=sys.version_info >= (3,10)
+if OFFLINE_SUPPORTED:
+    TESTROOT.mkdir(exist_ok=True)
+    P=runpy.run_path(str(HERE/'parent.py'))
+    PREP=runpy.run_path(str(HERE/'prepare.py'))
+    W=runpy.run_path(str(HERE/'worker.py'))
+    T=runpy.run_path(str(HERE/'transport.py'))
+    sha,digest=P['sha'],P['digest']
 GRADER=b'''def grade(request):
     return {"loss":1.0,"hard":1,"soft":1.0,"artifact_checks":[],"scope_ok":True,"validation_truth_ok":True}
 '''
 
 
+@unittest.skipUnless(OFFLINE_SUPPORTED,"optional native callback experiment requires Python 3.10+")
 class NativePairedTests(unittest.TestCase):
     def setUp(self):
         self.temporary=tempfile.TemporaryDirectory(prefix='rc19-native-paired-test-',dir=TESTROOT)
@@ -475,6 +480,29 @@ class NativePairedTests(unittest.TestCase):
         self.assertEqual(run['status'],'protocol-violation');self.assertEqual(len(calls),1)
         self.assertEqual(run['budget']['calls'],1);self.assertEqual(run['budget']['total_tokens'],105)
         self.assertFalse(run['observations'][0]['fresh'])
+
+
+class NativePairedCompatibilityTests(unittest.TestCase):
+    def test_unsupported_discovery_skips_before_harness_or_workspace_preparation(self):
+        source=Path(__file__).read_text(encoding='utf-8')
+        for version in ((3,8,20),(3,9,25)):
+            with self.subTest(version=version):
+                namespace={'__name__':'native_paired_unsupported_probe','__file__':__file__}
+                with patch.object(sys,'version_info',version), \
+                        patch.object(runpy,'run_path',side_effect=AssertionError('unsupported harness imported')), \
+                        patch.object(Path,'mkdir',side_effect=AssertionError('unsupported workspace prepared')), \
+                        patch.object(tempfile,'TemporaryDirectory',side_effect=AssertionError('unsupported setup ran')):
+                    exec(compile(source,__file__,'exec'),namespace)
+                    suite=unittest.defaultTestLoader.loadTestsFromTestCase(namespace['NativePairedTests'])
+                    expected=suite.countTestCases()
+                    result=unittest.TestResult()
+                    suite.run(result)
+                self.assertGreater(expected,0)
+                self.assertEqual(result.testsRun,expected)
+                self.assertEqual(len(result.skipped),expected)
+                self.assertFalse(result.errors)
+                self.assertFalse(result.failures)
+                self.assertTrue(all('Python 3.10+' in reason for unused,reason in result.skipped))
 
 
 if __name__=='__main__':unittest.main(verbosity=2)
