@@ -166,6 +166,43 @@ def _phase_timings(raw, elapsed):
             "cli_seconds": cli, "non_cli_seconds": max(0, elapsed - cli) if _finite(cli) else None}
 
 
+def _transport_failure(raw):
+    """Recognize only a known CLI transport error, never a model self-report.
+
+    Ordinary failed tasks remain observations. For a completed, failed no-tool
+    result, the raw CLI artifact must be verified before deciding whether the
+    known transport-wide failure occurred; unverifiable evidence fences replay.
+    """
+    if (raw.get("status") != "completed" or (raw.get("quality") or {}).get("hard_pass") is not False
+            or raw.get("tool_events") != []):
+        return None
+    receipt = raw.get("receipt") or {}
+    expected = (receipt.get("artifact_sha256") or {}).get("stdout.raw")
+    directory = receipt.get("artifact_directory")
+    if not _sha(expected) or not isinstance(directory, str) or not Path(directory).is_absolute():
+        raise ValueError("transport-stdout-evidence-missing")
+    payload = (Path(directory) / "stdout.raw").read_bytes()
+    if hashlib.sha256(payload).hexdigest() != expected:
+        raise ValueError("transport-stdout-sha256-mismatch")
+    for line_number, line in enumerate(payload.decode("utf-8").splitlines(), 1):
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError:
+            continue  # The adapter also ignores non-JSON CLI diagnostic lines.
+        if not isinstance(event, dict) or event.get("type") != "item.completed":
+            continue
+        item = event.get("item")
+        if not isinstance(item, dict) or item.get("type") != "error":
+            continue
+        message = item.get("message")
+        prefix = "Code Mode is unavailable because code-mode host is disabled."
+        if isinstance(message, str) and message.startswith(prefix):
+            return {"code": "code-mode-host-disabled", "stdout_sha256": expected,
+                    "event_line": line_number, "event_type": "item.completed", "item_type": "error",
+                    "message": message}
+    return None
+
+
 def collect(repo, protocol, private_tasks, configs, output):
     """Serial, resumable collection; every dispatched sample is fenced first."""
     from .tool_codex import ToolCodex
@@ -260,8 +297,30 @@ def collect(repo, protocol, private_tasks, configs, output):
                 run["pending"] = {"kind": "unknown-call", "sample_id": sample_id, "observation_index": len(run["observations"]) - 1}
                 checkpoint()
                 return run
+            try:
+                transport_failure = _transport_failure(raw)
+            except (OSError, ValueError, UnicodeError) as error:
+                run.update(status="unknown-call-blocked",
+                           stop_reason="transport evidence could not be verified; independent reconciliation required",
+                           transport_evidence_error={"error_type": type(error).__name__,
+                                                     "known_usage_retained": True})
+                run["pending"] = {"kind": "transport-evidence-unconfirmed", "sample_id": sample_id,
+                                  "observation_index": len(run["observations"]) - 1}
+                checkpoint()
+                return run
             run["pending"] = None
             overrun = budget.overruns()
+            if transport_failure:
+                run.update(status="blocked_transport", new_protocol_required=True,
+                           stop_reason="known CLI tool transport unavailable; a new protocol is required after correction",
+                           transport_failure=dict(transport_failure, sample_id=sample_id,
+                                                  observation_index=len(run["observations"]) - 1))
+                if overrun:
+                    run["actual_budget_overrun"] = overrun
+                checkpoint()  # Retain the known completed charge before stopping.
+                run["summary"] = summarize(run)
+                checkpoint()
+                return run
             if overrun:
                 run.update(status="budget-exhausted", actual_budget_overrun=overrun,
                            stop_reason="measured call exceeded a stop threshold")
@@ -357,6 +416,8 @@ def summarize(run, *, repetitions=BOOTSTRAP_REPETITIONS, seed=BOOTSTRAP_SEED):
             and values[metric]["ratio"] < thresholds.get("per_model_ratio_exclusive", 1.0) for values in per_model.values())
     return {"status": run.get("status"), "matched_pairs": len(pairs), "expected_pairs": expected,
             "net_benefit_gate": "PASS" if all(gates.values()) else "FAIL", "gates": gates,
+            "transport_failure": run.get("transport_failure"),
+            "new_protocol_required": run.get("new_protocol_required", False),
             "metrics": metrics, "per_model": per_model, "actual_charged_usage": run.get("budget"),
             "source_preparation": run.get("source_preparation"),
             "formal_qualification": "UNASSESSED", "stage": run.get("stage"),

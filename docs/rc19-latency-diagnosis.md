@@ -63,6 +63,11 @@ One cold sample per condition remained 1.131195 and 1.636959 seconds, plus a
 separately measured one-time client anchor of 0.518906 seconds. The treatment's
 cold compilation took 0.701071 seconds. Cold and warm measurements are separate,
 small local samples and establish no end-to-end model speedup.
+They used warm operating-system caches, different small repetition counts and
+possibly concurrent host load. The percentages are descriptive microbenchmark
+changes, without a statistical or general latency claim. Cache byte digests
+check consistency within the trusted Python process; they are not an
+authorization or isolation boundary.
 
 The planner's JSON whitespace is compacted without changing any plan value.
 The canonical Skill adds guidance for bounded context, independent-operation
@@ -70,8 +75,11 @@ batching and verified reuse, while retaining its governance obligations.
 Text size, local tests and preparation speed are engineering measurements;
 real-task token and elapsed benefit requires a separate frozen comparison.
 
-The new comparison uses new tasks, two catalog-observed requested models and
-actual bounded repository tools. Positive structural validators and an
+The intended new comparison uses new tasks, two catalog-observed requested
+models and bounded repository tools. Its first development transport failed:
+[all eight calls used zero tools](rc19-tools-development-v1.md), with their
+known costs retained. Useful real-tool evidence requires a corrected transport.
+Positive structural validators and an
 independent tool journal check the result. This profile executes no submitted
 application code and establishes neither container isolation nor multiple
 provider families. Formal qualification remains unassessed.

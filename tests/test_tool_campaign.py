@@ -77,6 +77,27 @@ class CampaignTests(unittest.TestCase):
     def collect(self):
         return tool_campaign.collect(ROOT, self.protocol, self.tasks, self.configs, self.output)
 
+    def no_tool_result(self, bindings, diagnostics, *, tampered=False):
+        result = self.result(bindings, quality=False)
+        result["tool_events"] = []
+        result["quality"]["required_tools_ok"] = False
+        result["quality"]["failures"] = ["required-current-real-tool-evidence-missing", "no-actual-repository-edit"]
+        directory = Path(self.temporary.name) / digest(bindings)
+        directory.mkdir(exist_ok=True)
+        events = [{"type": "thread.started", "thread_id": result["receipt"]["cli_thread_id"]}]
+        events.extend(diagnostics)
+        events.append({"type": "turn.completed", "usage": {"input_tokens": result["usage"]["input_tokens"],
+                                                            "output_tokens": result["usage"]["output_tokens"]}})
+        payload = ("\n".join(json.dumps(event) for event in events) + "\n").encode("utf-8")
+        (directory / "stdout.raw").write_bytes(payload + (b"tampered" if tampered else b""))
+        result["receipt"].update(artifact_directory=str(directory),
+                                 artifact_sha256={"stdout.raw": hashlib.sha256(payload).hexdigest()})
+        return result
+
+    @staticmethod
+    def cli_error(message):
+        return {"type": "item.completed", "item": {"type": "error", "message": message}}
+
     def test_prompt_preserves_exact_planner_bytes_and_excludes_private_checks(self):
         plan = '{\n  "key": true\n}\n'
         prompt = tool_campaign.build_prompt("Skill", plan, "task")
@@ -171,6 +192,113 @@ class CampaignTests(unittest.TestCase):
         self.assertEqual(run["budget"]["calls"], 8)
         self.assertFalse(run["summary"]["gates"]["all_task_quality_pass"])
         self.assertEqual(run["summary"]["net_benefit_gate"], "FAIL")
+
+    def test_known_transport_failure_retains_charge_and_stops_without_resume_replay(self):
+        message = ("Code Mode is unavailable because code-mode host is disabled. "
+                   "Code mode will fail closed; enable `features.code_mode_host` and install `codex-code-mode-host`.")
+        diagnostics = [self.cli_error("Under-development features enabled: skip_host_skill_discovery."),
+                       self.cli_error(message)]
+        self.behavior = lambda task, prompt, bindings: self.no_tool_result(bindings, diagnostics)
+        run = self.collect()
+        self.assertEqual(run["status"], "blocked_transport")
+        self.assertEqual(len(run["observations"]), 1)
+        self.assertEqual(len(self.calls), 1)
+        self.assertEqual(run["budget"]["calls"], 1)
+        self.assertEqual(run["budget"]["total_tokens"], run["observations"][0]["usage"]["total_tokens"])
+        self.assertFalse(run["budget"]["unknown_usage"])
+        self.assertIsNone(run["pending"])
+        self.assertTrue(run["new_protocol_required"])
+        self.assertEqual(run["transport_failure"]["code"], "code-mode-host-disabled")
+        self.assertEqual(run["transport_failure"]["event_line"], 3)
+        self.assertEqual(run["transport_failure"]["message"], message)
+        self.assertEqual(run["transport_failure"]["stdout_sha256"],
+                         run["observations"][0]["result"]["receipt"]["artifact_sha256"]["stdout.raw"])
+        self.assertEqual(run["summary"]["net_benefit_gate"], "FAIL")
+        self.assertFalse(run["summary"]["gates"]["complete_matched_collection"])
+        self.assertFalse(run["summary"]["gates"]["all_task_quality_pass"])
+        before = self.output.read_bytes()
+        self.assertEqual(self.collect(), run)
+        self.assertEqual(self.output.read_bytes(), before)
+        self.assertEqual(len(self.calls), 1)
+        self.protocol["protocol_id"] += "-changed"
+        with self.assertRaisesRegex(ValueError, "mismatch"):
+            self.collect()
+        self.assertEqual(len(self.calls), 1)
+
+    def test_startup_warning_with_no_tools_is_quality_failure_not_transport_stop(self):
+        warning = self.cli_error("Under-development features enabled: skip_host_skill_discovery. Under-development features are incomplete.")
+        self.behavior = lambda task, prompt, bindings: self.no_tool_result(bindings, [warning])
+        run = self.collect()
+        self.assertEqual(run["status"], "completed")
+        self.assertEqual(len(self.calls), 8)
+        self.assertEqual(run["budget"]["total_tokens"], 360)
+        self.assertIsNone(run["summary"]["transport_failure"])
+        self.assertFalse(run["summary"]["gates"]["all_task_quality_pass"])
+
+    def test_model_self_report_cannot_trigger_known_transport_guard(self):
+        message = "Code Mode is unavailable because code-mode host is disabled."
+        diagnostic = {"type": "item.completed", "item": {"type": "agent_message", "text": message}}
+        def self_report(task, prompt, bindings):
+            result = self.no_tool_result(bindings, [diagnostic])
+            result["final_response_text"] = message
+            return result
+        self.behavior = self_report
+        run = self.collect()
+        self.assertEqual(run["status"], "completed")
+        self.assertEqual(len(self.calls), 8)
+        self.assertEqual(run["summary"]["net_benefit_gate"], "FAIL")
+
+    def test_tool_evidence_prevents_transport_wide_classification(self):
+        diagnostic = self.cli_error("Code Mode is unavailable because code-mode host is disabled.")
+        def with_tools(task, prompt, bindings):
+            result = self.no_tool_result(bindings, [diagnostic])
+            result["tool_events"] = [1]
+            return result
+        self.behavior = with_tools
+        run = self.collect()
+        self.assertEqual(run["status"], "completed")
+        self.assertEqual(len(self.calls), 8)
+        self.assertFalse(run["summary"]["gates"]["all_task_quality_pass"])
+
+    def test_tampered_transport_evidence_retains_known_charge_and_fences_replay(self):
+        diagnostic = self.cli_error("Code Mode is unavailable because code-mode host is disabled.")
+        self.behavior = lambda task, prompt, bindings: self.no_tool_result(bindings, [diagnostic], tampered=True)
+        run = self.collect()
+        self.assertEqual(run["status"], "unknown-call-blocked")
+        self.assertEqual(len(run["observations"]), 1)
+        self.assertEqual(run["budget"]["calls"], 1)
+        self.assertGreater(run["budget"]["total_tokens"], 0)
+        self.assertTrue(run["transport_evidence_error"]["known_usage_retained"])
+        self.assertEqual(run["pending"]["kind"], "transport-evidence-unconfirmed")
+        self.assertNotIn("transport_failure", run)
+        with self.assertRaisesRegex(ValueError, "pending"):
+            self.collect()
+        self.assertEqual(len(self.calls), 1)
+
+    def test_missing_transport_artifact_fails_closed_without_replay(self):
+        def missing(task, prompt, bindings):
+            result = self.result(bindings, quality=False)
+            result["tool_events"] = []
+            return result
+        self.behavior = missing
+        run = self.collect()
+        self.assertEqual(run["status"], "unknown-call-blocked")
+        self.assertEqual(run["budget"]["calls"], 1)
+        self.assertGreater(run["budget"]["total_tokens"], 0)
+        self.assertEqual(run["pending"]["kind"], "transport-evidence-unconfirmed")
+        with self.assertRaisesRegex(ValueError, "pending"):
+            self.collect()
+        self.assertEqual(len(self.calls), 1)
+
+    def test_known_transport_failure_retains_also_measured_budget_overrun(self):
+        diagnostic = self.cli_error("Code Mode is unavailable because code-mode host is disabled.")
+        self.protocol["budget"]["tokens"] = 1
+        self.behavior = lambda task, prompt, bindings: self.no_tool_result(bindings, [diagnostic])
+        run = self.collect()
+        self.assertEqual(run["status"], "blocked_transport")
+        self.assertIn("tokens", run["actual_budget_overrun"])
+        self.assertEqual(len(self.calls), 1)
+        self.assertEqual(run["summary"]["actual_charged_usage"], run["budget"])
 
     def test_local_receipt_reuse_is_not_a_new_sample_or_new_charge(self):
         self.behavior = lambda task, prompt, bindings: self.result(bindings, replay=True)

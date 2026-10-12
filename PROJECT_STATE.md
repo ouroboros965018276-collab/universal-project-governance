@@ -14,6 +14,15 @@ binary hashing/compilation. Local warm preparation improves; new independent
 model token/time benefit remains pending. Formal qualification is UNASSESSED.
 Historical source, frozen measurements and unresolved limits below remain intact.
 
+The first [RC19 development transport](docs/rc19-tools-development-v1.md)
+completed eight known paid CLI turns using 208596 tokens, but the disabled
+Code Mode host prevented every tool call. Task quality was 0/8 and benefit
+admission failed. Original records and costs are retained; the pre-call
+`rc19-latency-tools.audit.json` is a historical preparation snapshot.
+No RC19 final independent calls, default-branch merge or local deployment have
+occurred at this checkpoint. The child transport is being corrected before
+a separately frozen development probe.
+
 ## RC18 candidate — paired measurements and nine-arm matrix completed
 
 The default branch already contains RC17 through [PR #18](https://github.com/ouroboros965018276-collab/universal-project-governance/pull/18), merge `e63f438bdee2b9d65c49db6c621e968d6b185e56`. RC18 continues from that release. The prior RC17/RC16 records below describe their original stages; their test counts, failures, unknowns and qualification outcomes are retained.

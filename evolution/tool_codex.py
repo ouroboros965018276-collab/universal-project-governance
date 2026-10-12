@@ -23,14 +23,14 @@ from .tool_broker import RepoBroker, TOOLS, canonical, git_command, sha, tool_de
 
 VERSION = "1"
 _BROKER = Path(__file__).with_name("tool_broker.py")
-_CONFIG_KEYS = {"binary", "git_binary", "model", "effort", "artifact_root", "timeout_seconds",
+_CONFIG_KEYS = {"binary", "code_mode_host_binary", "git_binary", "model", "effort", "artifact_root", "timeout_seconds",
                 "cli_version", "max_tool_calls"}
 _BINDING_KEYS = {"campaign_id", "sample_id", "protocol_sha256", "source_sha256",
                  "runtime_sha256", "candidate_sha256"}
 _DISABLED = ("shell_tool", "unified_exec", "apps", "plugins", "remote_plugin", "hooks",
              "multi_agent", "multi_agent_v2", "browser_use", "computer_use", "in_app_browser",
              "image_generation", "view_image", "workspace_dependencies", "skill_search",
-             "skill_mcp_dependency_install", "sleep_tool", "code_mode", "code_mode_host")
+             "skill_mcp_dependency_install", "sleep_tool")
 FINAL_SCHEMA = {"type": "object", "properties": {"summary": {"type": "string"},
                 "validation": {"type": "string", "enum": ["passed", "failed"]},
                 "helper_gap": {"type": "string", "enum": ["project_tool unavailable in bounded broker"]}},
@@ -184,14 +184,19 @@ class ToolCodex:
         started = time.perf_counter()
         if not isinstance(config, dict) or set(config) - _CONFIG_KEYS:
             raise ValueError("unsupported tool configuration; no credential fields accepted")
-        for key in ("binary", "git_binary", "model", "effort", "artifact_root", "timeout_seconds"):
+        for key in ("binary", "code_mode_host_binary", "git_binary", "model", "effort", "artifact_root", "timeout_seconds"):
             if key not in config:
                 raise ValueError("tool configuration requires " + key)
         self.config = dict(config)
         self.binary, self.git = Path(config["binary"]), Path(config["git_binary"])
+        self.code_mode_host = Path(config["code_mode_host_binary"])
+        self.package_manifest = self.binary.parent.parent / "codex-package.json"
         self.artifacts = Path(config["artifact_root"])
-        if not all(path.is_absolute() and path.is_file() for path in (self.binary, self.git)):
-            raise ValueError("registered native CLI and Git must be absolute files")
+        if not all(path.is_absolute() and path.is_file() for path in (self.binary, self.code_mode_host, self.git)):
+            raise ValueError("registered native CLI, Code Mode host and Git must be absolute files")
+        host_name = "codex-code-mode-host.exe" if os.name == "nt" else "codex-code-mode-host"
+        if self.code_mode_host.name != host_name or self.code_mode_host.resolve().parent != self.binary.resolve().parent:
+            raise ValueError("registered Code Mode host must be the native CLI's installed sibling")
         if not self.artifacts.is_absolute():
             raise ValueError("artifact root must be absolute")
         if not isinstance(config["model"], str) or not config["model"].strip():
@@ -208,15 +213,28 @@ class ToolCodex:
         self.setup_seconds = time.perf_counter() - started
 
     def _identity(self):
-        return {"adapter": "codex-exec-required-bounded-mcp-v1", "config_sha256": sha(canonical(self.config)),
+        manifest_hash = None
+        if self.package_manifest.exists():
+            raw_manifest = self.package_manifest.read_bytes()
+            manifest = json.loads(raw_manifest)
+            if (manifest.get("layoutVersion") != 1 or not isinstance(manifest.get("entrypoint"), str)
+                    or (self.package_manifest.parent / manifest["entrypoint"]).resolve() != self.binary.resolve()):
+                raise ValueError("installed package manifest does not identify registered CLI")
+            manifest_hash = sha(raw_manifest)
+        return {"adapter": "codex-exec-required-bounded-mcp-v2", "config_sha256": sha(canonical(self.config)),
                 "binary_sha256": sha(self.binary.read_bytes()), "git_sha256": sha(self.git.read_bytes()),
+                "code_mode_host_sha256": sha(self.code_mode_host.read_bytes()),
+                "package_manifest_sha256": manifest_hash,
+                "code_mode_host_process_path_attested": False,
                 "adapter_source_sha256": sha(Path(__file__).read_bytes()), "broker_source_sha256": sha(_BROKER.read_bytes()),
                 "tool_schema_sha256": sha(canonical(tool_definitions())),
                 "host": {"platform": platform.platform(), "python_version": platform.python_version(),
                          "python_binary_sha256": sha(Path(sys.executable).read_bytes())},
                 "model_requested": self.config["model"], "effort_requested": self.config["effort"],
                 "cli_version_declared": self.config.get("cli_version"), "isolation_attested": False,
-                "tool_scope": "registered-text-static-contracts-and-fixed-git-status"}
+                "tool_scope": "registered-text-static-contracts-and-fixed-git-status",
+                "tool_transport": "installed-code-mode-v8-required-mcp",
+                "code_mode_configuration_enabled": False}
 
     def binding(self):
         if (sha(canonical(self.config)) != self._frozen["config_sha256"]
@@ -250,7 +268,9 @@ class ToolCodex:
                    "--model", self.config["model"], "--output-schema", str(directory / "output.schema.json"),
                    "-c", "model_reasoning_effort=" + json.dumps(self.config["effort"]),
                    "-c", 'web_search="disabled"', "-c", "features.skip_host_skill_discovery=true",
-                   "-c", "hide_agent_reasoning=true", "-c", "project_doc_max_bytes=0"]
+                   "-c", "hide_agent_reasoning=true", "-c", "project_doc_max_bytes=0",
+                   "-c", "features.code_mode.enabled=false", "-c", "features.code_mode_host=true",
+                   "-c", "suppress_unstable_features_warning=true"]
         for feature in _DISABLED:
             command.extend(["-c", "features." + feature + "=false"])
         mcp = {"command": sys.executable, "args": ["-B", str(_BROKER), str(spec_file)],

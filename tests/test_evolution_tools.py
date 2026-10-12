@@ -195,7 +195,10 @@ class ToolAdapterTests(unittest.TestCase):
         self.root = Path(self.temporary.name)
         self.binary = self.root / "fake-codex.exe"
         self.binary.write_bytes(b"registered offline mock CLI")
+        self.code_mode_host = self.root / ("codex-code-mode-host.exe" if os.name == "nt" else "codex-code-mode-host")
+        self.code_mode_host.write_bytes(b"registered offline mock V8 host")
         self.config = {"binary": str(self.binary), "git_binary": shutil.which("git"), "model": "explicit-mock-model",
+                       "code_mode_host_binary": str(self.code_mode_host),
                        "effort": "low", "artifact_root": str(self.root / "calls-root"), "timeout_seconds": 180,
                        "cli_version": "mock-only", "max_tool_calls": 32}
         self.adapter = ToolCodex(self.config)
@@ -232,8 +235,56 @@ class ToolAdapterTests(unittest.TestCase):
         self.assertEqual(arguments[arguments.index("--sandbox") + 1], "read-only")
         for config in ("features.shell_tool=false", "features.plugins=false", "features.hooks=false",
                        "features.apps=false", "features.multi_agent=false", 'web_search="disabled"',
-                       "mcp_servers.upg_repo.required=true"):
+                       "mcp_servers.upg_repo.required=true", "features.code_mode.enabled=false",
+                       "features.code_mode_host=true", "suppress_unstable_features_warning=true"):
             self.assertIn(config, arguments)
+        self.assertNotIn("features.code_mode=false", arguments)
+        self.assertNotIn("features.code_mode_host=false", arguments)
+        self.assertIn("mcp_servers.upg_repo.env_vars=[]", arguments)
+
+    def test_host_must_be_registered_installed_absolute_sibling(self):
+        absent = dict(self.config)
+        del absent["code_mode_host_binary"]
+        with self.assertRaisesRegex(ValueError, "requires code_mode_host_binary"):
+            ToolCodex(absent)
+        for host in ("relative-host", str(self.root / "missing"), str(self.binary)):
+            with self.subTest(host=host), self.assertRaises(ValueError):
+                ToolCodex(dict(self.config, code_mode_host_binary=host))
+
+    def test_host_hash_drift_fails_before_dispatch_with_known_zero_usage(self):
+        self.assertEqual(self.adapter.binding()["code_mode_host_sha256"], sha(self.code_mode_host.read_bytes()))
+        self.code_mode_host.write_bytes(b"tampered V8 host")
+        with mock.patch("evolution.tool_codex.subprocess.run", side_effect=self.fake_run):
+            with self.assertRaises(ToolCallPending) as captured:
+                self.adapter.run(task(), prompt="public fixture", bindings=self.bindings)
+        self.assertEqual(self.cli_calls, 0)
+        self.assertEqual(captured.exception.usage["total_tokens"], 0)
+        self.assertFalse(captured.exception.provider_receipt["model_invoked"])
+
+    def test_package_manifest_is_bound_and_must_match_registered_cli(self):
+        package = self.root / "packaged"
+        (package / "bin").mkdir(parents=True)
+        binary = package / "bin/codex.exe"
+        binary.write_bytes(b"mock packaged CLI")
+        host = package / "bin" / self.code_mode_host.name
+        host.write_bytes(b"mock packaged V8 host")
+        manifest = package / "codex-package.json"
+        manifest.write_bytes(canonical({"layoutVersion": 1, "entrypoint": "bin/codex.exe"}))
+        adapter = ToolCodex(dict(self.config, binary=str(binary), code_mode_host_binary=str(host)))
+        binding = adapter.binding()
+        self.assertEqual(binding["package_manifest_sha256"], sha(manifest.read_bytes()))
+        self.assertFalse(binding["code_mode_host_process_path_attested"])
+        manifest.write_bytes(canonical({"layoutVersion": 1, "entrypoint": "wrong.exe"}))
+        with self.assertRaisesRegex(ValueError, "manifest does not identify"):
+            adapter._identity()
+
+    def test_host_transport_does_not_waive_unknown_tool_or_error_events(self):
+        for item in ({"type": "code_mode", "source": "fetch('https://example.invalid')"},
+                     {"type": "custom_tool_call", "name": "exec"},
+                     {"type": "error", "message": "Code Mode unavailable"},
+                     {"type": "mcp_tool_call", "server": "ambient", "tool": "repo_read", "arguments": {}}):
+            with self.subTest(item=item):
+                self.assertTrue(_trace_failures([{"type": "item.completed", "item": item}], [], 32))
 
     def test_actual_tools_usage_receipt_and_same_sample_reuse(self):
         with mock.patch("evolution.tool_codex.subprocess.run", side_effect=self.fake_run):
