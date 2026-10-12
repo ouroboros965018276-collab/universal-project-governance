@@ -4,7 +4,7 @@
     "documentation corrections that do not change frozen semantics",
     "external adapter instances/configuration that satisfy the frozen adapter contract"
   ],
-  "behavioral_fingerprint": "sha256:5642954c41cbce8dc862ce44d6467c9422783773d7b7ada67d561dfeafde2f21",
+  "behavioral_fingerprint": "sha256:7cf07cd21082be85a13f52e9487f7ad2f0e9889e55bce7e9cf86eb5320c83dca",
   "compiler_sha256": "sha256:7673f9f2a2eec9cef300bd50ab8589f2f331a649e160be6bba1412ab0936d135",
   "deployment_sha256": "sha256:716b4348dc21f15cc35d349e2da717195a20d053a265573ed267ee1fcab8bacf",
   "evaluator_sha256": "sha256:2c766ef935543f9f6cca34649529e2bac6cc5c33e63e9c5d1eff5a678e75beed",
@@ -32,10 +32,10 @@
   ],
   "governance_model_sha256": "sha256:2527d07c4ce63f487ec1521c5f1119fa3ac3b9485ac1cf099604ae76336c6714",
   "hash_algorithm_revision": "repo-relative-posix-v2",
-  "qualification_fingerprint": "sha256:75296c4d16f408f14b4e1ec948918aa2142c5e00184706e30472902f120ac268",
+  "qualification_fingerprint": "sha256:10f15583bd1c3d7bcfd2168d6f751eac015b3aa421f37afbbef22f829cec965a",
   "qualification_protocol_sha256": "sha256:464fcdb23f0b107e9c53149ae377945ff8417615dc47d4c9895a76c088fdddd3",
   "runner_sha256": "sha256:b90fdc5dbd8238684c7e9816ea677fcf9b3d38a6c7ef5ca337c7e628fb1f238a",
-  "runtime_tree_sha256": "sha256:d6092dc1a712cafee1baab8d532df854c7a11b148d722142cfa0c936974f1adb",
+  "runtime_tree_sha256": "sha256:891c0060fb812c1bbe6b5a21069933825b423c5367b5b60c46df1aba43932650",
   "schema_version": 3,
   "state": "real-agent-test-freeze",
   "version": "3.0.0-rc.19"

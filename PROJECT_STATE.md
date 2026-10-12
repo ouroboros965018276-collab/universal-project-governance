@@ -194,6 +194,19 @@ Tool B have no new dispatches. Default main and the installed Skill remain RC18;
 neither the passing engineering checks nor the development probe authorize
 promotion without the required independent token/time/quality evidence.
 
+Independent [A4 reconciliation](docs/rc19-native-independent-a-v4.md) confirmed
+zero actual CLI entries before the failed input digest. The corrected strict
+ASCII JSONL wire passed 34 focused tests, including three real CP936 Python
+subprocess canaries; an independent run passed the four new cases. Source,
+digest, callback timing, grading and CLI argument semantics are preserved.
+The next cost-guidance candidate batches known source/consumer/contract/evidence/
+state reads and derives records from verified writes and unchanged current
+reads. Its 8807-byte Skill is seven bytes smaller than the v8 candidate; this
+is not token-benefit evidence. Policies and Hot Path are identical, all eight
+release checks pass, and the new qualification fingerprint is
+`sha256:10f15583bd1c3d7bcfd2168d6f751eac015b3aa421f37afbbef22f829cec965a`.
+New source-bound native and tool experiments are required before any promotion.
+
 ## RC18 candidate — paired measurements and nine-arm matrix completed
 
 The default branch already contains RC17 through [PR #18](https://github.com/ouroboros965018276-collab/universal-project-governance/pull/18), merge `e63f438bdee2b9d65c49db6c621e968d6b185e56`. RC18 continues from that release. The prior RC17/RC16 records below describe their original stages; their test counts, failures, unknowns and qualification outcomes are retained.
