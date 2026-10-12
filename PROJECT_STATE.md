@@ -2,7 +2,31 @@
 
 Current candidate: **3.0.0-rc.19 — Project Fact Recovery and Measured Execution Cost**.
 
-## RC19 current development checkpoint
+## RC19 independent confirmation checkpoint
+
+The [final B v12 audit](docs/rc19-tools-independent-v12.md) preserves an
+infrastructure-incomplete round: 10 completed strict passes / 730,397 reported
+tokens, then one Sol connection failure without completed usage; 37 planned
+calls were not dispatched. Original unknown fences remain. The ephemeral CLI
+left no persisted matching session or completed usage, so that cost cannot be
+recovered or treated as zero. Net admission remains FAIL. The independent audit
+passed 1,242 assertions and preserved 228 original files byte-for-byte.
+Cumulative accounting is 379 known completed turns / 14,232,738 tokens plus
+five unknown dispatches, 384 actual CLI dispatches.
+
+The 8,303-byte candidate remains frozen. One additional prospectively registered
+C round will use twelve new sealed instances from the same six known families,
+fixed generation seed 19013, the same models/transport/budget and all original
+gates, plus an additional 99% bootstrap confirmation requirement. It is a
+single fixed replication caused by B transport interruption, not a replay,
+stitched result or repeated search for a passing round. B failures and costs
+remain public. Per-round intervals do not establish a single 95% guarantee for
+the whole multiround research sequence. C generation and confirmation analysis
+are being independently prepared without model calls or candidate tuning.
+Default main and the globally installed Skill remain RC18; no release promotion
+or local overwrite is allowed without complete independent net-benefit evidence.
+
+## RC19 preceding development checkpoint
 
 The completed [v10 tool comparison](docs/rc19-tools-development-v10.md) retains
 32 fresh calls and 2,571,232 reported tokens without unknown usage. Independent
