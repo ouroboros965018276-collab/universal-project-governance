@@ -6,6 +6,7 @@
 - Reuses exact-configuration native clients and hash-verified deterministic preparation; retains a full binary hash before each dispatch and records phase timings.
 - Compacts planner JSON whitespace without changing plan values; preserves canonical Skill obligations and adds bounded-context, batching and verified-reuse guidance.
 - Adds a required bounded repository MCP broker, positive JSON/TOML/AST/text contracts, real file/Git tool evidence and frozen matched collection across requested models. Submitted application code is not executed; TOML validation requires Python 3.11+.
+- Keeps terminal summaries and charged budgets on one advancing time snapshot; final summary work crossing a wall threshold prevents benefit admission. Shared tool prompts state actual capability gaps rather than inviting inaccessible governance-path reads.
 - Independent model net benefit and release validation remain pending. Formal qualification is UNASSESSED; no learned candidate or Stable release is promoted.
 
 ## 3.0.0-rc.18 — 2026-10-12 — candidate

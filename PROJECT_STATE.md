@@ -42,6 +42,20 @@ The three rounds total 12 known turns and 431713 tokens. A separately frozen
 they have distinct initial files and expected checks, while sharing these four
 task families, generic prompt templates and the protected NOTICE sentinel.
 
+The complete two-model development comparison subsequently passed 16/16 tasks,
+using 1344852 reported tokens and 102 broker requests (95 successful operations
+and seven recovered, correctly denied reads outside the registered path set).
+Its token point estimate
+was 3.6469% lower, but full callback time was 9.3737% higher; both 95% ratio
+intervals crossed one. Both model timing point estimates regressed. The unchanged
+net-benefit gate failed, so final tasks remain unstarted. Known RC19 rounds now
+total 28 turns and 1776565 tokens, including the ten failed transport turns.
+The next development candidate makes evidence reuse and batched inspection
+explicit, while preserving all policy/plan semantics. Hosted CI also exposed a
+terminal-budget snapshot mismatch: the collector now synchronizes its saved
+summary to the same advancing clock snapshot and blocks benefit if final summary
+work crosses the wall threshold. Historical experiment records are not rewritten.
+
 ## RC18 candidate — paired measurements and nine-arm matrix completed
 
 The default branch already contains RC17 through [PR #18](https://github.com/ouroboros965018276-collab/universal-project-governance/pull/18), merge `e63f438bdee2b9d65c49db6c621e968d6b185e56`. RC18 continues from that release. The prior RC17/RC16 records below describe their original stages; their test counts, failures, unknowns and qualification outcomes are retained.

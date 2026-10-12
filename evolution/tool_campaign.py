@@ -38,7 +38,8 @@ def build_prompt(skill, plan, task_prompt):
     common = ("Perform the maintained-project task with the supplied Skill and task plan. "
               "Use only the provided bounded repository tools. Read the affected files, apply the requested patch, "
               "validate the result and inspect repository status using repo_read, repo_patch, repo_validate and repo_status. "
-              "project_tool is unavailable in this broker: use the existing host receipt/project state fallback and disclose the helper gap. "
+              "project_tool and persistent governance state are unavailable in this broker; follow the supplied governance plan and disclose the helper gap. "
+              "Do not probe unregistered/hidden paths. "
               "The broker cannot execute application code. Finish with only JSON containing summary (string), "
               "validation ('passed' or 'failed'), and helper_gap ('project_tool unavailable in bounded broker').")
     # Delimiters leave plan_text byte-for-byte unchanged inside the prompt.
@@ -267,7 +268,22 @@ def collect(repo, protocol, private_tasks, configs, output):
                    "budget_scope": "actual new CLI attempts; token/time stop thresholds are checked after each measured call"}
 
         def checkpoint():
-            run["budget"] = budget.state()
+            # Publish one advancing budget snapshot everywhere in this write.
+            # Terminal summary work can itself cross a wall stop threshold.
+            snapshot = budget.state()
+            run["budget"] = snapshot
+            if run.get("status") != "running":
+                terminal_overrun = budget.overruns(snapshot)
+                if terminal_overrun:
+                    run["actual_budget_overrun"] = terminal_overrun
+                    if run.get("status") == "completed":
+                        run.update(status="budget-exhausted", stop_reason="terminal measurement exceeded a stop threshold")
+            if isinstance(run.get("summary"), dict):
+                run["summary"]["actual_charged_usage"] = copy.deepcopy(snapshot)
+                run["summary"]["status"] = run["status"]
+                if run["status"] != "completed":
+                    run["summary"]["gates"]["complete_matched_collection"] = False
+                    run["summary"]["net_benefit_gate"] = "FAIL"
             save_run(output, run)
 
         checkpoint()

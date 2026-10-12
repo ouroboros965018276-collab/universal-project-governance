@@ -110,6 +110,11 @@ class CampaignTests(unittest.TestCase):
         prompt = tool_campaign.build_prompt("Skill", plan, "task")
         self.assertIn("\n" + plan + "\n</governance_plan>", prompt)
         self.assertIn("project_tool unavailable in bounded broker", prompt)
+        self.assertIn("project_tool and persistent governance state are unavailable in this broker", prompt)
+        self.assertIn("Do not probe unregistered/hidden paths.", prompt)
+        self.assertNotIn("host receipt/project state fallback", prompt)
+        for tool in ("repo_read", "repo_patch", "repo_validate", "repo_status"):
+            self.assertIn(tool, prompt)
         self.assertNotIn("batch", prompt.lower())
 
     def test_collection_complete_budget_and_completed_resume_no_dispatch(self):
@@ -306,6 +311,71 @@ class CampaignTests(unittest.TestCase):
         self.assertIn("tokens", run["actual_budget_overrun"])
         self.assertEqual(len(self.calls), 1)
         self.assertEqual(run["summary"]["actual_charged_usage"], run["budget"])
+
+    def test_terminal_summary_and_checkpoint_share_advancing_budget_snapshot(self):
+        original_budget, original_save = tool_campaign.Budget, tool_campaign.save_run
+        for blocked in (False, True):
+            with self.subTest(blocked_transport=blocked):
+                clock = [100.0]
+                class ClockedBudget(original_budget):
+                    def __init__(self, **values):
+                        super().__init__(**values, _start=clock[0])
+                def advancing_save(path, run):
+                    original_save(path, run)
+                    clock[0] += .25
+                self.output = Path(self.temporary.name) / ("blocked.json" if blocked else "completed.json")
+                self.calls.clear()
+                self.behavior = (lambda task, prompt, bindings: self.no_tool_result(
+                    bindings, [self.cli_error("Code Mode is unavailable because code-mode host is disabled.")])) if blocked else None
+                with patch.object(tool_campaign, "Budget", ClockedBudget), \
+                     patch("evolution.contracts.time.monotonic", side_effect=lambda: clock[0]), \
+                     patch.object(tool_campaign, "save_run", side_effect=advancing_save):
+                    run = self.collect()
+                    expected_calls = 1 if blocked else 8
+                    self.assertEqual(run["status"], "blocked_transport" if blocked else "completed")
+                    self.assertGreater(run["budget"]["elapsed_seconds"], 0)
+                    self.assertEqual(run["summary"]["actual_charged_usage"], run["budget"])
+                    persisted = json.loads(self.output.read_text())
+                    self.assertEqual(persisted["summary"]["actual_charged_usage"], persisted["budget"])
+                    self.assertEqual(persisted["budget"], run["budget"])
+                    self.assertEqual(tool_campaign.summarize(run, repetitions=10)["actual_charged_usage"], run["budget"])
+                    self.assertEqual(self.collect(), run)
+                    self.assertEqual(len(self.calls), expected_calls)
+
+    def test_terminal_summary_time_crossing_retains_charge_and_blocks_benefit(self):
+        original_budget, original_summary = tool_campaign.Budget, tool_campaign.summarize
+        for blocked in (False, True):
+            with self.subTest(blocked_transport=blocked):
+                clock = [100.0]
+                class ClockedBudget(original_budget):
+                    def __init__(self, **values):
+                        super().__init__(**values, _start=clock[0])
+                def slow_summary(run):
+                    summary = original_summary(run)
+                    clock[0] = 221.0  # The real clock advances past the 120-second stop threshold.
+                    return summary
+                self.output = Path(self.temporary.name) / ("blocked-time.json" if blocked else "completed-time.json")
+                self.calls.clear()
+                self.behavior = (lambda task, prompt, bindings: self.no_tool_result(
+                    bindings, [self.cli_error("Code Mode is unavailable because code-mode host is disabled.")])) if blocked else None
+                with patch.object(tool_campaign, "Budget", ClockedBudget), \
+                     patch("evolution.contracts.time.monotonic", side_effect=lambda: clock[0]), \
+                     patch.object(tool_campaign, "summarize", side_effect=slow_summary):
+                    run = self.collect()
+                    self.assertEqual(run["status"], "blocked_transport" if blocked else "budget-exhausted")
+                    self.assertEqual(run["actual_budget_overrun"]["wall_seconds"]["actual"], 121)
+                    self.assertEqual(run["budget"]["calls"], 1 if blocked else 8)
+                    self.assertEqual(run["budget"]["total_tokens"], sum(row["usage"]["total_tokens"] for row in run["observations"]))
+                    self.assertFalse(run["budget"]["unknown_usage"])
+                    self.assertIsNone(run["pending"])
+                    self.assertEqual(run["summary"]["status"], run["status"])
+                    self.assertEqual(run["summary"]["actual_charged_usage"], run["budget"])
+                    self.assertFalse(run["summary"]["gates"]["complete_matched_collection"])
+                    self.assertEqual(run["summary"]["net_benefit_gate"], "FAIL")
+                    persisted = json.loads(self.output.read_text())
+                    self.assertEqual(persisted, run)
+                    self.assertEqual(self.collect(), run)
+                    self.assertEqual(len(self.calls), 1 if blocked else 8)
 
     def test_registered_failed_mcp_approval_stops_after_known_charge_without_replay(self):
         diagnostic = self.mcp_approval_error()

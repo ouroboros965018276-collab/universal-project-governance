@@ -36,7 +36,7 @@ Adopt legacy projects in place without restructuring/migration: use artifacts as
 
 Local low-risk edits use the hot path and proportional evidence; no architecture work for isolated corrections. Non-trivial work follows STRUCTURAL_INTEGRATION: remove superseded shims/branches/compatibility paths/detached fixes in scope; no unrelated redesign, API/contract change, migration, or refactor.
 
-Bound cost with task-relevant context. Batch independent reads/checks when safe and reuse verified evidence instead of repeating it. Reuse immutable artifacts only when source/tool/context identities match; validate cached bytes. Preserve task quality, required checks and governance constraints.
+Bound cost with task-relevant context. Read known related files in one request when supported. Plan edits from that context, then batch independent checks of the changed state, including repository status when applicable. Reuse successful checks and tool-returned content while source/tool/context identities match; validate cached bytes. Repeat inspection only after changes, failures, uncertain results or an applicable project requirement. Stop once task acceptance and governance obligations have evidence. Preserve task quality, required checks and governance constraints.
 
 Use verified Python 3.8+ for helpers; on Windows resolve `py -3` or its executable path, never assume `python3` works. Substitute that interpreter below. Compile typed context:
 
