@@ -248,6 +248,8 @@ def collect(repo, protocol, private_tasks, configs, output):
             run = json.loads(output.read_text(encoding="utf-8"))
             if run.get("identities") != identities or run.get("order") != order:
                 raise ValueError("campaign checkpoint protocol/task/config/capability/engine mismatch")
+            if run.get("joint_family_intervals_required") is not True:
+                raise ValueError("campaign checkpoint lacks required joint-family interval contract")
             if run.get("pending"):
                 raise ValueError("campaign pending call requires independent reconciliation; never automatic replay")
             if run.get("status") != "running":
@@ -256,6 +258,7 @@ def collect(repo, protocol, private_tasks, configs, output):
         else:
             run = {"schema_version": 1, "protocol_id": protocol["protocol_id"], "stage": protocol["stage"],
                    "status": "running", "identities": identities, "order": order, "observations": [],
+                   "joint_family_intervals_required": True,
                    "pending": None, "budget": budget.state(), "capabilities": capabilities,
                    "models_requested": protocol["models"], "task_ids": protocol["task_ids"],
                    "conditions": {name: {key: value for key, value in condition.items()
@@ -419,6 +422,31 @@ def _metric(pairs, metric, repetitions, seed):
             "paired_model_family_bootstrap_95_interval": interval}
 
 
+def _joint_family_metric(pairs, metric, repetitions, seed):
+    """Resample shared families, retaining every model/pair in each block."""
+    if not pairs or any(not _finite(_value(row, metric)) for pair in pairs for row in pair):
+        return None
+    control = sum(_value(pair[0], metric) for pair in pairs)
+    treatment = sum(_value(pair[1], metric) for pair in pairs)
+    blocks = {}
+    for pair in pairs:
+        blocks.setdefault(pair[0]["family"], []).append(pair)
+    families, ratios, rng = sorted(blocks), [], random.Random(seed)
+    if control > 0:
+        for unused in range(repetitions):
+            sample = [pair for unused_family in families for pair in blocks[rng.choice(families)]]
+            denominator = sum(_value(pair[0], metric) for pair in sample)
+            if denominator > 0:
+                ratios.append(sum(_value(pair[1], metric) for pair in sample) / denominator)
+    ratios.sort()
+    interval = ([ratios[int(len(ratios) * .025)], ratios[min(len(ratios) - 1, int(len(ratios) * .975))]]
+                if ratios else None)
+    return {"control_total": control, "treatment_total": treatment,
+            "ratio": treatment / control if control > 0 else None,
+            "savings_fraction": 1 - treatment / control if control > 0 else None,
+            "paired_joint_family_bootstrap_95_interval": interval}
+
+
 def summarize(run, *, repetitions=BOOTSTRAP_REPETITIONS, seed=BOOTSTRAP_SEED):
     if type(repetitions) is not int or repetitions < 1 or type(seed) is not int:
         raise ValueError("bootstrap repetitions/seed must be explicit valid integers")
@@ -455,7 +483,24 @@ def summarize(run, *, repetitions=BOOTSTRAP_REPETITIONS, seed=BOOTSTRAP_SEED):
         gates[metric + "_every_model_point_improves"] = all(
             (values[metric] or {}).get("ratio") is not None
             and values[metric]["ratio"] < thresholds.get("per_model_ratio_exclusive", 1.0) for values in per_model.values())
-    return {"status": run.get("status"), "matched_pairs": len(pairs), "expected_pairs": expected,
+    joint = None
+    if "joint_family_intervals_required" in run:
+        families_by_model = [{pair[0]["family"] for pair in pairs if pair[0]["model"] == model}
+                             for model in run["models_requested"]]
+        task_families = {}
+        for pair in pairs:
+            task_families.setdefault(pair[0]["task_id"], set()).update(row["family"] for row in pair)
+        coverage = (run["joint_family_intervals_required"] is True and complete
+                    and len(families_by_model) >= 2 and len(families_by_model[0]) >= 2
+                    and all(families == families_by_model[0] for families in families_by_model)
+                    and all(len(families) == 1 for families in task_families.values()))
+        gates["joint_family_complete_cross_model_coverage"] = coverage
+        joint = {name: _joint_family_metric(pairs, name, repetitions, seed) if coverage else None
+                 for name in ("total_tokens", "wall_seconds")}
+        for metric, key in (("total_tokens", "tokens_ci_upper_exclusive"), ("wall_seconds", "wall_ci_upper_exclusive")):
+            interval = (joint[metric] or {}).get("paired_joint_family_bootstrap_95_interval")
+            gates[metric + "_joint_family_ci_upper_improves"] = interval is not None and interval[1] < thresholds.get(key, 1.0)
+    summary = {"status": run.get("status"), "matched_pairs": len(pairs), "expected_pairs": expected,
             "net_benefit_gate": "PASS" if all(gates.values()) else "FAIL", "gates": gates,
             "transport_failure": run.get("transport_failure"),
             "new_protocol_required": run.get("new_protocol_required", False),
@@ -467,3 +512,9 @@ def summarize(run, *, repetitions=BOOTSTRAP_REPETITIONS, seed=BOOTSTRAP_SEED):
             "bootstrap": {"method": "paired-task-family-block-bootstrap-stratified-by-requested-model",
                           "repetitions": repetitions, "seed": seed, "confidence": .95},
             "budget_limit": "actual reported CLI usage; no guaranteed provider token hard pre-cap"}
+    if joint is not None:
+        summary.update(joint_family_intervals_required=True, joint_family_metrics=joint,
+                       joint_family_bootstrap={"method": "paired-shared-task-family-block-bootstrap-joint-across-requested-models",
+                                               "block_members": "all matched pairs from all requested models in the sampled family",
+                                               "repetitions": repetitions, "seed": seed, "confidence": .95})
+    return summary

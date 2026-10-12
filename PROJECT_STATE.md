@@ -56,6 +56,31 @@ terminal-budget snapshot mismatch: the collector now synchronizes its saved
 summary to the same advancing clock snapshot and blocks benefit if final summary
 work crosses the wall threshold. Historical experiment records are not rewritten.
 
+The [v4 development audit](docs/rc19-tools-development-v4.md) retains another
+16 completed calls and 1078496 tokens. All 32 positive artifact checks and all
+76 broker operations passed, but four calls contained transport errors, so strict
+task quality was 12/16. Token use fell 2.8023% with a ratio interval below one;
+callback time fell 6.1966% as a point estimate, but its interval crossed one and
+one model regressed slightly. Net admission therefore remains FAIL. The five
+RC19 rounds total 44 completed calls and 2855061 reported tokens; independent
+final tasks remain uncalled and the installed Skill remains accepted RC18.
+
+A prospective shared child HTTP profile is now being prepared for both arms.
+The matching official CLI loaded its provider configuration and retained the
+existing ChatGPT login in read-only RPC checks. No inference was performed in
+that check. This addresses the newly observed TLS/WebSocket errors, whose
+relation to the historical RC18 tail remains unknown. A separate artifact-grader
+repair rejects duplicate JSON keys, non-finite numbers and Python's bool/int
+equality ambiguity. It applies to new trials, not retrospective regrading.
+
+The new prospective [uncertainty registration](evolution/protocol/rc19-joint-family-uncertainty-v1.json)
+also requires joint task-family intervals preserving both requested models,
+in addition to every original acceptance gate. Four known families remain four
+independent blocks, regardless of model or instance count. A separately published
+[native callback collector](docs/evolution/native-paired-campaign.md) measures
+actual public-entry preparation, CLI and evidence costs in persistent matched
+workers; it has performed no inference at this checkpoint.
+
 ## RC18 candidate — paired measurements and nine-arm matrix completed
 
 The default branch already contains RC17 through [PR #18](https://github.com/ouroboros965018276-collab/universal-project-governance/pull/18), merge `e63f438bdee2b9d65c49db6c621e968d6b185e56`. RC18 continues from that release. The prior RC17/RC16 records below describe their original stages; their test counts, failures, unknowns and qualification outcomes are retained.

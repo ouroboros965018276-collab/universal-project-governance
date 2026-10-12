@@ -250,6 +250,95 @@ class ToolAdapterTests(unittest.TestCase):
         self.assertNotIn("features.code_mode_host=false", arguments)
         self.assertIn("mcp_servers.upg_repo.env_vars=[]", arguments)
 
+    def test_fixed_http_provider_is_exact_and_bound_to_effective_configuration(self):
+        arguments = self.adapter._arguments(self.root, self.root / "spec.json")
+        overrides = [arguments[index + 1] for index, value in enumerate(arguments) if value == "-c"]
+        provider = dict(value.split("=", 1) for value in overrides
+                        if value.startswith(("model_provider=", "model_providers.")))
+        self.assertEqual(provider, {
+            "model_provider": '"upg_openai_http"',
+            "model_providers.upg_openai_http.name": '"OpenAI"',
+            "model_providers.upg_openai_http.wire_api": '"responses"',
+            "model_providers.upg_openai_http.requires_openai_auth": "true",
+            "model_providers.upg_openai_http.supports_websockets": "false"})
+        profile = {"name": "OpenAI", "wire_api": "responses", "requires_openai_auth": True,
+                   "supports_websockets": False}
+        capability = self.adapter.binding()
+        self.assertEqual(capability["model_provider"], "upg_openai_http")
+        self.assertEqual(capability["model_provider_profile"], profile)
+        self.assertEqual(capability["model_provider_profile_sha256"], sha(canonical(profile)))
+        self.assertEqual(capability["config_sha256"], sha(canonical(self.adapter.config)))
+        self.assertNotIn("model_provider", self.config)
+        self.assertNotIn("model_provider_profile", self.config)
+
+    def test_both_conditions_use_same_http_profile_and_do_not_access_host_configuration(self):
+        home = self.root / "owner-cli-home"
+        home.mkdir()
+        owner_config = home / "config.toml"
+        original = b'model_provider="owner-profile"\n[model_providers.owner-profile]\nname="owner choice"\n'
+        owner_config.write_bytes(original)
+        original_open = Path.open
+        def guarded_open(path, *args, **kwargs):
+            try:
+                path.relative_to(home)
+            except ValueError:
+                return original_open(path, *args, **kwargs)
+            raise AssertionError("adapter must not read, copy or alter host configuration")
+        with mock.patch.dict(os.environ, {"CODEX_HOME": str(home)}), \
+                mock.patch("evolution.tool_codex.Path.open", guarded_open), \
+                mock.patch("evolution.tool_codex.subprocess.run", side_effect=self.fake_run):
+            control = self.adapter.run(task(), prompt="control runtime and plan",
+                                       bindings=dict(self.bindings, sample_id="control", source_sha256="control-source"))
+            treatment = self.adapter.run(task(), prompt="treatment runtime and plan",
+                                         bindings=dict(self.bindings, sample_id="treatment", source_sha256="treatment-source"))
+        self.assertEqual(self.cli_calls, 2)
+        profiles = []
+        for result in (control, treatment):
+            self.assertEqual(result["quality"]["task_success"], 1)
+            self.assertEqual(result["receipt"]["capability"], self.adapter.binding())
+            argv = result["receipt"]["argv"]
+            profiles.append([value for value in argv if value.startswith(("model_provider=", "model_providers."))])
+            self.assertIn("--ignore-user-config", argv)
+            self.assertEqual(argv[argv.index("--ask-for-approval") + 1], "never")
+            self.assertEqual(argv[argv.index("--sandbox") + 1], "read-only")
+            self.assertEqual({value for value in argv if "approval_mode=" in value}, {
+                'mcp_servers.upg_repo.tools.' + name + '.approval_mode="approve"' for name in TOOLS})
+        self.assertEqual(profiles[0], profiles[1])
+        self.assertEqual(len(profiles[0]), 5)
+        self.assertEqual(owner_config.read_bytes(), original)
+        self.assertEqual(list(home.iterdir()), [owner_config])
+
+    def test_provider_or_credential_overrides_cannot_be_injected(self):
+        for key in ("model_provider", "model_provider_profile", "model_providers", "base_url", "env_key",
+                    "auth", "headers", "http_headers", "query_params", "gateway"):
+            with self.subTest(key=key), self.assertRaisesRegex(ValueError, "no credential fields accepted"):
+                ToolCodex(dict(self.config, **{key: "disallowed override"}))
+
+    def test_http_profile_drift_is_rejected_before_dispatch(self):
+        self.adapter.config["model_provider_profile"]["supports_websockets"] = True
+        with mock.patch("evolution.tool_codex.subprocess.run", side_effect=self.fake_run):
+            with self.assertRaisesRegex(ValueError, "capability changed after registration"):
+                self.adapter.run(task(), prompt="public fixture", bindings=self.bindings)
+        self.assertEqual(self.cli_calls, 0)
+        self.assertFalse((self.root / "calls-root").exists())
+
+    def test_artifact_root_bound_to_old_provider_is_not_rewritten_or_replayed(self):
+        artifact_root = Path(self.config["artifact_root"])
+        artifact_root.mkdir()
+        old_capability = self.adapter.binding()
+        for key in ("model_provider", "model_provider_profile", "model_provider_profile_sha256"):
+            del old_capability[key]
+        old_capability["config_sha256"] = sha(canonical(self.config))
+        capability_file = artifact_root / "CAPABILITY.json"
+        old_bytes = canonical(old_capability) + b"\n"
+        capability_file.write_bytes(old_bytes)
+        with mock.patch("evolution.tool_codex.subprocess.run", side_effect=self.fake_run):
+            with self.assertRaisesRegex(ValueError, "artifact root bound to another capability"):
+                self.adapter.run(task(), prompt="public fixture", bindings=self.bindings)
+        self.assertEqual(self.cli_calls, 0)
+        self.assertEqual(capability_file.read_bytes(), old_bytes)
+        self.assertFalse((artifact_root / "calls").exists())
+
     def test_host_must_be_registered_installed_absolute_sibling(self):
         absent = dict(self.config)
         del absent["code_mode_host_binary"]

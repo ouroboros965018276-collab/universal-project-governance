@@ -7,6 +7,8 @@
 - Compacts planner JSON whitespace without changing plan values; preserves canonical Skill obligations and adds bounded-context, batching and verified-reuse guidance.
 - Adds a required bounded repository MCP broker, positive JSON/TOML/AST/text contracts, real file/Git tool evidence and frozen matched collection across requested models. Submitted application code is not executed; TOML validation requires Python 3.11+.
 - Keeps terminal summaries and charged budgets on one advancing time snapshot; final summary work crossing a wall threshold prevents benefit admission. Shared tool prompts state actual capability gaps rather than inviting inaccessible governance-path reads.
+- Rejects duplicate JSON keys, non-finite values and bool/number substitutions in new artifact evaluations, including raw output envelopes. Earlier frozen results retain their original grader identity.
+- Prepares a shared child-only HTTP provider profile with existing official authentication and default routing; both release arms retain the same restricted tools and permissions. This is a new measurement scaffold, not a retrospective explanation of RC18 network latency.
 - Independent model net benefit and release validation remain pending. Formal qualification is UNASSESSED; no learned candidate or Stable release is promoted.
 
 ## 3.0.0-rc.18 — 2026-10-12 — candidate

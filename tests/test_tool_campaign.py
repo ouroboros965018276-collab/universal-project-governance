@@ -494,6 +494,94 @@ class CampaignTests(unittest.TestCase):
         self.assertEqual(summary["formal_qualification"], "UNASSESSED")
         self.assertIn("not multiple provider families", summary["provider_family_scope"])
 
+    def test_new_collection_requires_joint_family_gate_without_protocol_opt_out(self):
+        self.protocol["joint_family_intervals_required"] = False
+        run = self.collect()
+        self.assertIs(run["joint_family_intervals_required"], True)
+        self.assertIs(json.loads(self.output.read_text())["joint_family_intervals_required"], True)
+        self.assertEqual(run["summary"]["joint_family_bootstrap"]["repetitions"], 4000)
+        self.assertEqual(run["summary"]["joint_family_bootstrap"]["seed"], 19012)
+        run["joint_family_intervals_required"] = False
+        self.output.write_text(json.dumps(run), encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "joint-family interval contract"):
+            self.collect()
+        self.assertEqual(len(self.calls), 8)
+
+    def test_shared_family_correlation_can_fail_joint_ci_despite_stratified_pass(self):
+        self.tasks = {str(number): {"id": str(number), "family": "shared-" + str(number)} for number in range(4)}
+        self.protocol["task_ids"] = list(self.tasks)
+        run = self.synthetic_summary_run()
+        for row in run["observations"]:
+            value = 100 if row["condition"] == "control" else (120 if row["task_id"] == "3" else 50)
+            row["usage"]["total_tokens"] = value
+            row["collector_wall_seconds"] = value / 10
+        legacy = tool_campaign.summarize(run)
+        self.assertEqual(legacy["net_benefit_gate"], "PASS")
+        run["joint_family_intervals_required"] = True
+        summary = tool_campaign.summarize(run)
+        self.assertEqual(summary["metrics"], legacy["metrics"])
+        self.assertEqual(summary["per_model"], legacy["per_model"])
+        for metric in ("total_tokens", "wall_seconds"):
+            self.assertTrue(summary["gates"][metric + "_ci_upper_improves"])
+            self.assertFalse(summary["gates"][metric + "_joint_family_ci_upper_improves"])
+            self.assertGreaterEqual(summary["joint_family_metrics"][metric]["paired_joint_family_bootstrap_95_interval"][1], 1)
+        self.assertEqual(summary["net_benefit_gate"], "FAIL")
+
+    def test_joint_pass_does_not_override_existing_stratified_failure(self):
+        run = self.synthetic_summary_run()
+        for row in run["observations"]:
+            bad = (row["model"] == self.protocol["models"][0]) == (row["task_id"] == "a")
+            value = 100 if row["condition"] == "control" else (140 if bad else 10)
+            row["usage"]["total_tokens"] = value
+            row["collector_wall_seconds"] = value / 10
+        run["joint_family_intervals_required"] = True
+        summary = tool_campaign.summarize(run)
+        self.assertTrue(summary["gates"]["total_tokens_joint_family_ci_upper_improves"])
+        self.assertTrue(summary["gates"]["wall_seconds_joint_family_ci_upper_improves"])
+        self.assertFalse(summary["gates"]["total_tokens_ci_upper_improves"])
+        self.assertEqual(summary["net_benefit_gate"], "FAIL")
+
+    def test_joint_family_coverage_and_disabled_contract_fail_closed(self):
+        for mode in ("missing-model-family", "mismatched-pair-family", "disabled"):
+            with self.subTest(mode=mode):
+                run = self.synthetic_summary_run()
+                run["joint_family_intervals_required"] = mode != "disabled"
+                if mode == "missing-model-family":
+                    for row in run["observations"]:
+                        if row["model"] == self.protocol["models"][0]:
+                            row["family"] = "one-unshared-family"
+                elif mode == "mismatched-pair-family":
+                    run["observations"][1]["family"] = "incorrect-label"
+                summary = tool_campaign.summarize(run, repetitions=100)
+                self.assertFalse(summary["gates"]["joint_family_complete_cross_model_coverage"])
+                self.assertIsNone(summary["joint_family_metrics"]["total_tokens"])
+                self.assertEqual(summary["net_benefit_gate"], "FAIL")
+
+    def test_legacy_summary_has_exact_unchanged_shape_and_metrics(self):
+        run = self.synthetic_summary_run()
+        summary = tool_campaign.summarize(run, repetitions=100)
+        def metric(control, treatment, interval):
+            return {"control_total": control, "treatment_total": treatment, "ratio": treatment / control,
+                    "savings_fraction": 1 - treatment / control,
+                    "paired_model_family_bootstrap_95_interval": interval}
+        metrics = {"total_tokens": metric(200, 160, [.8, .8]), "wall_seconds": metric(20, 16, [.8, .8]),
+                   "cli_wall_seconds": metric(16, 12, [.75, .75]), "tool_calls": metric(16, 16, [1, 1])}
+        expected = {"status": "completed", "matched_pairs": 4, "expected_pairs": 4, "net_benefit_gate": "PASS",
+                    "gates": {key: True for key in ("complete_matched_collection", "all_task_quality_pass", "all_new_model_calls",
+                              "unique_raw_call_receipts", "at_least_two_families_per_model", "total_tokens_ci_upper_improves",
+                              "total_tokens_every_model_point_improves", "wall_seconds_ci_upper_improves", "wall_seconds_every_model_point_improves")},
+                    "transport_failure": None, "new_protocol_required": False, "metrics": metrics,
+                    "per_model": {model: {name: dict(value, control_total=value["control_total"] / 2,
+                                                     treatment_total=value["treatment_total"] / 2)
+                                           for name, value in metrics.items()} for model in run["models_requested"]},
+                    "actual_charged_usage": None, "source_preparation": None, "formal_qualification": "UNASSESSED", "stage": "independent",
+                    "provider_family_scope": "same-provider requested OpenAI models; not multiple provider families",
+                    "execution_scope": "bounded real repository tools and AST/data inspection; no application-code execution",
+                    "bootstrap": {"method": "paired-task-family-block-bootstrap-stratified-by-requested-model", "repetitions": 100,
+                                  "seed": 19012, "confidence": .95},
+                    "budget_limit": "actual reported CLI usage; no guaranteed provider token hard pre-cap"}
+        self.assertEqual(summary, expected)
+
     def test_pooled_improvement_cannot_hide_model_regression(self):
         run = self.synthetic_summary_run(regressed_model=self.protocol["models"][0])
         summary = tool_campaign.summarize(run, repetitions=100)

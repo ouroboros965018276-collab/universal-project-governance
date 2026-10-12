@@ -188,6 +188,13 @@ class ToolCodex:
             if key not in config:
                 raise ValueError("tool configuration requires " + key)
         self.config = dict(config)
+        # Both experiment conditions use this fixed child-only transport. Keep
+        # endpoint selection and authentication with the installed OpenAI CLI;
+        # callers cannot supply provider/credential overrides through config.
+        self.config["model_provider"] = "upg_openai_http"
+        self.config["model_provider_profile"] = {
+            "name": "OpenAI", "wire_api": "responses",
+            "requires_openai_auth": True, "supports_websockets": False}
         self.binary, self.git = Path(config["binary"]), Path(config["git_binary"])
         self.code_mode_host = Path(config["code_mode_host_binary"])
         self.package_manifest = self.binary.parent.parent / "codex-package.json"
@@ -222,6 +229,9 @@ class ToolCodex:
                 raise ValueError("installed package manifest does not identify registered CLI")
             manifest_hash = sha(raw_manifest)
         return {"adapter": "codex-exec-required-bounded-mcp-v2", "config_sha256": sha(canonical(self.config)),
+                "model_provider": self.config["model_provider"],
+                "model_provider_profile": copy.deepcopy(self.config["model_provider_profile"]),
+                "model_provider_profile_sha256": sha(canonical(self.config["model_provider_profile"])),
                 "binary_sha256": sha(self.binary.read_bytes()), "git_sha256": sha(self.git.read_bytes()),
                 "code_mode_host_sha256": sha(self.code_mode_host.read_bytes()),
                 "package_manifest_sha256": manifest_hash,
@@ -272,6 +282,9 @@ class ToolCodex:
                    "-c", "hide_agent_reasoning=true", "-c", "project_doc_max_bytes=0",
                    "-c", "features.code_mode.enabled=false", "-c", "features.code_mode_host=true",
                    "-c", "suppress_unstable_features_warning=true"]
+        command.extend(["-c", "model_provider=" + json.dumps(self.config["model_provider"])])
+        for key, value in self.config["model_provider_profile"].items():
+            command.extend(["-c", "model_providers." + self.config["model_provider"] + "." + key + "=" + json.dumps(value)])
         for feature in _DISABLED:
             command.extend(["-c", "features." + feature + "=false"])
         mcp = {"command": sys.executable, "args": ["-B", str(_BROKER), str(spec_file)],

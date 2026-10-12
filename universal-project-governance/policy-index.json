@@ -919,7 +919,7 @@
     "release_operation_forces": "audit"
   },
   "schema_version": 1,
-  "source_sha256": "bbb024a02abc64c7276f72ee8a2ccb0c6c1b5c443639755c4feb4757035b6d40",
+  "source_sha256": "7e59567336714d9172fe7787d709f8e8bc60c23ecdf48bfdde280ae288f8d3a1",
   "structural_integration": {
     "exempt_operations": [
       "release"
