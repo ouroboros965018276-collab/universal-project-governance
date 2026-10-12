@@ -166,11 +166,13 @@ class ProcessWorker:
         except queue.Empty as error: raise TimeoutError("worker result unavailable; no retry") from error
         if line is None: raise RuntimeError("worker exited without an authoritative result")
         if isinstance(line, BaseException): raise RuntimeError("worker evidence capture failed") from line
-        return json.loads(line)
+        return json.loads(line.decode("ascii"))
 
     def call(self, command):
         self.active = True
-        self.process.stdin.write((json.dumps(command, ensure_ascii=False, allow_nan=False) + "\n").encode("utf-8"))
+        # JSON escapes preserve Unicode values while the binary wire remains
+        # independent of both processes' Windows locale and stdio settings.
+        self.process.stdin.write((json.dumps(command, ensure_ascii=True, allow_nan=False) + "\n").encode("ascii"))
         self.process.stdin.flush()
         result = self._receive(300)  # 180 CLI + at most 60 compile + 30 plan + bounded evidence slack.
         self.active = False

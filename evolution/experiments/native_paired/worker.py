@@ -69,7 +69,8 @@ def matched_order(models, tasks, seed=19012):
 
 
 def emit(value):
-    print(json.dumps(value, ensure_ascii=False, allow_nan=False), flush=True)
+    sys.stdout.buffer.write((json.dumps(value, ensure_ascii=True, allow_nan=False) + "\n").encode("ascii"))
+    sys.stdout.buffer.flush()
 
 
 def main():
@@ -143,8 +144,10 @@ def main():
     expected_order = manifest["task_order"]
     if len(expected_order) != 8 or len(set(expected_order)) != 8:
         raise ValueError("worker requires its frozen eight-task order")
-    for index, line in enumerate(sys.stdin):
-        command = json.loads(line)
+    # Read the same strict ASCII JSONL wire the parent writes; never let the
+    # host text decoder introduce surrogate escapes into registered sources.
+    for index, line in enumerate(sys.stdin.buffer):
+        command = json.loads(line.decode("ascii"))
         request = command["request"]
         task = request["task"]
         if (index >= len(expected_order) or command.get("protocol_sha256") != dispatch
