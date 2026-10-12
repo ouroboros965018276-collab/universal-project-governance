@@ -11,9 +11,11 @@ import tempfile
 import unittest
 from unittest import mock
 import uuid
+import runpy
 
 from evolution.tool_broker import RepoBroker, TOOLS, canonical, normalize, relative, sha, tool_definitions, validate_task
 from evolution.tool_codex import ToolCodex, ToolCallError, ToolCallPending, _quality, _trace_failures, _usage
+from evolution.cli_transport import profile_configuration, profile_overrides
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -260,13 +262,19 @@ class ToolAdapterTests(unittest.TestCase):
             "model_providers.upg_openai_http.name": '"OpenAI"',
             "model_providers.upg_openai_http.wire_api": '"responses"',
             "model_providers.upg_openai_http.requires_openai_auth": "true",
-            "model_providers.upg_openai_http.supports_websockets": "false"})
+            "model_providers.upg_openai_http.supports_websockets": "false",
+            "model_providers.upg_openai_http.request_max_retries": "0",
+            "model_providers.upg_openai_http.stream_max_retries": "0"})
         profile = {"name": "OpenAI", "wire_api": "responses", "requires_openai_auth": True,
-                   "supports_websockets": False}
+                   "supports_websockets": False, "request_max_retries": 0, "stream_max_retries": 0}
         capability = self.adapter.binding()
         self.assertEqual(capability["model_provider"], "upg_openai_http")
         self.assertEqual(capability["model_provider_profile"], profile)
         self.assertEqual(capability["model_provider_profile_sha256"], sha(canonical(profile)))
+        self.assertEqual(capability["transport_features"], {"unbounded_connection_retries": False})
+        self.assertEqual(capability["transport_profile_source_sha256"], sha((ROOT / "evolution/cli_transport.py").read_bytes()))
+        self.assertEqual(capability["transport_overrides_sha256"], sha(canonical(profile_overrides())))
+        self.assertEqual(overrides.count("features.unbounded_connection_retries=false"), 1)
         self.assertEqual(capability["config_sha256"], sha(canonical(self.adapter.config)))
         self.assertNotIn("model_provider", self.config)
         self.assertNotIn("model_provider_profile", self.config)
@@ -301,15 +309,16 @@ class ToolAdapterTests(unittest.TestCase):
             self.assertIn("--ignore-user-config", argv)
             self.assertEqual(argv[argv.index("--ask-for-approval") + 1], "never")
             self.assertEqual(argv[argv.index("--sandbox") + 1], "read-only")
+            self.assertEqual(argv.count("features.unbounded_connection_retries=false"), 1)
             self.assertEqual({value for value in argv if "approval_mode=" in value}, {
                 'mcp_servers.upg_repo.tools.' + name + '.approval_mode="approve"' for name in TOOLS})
         self.assertEqual(profiles[0], profiles[1])
-        self.assertEqual(len(profiles[0]), 5)
+        self.assertEqual(len(profiles[0]), 7)
         self.assertEqual(owner_config.read_bytes(), original)
         self.assertEqual(list(home.iterdir()), [owner_config])
 
     def test_provider_or_credential_overrides_cannot_be_injected(self):
-        for key in ("model_provider", "model_provider_profile", "model_providers", "base_url", "env_key",
+        for key in ("model_provider", "model_provider_profile", "transport_features", "model_providers", "base_url", "env_key",
                     "auth", "headers", "http_headers", "query_params", "gateway"):
             with self.subTest(key=key), self.assertRaisesRegex(ValueError, "no credential fields accepted"):
                 ToolCodex(dict(self.config, **{key: "disallowed override"}))
@@ -321,6 +330,64 @@ class ToolAdapterTests(unittest.TestCase):
                 self.adapter.run(task(), prompt="public fixture", bindings=self.bindings)
         self.assertEqual(self.cli_calls, 0)
         self.assertFalse((self.root / "calls-root").exists())
+
+    def test_native_and_tool_profiles_share_one_source_and_return_independent_values(self):
+        native = runpy.run_path(str(ROOT / "evolution/experiments/native_paired/transport.py"))
+        self.assertEqual(native["PROFILE"], profile_overrides())
+        self.assertEqual(native["PROFILE_SOURCE"], ROOT / "evolution/cli_transport.py")
+        changed = profile_configuration()
+        changed["model_provider_profile"]["request_max_retries"] = 100
+        changed["transport_features"]["unbounded_connection_retries"] = True
+        self.assertEqual(profile_configuration()["model_provider_profile"]["request_max_retries"], 0)
+        self.assertFalse(profile_configuration()["transport_features"]["unbounded_connection_retries"])
+
+    def test_shared_transport_source_or_feature_drift_blocks_before_dispatch(self):
+        different_source = self.root / "changed-profile.py"
+        different_source.write_bytes(b"raise AssertionError('must never load unregistered source')\n")
+        with mock.patch("evolution.tool_codex._TRANSPORT_PROFILE", different_source), \
+                mock.patch("evolution.tool_codex.subprocess.run", side_effect=self.fake_run):
+            with self.assertRaisesRegex(ValueError, "capability changed after registration"):
+                self.adapter.run(task(), prompt="public fixture", bindings=self.bindings)
+        self.assertEqual(self.cli_calls, 0)
+        self.adapter.config["transport_features"]["unbounded_connection_retries"] = True
+        with self.assertRaisesRegex(ValueError, "capability changed after registration"):
+            self.adapter.binding()
+
+    def test_capacity_failure_without_usage_is_one_unknown_dispatch_and_never_replayed(self):
+        def capacity(arguments, **kwargs):
+            if arguments[0] != str(self.binary):
+                return self.actual_run(arguments, **kwargs)
+            self.cli_calls += 1
+            events = [{"type": "thread.started", "thread_id": "synthetic-capacity-thread"},
+                      {"type": "error", "message": "Selected model is at capacity."},
+                      {"type": "turn.failed", "error": {"message": "Selected model is at capacity."}}]
+            return subprocess.CompletedProcess(arguments, 1, b"\n".join(canonical(e) for e in events), b"")
+        with mock.patch("evolution.tool_codex.subprocess.run", side_effect=capacity):
+            with self.assertRaises(ToolCallError) as captured:
+                self.adapter.run(task(), prompt="public fixture", bindings=self.bindings)
+            self.assertIsNone(captured.exception.usage)
+            with self.assertRaises(ToolCallPending):
+                self.adapter.run(task(), prompt="public fixture", bindings=dict(self.bindings, sample_id="later"))
+        self.assertEqual(self.cli_calls, 1)
+        self.assertTrue((Path(self.config["artifact_root"]) / "UNKNOWN_CALL.json").exists())
+
+    def test_completed_stream_error_keeps_known_usage_and_strict_quality_failure(self):
+        def recovered(arguments, **kwargs):
+            completed = self.fake_run(arguments, **kwargs)
+            if arguments[0] != str(self.binary):
+                return completed
+            events = [json.loads(line) for line in completed.stdout.splitlines()]
+            events.insert(-1, {"type": "error", "message": "Reconnecting... 1/5 (stream disconnected before completion)"})
+            return subprocess.CompletedProcess(arguments, 0, b"\n".join(canonical(event) for event in events), b"")
+        with mock.patch("evolution.tool_codex.subprocess.run", side_effect=recovered):
+            result = self.adapter.run(task(), prompt="public fixture", bindings=self.bindings)
+        self.assertEqual(self.cli_calls, 1)
+        self.assertEqual(result["usage"]["total_tokens"], 110)
+        self.assertEqual(result["quality"]["checks_passed"], 1)
+        self.assertFalse(result["quality"]["hard_pass"])
+        self.assertIn("cli-turn-error", result["quality"]["failures"])
+        self.assertEqual(result["receipt"]["status"], "completed")
+        self.assertFalse((Path(self.config["artifact_root"]) / "UNKNOWN_CALL.json").exists())
 
     def test_artifact_root_bound_to_old_provider_is_not_rewritten_or_replayed(self):
         artifact_root = Path(self.config["artifact_root"])

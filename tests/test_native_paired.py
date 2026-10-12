@@ -32,7 +32,7 @@ class NativePairedTests(unittest.TestCase):
         self.root.joinpath('binary.exe').write_bytes(b'synthetic-no-model-binary')
         self.root.joinpath('git.exe').write_bytes(b'synthetic-no-git-binary')
         self.root.joinpath('catalog.json').write_text(json.dumps({'cli_entry':str(self.root/'binary.exe'),'observed_at_utc':'synthetic-no-model',
-             'catalog':{'data':[{'id':model,'supportedReasoningEfforts':[{'reasoningEffort':'low'}]} for model in ('gpt-6-luna','gpt-6.1-sol')]}}),encoding='utf-8')
+             'catalog':{'data':[{'id':model,'supportedReasoningEfforts':[{'reasoningEffort':'low'}]} for model in ('gpt-6-luna','gpt-6-sol','gpt-6.1-sol')]}}),encoding='utf-8')
         self.blobs={}
         for rev in ('a'*40,'b'*40):
             self.blobs[rev]={
@@ -59,12 +59,13 @@ class NativePairedTests(unittest.TestCase):
         self.assertTrue(Path(self.temporary.name).resolve().is_relative_to(TESTROOT.resolve()))
         self.temporary.cleanup()
 
-    def bundle(self):
+    def bundle(self,models=None,protocol_id='synthetic-native-a-v2'):
         self.counter+=1
         output=self.root/('eval-workspaces/rc19-native-paired-bundle-'+str(self.counter))
         def plan(*args,**kwargs):return subprocess.CompletedProcess(args,0,b'{"synthetic_plan":true}',b'')
         with patch.object(PREP['subprocess'],'check_output',side_effect=self.git),patch.object(PREP['subprocess'],'run',side_effect=plan):
-            info=PREP['prepare'](self.root,output,self.root/('artifacts-'+str(self.counter)),self.root/'binary.exe',self.root/'git.exe','a'*40,'b'*40,self.root/'catalog.json')
+            info=PREP['prepare'](self.root,output,self.root/('artifacts-'+str(self.counter)),self.root/'binary.exe',self.root/'git.exe','a'*40,'b'*40,self.root/'catalog.json',
+                                 models=['gpt-6-luna','gpt-6-sol'] if models is None else models,protocol_id=protocol_id)
         spec=json.loads(Path(info['protocol']).read_text(encoding='utf-8'))
         self.assertEqual(info['models_dispatched'],0)
         return spec,self.root/('run-'+str(self.counter)+'.json')
@@ -116,6 +117,52 @@ class NativePairedTests(unittest.TestCase):
                 self.assertEqual(first.count('control'),2);self.assertEqual(first.count('treatment'),2)
         changed=copy.deepcopy(list(spec['tasks'].values()));changed[4]['payload']=changed[0]['payload']
         with self.assertRaises(ValueError):W['matched_order'](spec['models'],changed)
+
+    def test_explicit_models_and_new_protocol_id_bind_every_worker_and_order(self):
+        models=['gpt-6-sol','gpt-6-luna'];protocol='synthetic-native-independent-a-v2'
+        spec,output=self.bundle(models=models,protocol_id=protocol)
+        self.assertEqual(spec['models'],models);self.assertEqual(spec['model_catalog']['selected_models'],models)
+        self.assertEqual(spec['protocol_id'],protocol);self.assertEqual(P['validate'](spec),digest(spec))
+        self.assertEqual({row['model'] for row in spec['order']},set(models))
+        self.assertEqual(spec['budget'],{'model_calls':32,'tokens':1500000,'wall_seconds':7200})
+        for key,entry in spec['workers'].items():
+            self.assertIn(entry['config']['model'],models);self.assertEqual(entry['config']['effort'],'low')
+            self.assertEqual(entry['manifest_core']['runner_config']['campaign_id'],protocol)
+        different,unused=self.bundle(models=['gpt-6-luna','gpt-6.1-sol'],protocol_id='synthetic-separate-new-protocol')
+        self.assertNotEqual(digest(spec),digest(different));self.assertEqual(P['validate'](different),digest(different))
+
+    def test_bad_duplicate_or_unlisted_model_ids_and_protocol_ids_reject(self):
+        for models in (['gpt-6-sol'],['gpt-6-sol']*2,['../escape','gpt-6-sol'],['gpt-6-sol','unknown-model']):
+            with self.subTest(models=models),self.assertRaises(ValueError):self.bundle(models=models)
+        for protocol in ('','../old','old/protocol','id with space'):
+            with self.subTest(protocol=protocol),self.assertRaises(ValueError):self.bundle(protocol_id=protocol)
+        catalog=json.loads((self.root/'catalog.json').read_text())
+        next(row for row in catalog['catalog']['data'] if row['id']=='gpt-6-sol')['supportedReasoningEfforts']=[{'reasoningEffort':'medium'}]
+        (self.root/'catalog.json').write_text(json.dumps(catalog),encoding='utf-8')
+        with self.assertRaisesRegex(ValueError,'low effort'):self.bundle()
+
+    def test_catalog_selection_identity_cannot_diverge_from_models(self):
+        spec,output=self.bundle();changed=copy.deepcopy(spec)
+        changed['model_catalog']['selected_models']=list(reversed(changed['models']))
+        with self.assertRaisesRegex(ValueError,'selection/order differs'):P['validate'](changed)
+        changed=copy.deepcopy(spec);changed['models']=['gpt-6-sol','gpt-6-sol']
+        with self.assertRaisesRegex(ValueError,'two unique safe'):P['validate'](changed)
+
+    def test_windows_model_path_aliases_reject_before_catalog_or_preparation(self):
+        spec, unused = self.bundle()
+        for model in ('gpt-6-sol.', 'con', 'nul.model', 'lpt1.safe', 'com9'):
+            with self.subTest(model=model):
+                with self.assertRaisesRegex(ValueError, 'safe exact catalog IDs'):
+                    self.bundle(models=[model, 'gpt-6-luna'])
+                changed = copy.deepcopy(spec)
+                changed['models'] = [model, 'gpt-6-luna']
+                with self.assertRaisesRegex(ValueError, 'safe exact catalog IDs'):
+                    P['validate'](changed)
+
+    def test_prepare_cli_requires_models_and_protocol_id_before_any_work(self):
+        result=subprocess.run([sys.executable,'-B',str(HERE/'prepare.py')],capture_output=True,timeout=15)
+        self.assertNotEqual(result.returncode,0)
+        self.assertIn(b'--models',result.stderr);self.assertIn(b'--protocol-id',result.stderr)
 
     def test_all_known_results_charge_full_order_and_terminal_no_replay(self):
         spec,output=self.bundle();factory,instances,calls=self.factory(output,close_error=True)
@@ -188,7 +235,8 @@ class NativePairedTests(unittest.TestCase):
             self.collect(spec,output,lambda *a:self.fail('tamper dispatched'))
         self.assertFalse(output.exists())
         with self.assertRaisesRegex(ValueError,'absolute'):
-            PREP['prepare'](self.root,'relative',self.root/'artifacts',self.root/'binary.exe',self.root/'git.exe','a'*40,'b'*40,self.root/'catalog.json')
+            PREP['prepare'](self.root,'relative',self.root/'artifacts',self.root/'binary.exe',self.root/'git.exe','a'*40,'b'*40,self.root/'catalog.json',
+                            models=['gpt-6-luna','gpt-6-sol'],protocol_id='synthetic-new-protocol')
 
     def test_preparation_failure_is_zero_dispatch_terminal(self):
         spec,output=self.bundle()
@@ -330,6 +378,45 @@ class NativePairedTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'unreviewed provider'):
             native.subprocess.run(cli[:-1]+['-c','model_provider="other"','-'])
         self.assertEqual(len(seen),2)
+
+    def test_shared_profile_is_hashed_and_bound_in_spec_worker_and_actual_trace(self):
+        spec,output=self.bundle();source=spec['transport']['profile_source']
+        self.assertEqual(source['path'],str(REPO/'evolution/cli_transport.py'))
+        self.assertEqual(source['sha256'],sha(Path(source['path']).read_bytes()))
+        self.assertEqual(spec['harness_files'][source['path']],source['sha256'])
+        profile=spec['transport']['profile']
+        self.assertIn('model_providers.upg_openai_http.request_max_retries=0',profile)
+        self.assertIn('model_providers.upg_openai_http.stream_max_retries=0',profile)
+        self.assertIn('features.unbounded_connection_retries=false',profile)
+        entry=next(iter(spec['workers'].values()));manifest=Path(entry['manifest_path'])
+        result=subprocess.run([sys.executable,'-B',str(HERE/'worker.py'),'--manifest',str(manifest),
+                               '--manifest-sha256',sha(manifest.read_bytes())],capture_output=True,timeout=15)
+        self.assertEqual(result.returncode,0,result.stderr.decode())
+        self.assertEqual(json.loads(result.stdout)['transport_profile_source_sha256'],source['sha256'])
+
+    def test_shared_profile_hash_tamper_is_rejected_by_parent_worker_and_dispatch(self):
+        spec,output=self.bundle();entry=next(iter(spec['workers'].values()))
+        spec['transport']['profile_source']['sha256']='f'*64
+        with self.assertRaisesRegex(ValueError,'transport profile differs'):
+            P['validate'](spec)
+        manifest=copy.deepcopy(entry['manifest_core']);manifest['transport']['profile_source']['sha256']='f'*64
+        path=self.root/'tampered-transport-manifest.json';path.write_text(json.dumps(manifest),encoding='utf-8')
+        result=subprocess.run([sys.executable,'-B',str(HERE/'worker.py'),'--manifest',str(path),
+                               '--manifest-sha256',sha(path.read_bytes())],capture_output=True,timeout=15)
+        self.assertNotEqual(result.returncode,0);self.assertIn(b'common transport profile source changed',result.stderr)
+        native=types.SimpleNamespace(subprocess=types.SimpleNamespace(run=lambda *a,**kw:self.fail('tamper dispatched')))
+        with self.assertRaisesRegex(ValueError,'transport source changed'):
+            T['install'](native,entry['config'],spec['transport'])
+
+    def test_shared_profile_source_is_rechecked_before_each_cli_launch(self):
+        spec,output=self.bundle();entry=next(iter(spec['workers'].values()));seen=[]
+        native=types.SimpleNamespace(subprocess=types.SimpleNamespace(run=lambda *a,**kw:seen.append(a)))
+        state=T['install'](native,entry['config'],spec['transport']);state['sample_id']='synthetic drift'
+        original=Path.read_bytes
+        def drift(path):return b'changed profile bytes' if path.resolve()==T['PROFILE_SOURCE'] else original(path)
+        with patch.object(Path,'read_bytes',drift),self.assertRaisesRegex(ValueError,'transport source changed'):
+            native.subprocess.run([entry['config']['binary'],'--ask-for-approval','never','exec','-'])
+        self.assertEqual(seen,[]);self.assertEqual(state['records'],[])
 
     def test_http_timeout_has_one_durable_unknown_trace_no_retry(self):
         spec,output=self.bundle();entry=next(iter(spec['workers'].values()));seen=[]

@@ -36,7 +36,7 @@ Adopt legacy projects in place without restructuring/migration: use artifacts as
 
 Local low-risk edits use the hot path and proportional evidence; no architecture work for isolated corrections. Non-trivial work follows STRUCTURAL_INTEGRATION: remove superseded shims/branches/compatibility paths/detached fixes in scope; no unrelated redesign, API/contract change, migration, or refactor.
 
-Bound cost with task-relevant context. Batch reads of known related files and their edits when supported. Run required checks on the changed state, including repository status when applicable. Use confirmed edit receipts and successful checks as changed-state evidence; inspect again when evidence is incomplete, a check fails, further changes invalidate it or a project rule requires inspection. Reuse content only while source/tool/context identities match; validate cached bytes. Stop once task acceptance and governance obligations have evidence. Preserve task quality, required checks and governance constraints.
+Bound cost with task-relevant context. Batch reads of known related files and their edits when supported. Run required checks on the changed state, including repository status when applicable. Batch independent checks and status queries in one tool round when supported. Use confirmed edit receipts and successful checks as changed-state evidence; inspect again when evidence is incomplete, a check fails, further changes invalidate it or a project rule requires inspection. Reuse content only while source/tool/context identities match; validate cached bytes. Stop once task acceptance and governance obligations have evidence. Preserve task quality, required checks and governance constraints.
 
 Use verified Python 3.8+ for helpers; on Windows resolve `py -3` or its executable path, never assume `python3` works. Substitute that interpreter below. Compile typed context:
 
@@ -65,7 +65,7 @@ Schema-first state is canonical; Markdown is rendered. Use `scripts/state_tool.p
 
 When writable, keep one current handoff for unfinished work or agent/session transitions. One validation source records run ID, scope/denominator, tested state, result and pending retest. Never overlap counts or equate focused passes with full regression. Check references via `scripts/state_tool.py validate <state.json> --project-root <project-root>`.
 
-After interruption without handoff, reconstruct canonical truth, VCS/worktree/equivalent changes, evidence/validation, UPG state and unresolved artifacts before mutation. Separate facts/inferences; unrecoverable intent stays unknown. Act minimally without private chat memory/reasoning.
+After interruption/stale/conflicting state, rebuild scoped truth, entry/dependencies, changes, evidence, UPG state and unresolved artifacts before mutation. Optional read-only `scripts/state_tool.py recover <root> --scope <file>` (repeat scope; explicit `--handoff`/registered `--git-binary`) feeds deltas/carried refs to current handoff. Separate static/dynamic evidence and hypotheses: hashes prove fixity, never validity/truth. Missing intent/partial coverage stay unknown; repeated no progress means switch method or bounded blocker. Act minimally without private chat memory/reasoning.
 
 Order by causal parents/revisions and persistent sequence; `recorded_at` is observation time. Preserve previous change, validate tested state, reconcile stale handoffs with current truth.
 

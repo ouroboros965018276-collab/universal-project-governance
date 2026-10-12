@@ -612,7 +612,7 @@
         "automation",
         "design"
       ],
-      "closure": "Preserve continuity across humans, sessions, vendors, and agent types. Prefer one current handoff when it can be written; after abrupt interruption with no handoff, reconstruct from canonical project truth, VCS/worktree state, validation evidence, and explicit unknowns before changing anything. Never fabricate prior intent.",
+      "closure": "Preserve one current handoff across humans, sessions, vendors and agent types. Reconcile task-scoped source/entry/dependency identities, evidence references and invalidation conditions before inheriting interrupted, stale or contradictory state; static declarations and dynamic checks remain distinct. Keep decision deltas and unchanged references in existing state, separate hypotheses from facts, and switch methods after repeated no progress. No handoff means reconstruct observable truth before mutation; never fabricate prior intent or treat hash equality as semantic proof.",
       "conflicts_with": [],
       "eval_tags": [
         "handoff",
@@ -639,7 +639,14 @@
           "interrupted",
           "resume",
           "recovery",
-          "agent_change"
+          "agent_change",
+          "handoff-missing",
+          "legacy-unknown",
+          "stale-evidence",
+          "contradiction",
+          "no-progress",
+          "opaque-artifact",
+          "behavior-mismatch"
         ]
       }
     },
@@ -919,7 +926,7 @@
     "release_operation_forces": "audit"
   },
   "schema_version": 1,
-  "source_sha256": "7e59567336714d9172fe7787d709f8e8bc60c23ecdf48bfdde280ae288f8d3a1",
+  "source_sha256": "25b3ee5d6340b49c2880220c8fe650ebdefd3e550595e4a3a6e0af1ef07174c3",
   "structural_integration": {
     "exempt_operations": [
       "release"

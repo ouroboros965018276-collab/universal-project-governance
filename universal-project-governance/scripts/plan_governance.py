@@ -163,7 +163,7 @@ def compile_plan(index: dict, ctx: dict) -> dict:
     if risk_level in {"trivial", "low"} and len(active) > budget:
         warnings.append("low-risk plan activates %d policies; default budget is %d" % (len(active), budget))
 
-    return {
+    plan = {
         "version": index["version"],
         "change_mode": "structural" if structural["policy_id"] in active else "local",
         "scope_guard": structural["scope_guard"] if structural["policy_id"] in active else "local-only",
@@ -185,6 +185,15 @@ def compile_plan(index: dict, ctx: dict) -> dict:
         "handoff": handoff,
         "warnings": warnings,
     }
+    if set(ctx.get("signals", [])) & set(policies["HANDOFF_CONTINUITY"]["triggers"].get("signals", [])):
+        # Explicit sibling loading also supports hosts importing this script by path.
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("_upg_project_facts", Path(__file__).with_name("project_facts.py"))
+        helper = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(helper)
+        recovery = helper.recovery_plan(ctx.get("signals", []))
+        if recovery is not None: plan["recovery"] = recovery
+    return plan
 
 
 def render_markdown(plan: dict) -> str:
@@ -207,6 +216,9 @@ def render_markdown(plan: dict) -> str:
     lines += ["- " + x for x in plan["evidence"]]
     if plan["warnings"]:
         lines += ["", "## Warnings"] + ["- " + x for x in plan["warnings"]]
+    if "recovery" in plan:
+        lines += ["", "## Project fact recovery (%s)" % plan["recovery"]["mode"]]
+        lines += ["- " + x for x in plan["recovery"]["steps"] + plan["recovery"]["constraints"]]
     return "\n".join(lines) + "\n"
 
 

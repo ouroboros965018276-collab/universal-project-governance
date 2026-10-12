@@ -10,6 +10,7 @@ import os
 from pathlib import Path
 import queue
 import random
+import re
 import runpy
 import subprocess
 import sys
@@ -37,9 +38,17 @@ def atomic(path, value):
 
 
 def validate(spec):
+    models=spec["models"]
+    reserved = {"CON", "PRN", "AUX", "NUL"} | {prefix + str(number) for prefix in ("COM", "LPT") for number in range(1, 10)}
+    if (not isinstance(models,list) or len(models)!=2 or any(not isinstance(model,str) or not re.fullmatch('[a-z0-9][a-z0-9._-]{0,63}',model)
+            or model.endswith('.') or model.split('.')[0].upper() in reserved for model in models)
+            or len(set(models))!=2):
+        raise ValueError("models must be exactly two unique safe exact catalog IDs")
+    if not isinstance(spec["protocol_id"],str) or not re.fullmatch('[a-z][a-z0-9-]{0,95}',spec["protocol_id"]):
+        raise ValueError("an explicit safe protocol id is required")
     if spec["budget"] != {"model_calls": 32, "tokens": 1500000, "wall_seconds": 7200}:
         raise ValueError("native campaign budget differs from the reviewed design")
-    if (spec["models"] != ["gpt-6-luna", "gpt-6.1-sol"] or spec["seed"] != 19012
+    if (spec["seed"] != 19012
             or spec["acceptance"] != {"primary": "full-public-callback-time-and-quality", "callback_time_ci_upper_exclusive": 1.0,
                                       "all_quality_required": True, "all_fresh_calls_required": True}):
         raise ValueError("model/order/acceptance differs from the prespecified A estimand")
@@ -53,9 +62,14 @@ def validate(spec):
         if sha(Path(name).read_bytes()) != expected: raise ValueError("harness source changed")
     if spec["transport"]["profile"]!=transport_api["PROFILE"] or sha(Path(spec["transport"]["path"]).read_bytes())!=spec["transport"]["source_sha256"]:
         raise ValueError("common child transport differs from registration")
+    profile=spec["transport"]["profile_source"];profile_path=transport_api["PROFILE_SOURCE"]
+    if (Path(profile["path"]).resolve()!=profile_path or sha(profile_path.read_bytes())!=profile["sha256"]
+            or spec["harness_files"].get(str(profile_path))!=profile["sha256"]):
+        raise ValueError("common child transport profile differs from registration")
     catalog_bytes=Path(spec["model_catalog"]["path"]).read_bytes()
     if sha(catalog_bytes)!=spec["model_catalog"]["sha256"]:raise ValueError("frozen model catalog changed")
     catalog=json.loads(catalog_bytes);catalog_models={item["id"]:item for item in catalog["catalog"]["data"]}
+    if spec["model_catalog"]["selected_models"]!=models:raise ValueError("model catalog selection/order differs from frozen protocol")
     if any(model not in catalog_models or not any(e["reasoningEffort"]=="low" for e in catalog_models[model]["supportedReasoningEfforts"]) for model in spec["models"]):
         raise ValueError("selected model/low not listed")
     for condition in ("control", "treatment"):
@@ -133,6 +147,7 @@ class ProcessWorker:
             if (ready.get("type") != "ready" or ready.get("verification_only") is not False or ready.get("protocol_sha256") != protocol_sha
                     or ready.get("manifest_sha256")!=sha(manifest.read_bytes()) or ready.get("model_requested")!=entry["model"]
                     or ready.get("transport_source_sha256")!=entry["manifest_core"]["transport"]["source_sha256"]
+                    or ready.get("transport_profile_source_sha256")!=entry["manifest_core"]["transport"]["profile_source"]["sha256"]
                     or ready.get("transport_profile_sha256")!=digest(entry["manifest_core"]["transport"]["profile"])):
                 raise ValueError("worker did not attest matching isolated registration")
         except BaseException:
@@ -324,6 +339,7 @@ def verify_transport(spec,item,message,raw):
             or row.get("original_argv_sha256")!=digest(expected_original)
             or row.get("profile")!=profile or row.get("sample_id")!=sample_id
             or row.get("transport_source_sha256")!=spec["transport"]["source_sha256"]
+            or row.get("profile_source_sha256")!=spec["transport"]["profile_source"]["sha256"]
             or row.get("status")!="returned" or row.get("exit_code")!=0 or row.get("automatic_retry") is not False
             or row.get("stdout_sha256")!=receipt.get("stdout_sha256") or row.get("stderr_sha256")!=receipt.get("stderr_sha256")):
         raise ValueError("actual child HTTP argv/output/source binding mismatch")

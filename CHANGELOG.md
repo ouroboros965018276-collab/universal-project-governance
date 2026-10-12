@@ -1,6 +1,6 @@
 # Changelog
 
-## 3.0.0-rc.19 — 2026-10-12 — candidate
+## 3.0.0-rc.19 — 2026-10-13 — candidate
 
 - Separates RC18 historical tail latency from reproduced preparation costs; retains the original paired outcome.
 - Reuses exact-configuration native clients and hash-verified deterministic preparation; retains a full binary hash before each dispatch and records phase timings.
@@ -10,6 +10,10 @@
 - Rejects duplicate JSON keys, non-finite values and bool/number substitutions in new artifact evaluations, including raw output envelopes. Earlier frozen results retain their original grader identity.
 - Prepares a shared child-only HTTP provider profile with existing official authentication and default routing; both release arms retain the same restricted tools and permissions. This is a new measurement scaffold, not a retrospective explanation of RC18 network latency.
 - Independent model net benefit and release validation remain pending. Formal qualification is UNASSESSED; no learned candidate or Stable release is promoted.
+- Integrates optional project fact recovery into the existing handoff/planner: bounded explicit paths, stale-reference/validation checks, static declarations, decision deltas, unknowns and no-progress replanning; ordinary local tasks add no scan.
+- Replaces the executable upstream learning dependency with native reflection, per-batch consensus, conditional merge/selection, paired training memory and atomic hash-bound patches; retains licensing and immutable historical records.
+- Suppresses ordinary HTTP request, stream and unbounded connection retries in the shared child-only profile; capacity failures without completed usage remain unknown and are never replayed.
+- Adds positive real-tool development contracts for interrupted migration, stale PASS reports, current source hashes and dynamically configured consumers. These are exposed regression tasks, not independent evidence.
 
 ## 3.0.0-rc.18 — 2026-10-12 — candidate
 

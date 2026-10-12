@@ -1,6 +1,6 @@
 # Offline governance evolution
 
-Current candidate: **3.0.0-rc.18 — Grader Validity and Measured Runtime Compression**.
+Current candidate: **3.0.0-rc.19 — Project Fact Recovery and Measured Execution Cost**.
 
 RC17 introduced the repository-only optimizer around the compiled UPG runtime. The
 installed Skill still needs no model backend and its optional helpers support
@@ -23,21 +23,21 @@ tokens, CLI wall time and full evaluator callback time are separate observations
 permutation; policy selection, dependency closure, safety, evidence, reporting,
 scope and handoff requirements remain mandatory.
 
-SkillOpt proposes bounded edits to a temporary view. Each edit binds a unique
+UPG native reflection proposes bounded edits to a temporary view. Each edit binds a unique
 policy/field and its original hash. Missing or ambiguous targets, stale hashes,
 protected fields and empty required text reject the complete patch. Text edits
 are not evidence of semantic equivalence; promotion needs independent task tests.
 
-The upstream package is pinned at
-[`343db229dbd5ddaf9df6b1d5540d8bcdb2604d5c`](https://github.com/microsoft/SkillOpt/tree/343db229dbd5ddaf9df6b1d5540d8bcdb2604d5c).
-Its MIT license, original code and per-file provenance are retained in
-`third_party/skillopt/`. UPG directly executes upstream reflection, aggregation,
-edit selection and patch application through a bounded backend. Third-party
-code does not ship inside the ordinary Skill.
+RC19 uses its own reflection, duplicate-consensus, conditional merge/selection,
+training-memory and atomic patch implementation. A single unambiguous edit needs
+no merge or ranking call. All model requests use one explicit, budgeted backend;
+unknown usage stops further dispatch. No upstream package is imported or needed.
+Licensing and historical/design references remain in `third_party/notices/`;
+historical protocols and audit records keep their original identities.
 
 ## Joint search
 
-- SkillOpt learns limited textual patches from scored development rollouts.
+- Native reflection learns limited textual patches from scored development rollouts.
 - Seeded chaotic simulated annealing explores legal candidates, with cooling,
   reheating and finite-precision cycle detection. Exploration acceptance never
   authorizes a release.
@@ -61,7 +61,7 @@ threshold, not a guarantee against a request overshooting the remaining tokens.
 From the repository root:
 
 ```bash
-python -m evolution run --spec evolution/protocol/upg-evolution.json --output eval-workspaces/evolution/run.json
+python -m evolution run --spec evolution/protocol/upg-evolution-v2.json --output eval-workspaces/evolution/run.json
 python -m evolution inspect --run eval-workspaces/evolution/run.json
 python -m evolution ablate --spec evolution/protocol/upg-evolution.json --output eval-workspaces/evolution/matrix
 python -m evolution run --spec evolution/protocol/upg-evolution.json --output eval-workspaces/evolution/run.json --resume
@@ -200,7 +200,7 @@ baseline and RC16 pre-upgrade regression baseline. The RC18 native development
 spec uses the exact RC17 release as its current-version comparison. The protocol
 specifies isolated training/selection/final families, equal-budget controls and
 ablations, actual provider usage, paired uncertainty and noncompensatory gates.
-Operator-removal controls use `--disable skillopt|annealing|de|curvature`;
+Operator-removal controls use `--disable reflection|annealing|de|curvature`;
 `--ordinary` supplies the ordinary-perturbation comparison. Runtime and optimizer
 costs must be reported separately and by model family, including failed tasks.
 

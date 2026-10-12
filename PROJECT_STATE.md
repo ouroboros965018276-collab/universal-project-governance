@@ -1,6 +1,6 @@
 # Project State
 
-Current candidate: **3.0.0-rc.19 — Latency Accounting and Bounded Real Tools**.
+Current candidate: **3.0.0-rc.19 — Project Fact Recovery and Measured Execution Cost**.
 
 ## RC19 candidate — preparation and independent measurement
 
@@ -80,6 +80,23 @@ independent blocks, regardless of model or instance count. A separately publishe
 [native callback collector](docs/evolution/native-paired-campaign.md) measures
 actual public-entry preparation, CLI and evidence costs in persistent matched
 workers; it has performed no inference at this checkpoint.
+
+**Owner-resumed RC19, client date 2026-10-13.** The [v5 partial audit](docs/rc19-tools-development-v5.md)
+retains six completed calls with 407496 reported tokens, 12/12 artifact checks
+and 5/6 strict admissions. The seventh dispatch returned model-capacity failure
+without completed usage; its unknown-call fence remains and it was not replayed.
+RC19 totals are 50 completed calls / 3262557 reported tokens plus one additional
+unknown-usage dispatch. Net benefit remains FAIL. Native A and independent final
+tool calls remain zero; default main and the accepted local RC18 Skill are unchanged.
+The previously paused model/protocol parameterization is independently reviewed;
+Windows aliases and trailing dots are rejected. New ordinary request, stream and
+unbounded-connection retry suppression is shared and hash-bound across arms;
+authentication recovery and failed partial-response billing remain explicit limits.
+Project fact recovery reuses the current handoff, explicit file scopes, positive
+source-state checks and static/dynamic validity distinctions. Native reflection
+replaces the executable third-party dependency. Source backups and historical
+license/provenance remain recoverable. Full regression, new protocol freezes and
+independent net-benefit measurement remain required before integration/deployment.
 
 ## RC18 candidate — paired measurements and nine-arm matrix completed
 

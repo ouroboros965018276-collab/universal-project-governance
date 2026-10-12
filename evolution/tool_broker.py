@@ -84,7 +84,7 @@ def normalize(kind, text):
         raise ValueError("artifact exceeds size limit")
     if kind == "text":
         return text
-    if kind == "json":
+    if kind in {"json", "file_hash_manifest"}:
         value = json.loads(text, object_pairs_hook=_pairs,
                            parse_constant=lambda unused: (_ for _ in ()).throw(ValueError("non-finite JSON")))
         return _bounded(value)
@@ -137,6 +137,17 @@ def validate_task(task):
             if not isinstance(expected, str):
                 raise ValueError("text/AST expected value must be source text")
             normalize(check["kind"], expected)
+        elif check["kind"] == "file_hash_manifest":
+            if (not isinstance(expected, dict) or set(expected) != {"sources", "claims"}
+                    or not isinstance(expected["sources"], list) or not expected["sources"]
+                    or any(not isinstance(name, str) for name in expected["sources"])
+                    or len(set(expected["sources"])) != len(expected["sources"])
+                    or not set(expected["sources"]) <= names or check["path"] in expected["sources"]
+                    or not isinstance(expected["claims"], dict)):
+                raise ValueError("file hash manifest requires distinct registered sources and fixed claims")
+            _bounded(expected)
+            if len(canonical(expected)) > MAX_FILE_BYTES:
+                raise ValueError("expected manifest exceeds size limit")
         elif check["kind"] in {"json", "toml"}:
             _bounded(expected)
             if len(canonical(expected)) > MAX_FILE_BYTES:
@@ -145,6 +156,12 @@ def validate_task(task):
             raise ValueError("unknown fixed check kind")
     if checked != set(writable):
         raise ValueError("every writable path requires a positive fixed check")
+    if "required_read_paths" in task:
+        paths = task["required_read_paths"]
+        if (not isinstance(paths, list) or not paths or len(paths) > MAX_FILES
+                or any(not isinstance(name, str) for name in paths)
+                or len(set(paths)) != len(paths) or not set(paths) <= set(files)):
+            raise ValueError("required reads must name distinct initial repository files")
     required = task.get("required_tools", ["repo_read", "repo_patch", "repo_validate", "repo_status"])
     if not isinstance(required, list) or not set(required) <= set(TOOLS):
         raise ValueError("unknown required tool")
@@ -244,6 +261,12 @@ class RepoBroker:
                     value = normalize(check["kind"], self.path(check["path"]).read_text(encoding="utf-8"))
                     expected = (normalize(check["kind"], check["expected"])
                                 if check["kind"] in {"text", "python_ast"} else check["expected"])
+                    if check["kind"] == "file_hash_manifest":
+                        sources = expected["sources"]
+                        if any(name not in files for name in sources):
+                            raise ValueError("current manifest source is missing")
+                        expected = {"source_sha256": {name: files[name] for name in sources},
+                                    "claims": expected["claims"]}
                     if canonical(value) != canonical(expected):
                         raise ValueError("positive contract mismatch")
                     passed += 1
@@ -253,6 +276,37 @@ class RepoBroker:
             failures.append("scope-invalid:" + type(error).__name__)
         return {"ok": not failures, "suite": "registered-static-contracts-v1",
                 "checks_passed": passed, "checks_total": len(self.task["checks"]), "failures": failures}
+
+    def read_evidence_failures(self, events):
+        """Task-specific whole-file observations must precede the first edit.
+
+        This optional contract belongs only to newly registered recovery tasks.
+        Tool metadata, status, hash manifests and later reads cannot stand in
+        for successful reads of the actual initial clue bytes.
+        """
+        required = set(self.task.get("required_read_paths", []))
+        seen = set()
+        for event in events:
+            result = event.get("result", {})
+            if not isinstance(result, dict) or result.get("ok") is not True:
+                continue
+            if event.get("tool") == "repo_patch":
+                break
+            if event.get("tool") != "repo_read":
+                continue
+            arguments, files = event.get("arguments", {}), result.get("files", {})
+            if not isinstance(arguments, dict) or not isinstance(files, dict):
+                continue
+            paths = arguments.get("paths", [])
+            if not isinstance(paths, list):
+                continue
+            for name in required.intersection(path for path in paths if isinstance(path, str)):
+                initial = self.task["initial_files"][name]
+                if files.get(name) == {"text": initial, "sha256": sha(initial.encode("utf-8"))}:
+                    seen.add(name)
+        missing = required - seen
+        return (["required-recovery-reads-before-edit-missing:" + ",".join(sorted(missing))]
+                if missing else [])
 
     def _execute(self, tool, arguments):
         if not isinstance(arguments, dict):

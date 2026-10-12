@@ -21,9 +21,9 @@ from .contracts import candidate_id, canonical_bytes, digest, materialize
 from .evaluator import candidate_source, source_hash, validate_candidate
 
 ROOT = Path(__file__).resolve().parents[1]
-PROTOCOL = ROOT / "evolution/protocol/upg-evolution.json"
+PROTOCOL = ROOT / "evolution/protocol/upg-evolution-v2.json"
 RC15 = "0808842e759763c722f77a2fd9b464842480a290"
-MODULES = {"skillopt", "annealing", "de", "curvature"}
+MODULES = {"reflection", "annealing", "de", "curvature"}
 
 
 class EvidenceError(ValueError):

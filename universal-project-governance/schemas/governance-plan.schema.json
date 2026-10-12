@@ -89,6 +89,48 @@
         "local-only",
         "task-bounded-responsible-layer"
       ]
+    },
+    "recovery": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "enum": [
+            "static",
+            "specialist-needed"
+          ]
+        },
+        "triggers": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 1024
+          },
+          "maxItems": 16
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 1024
+          },
+          "maxItems": 8
+        },
+        "constraints": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 1024
+          },
+          "maxItems": 8
+        }
+      },
+      "required": [
+        "mode",
+        "triggers",
+        "steps",
+        "constraints"
+      ]
     }
   }
 }

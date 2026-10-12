@@ -38,7 +38,7 @@ class EvolutionAblationTests(unittest.TestCase):
             self.assertEqual(matrix["status"], "completed")
             self.assertTrue(all(budget == self.protocol["budget"] for _, budget, _ in calls))
             arguments = {name: options for name, _, options in calls}
-            self.assertEqual(set(arguments["skillopt_only"]["disabled"]), {"annealing", "de", "curvature"})
+            self.assertEqual(set(arguments["reflection_only"]["disabled"]), {"annealing", "de", "curvature"})
             self.assertEqual(arguments["without_chaos"]["disabled"], ("annealing",))
             self.assertTrue(arguments["ordinary_annealing"]["ordinary"])
             self.assertFalse(arguments["full"]["ordinary"])
@@ -72,9 +72,9 @@ class EvolutionAblationTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "interrupted"):
                 run_matrix(ROOT, self.protocol, output)
             checkpoint = json.loads((output / "matrix.json").read_text(encoding="utf-8"))
-            self.assertTrue(checkpoint["arms"]["skillopt_only"]["completed"])
+            self.assertTrue(checkpoint["arms"]["reflection_only"]["completed"])
             self.assertEqual(run_matrix(ROOT, self.protocol, output)["status"], "completed")
-            self.assertEqual(attempted.count("skillopt_only"), 1)
+            self.assertEqual(attempted.count("reflection_only"), 1)
             self.assertEqual(attempted.count("full"), 2)
             self.assertEqual(historical.call_count, 2)
 

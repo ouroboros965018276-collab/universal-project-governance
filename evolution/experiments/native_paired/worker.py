@@ -117,6 +117,11 @@ def main():
     transport_path=Path(manifest["transport"]["path"])
     if not transport_path.is_absolute() or sha(transport_path.read_bytes())!=manifest["transport"]["source_sha256"]:
         raise ValueError("common transport instrumentation source changed")
+    profile=manifest["transport"]["profile_source"]
+    profile_path=Path(profile["path"])
+    if (not profile_path.is_absolute() or profile_path.resolve()!=transport_path.resolve().parents[2]/"cli_transport.py"
+            or sha(profile_path.read_bytes())!=profile["sha256"]):
+        raise ValueError("common transport profile source changed")
     transport=runpy.run_path(str(transport_path))
     # Installation itself performs no config/auth read, client construction or CLI call.
     transport_state=transport["install"](native,config,manifest["transport"]) if dispatch_allowed(args,manifest) else None
@@ -129,6 +134,7 @@ def main():
           "protocol_sha256": manifest["protocol_sha256"], "model_requested": config["model"],
           "manifest_sha256": args.manifest_sha256,
           "transport_source_sha256":manifest["transport"]["source_sha256"],
+          "transport_profile_source_sha256":profile["sha256"],
           "transport_profile_sha256":digest(manifest["transport"]["profile"]),
           "worker_ready_seconds": time.perf_counter() - started,
           "measurement": "worker initialization only; parent separately measures process startup"})

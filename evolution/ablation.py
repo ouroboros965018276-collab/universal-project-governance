@@ -19,7 +19,7 @@ from .contracts import Budget, BudgetExceeded, canonical_bytes, digest
 from .controller import callable_identity, checkpoint_lock, engine_identity, run_search, save_run, task_loss
 from .evaluator import canonical_source, evaluate, source_hash
 
-MODULES = {"skillopt", "annealing", "de", "curvature"}
+MODULES = {"reflection", "annealing", "de", "curvature"}
 
 
 def _command(command, cwd):

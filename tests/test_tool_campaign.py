@@ -166,6 +166,51 @@ class CampaignTests(unittest.TestCase):
             self.collect()
         self.assertFalse(self.calls)
 
+    def test_preregistered_capabilities_match_without_extra_setup_or_binding(self):
+        from evolution.tool_codex import ToolCodex
+        expected = {model: {"synthetic_capability": digest(config)} for model, config in self.configs.items()}
+        setups, bindings = [], []
+        original_init, original_binding = ToolCodex.__init__, ToolCodex.binding
+        def initialize(service, config):
+            setups.append(config["model"])
+            original_init(service, config)
+        def binding(service):
+            bindings.append(service.config["model"])
+            return original_binding(service)
+        with patch.object(ToolCodex, "__init__", initialize), patch.object(ToolCodex, "binding", binding):
+            run = tool_campaign.collect(ROOT, self.protocol, self.tasks, self.configs, self.output,
+                                        expected_capabilities=expected)
+        self.assertEqual(run["status"], "completed")
+        self.assertEqual(run["capabilities"], expected)
+        self.assertEqual(len(self.calls), 8)
+        self.assertEqual(sorted(setups), sorted(self.protocol["models"]))
+        self.assertEqual(sorted(bindings), sorted(self.protocol["models"]))
+
+    def test_effort_or_binary_config_change_after_freeze_stops_before_checkpoint(self):
+        expected = {model: {"synthetic_capability": digest(config)} for model, config in self.configs.items()}
+        original = copy.deepcopy(self.configs)
+        for field, changed in (("effort", "high"), ("binary", "different-registered-cli")):
+            self.configs = copy.deepcopy(original)
+            self.configs[self.protocol["models"][0]][field] = changed
+            with self.subTest(field=field), self.assertRaisesRegex(ValueError, "preregistered freeze"):
+                tool_campaign.collect(ROOT, self.protocol, self.tasks, self.configs, self.output,
+                                      expected_capabilities=expected)
+            self.assertFalse(self.calls)
+            self.assertFalse(self.output.exists())
+
+    def test_actual_binary_or_typed_capability_drift_stops_before_checkpoint(self):
+        from evolution.tool_codex import ToolCodex
+        expected = {model: {"synthetic_capability": digest(config), "binary_sha256": "a" * 64,
+                            "isolation_attested": False} for model, config in self.configs.items()}
+        for changed in ({"binary_sha256": "b" * 64}, {"isolation_attested": 0}):
+            def binding(service):
+                return dict(expected[service.config["model"]], **changed)
+            with self.subTest(changed=changed), patch.object(ToolCodex, "binding", binding), self.assertRaisesRegex(ValueError, "preregistered freeze"):
+                tool_campaign.collect(ROOT, self.protocol, self.tasks, self.configs, self.output,
+                                      expected_capabilities=expected)
+            self.assertFalse(self.calls)
+            self.assertFalse(self.output.exists())
+
     def test_abrupt_call_interruption_pending_blocks_restart(self):
         def interrupted(*args):
             raise KeyboardInterrupt

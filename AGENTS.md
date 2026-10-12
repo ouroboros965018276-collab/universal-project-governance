@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Current candidate: **3.0.0-rc.19 — Latency Accounting and Bounded Real Tools**.
+Current candidate: **3.0.0-rc.19 — Project Fact Recovery and Measured Execution Cost**.
 
 ## First modifying activation
 

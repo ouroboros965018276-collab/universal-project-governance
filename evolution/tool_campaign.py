@@ -229,7 +229,7 @@ def _transport_failure(raw):
     return None
 
 
-def collect(repo, protocol, private_tasks, configs, output):
+def collect(repo, protocol, private_tasks, configs, output, *, expected_capabilities=None):
     """Serial, resumable collection; every dispatched sample is fenced first."""
     from .tool_codex import ToolCodex
     setup_started = time.perf_counter()
@@ -238,6 +238,8 @@ def collect(repo, protocol, private_tasks, configs, output):
     budget = _validate(protocol, private_tasks, configs)
     services = {model: ToolCodex(copy.deepcopy(config)) for model, config in configs.items()}
     capabilities = {model: services[model].binding() for model in protocol["models"]}
+    if expected_capabilities is not None and digest(capabilities) != digest(expected_capabilities):
+        raise ValueError("current tool capabilities differ from the preregistered freeze")
     identities = {"protocol_sha256": digest(protocol), "task_manifest_sha256": digest(private_tasks),
                   "configs_sha256": digest(configs), "capabilities_sha256": digest(capabilities),
                   "engine_sha256": engine_identity(repo), "conditions_sha256": digest(protocol["conditions"])}

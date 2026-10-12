@@ -20,8 +20,15 @@ def write(path, value):
     path.write_bytes((json.dumps(value, indent=2, ensure_ascii=False, allow_nan=False) + "\n").encode("utf-8"))
 
 
-def prepare(repo, output, artifact_root, binary, git_binary, control_revision, treatment_revision, model_catalog):
+def prepare(repo, output, artifact_root, binary, git_binary, control_revision, treatment_revision, model_catalog, *, models, protocol_id):
     started = time.perf_counter()
+    reserved = {"CON", "PRN", "AUX", "NUL"} | {prefix + str(number) for prefix in ("COM", "LPT") for number in range(1, 10)}
+    if (not isinstance(models,list) or len(models)!=2 or any(not isinstance(model,str) or not re.fullmatch('[a-z0-9][a-z0-9._-]{0,63}',model)
+            or model.endswith('.') or model.split('.')[0].upper() in reserved for model in models)
+            or len(set(models))!=2):
+        raise ValueError("models must be exactly two unique safe exact catalog IDs")
+    if not isinstance(protocol_id,str) or not re.fullmatch('[a-z][a-z0-9-]{0,95}',protocol_id):
+        raise ValueError("an explicit safe new protocol id is required")
     if any(not re.fullmatch('[0-9a-f]{40}',revision) for revision in (control_revision,treatment_revision)):
         raise ValueError("release revisions must be explicit full lowercase Git commit SHAs")
     if any(not Path(path).is_absolute() for path in (repo, output, artifact_root, binary, git_binary, model_catalog)):
@@ -43,7 +50,6 @@ def prepare(repo, output, artifact_root, binary, git_binary, control_revision, t
     # corrected current grader for both otherwise unchanged release callbacks.
     grader = blob(revisions["treatment"], "evolution/task_benchmark.py")
     tasks = runpy.run_path(str(HERE / "tasks.py"))["make_tasks"]()
-    models = ["gpt-6-luna", "gpt-6.1-sol"]
     catalog_bytes=Path(model_catalog).read_bytes();catalog=json.loads(catalog_bytes)
     if Path(catalog["cli_entry"]).resolve()!=binary:
         raise ValueError("catalog did not come from the registered CLI entry")
@@ -54,7 +60,9 @@ def prepare(repo, output, artifact_root, binary, git_binary, control_revision, t
     output.mkdir(parents=True)
     binary_sha = sha(binary.read_bytes())
     transport_path=HERE/"transport.py"
+    profile_path=REPO/"evolution/cli_transport.py"
     transport={"path":str(transport_path),"source_sha256":sha(transport_path.read_bytes()),
+               "profile_source":{"path":str(profile_path),"sha256":sha(profile_path.read_bytes())},
                "profile":runpy.run_path(str(transport_path))["PROFILE"],
                "scope":"identical child-only HTTP overrides; historical and current callbacks under common transport scaffold"}
     conditions, workers = {}, {}
@@ -94,7 +102,7 @@ def prepare(repo, output, artifact_root, binary, git_binary, control_revision, t
             config_path = snapshot / "native.config.json"; write(config_path, config)
             capability = {"native_config_sha256": digest(dict(config, binary_sha256=binary_sha)),
                           "grader": {"reference": config["grader"], "source_sha256": sha(grader)},
-                          "campaign_id": "upg-rc19-native-independent-a-v1"}
+                          "campaign_id": protocol_id}
             manifest = {"worker_sha256": sha((HERE / "worker.py").read_bytes()),
                         "transport":transport,
                         "snapshot_directory": str(snapshot), "files": {name: sha(content) for name, content in files.items()},
@@ -106,7 +114,7 @@ def prepare(repo, output, artifact_root, binary, git_binary, control_revision, t
                         "task_order": [row["task_id"] for row in order if row["model"] == model and row["condition"] == condition]}
             workers[key] = {"manifest_path": str(snapshot / "worker.manifest.json"), "manifest_core": manifest,
                             "config": config, "condition": condition, "model": model}
-    spec = {"schema_version": 1, "protocol_id": "upg-rc19-native-independent-a-v1", "stage": "independent-artifact-estimand-A",
+    spec = {"schema_version": 1, "protocol_id": protocol_id, "stage": "independent-artifact-estimand-A",
             "status": "PREPARED-NOT-DISPATCH-AUTHORIZED", "seed": 19012, "models": models,
             "tasks": {task["id"]: task for task in tasks}, "task_manifest_sha256": digest({task["id"]: task for task in tasks}),
             "conditions": conditions, "order": order, "order_sha256": digest(order), "workers": workers,
@@ -122,7 +130,7 @@ def prepare(repo, output, artifact_root, binary, git_binary, control_revision, t
                               "state":"listed low-effort support; provider access and observed model identity not attested"},
             "harness_files": {str(path): sha(path.read_bytes()) for path in (
                 HERE/"worker.py", HERE/"parent.py", HERE/"prepare.py", HERE/"tasks.py", HERE/"transport.py", HERE/"__init__.py",
-                HERE.parent/"__init__.py", REPO/"tests/test_native_paired.py", REPO/"docs/evolution/native-paired-campaign.md")},
+                HERE.parent/"__init__.py", profile_path, REPO/"tests/test_native_paired.py", REPO/"docs/evolution/native-paired-campaign.md")},
             "scope": {"provider": "OpenAI", "model_identity": "requested CLI IDs; internal selection unverified", "formal_qualification": "UNASSESSED",
                       "validation": "JSON/Python AST/exact text; no application-code execution", "tool_calls": "forbidden",
                       "B_joint_gate_unchanged": True, "tokens": "all reported, including regressions; A cannot establish joint token benefit",
@@ -143,6 +151,9 @@ if __name__ == "__main__":
         parser.add_argument("--" + name, required=True)
     parser.add_argument("--control-revision", default="29cf112b4629d6b90504b079e95a5370c206a4cb")
     parser.add_argument("--treatment-revision", required=True)
+    parser.add_argument("--models", nargs=2, required=True, metavar="EXACT-ID")
+    parser.add_argument("--protocol-id", required=True)
     args = parser.parse_args()
     print(json.dumps(prepare(args.repo, args.output_directory, args.artifact_root, args.binary, args.git_binary,
-                             args.control_revision, args.treatment_revision,args.model_catalog), indent=2))
+                             args.control_revision, args.treatment_revision,args.model_catalog,
+                             models=args.models,protocol_id=args.protocol_id), indent=2))

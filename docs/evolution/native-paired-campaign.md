@@ -32,8 +32,16 @@ the measured public callback and CLI wall. Returned process bytes remain intact
 even if post-call trace persistence fails, so native known usage can be retained;
 the parent rejects that incomplete trace after preserving known costs. No retry.
 
-Use 32 genuine serial calls: two requested models (`gpt-6-luna`, `gpt-6.1-sol`,
-low effort), eight newly frozen artifact tasks, two release arms. The task set
+Use 32 genuine serial calls: two explicitly preregistered requested model IDs,
+both at low effort, eight newly frozen artifact tasks, two release arms. IDs must
+be distinct, safe path components and listed with low effort in the frozen
+official catalog. The protocol ID is also explicit; there are no model or
+protocol-ID defaults. Changing the models requires a new protocol/hash and fresh
+directories, never rewriting an earlier public/private protocol or snapshot.
+For example, a future protocol may select `gpt-6-luna` and `gpt-6-sol`; this is
+two requested models of the same provider, and listing does not attest current
+capacity or access. The earlier unexecuted v1 and failed tool v5 remain preserved.
+The task set
 contains four known artifact families and two different fixtures per family.
 None comes from the final tool-task set. Freeze all task JSON and positive
 expected checks before dispatch; the native prompt exposes only task prompt,
@@ -118,8 +126,8 @@ The executable source is `evolution/experiments/native_paired/`. Run the no-mode
 CI checks with `python -B -m unittest discover -s tests -p test_native_paired.py`.
 The preparation entry is `python -B evolution/experiments/native_paired/prepare.py`
 with required `--repo`, `--output-directory`, `--artifact-root`, `--binary`,
-`--git-binary`, `--model-catalog` absolute paths and `--treatment-revision` full
-SHA. Output must be a fresh ignored `eval-workspaces/rc19-native-paired-*`
+`--git-binary`, `--model-catalog` absolute paths, `--treatment-revision` full
+SHA, `--models EXACT-ID EXACT-ID`, and `--protocol-id NEW-ID`. Output must be a fresh ignored `eval-workspaces/rc19-native-paired-*`
 directory. Preparation extracts exact Git files, executes only each release's
 trusted local planner, records source preparation cost, and dispatches zero
 models. The existing official CLI model-list receipt must list both requested

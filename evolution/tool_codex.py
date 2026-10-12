@@ -20,9 +20,11 @@ import time
 import uuid
 
 from .tool_broker import RepoBroker, TOOLS, canonical, git_command, sha, tool_definitions, validate_task
+from .cli_transport import profile_configuration, profile_overrides
 
 VERSION = "1"
 _BROKER = Path(__file__).with_name("tool_broker.py")
+_TRANSPORT_PROFILE = Path(__file__).with_name("cli_transport.py")
 _CONFIG_KEYS = {"binary", "code_mode_host_binary", "git_binary", "model", "effort", "artifact_root", "timeout_seconds",
                 "cli_version", "max_tool_calls"}
 _BINDING_KEYS = {"campaign_id", "sample_id", "protocol_sha256", "source_sha256",
@@ -149,7 +151,8 @@ def _trace_failures(events, broker_events, max_calls):
 
 def _quality(broker, broker_events, events, final_text, max_calls):
     validation = broker.validate()
-    failures = list(validation["failures"]) + _trace_failures(events, broker_events, max_calls)
+    failures = (list(validation["failures"]) + _trace_failures(events, broker_events, max_calls)
+                + broker.read_evidence_failures(broker_events))
     current = sha(canonical(broker.snapshot()))
     success = {row["tool"] for row in broker_events if row.get("result", {}).get("ok") is True}
     required = set(broker.task.get("required_tools", ["repo_read", "repo_patch", "repo_validate", "repo_status"]))
@@ -191,10 +194,7 @@ class ToolCodex:
         # Both experiment conditions use this fixed child-only transport. Keep
         # endpoint selection and authentication with the installed OpenAI CLI;
         # callers cannot supply provider/credential overrides through config.
-        self.config["model_provider"] = "upg_openai_http"
-        self.config["model_provider_profile"] = {
-            "name": "OpenAI", "wire_api": "responses",
-            "requires_openai_auth": True, "supports_websockets": False}
+        self.config.update(profile_configuration())
         self.binary, self.git = Path(config["binary"]), Path(config["git_binary"])
         self.code_mode_host = Path(config["code_mode_host_binary"])
         self.package_manifest = self.binary.parent.parent / "codex-package.json"
@@ -232,6 +232,9 @@ class ToolCodex:
                 "model_provider": self.config["model_provider"],
                 "model_provider_profile": copy.deepcopy(self.config["model_provider_profile"]),
                 "model_provider_profile_sha256": sha(canonical(self.config["model_provider_profile"])),
+                "transport_features": copy.deepcopy(self.config["transport_features"]),
+                "transport_profile_source_sha256": sha(_TRANSPORT_PROFILE.read_bytes()),
+                "transport_overrides_sha256": sha(canonical(profile_overrides())),
                 "binary_sha256": sha(self.binary.read_bytes()), "git_sha256": sha(self.git.read_bytes()),
                 "code_mode_host_sha256": sha(self.code_mode_host.read_bytes()),
                 "package_manifest_sha256": manifest_hash,
@@ -250,7 +253,8 @@ class ToolCodex:
     def binding(self):
         if (sha(canonical(self.config)) != self._frozen["config_sha256"]
                 or sha(Path(__file__).read_bytes()) != self._frozen["adapter_source_sha256"]
-                or sha(_BROKER.read_bytes()) != self._frozen["broker_source_sha256"]):
+                or sha(_BROKER.read_bytes()) != self._frozen["broker_source_sha256"]
+                or sha(_TRANSPORT_PROFILE.read_bytes()) != self._frozen["transport_profile_source_sha256"]):
             raise ValueError("tool capability changed after registration")
         return copy.deepcopy(self._frozen)
 
@@ -282,9 +286,8 @@ class ToolCodex:
                    "-c", "hide_agent_reasoning=true", "-c", "project_doc_max_bytes=0",
                    "-c", "features.code_mode.enabled=false", "-c", "features.code_mode_host=true",
                    "-c", "suppress_unstable_features_warning=true"]
-        command.extend(["-c", "model_provider=" + json.dumps(self.config["model_provider"])])
-        for key, value in self.config["model_provider_profile"].items():
-            command.extend(["-c", "model_providers." + self.config["model_provider"] + "." + key + "=" + json.dumps(value)])
+        for value in profile_overrides():
+            command.extend(["-c", value])
         for feature in _DISABLED:
             command.extend(["-c", "features." + feature + "=false"])
         mcp = {"command": sys.executable, "args": ["-B", str(_BROKER), str(spec_file)],

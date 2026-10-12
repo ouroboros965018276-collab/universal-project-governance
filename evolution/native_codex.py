@@ -517,5 +517,5 @@ def runner(request):
 
 
 def backend(**request):
-    """SkillOpt backend callback returning the unmodified response and actual usage."""
+    """UPG reflection callback returning the unmodified response and actual usage."""
     return NativeCodex.from_environment().backend(**request)
