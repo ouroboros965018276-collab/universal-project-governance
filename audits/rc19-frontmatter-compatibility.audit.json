@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "kind": "rc19-generated-frontmatter-compatibility-correction",
+  "observed_at_utc": "2026-10-12T20:54:10.415449+00:00",
+  "affected_revision": "9bf5e97693b225c87a6fab2af9b96fb5aed1f0b6",
+  "ci_run": 38305069188,
+  "prior_ci": {
+    "successful_jobs": 9,
+    "total_jobs": 11,
+    "failed_jobs": {
+      "skills-cli": 114997156757,
+      "upstream-agent-skills": 114997156812
+    }
+  },
+  "root_cause": "Unquoted generated description contained an internal colon followed by a space. The local split-and-strip reader accepted it, while both reference YAML loaders rejected the nested mapping syntax. Development v9 was not dispatched.",
+  "correction": "Use an unambiguous plain description with the same trigger scope; validate the explicitly supported generated scalar subset (safe plain strings or JSON double-quoted strings), without claiming a general YAML parser.",
+  "regression_tests": {
+    "file": "tests/test_skill_bundle_frontmatter.py",
+    "count": 6,
+    "author_pass": true,
+    "independent_pass": true,
+    "actual_copied_bundle_cli": "ambiguous description rejected with exit 1; equivalent quoted and safe plain descriptions pass with exit 0",
+    "python_support": "stdlib-only, Python 3.8-compatible APIs"
+  },
+  "local_gates": {
+    "passed": 8,
+    "total": 8,
+    "receipt_sha256": "4302767a2119a8bad69012dcad86a3ed931ca19273616491d9e1bbad95c091b5",
+    "preparation_failure": "Initial compiler and repository checks inherited inaccessible sandbox AC Temp; corrected project TEMP/TMP checks passed. Initial receipt retained. No source change for that preparation failure."
+  },
+  "sha256": {
+    "tools/validate_skill_bundle.py": "68472054ca557a916485e2c979a5103bd3ea9ab8ed0db10211e0b497de8be6a6",
+    "tests/test_skill_bundle_frontmatter.py": "84a2d2cf170b6968c0e8fe5949d78703d7e890c1881d64e6634571a8d3441ef3",
+    "governance-src/templates/SKILL.template.md": "9248ce28b78103f9b8fa2dde485fc1ebd77c1d6bbc2d290db6ee620303ae9648",
+    "universal-project-governance/SKILL.md": "b6d360216ec5a4771827f80903e15f3d665c6a112b5a37dbe58fef5e9b479f50",
+    "qualification/FREEZE.json": "b6934f8bae1d3d0fb8b0d6d22c6a063f0b6deb1efe8568451fea67b4ded1e0cf"
+  },
+  "skill_utf8_bytes": 8180,
+  "model_calls": 0,
+  "old_protocols_rewritten": false,
+  "current_reference_loader_result": "PENDING new hosted CI",
+  "efficacy": "No token/time or task-quality benefit is established by packaging checks. Independent net-benefit gate remains unmet. Default main and global installed Skill remain RC18."
+}

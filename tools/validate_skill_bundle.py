@@ -5,6 +5,32 @@ import argparse, ast, json, re, sys
 from pathlib import Path
 
 NAME_RE=re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+PLAIN_LITERAL_RE=re.compile(
+    r"[+-]?(?:[0-9][0-9_]*(?:\.[0-9_]*)?(?:[eE][+-]?[0-9_]+)?"
+    r"|\.[0-9_]+(?:[eE][+-]?[0-9_]+)?|0x[0-9a-f_]+|0o[0-7_]+|0b[01_]+"
+    r"|[0-9_]+(?::[0-9_]+)+(?:\.[0-9_]*)?)"
+    r"|[0-9]{4}-[0-9]{1,2}-[0-9]{1,2}(?:[t ][0-9:.+z -]+)?",re.I)
+
+def frontmatter_string(value):
+    """Read our generated scalar subset, not arbitrary YAML.
+
+    Strings use JSON double quotes or single-line plain text. Reject mapping,
+    comment, reserved-start and implicit typed-literal forms; do not interpret
+    YAML quoting/escapes. Other YAML forms must use JSON double quotes here.
+    """
+    if value.startswith('"'):
+        decoded=json.loads(value)
+        if not isinstance(decoded,str): raise ValueError("expected JSON-quoted string")
+    else:
+        if (not value or value[0] in "',[]{}&*!|>@`%#"
+                or value.casefold() in {"~","null","true","false","yes","no","on","off","y","n",
+                                       ".nan",".inf","+.inf","-.inf"}
+                or PLAIN_LITERAL_RE.fullmatch(value)
+                or re.search(r"^[-?:](?:\s|$)|:(?:\s|$)|(?:^|\s)#|[\x00-\x1f\x7f]",value)):
+            raise ValueError("ambiguous plain string; use JSON double quotes")
+        decoded=value
+    decoded.encode("utf-8")  # Reject escaped lone surrogates as invalid YAML text.
+    return decoded
 
 def frontmatter(text):
     if not text.startswith("---\n"): return {},["missing frontmatter"]
@@ -16,12 +42,19 @@ def frontmatter(text):
         if raw.startswith("  "):
             if current!="metadata" or ":" not in raw.strip():
                 errors.append("unsupported nested frontmatter: "+raw); continue
-            k,v=raw.strip().split(":",1); data.setdefault("metadata",{})[k.strip()]=v.strip().strip('"\'')
+            k,v=raw.strip().split(":",1); k=k.strip()
+            try: data.setdefault("metadata",{})[k]=frontmatter_string(v.strip())
+            except (ValueError,UnicodeError) as exc: errors.append("invalid frontmatter string metadata.%s: %s" % (k,exc))
         else:
             if ":" not in raw: errors.append("invalid frontmatter: "+raw); continue
             k,v=raw.split(":",1); k=k.strip(); v=v.strip()
             current=k if k=="metadata" else None
-            data[k]={} if k=="metadata" else v.strip('"\'')
+            if k=="metadata":
+                if v: errors.append("unsupported metadata value; expected nested string map")
+                data[k]={}
+            else:
+                try: data[k]=frontmatter_string(v)
+                except (ValueError,UnicodeError) as exc: errors.append("invalid frontmatter string %s: %s" % (k,exc))
     return data,errors
 
 def main():

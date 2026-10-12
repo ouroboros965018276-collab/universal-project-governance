@@ -1,6 +1,6 @@
 ---
 name: universal-project-governance
-description: Govern maintained-project changes across project types/hosts: task-bounded integration, proportional cleanup, evidence, factual chronology, debt control, recoverable handoffs. Exclude read-only Q&A/unrelated one-offs.
+description: Govern maintained-project changes across project types and hosts with task-bounded integration, proportional cleanup, evidence, factual chronology, debt control, recoverable handoffs. Exclude read-only Q&A/unrelated one-offs.
 license: Apache-2.0
 compatibility: Core needs no runtime. Optional deterministic planner/state/integrity helpers use Python 3.8+.
 metadata:

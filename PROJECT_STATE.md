@@ -2,7 +2,55 @@
 
 Current candidate: **3.0.0-rc.19 — Project Fact Recovery and Measured Execution Cost**.
 
-## RC19 candidate — preparation and independent measurement
+## RC19 current recovery checkpoint
+
+Observed worktree HEAD is `9bf5e97693b225c87a6fab2af9b96fb5aed1f0b6`.
+Default `main` remains accepted RC18 at
+`29cf112b4629d6b90504b079e95a5370c206a4cb`, and the global installed Skill remains
+RC18. RC19 is active and unfinished; no merge or local promotion has occurred.
+
+The independently audited [native A5](docs/rc19-native-independent-a-v5.md) and
+[nine-arm development](docs/rc19-nine-native-development-v2.md) evidence was
+committed at `3ea`. A5 retained 32 fresh strict passes and 439,193 reported tokens;
+its full-callback time/quality gate passed, with ratio 0.785054 and 95% joint
+family-block interval [0.761984, 0.808256]. Its token interval crosses one and
+Luna tokens regress 1.2071%; A5 does not establish joint token/time benefit or
+relax Tool B gates. Nine-arm development retained 209 known turns and 3,302,409
+tokens, with no distinct or selected edits; empirical admission is BLOCKED and
+contribution/token/time-benefit claims remain unassessed.
+
+The [child-route v3 diagnostic](docs/rc19-child-route-v3.md) has independently
+reconciled evidence, with its new docs/audit still uncommitted at this checkpoint.
+Sol completed both tiny public tasks with 20,122 reported tokens; Luna's
+child-no-proxy call returned `Connection failed: error sending request` without
+completed usage. The fourth call was not dispatched. The unknown fence remains,
+and NO_PROXY has not been adopted. This is diagnostic evidence, not a routing,
+latency or reliability improvement. Cumulative RC19 accounting is **321 known
+completed CLI turns / 9,457,515 known reported tokens plus four unknown-usage
+dispatches: 325 actual CLI dispatches**. This includes the prior v2 known strict
+failure; A4's worker reservation had zero actual CLI dispatches and is excluded.
+
+Compact wording was adopted with unchanged model, eight HotPath items and sixteen
+policies. Its 8,172-byte form at `3ea` had an unquoted `: ` in the description;
+hosted CI at `9bf5e97` passed 9/11 jobs and both external Skill loaders rejected
+that YAML scalar. The current candidate uses a plain description with template
+SHA-256 `9248ce28b78103f9b8fa2dde485fc1ebd77c1d6bbc2d290db6ee620303ae9648`;
+the actual generated Skill is **8,180 bytes**. Six frontmatter regressions passed
+independently and all eight release checks passed. Two initial check preparations
+failed because TEMP was not redirected from the sandbox path; their receipts are
+retained, and the two checks passed with the correct project TEMP. These results
+do not replace external loader validation, which awaits the next pushed source.
+See the [frontmatter compatibility audit](audits/rc19-frontmatter-compatibility.audit.json).
+
+Development v9 made zero model calls because CI blocked it; its old registration
+remains unchanged. The v10 driver is SOURCE READY only, has not prepared a new
+protocol and has made no model calls. Next: commit the corrected source/evidence,
+obtain hosted loader acceptance, then create and review a fresh v10 freeze before
+any development dispatch. Sealed Tool B remains unexposed and uncalled. Preserve
+all original protocols, scores, costs and unknown fences; do not replay them or
+use final-task feedback for tuning. Formal qualification remains UNASSESSED.
+
+## Historical RC19 preparation and measurement checkpoints
 
 The default branch contains RC18 through PR #19, merge
 `29cf112b4629d6b90504b079e95a5370c206a4cb`; local RC18 installation was accepted.
