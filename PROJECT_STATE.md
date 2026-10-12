@@ -2,29 +2,47 @@
 
 Current candidate: **3.0.0-rc.19 — Project Fact Recovery and Measured Execution Cost**.
 
-## RC19 independent confirmation checkpoint
+## RC19 terminal independent confirmation checkpoint
 
-The [final B v12 audit](docs/rc19-tools-independent-v12.md) preserves an
-infrastructure-incomplete round: 10 completed strict passes / 730,397 reported
-tokens, then one Sol connection failure without completed usage; 37 planned
-calls were not dispatched. Original unknown fences remain. The ephemeral CLI
-left no persisted matching session or completed usage, so that cost cannot be
-recovered or treated as zero. Net admission remains FAIL. The independent audit
-passed 1,242 assertions and preserved 228 original files byte-for-byte.
-Cumulative accounting is 379 known completed turns / 14,232,738 tokens plus
-five unknown dispatches, 384 actual CLI dispatches.
+The [final B v12 audit](docs/rc19-tools-independent-v12.md) retains 10 completed
+strict passes / 730,397 reported tokens, one connection failure without
+completed usage, and 37 planned calls never dispatched. Its independent audit
+passed 1,242 assertions and preserved 228 original files byte-for-byte. B is
+incomplete and its original net-benefit gate remains FAIL.
 
-The 8,303-byte candidate remains frozen. One additional prospectively registered
-C round will use twelve new sealed instances from the same six known families,
-fixed generation seed 19013, the same models/transport/budget and all original
-gates, plus an additional 99% bootstrap confirmation requirement. It is a
-single fixed replication caused by B transport interruption, not a replay,
-stitched result or repeated search for a passing round. B failures and costs
-remain public. Per-round intervals do not establish a single 95% guarantee for
-the whole multiround research sequence. C generation and confirmation analysis
-are being independently prepared without model calls or candidate tuning.
-Default main and the globally installed Skill remain RC18; no release promotion
-or local overwrite is allowed without complete independent net-benefit evidence.
+The single prospectively registered [additional C v13 round](docs/rc19-tools-independent-v13.md)
+also stopped at an unknown-usage connection failure. Four completed turns passed
+strict quality and reported 304,324 tokens; the fifth completed two read-only
+tool operations before failing without completed usage. No edit occurred in
+that unknown turn, and 43 planned calls were never dispatched. Independent
+audit passed 675 assertions with 154 original files unchanged. Both the original
+net-benefit gate and additional confirmation gate are FAIL; no 99% confirmation
+interval was calculated for the incomplete round. Connection-error evidence
+does not establish a local, proxy or provider root cause or a zero charge.
+
+The 8,303-byte candidate stayed frozen across B and C. C used twelve new sealed
+instances from the same six known families, generation seed 19013, unchanged
+models/transport/budget/original gates and the registered extra 99% requirement.
+The one additional round is exhausted: no further model round is planned for
+this frozen candidate, and neither incomplete prefix can be replayed, stitched
+or promoted. All original costs, raw records and unknown fences remain intact.
+Per-round intervals do not establish a single 95% guarantee for the whole
+multiround research sequence.
+
+Cumulative accounting is **383 known completed CLI turns / 14,537,062 reported
+tokens plus six unknown-usage dispatches: 389 actual CLI dispatches**. Cached
+input is already included in input; these reports are not invoices or the
+unobserved total for partial failures and internal attempts. The candidate
+passed eight local release gates; the C preregistration head passed hosted CI
+11/11, including both actual Skill loaders (Windows: 517 tests; Python 3.8:
+263 passes, 254 skips). Engineering validation does not establish model benefit.
+
+RC19 remains an unfinished draft in PR #20. Default main at
+`29cf112b4629d6b90504b079e95a5370c206a4cb` and the globally installed Skill
+remain RC18. Complete independent joint token/time benefit has not been
+verified, so no default-branch merge or local RC19 deployment has occurred.
+All following checkpoints are historical observations at their stated sources;
+their earlier preparation/next-action text is superseded by this checkpoint.
 
 ## RC19 preceding development checkpoint
 
