@@ -308,6 +308,27 @@ class RepoBroker:
         return (["required-recovery-reads-before-edit-missing:" + ",".join(sorted(missing))]
                 if missing else [])
 
+    def _patch_readback(self, name, expected):
+        """Bind success metadata to safely observed disk bytes after the batch."""
+        path = self.path(name)
+        before = path.lstat()
+        if not stat.S_ISREG(before.st_mode) or before.st_nlink != 1 or before.st_size > MAX_FILE_BYTES:
+            raise ValueError("patch readback requires a bounded regular non-hardlinked file")
+        descriptor = os.open(str(path), os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_BINARY", 0))
+        with os.fdopen(descriptor, "rb") as stream:
+            opened = os.fstat(stream.fileno())
+            if (not stat.S_ISREG(opened.st_mode) or opened.st_nlink != 1
+                    or (opened.st_dev, opened.st_ino) != (before.st_dev, before.st_ino)):
+                raise ValueError("patch readback identity changed while opening")
+            observed = stream.read(MAX_FILE_BYTES + 1)
+            after = os.fstat(stream.fileno())
+        final = self.path(name).lstat()
+        identity = lambda info: (info.st_dev, info.st_ino, info.st_size, info.st_mtime_ns, info.st_nlink)
+        if (identity(opened) != identity(after) or identity(after) != identity(final)
+                or observed != expected):
+            raise ValueError("patch readback bytes or identity differ from the applied write")
+        return {"sha256": sha(observed), "byte_size": len(observed)}
+
     def _execute(self, tool, arguments):
         if not isinstance(arguments, dict):
             raise ValueError("tool arguments must be an object")
@@ -354,22 +375,32 @@ class RepoBroker:
                 if not raw or len(raw) > MAX_FILE_BYTES or raw == old:
                     raise ValueError("patch must make a nonempty bounded change")
                 resulting_bytes += len(raw) - (len(old) if old is not None else 0)
-                staged.append((path, raw))
+                staged.append((name, path, raw))
             if resulting_bytes > MAX_TOTAL_BYTES:
                 raise ValueError("patch exceeds total repository byte limit")
-            for path, raw in staged:
-                path.parent.mkdir(parents=True, exist_ok=True)
-                temporary = path.with_name(path.name + "." + uuid.uuid4().hex + ".tmp")
-                try:
-                    with temporary.open("xb") as stream:
-                        stream.write(raw)
-                        stream.flush()
-                        os.fsync(stream.fileno())
-                    os.replace(temporary, path)
-                finally:
-                    if temporary.exists():
-                        temporary.unlink()
-            return {"ok": True, "changed": sorted(names)}
+            written, files = [], {}
+            try:
+                for name, path, raw in staged:
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    temporary = path.with_name(path.name + "." + uuid.uuid4().hex + ".tmp")
+                    try:
+                        with temporary.open("xb") as stream:
+                            stream.write(raw)
+                            stream.flush()
+                            os.fsync(stream.fileno())
+                        os.replace(temporary, path)
+                        written.append(name)
+                    finally:
+                        if temporary.exists():
+                            temporary.unlink()
+                # A later batch write must not invalidate an earlier success receipt.
+                for name, path, raw in staged:
+                    files[name] = self._patch_readback(name, raw)
+            except (OSError, ValueError, UnicodeError) as error:
+                return {"ok": False, "changed": sorted(written), "files": dict(sorted(files.items())),
+                        "write_state": "partial-or-unverified",
+                        "error": type(error).__name__ + ": " + str(error)[:240]}
+            return {"ok": True, "changed": sorted(names), "files": dict(sorted(files.items()))}
         if tool == "repo_validate" and not arguments:
             return self.validate()
         if tool == "repo_status" and not arguments:
@@ -422,7 +453,7 @@ def tool_definitions():
         definition("repo_read", "Read registered repository text files in one batch; returns text and SHA256.",
                    {"paths": {"type": "array", "items": {"type": "string"}, "minItems": 1, "maxItems": MAX_FILES}}, ["paths"]),
         definition("repo_search", "Search registered text files for a literal string.", {"needle": {"type": "string"}}, ["needle"]),
-        definition("repo_patch", "Replace registered writable files using exact prior SHA256; batch independent edits.",
+        definition("repo_patch", "Replace registered writable files using exact prior SHA256; batch independent edits. Returns safely read-back SHA256 and byte size per changed file.",
                    {"operations": {"type": "array", "items": {"type": "object", "properties": {
                        "path": {"type": "string"}, "old_sha256": {"type": ["string", "null"]},
                        "new_text": {"type": "string"}}, "required": ["path", "old_sha256", "new_text"],

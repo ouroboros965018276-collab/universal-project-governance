@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "kind": "rc19-observed-write-receipts-and-cost-persistence-precall",
+  "observed_at_utc": "2026-10-12T18:38:59.923705+00:00",
+  "status": "local-engineering-PASS-hosted-pending",
+  "source_revision": null,
+  "source_revision_binding": "candidate Git commit containing this audit",
+  "canonical_source_sha256": "f7108d900c430e41a8c61a601f4550f126cbac75c9e5fb7e0c4212e752a6fa29",
+  "runtime_files_sha256": {
+    "INTEGRITY.md": "01e1e3eb772940fe8259b0cb125cd7712858c6f50d4f2fdcada420aa73d29ab5",
+    "LICENSE": "50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a",
+    "policy-index.json": "ebcddfbaa9264b57dccbef573313a2368ed402ea32890a994c22dfb3f863880c",
+    "SKILL.md": "1eecb0b6c89251431dcbf0f862a2671bd64e8af7ac60bdbc534f22c81164618f",
+    "VERSION.md": "1033f9c40e480f722ef32d922874d18953a6063d911ebacf36df156b7a0c7be1",
+    "integrity/manifest.json": "9176b0170a6b34d7d8dd9fbca656bfd4c1dd945e2ace358d9e36cdd8d83c735a",
+    "schemas/audit.schema.json": "a5e15c26eff86e3c4e2e174fb121ef22981628307f09cf18d09a589e738ea889",
+    "schemas/execution.schema.json": "d2a7cddc9d98c8101294df302259ba18217c27b9e7c8fee43d96c82ff6bde1d7",
+    "schemas/feedback.schema.json": "22da61a114a1e89ee641ac25e90e23d6231003351df15918d4265f9900091954",
+    "schemas/field-report.schema.json": "fdba5018f63287fe87e2bf57eb0080f1935c13408a181025502973cbfa1cfd40",
+    "schemas/governance-plan.schema.json": "adb033dedda5f25f5a41ee95c2fca1cddfb474739173ab9b5712ddcd3b9bff67",
+    "schemas/handoff.schema.json": "994769e2a35b4d2189c509b8c5fce6ba76e4941fa4cadaa51f8f02f48b338a97",
+    "schemas/task-context.schema.json": "acc323f7d86f8dad5d8694e7fcf566dad6987d077877fbe6dbc819029936ad38",
+    "scripts/plan_governance.py": "cfe243ec183c8d1846f31bd794195e85595dda3708319d7acbb4c8b6a12e48ca",
+    "scripts/project_facts.py": "f355e0fa241a1032c94d4959b610b86c2d0ad48b2c62bbfed1ded65bfa4bd9ee",
+    "scripts/project_tool.py": "960355b2763c5ca3e4a150051e24ff035cb73d06ce37818a87adc90385e03412",
+    "scripts/state_tool.py": "193cb9657c32dedb253727e93a13bcb6f39306331fc8a90d1319e337f5b088a0",
+    "scripts/validate_integrity.py": "cf09558e67b4488db88c5ce9836e9f1cf1c8bae97d6e1444bb9d2d80409157c0"
+  },
+  "runtime_hash_map_sha256": "92d2433aff8003a60f7af1218f725dc1982870e68da3230201875fa333082eda",
+  "runtime_total_files": 18,
+  "runtime_managed_files": 17,
+  "skill_utf8_bytes": 8814,
+  "baseline_rc18_skill_utf8_bytes": 7940,
+  "policy_count": 16,
+  "hot_path_count": 8,
+  "policy_semantics_changed": false,
+  "scope_changes": [
+    "actual safe readback hashes and byte sizes in common broker patch receipts",
+    "canonical smallest read/change/verify guidance retaining required current-state checks",
+    "known completed-turn usage survives post-dispatch persistence failure",
+    "original pre-dispatch lock retained when evidence remains unresolved, including lost acknowledgement"
+  ],
+  "full_regression": {
+    "discovered": 499,
+    "executed_pass": 497,
+    "skipped": 2,
+    "unittest_seconds": 123.633,
+    "raw_sha256": "962a0859ce3a6c0b6ec811c8a7482f22509f0e790ebe8b412ddd517c354976a3",
+    "scope": "before final native-only two-line lock-retention correction and one combined regression; no later runtime/broker/template change"
+  },
+  "final_native_focus": {
+    "existing": 28,
+    "new": 13,
+    "passed": 41,
+    "unittest_seconds": 8.185,
+    "paired_existing_passed": 30,
+    "paired_unittest_seconds": 8.827,
+    "independent_new_passed": 13,
+    "independent_seconds": 0.253,
+    "independent_lost_ack_and_success_smoke": "PASS; zero actual CLI launches; counts overlap and are not summed with full suite"
+  },
+  "broker_focus": {
+    "new_passed": 10,
+    "combined_passed": 61,
+    "combined_seconds": 23.323,
+    "independent_new_passed": 10,
+    "independent_seconds": 2.352,
+    "scope": "same five tools, initial reads, old hashes, protected paths and current validate/status remain required"
+  },
+  "final_source_files_sha256": {
+    "evolution/native_codex.py": "619f5e19b782b4194455c7b4dcb179268e65dd675b50c3227137b0e770eddec4",
+    "tests/test_native_cost_persistence.py": "10ee0b234fa2d60a21b269e54ec9dcdac7aacfd41b1958e6c4d719c3ff808be1",
+    "evolution/tool_broker.py": "ee83a71436bd48e40deb3dc334fe603c4b51e79d7c50d6c9d4c3af5f2b46a62c",
+    "tests/test_tool_patch_receipts.py": "6a98fe7b894188bdd494b65785b4cb749406c072fdcab9f9e7a5959fcdce3ef2",
+    "governance-src/templates/SKILL.template.md": "9aefb2bd88e9ab8f95567c993682f809d15870f601980b3178072cadc99f41f7"
+  },
+  "release_checks": {
+    "passed": 8,
+    "total": 8,
+    "receipt_sha256": "940e2799ed11e381e5f87488d39f2c51b6382ca90a252066175ff16adbda9136",
+    "scope": "current runtime and qualification source; final lock-only correction is repository evolution outside runtime"
+  },
+  "deterministic_package_sha256": "da2b98c2eb95ba209d8d29f3caca761073e08fbe1e4b3bea81df5d3c957f4b70",
+  "qualification_fingerprint": "sha256:75296c4d16f408f14b4e1ec948918aa2142c5e00184706e30472902f120ac268",
+  "expected_final_hosted_tests": 500,
+  "model_calls_for_this_preflight": 0,
+  "historical_metered_rc19": {
+    "completed_turns": 61,
+    "reported_tokens": 4355182,
+    "unknown_dispatches": 2,
+    "unknown_replayed": false,
+    "invoice_and_development_conversation_usage": "unobserved"
+  },
+  "network_diagnosis": {
+    "receipt_sha256": "4b6c824f478e0d07dee56f937bcf6ceabb991364531b02c0e36807b63073fef3",
+    "inference_calls": 0,
+    "host_config_changed": false,
+    "basic_tls_success_proves_model_availability": false,
+    "failed_socket_path": "unobserved",
+    "verified_network_fix": false
+  },
+  "efficacy": {
+    "net_benefit": "UNPROVEN",
+    "learned_winner_promoted": false,
+    "formal_qualification": "UNASSESSED",
+    "default_merge": false,
+    "global_install": false
+  }
+}

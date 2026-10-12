@@ -158,6 +158,7 @@ class NativeCodex:
         self.binary_sha256 = _sha(self.binary.read_bytes())
         self.config_sha256 = digest(dict(config, binary_sha256=self.binary_sha256))
         self._preparation_cache = OrderedDict()
+        self._dispatch_blocked = False
 
     @classmethod
     def from_environment(cls):
@@ -240,7 +241,14 @@ class NativeCodex:
         return skill, prepared["plan"], runtime_identity, phases
 
     def _unknown(self, directory, receipt):
-        _atomic(directory / "receipt.json", receipt)
+        # Set this before evidence I/O: a full/unwritable disk must never permit
+        # a second launch or erase usage already observed in completed stdout.
+        self._dispatch_blocked = True
+        receipt["dispatch_evidence_unconfirmed"] = True
+        try:
+            _atomic(directory / "receipt.json", receipt)
+        except OSError as error:
+            receipt["receipt_persistence_error"] = type(error).__name__ + ": " + str(error)[:240]
         # The unresolved call blocks the entire configured experiment root,
         # including retries whose prompts or candidate identifiers differ.
         fence = self.artifacts / "UNKNOWN_CALL.json"
@@ -253,10 +261,15 @@ class NativeCodex:
                 os.fsync(stream.fileno())
         except FileExistsError:
             pass
+        except OSError as error:
+            receipt["fence_persistence_error"] = type(error).__name__ + ": " + str(error)[:240]
 
     def _call(self, *, key, prompt, bindings, output_schema=None, local_timings=None):
+        if self._dispatch_blocked:
+            raise NativeCallPending("native evidence is unresolved in this process; no automatic replay")
         self.artifacts.mkdir(parents=True, exist_ok=True)
         lock = self.artifacts / ".native-dispatch.lock"
+        result, call_error = None, None
         try:
             descriptor = os.open(str(lock), os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
         except FileExistsError as error:
@@ -264,11 +277,29 @@ class NativeCodex:
         try:
             os.write(descriptor, canonical_bytes({"pid": os.getpid(), "key_sha256": digest(key)}))
             os.fsync(descriptor)
-            return self._locked_call(key=key, prompt=prompt, bindings=bindings, output_schema=output_schema,
-                                     local_timings=local_timings)
+            result = self._locked_call(key=key, prompt=prompt, bindings=bindings, output_schema=output_schema,
+                                       local_timings=local_timings)
+        except BaseException as error:
+            call_error = error
+            raise
         finally:
-            os.close(descriptor)
-            lock.unlink()
+            try:
+                os.close(descriptor)
+                if not self._dispatch_blocked:
+                    lock.unlink()
+            except OSError as error:
+                self._dispatch_blocked = True
+                cleanup = type(error).__name__ + ": " + str(error)[:240]
+                if result is not None:
+                    receipt = dict(result["receipt"], status="dispatch-lock-cleanup-failed",
+                                   original_status=result["receipt"]["status"], dispatch_lock_cleanup_error=cleanup)
+                    directory = self.artifacts / receipt["raw_artifact_reference"]
+                    self._unknown(directory, receipt)
+                    raise NativeCallError(receipt["status"], usage=result["usage"],
+                                          provider_receipt=receipt) from error
+                if getattr(call_error, "provider_receipt", None) is not None:
+                    call_error.provider_receipt["dispatch_lock_cleanup_error"] = cleanup
+        return result
 
     def _locked_call(self, *, key, prompt, bindings, output_schema=None, local_timings=None):
         if (self.artifacts / "UNKNOWN_CALL.json").exists():
@@ -292,6 +323,13 @@ class NativeCodex:
             if previous.is_dir() and (not (previous / "result.json").is_file()
                                       or not (previous / "receipt.json").is_file()):
                 raise NativeCallPending("an interrupted native dispatch needs reconciliation; no automatic replay")
+            if previous.is_dir():
+                try:
+                    prior_receipt = json.loads((previous / "receipt.json").read_text(encoding="utf-8"))
+                except (OSError, ValueError) as error:
+                    raise NativeCallPending("prior native receipt is unreadable; no automatic replay") from error
+                if prior_receipt.get("dispatch_evidence_unconfirmed") is True:
+                    raise NativeCallPending("prior native evidence is unresolved; no automatic replay")
         try:
             directory.mkdir()
         except FileExistsError:
@@ -335,6 +373,7 @@ class NativeCodex:
         started = time.perf_counter()
         started_at = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
         stdout, stderr, exit_code, failure = b"", b"", None, None
+        dispatch_error = None
         try:
             completed = subprocess.run(arguments, input=prompt.encode("utf-8"),
                                        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
@@ -342,21 +381,15 @@ class NativeCodex:
             stdout, stderr, exit_code = _bytes(completed.stdout), _bytes(completed.stderr), completed.returncode
         except subprocess.TimeoutExpired as error:
             stdout, stderr, failure = _bytes(error.stdout), _bytes(error.stderr), "timeout-unknown-provider-state"
+            dispatch_error = error
         except BaseException as error:
             failure = type(error).__name__ + "-dispatch-state-unconfirmed"
-            (directory / "stdout.raw").write_bytes(stdout)
-            (directory / "stderr.raw").write_bytes(stderr)
-            receipt = {"receipt_type": "codex_cli_thread", "harness_request_id": request_id,
-                       "status": failure, "provider_request_id": None,
-                       "wall_seconds": time.perf_counter() - started, "usage": None,
-                       "bindings": bindings, "stdout_sha256": _sha(stdout), "stderr_sha256": _sha(stderr)}
-            self._unknown(directory, receipt)
-            if not isinstance(error, Exception):
-                raise
-            raise NativeCallError(failure, provider_receipt=receipt) from error
+            dispatch_error = error
+            stdout, stderr = _bytes(getattr(error, "stdout", None)), _bytes(getattr(error, "stderr", None))
         elapsed = time.perf_counter() - started
-        (directory / "stdout.raw").write_bytes(stdout)
-        (directory / "stderr.raw").write_bytes(stderr)
+        # Mechanical accounting precedes every post-dispatch evidence write.
+        # A unique completed turn is measured usage, never proof of success or
+        # completeness of failed/partial provider-side attempts.
         events = _events(stdout)
         usage = _usage(events)
         threads = [event.get("thread_id") for event in events if event.get("type") == "thread.started"]
@@ -387,11 +420,31 @@ class NativeCodex:
                    "replayed_from_local_receipt": False}
         receipt["local_timings"] = dict(local_timings or {}, cli_seconds=elapsed,
                                         capability_verify_seconds=capability_verify_seconds)
+        if dispatch_error is not None:
+            receipt["dispatch_error"] = type(dispatch_error).__name__ + ": " + str(dispatch_error)[:240]
+        try:
+            (directory / "stdout.raw").write_bytes(stdout)
+            (directory / "stderr.raw").write_bytes(stderr)
+        except OSError as error:
+            receipt.update(original_status=receipt["status"], status="raw-evidence-persistence-failed",
+                           raw_persistence_error=type(error).__name__ + ": " + str(error)[:240])
+            self._unknown(directory, receipt)
+            if dispatch_error is not None and not isinstance(dispatch_error, Exception):
+                raise dispatch_error
+            raise NativeCallError(receipt["status"], usage=usage, provider_receipt=receipt) from error
         if failure is not None or usage is None or len(threads) != 1:
             self._unknown(directory, receipt)
-            raise NativeCallError(receipt["status"], usage=usage, provider_receipt=receipt)
-        _atomic(directory / "result.json", result)
-        _atomic(directory / "receipt.json", receipt)
+            if dispatch_error is not None and not isinstance(dispatch_error, Exception):
+                raise dispatch_error
+            raise NativeCallError(receipt["status"], usage=usage, provider_receipt=receipt) from dispatch_error
+        try:
+            _atomic(directory / "result.json", result)
+            _atomic(directory / "receipt.json", receipt)
+        except OSError as error:
+            receipt.update(original_status=receipt["status"], status="post-dispatch-evidence-unconfirmed",
+                           evidence_persistence_error=type(error).__name__ + ": " + str(error)[:240])
+            self._unknown(directory, receipt)
+            raise NativeCallError(receipt["status"], usage=usage, provider_receipt=receipt) from error
         if not success:
             raise NativeCallError("native response failed or used forbidden tools", usage=usage, provider_receipt=receipt)
         result["receipt"] = receipt

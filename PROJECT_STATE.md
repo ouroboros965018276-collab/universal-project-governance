@@ -151,6 +151,26 @@ Independent native A3 and sealed Tool B final calls remain zero. Earlier uncalle
 v6/A2 freezes and the separate v5 unknown fence remain unchanged; default main
 and the accepted local RC18 Skill have not been promoted by this partial result.
 
+The next [engineering preflight](audits/rc19-observed-receipts-preflight.audit.json)
+adds safe actual-byte patch hashes to the common tool scaffold, retaining all
+initial-read, scope and current validation/status gates. The Skill makes the
+smallest read/change/verify sequence explicit. Native completed-turn costs now
+survive raw/result/receipt persistence failures; unresolved evidence retains the
+original dispatch lock, including a lost receipt acknowledgement followed by
+both fence-write failures. Independent fault-injection reviews passed; no real
+call was replayed to test these failures.
+
+Local full regression passed 499 discovered tests (497 executed passes, two
+link-privilege skips) and eight release checks before the final two-line lock
+correction and its additional regression. Final native focus passed 41/41 and
+paired focus 30/30, with an independent 13/13 cost focus and combined-fault
+reproduction; these overlap the full suite. Final 500-test hosted verification
+is pending. Two actual package builds match
+`da2b98c2eb95ba209d8d29f3caca761073e08fbe1e4b3bea81df5d3c957f4b70`.
+The 18-file runtime Skill is 8814 bytes, still larger than RC18's 7940.
+There are no new model results or efficiency claims for this candidate. New v8,
+native A4 and nine-arm development registrations are required before dispatch.
+
 ## RC18 candidate — paired measurements and nine-arm matrix completed
 
 The default branch already contains RC17 through [PR #18](https://github.com/ouroboros965018276-collab/universal-project-governance/pull/18), merge `e63f438bdee2b9d65c49db6c621e968d6b185e56`. RC18 continues from that release. The prior RC17/RC16 records below describe their original stages; their test counts, failures, unknowns and qualification outcomes are retained.
