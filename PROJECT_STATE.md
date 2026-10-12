@@ -129,6 +129,28 @@ of the corrected source remains pending. Uncalled development v6 and native A v2
 are retained; corrected-source development v7 and native A v3 require new freezes.
 These engineering fixes establish no additional model efficiency result.
 
+The corrected source `38d469126fb31e4572689a5934d0bac2b9a470cd` and public freeze
+`5b28efb6a4ab522da855a217d8de14d2c6b739ac` now have independently observed
+[PR](https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/38286771981)
+and [push](https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/38286766579)
+CI success, 11/11 jobs each. Python 3.8 discovered 477 tests with 230 skips
+and 247 executed passes; PR Windows 3.13 passed all 477 in 71.716 seconds,
+including real short-root retention. These hosted runs are separate from the
+local full suite before the final test-bootstrap edit and the final 17-test
+standalone focus; their counts are not summed.
+
+The [v7 partial audit](docs/rc19-tools-development-v7.md) retains seven completed
+turns / 668208 reported tokens, all seven strict passes and 16/16 positive checks.
+The eighth dispatch made four real tools and two partial edits, then failed with
+`Connection failed: error sending request` without completed usage. Its network
+root cause remains unknown; the pending/unknown-call fence is preserved without
+replay. Net benefit remains FAIL and formal qualification UNASSESSED. Cumulative
+RC19 accounting is 61 completed known-usage turns / 4355182 reported tokens plus
+two unknown-usage dispatches (63 dispatches total); missing usage is not zero.
+Independent native A3 and sealed Tool B final calls remain zero. Earlier uncalled
+v6/A2 freezes and the separate v5 unknown fence remain unchanged; default main
+and the accepted local RC18 Skill have not been promoted by this partial result.
+
 ## RC18 candidate — paired measurements and nine-arm matrix completed
 
 The default branch already contains RC17 through [PR #18](https://github.com/ouroboros965018276-collab/universal-project-governance/pull/18), merge `e63f438bdee2b9d65c49db6c621e968d6b185e56`. RC18 continues from that release. The prior RC17/RC16 records below describe their original stages; their test counts, failures, unknowns and qualification outcomes are retained.
