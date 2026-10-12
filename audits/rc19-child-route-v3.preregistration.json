@@ -1,0 +1,99 @@
+{
+  "protocol_id": "rc19-prospective-child-route-v3",
+  "kind": "prospective-route-diagnostic-not-benefit",
+  "models": [
+    "gpt-6-sol",
+    "gpt-6-luna"
+  ],
+  "order": [
+    {
+      "model": "gpt-6-sol",
+      "route": "existing-profile"
+    },
+    {
+      "model": "gpt-6-sol",
+      "route": "child-no-proxy"
+    },
+    {
+      "model": "gpt-6-luna",
+      "route": "child-no-proxy"
+    },
+    {
+      "model": "gpt-6-luna",
+      "route": "existing-profile"
+    }
+  ],
+  "budget": {
+    "call_timeout_seconds": 180,
+    "model_calls": 4,
+    "reported_tokens": 100000,
+    "wall_seconds": 720
+  },
+  "profile": [
+    "model_provider=\"upg_openai_http\"",
+    "model_providers.upg_openai_http.name=\"OpenAI\"",
+    "model_providers.upg_openai_http.wire_api=\"responses\"",
+    "model_providers.upg_openai_http.requires_openai_auth=true",
+    "model_providers.upg_openai_http.supports_websockets=false",
+    "model_providers.upg_openai_http.request_max_retries=0",
+    "model_providers.upg_openai_http.stream_max_retries=0",
+    "features.unbounded_connection_retries=false"
+  ],
+  "prompt": "Public connectivity diagnostic only. Do not use tools, inspect files, access external resources, or modify any state. Return exactly this JSON and no other text: {\"probe\":\"upg-route-v1\",\"ok\":true}",
+  "prompt_sha256": "a3b78425582795476747a56dd940c2b495172aef449536d25752c24dcf35317d",
+  "output_schema": {
+    "additionalProperties": false,
+    "properties": {
+      "ok": {
+        "enum": [
+          true
+        ],
+        "type": "boolean"
+      },
+      "probe": {
+        "enum": [
+          "upg-route-v1"
+        ],
+        "type": "string"
+      }
+    },
+    "required": [
+      "probe",
+      "ok"
+    ],
+    "type": "object"
+  },
+  "automatic_retries": 0,
+  "billing_coverage": "completed CLI turn usage only; provider auth recovery and failed partial attempts unassessed",
+  "schema_version": 1,
+  "status": "PREPARED-NOT-DISPATCHED",
+  "registered_at_utc": "2026-10-12T20:33:49.735701+00:00",
+  "private_registration_sha256": "fa810d430250c9c562ad789be525645fe69b5359e5a385e621f4fc9251f23e8c",
+  "private_registration_file_sha256": "cf2e0b9fe1161605ed5c391f1247b2152f2aa88c9d09ebc25979f3868c90dc4d",
+  "registered_file_sha256": {
+    "codex-code-mode-host.exe": "f03190749208b5594fd5125d2d2b09e4ad00e2a1f74aeb11f60a6673dde83c43",
+    "codex.exe": "bd970316b98c725f01cbfb92fdd3a952cb0e45425e15b7fb81d1927a60992f1a",
+    "python.exe": "4d6f5f81a4bca11191c4c7c6b43632694d0a4ce74e068619d8fdc161d469859a",
+    "eval-workspaces/rc19-model-catalog.json": "b1b58dc21270ced184a43118e7434b558fb969e30abeedf3664324896025ed73",
+    "eval-workspaces/rc19-route-probe-candidate/harness_v3.py": "26760a150cc73110d1c34dc1cc80df28053493ff59fceefc5552bcb3736ef088",
+    "evolution/cli_transport.py": "c6f2ade9c12c072afed9fa5404e3187f7ea1a46feba9c8726f5b1cacbbb1282f",
+    "evolution/contracts.py": "c64915a5d2a4ed199ba5c62a46885f8e5149541fcd43452eeb94fa44090692a2",
+    "evolution/native_codex.py": "619f5e19b782b4194455c7b4dcb179268e65dd675b50c3227137b0e770eddec4",
+    "evolution/tool_broker.py": "ee83a71436bd48e40deb3dc334fe603c4b51e79d7c50d6c9d4c3af5f2b46a62c",
+    "evolution/tool_codex.py": "27336ad9767d8cf8bf24b0c89448a5131343b16278a13cdcbd7ff31c8396ec66"
+  },
+  "route_contract": {
+    "existing-profile": "Unchanged shared HTTP overrides; inherited environment; effective proxy route unobserved",
+    "child-no-proxy": "Same HTTP overrides plus respect_system_proxy=false and system_proxy_fallback=false; only copied child environment NO_PROXY=*; host settings unchanged"
+  },
+  "acceptance": "Strict unique complete CLI turn and exact fixed JSON; any error/unknown stops entire collection; no resume or replay",
+  "scope": "Connectivity diagnostic only; not task efficacy, isolated network latency, transport reliability, vendor independence, or permission to merge",
+  "model_calls_before_registration": 0,
+  "startup_common_overrides": [
+    "features.code_mode.enabled=false",
+    "features.code_mode_host=true",
+    "suppress_unstable_features_warning=true"
+  ],
+  "startup_change_scope": "New isolated harness; common to both routes, installed official host dependency only; no OS permission/host config/endpoint/authentication changes; all tool and error observations remain rejected",
+  "supersedes_failed_registration": "v2 known failed startup; 1 completed turn/10059 reported tokens; original failed record/fence retained, no replay"
+}
