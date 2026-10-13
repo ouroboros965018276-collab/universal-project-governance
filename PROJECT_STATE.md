@@ -2,6 +2,23 @@
 
 Current candidate: **3.0.0-rc.19 — Project Fact Recovery and Measured Execution Cost**.
 
+## Owner-authorized RC19 integration
+
+After reviewing the incomplete independent results, the owner explicitly
+requested: "合并默认分支并安装 RC19！". This authorizes publishing the reviewed
+RC19 engineering candidate and upgrading the local Skill. It does not change
+any experimental acceptance gate, score, cost, unknown fence or qualification
+result. Independent joint token/time benefit remains unverified; RC19 is a
+release candidate, and formal qualification remains UNASSESSED.
+
+PR #20 carries the reviewed runtime and evidence. Integration and installation
+will be checked against the actual merged default-branch revision, its hosted
+CI, the exact installed file map, installed helper behavior and fresh official
+Skill discovery. Deployment progress is recorded separately from efficacy;
+historical statements below describe their original checkpoints. The
+[owner release authorization](audits/rc19-owner-release-authorization.audit.json)
+records this change of release scope without rewriting experimental evidence.
+
 ## RC19 terminal independent confirmation checkpoint
 
 The [final B v12 audit](docs/rc19-tools-independent-v12.md) retains 10 completed
