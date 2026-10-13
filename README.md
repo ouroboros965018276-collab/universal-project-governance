@@ -2,9 +2,9 @@
 
 ## 当前版本与开发进度 | Version status
 
-本分支候选 / Candidate: **3.0.0-rc.19 — Project Fact Recovery and Measured Execution Cost**。从已合并并实装的 RC18 继续查明耗时变化，整合按需项目事实恢复与原生离线反思学习，并补充跨模型真实工具任务对照。独立净收益与本候选发布验收尚待完成。
+当前候选版本 / Current release candidate: **3.0.0-rc.19 — Project Fact Recovery and Measured Execution Cost**。已整合按需项目事实恢复与原生离线反思学习，并完成默认分支合并与本轮本地主机安装验收。独立 token／耗时净收益仍未证实。
 
-发布状态 / Release: **候选，非 Stable**。RC18 已通过 [PR #19](https://github.com/ouroboros965018276-collab/universal-project-governance/pull/19) 合并到默认分支并完成本地安装验收。RC19 的[耗时诊断](docs/rc19-latency-diagnosis.md)区分单次长尾与可复现的本地开销；局部准备提速不代表真实模型端到端提速。尚未建立 RC19 独立净收益。版本以 [VERSION.md](universal-project-governance/VERSION.md) 为准，当前状态见 [PROJECT_STATE.md](PROJECT_STATE.md)。
+发布状态 / Release: **候选，非 Stable**。RC19 已通过 [PR #20](https://github.com/ouroboros965018276-collab/universal-project-governance/pull/20) 合并到默认分支，[PR #21](https://github.com/ouroboros965018276-collab/universal-project-governance/pull/21) 记录了本轮本地主机的[安装验收](audits/rc19-installation.audit.json)。RC19 的[耗时诊断](docs/rc19-latency-diagnosis.md)区分单次长尾与可复现的本地开销；发布与安装通过不代表真实模型端到端净收益已成立。版本以 [VERSION.md](universal-project-governance/VERSION.md) 为准，当前状态见 [PROJECT_STATE.md](PROJECT_STATE.md)。
 
 ### RC18 历史实测（保留原始范围）
 
@@ -12,7 +12,7 @@
 
 v2 记录 188 次实际 CLI turn（158 次任务、30 次学习），共 2684192 tokens；158/158 原始任务结果机械重评分通过，最终任务分派为 0。两次 Windows 检查点替换临时拒绝均在核清已付费调用后按同一冻结协议和引擎恢复，额外调用全部计入预算，具体占用进程或原因未确认。v1 与 v2 合计 227 次调用、3238130 tokens；另有能力探针 1 次、14921 tokens，含探针总计 228 次、3253051 tokens。发布阶段另加入有界检查点 I/O 重试，最终本地回归 **299/299 通过（98.700 秒）**、发布门禁 **8/8 通过**，未追溯更改实测引擎。实测冻结版本 `8d1cb51945c5d98bf3db7c2e72557d7e50274275` 的托管 CI 为 **11/11 通过**；最终 PR/main CI 另行记录。九组完成不建立算法因果收益，详见[实测报告](qualification/pilots/rc18-native/README.md)。
 
-离线引擎使用 Python 3.10+；日常 Skill 无新增模型调用，辅助脚本继续支持 Python 3.8+。见[离线优化说明](docs/offline-evolution.md)。本地已验收的 Skill 为 RC18；RC19 尚未部署。安装状态以实际部署验收记录为准，远端合并不会自动更新其他本地副本。
+离线引擎使用 Python 3.10+；日常 Skill 无新增模型调用，辅助脚本继续支持 Python 3.8+。见[离线优化说明](docs/offline-evolution.md)。本轮本地主机已验收的 Skill 为 RC19，见[安装审计](audits/rc19-installation.audit.json)；远端合并不会自动更新其他主机或本地副本。
 
 上述 RC18 文件任务只评估模型返回的 JSON/源码内容，不执行生成代码。RC19 已有实际文件/Git 工具开发记录，但净收益门禁未通过。请求模型的提供方内部身份和内部尝试费用覆盖仍未知；正式资格门禁保持不变。
 
@@ -22,7 +22,7 @@ Universal Project Governance is a model-agnostic, host-agnostic Agent Skill for 
 
 RC16 addresses two field-feedback gaps: completion could not replace planned outcomes with observed results, and a handoff could repeat stale validation prose. The lifecycle now separates start facts from evolving outcomes. Optional validation references resolve one named, scoped run from the existing project truth and reject stale digests. Original unknowns remain honest; stage checkpoints do not complete unfinished work. See the [sanitized feedback and evidence limits](docs/field-feedback/rc16-retrospective.md).
 
-The prior frozen RC13 smoke passed registration, schema, artifact, and analyzer-boundary checks but failed closed before model invocation because Windows sandbox provisioning was incomplete; its sanitized record is [`qualification/dev-smoke/rc13-attempt-3.summary.json`](qualification/dev-smoke/rc13-attempt-3.summary.json). RC14 attempt 1 independently reproduced the same preflight blocker after current-freeze registration/schema/artifact checks; the adapter made no Agent call, and its sanitized summary is [`qualification/dev-smoke/rc14-attempt-1.summary.json`](qualification/dev-smoke/rc14-attempt-1.summary.json). The interrupted RC13 attempt has registration only, so invocation and usage remain unknown, not zero ([record](qualification/dev-smoke/rc13-attempt-2.summary.json)). Historical RC12 outcomes remain unchanged: 1 FAIL + 4 BLOCKED, and prospective attempts 13/14 keep their unknown causes. Locked qualification remains NOT RUN; empirical qualification and Stable remain NOT ACHIEVED because reviewed external isolation and three usable independent Agent families are not established.
+The prior frozen RC13 smoke passed registration, schema, artifact, and analyzer-boundary checks but failed closed before model invocation because Windows sandbox provisioning was incomplete; its sanitized record is [`qualification/dev-smoke/rc13-attempt-3.summary.json`](qualification/dev-smoke/rc13-attempt-3.summary.json). RC14 attempt 1 independently reproduced the same preflight blocker after registration/schema/artifact checks against its then-current RC14 freeze; the adapter made no Agent call, and its sanitized summary is [`qualification/dev-smoke/rc14-attempt-1.summary.json`](qualification/dev-smoke/rc14-attempt-1.summary.json). The interrupted RC13 attempt has registration only, so invocation and usage remain unknown, not zero ([record](qualification/dev-smoke/rc13-attempt-2.summary.json)). Historical RC12 outcomes remain unchanged: 1 FAIL + 4 BLOCKED, and prospective attempts 13/14 keep their unknown causes. Locked qualification remains NOT RUN; empirical qualification and Stable remain NOT ACHIEVED because reviewed external isolation and three usable independent Agent families are not established.
 
 ## What changes when installed
 
@@ -30,8 +30,10 @@ RC19 adds optional [project fact recovery](docs/project-fact-recovery.md) for
 interrupted, stale or contradictory project state. It checks explicit file
 scopes and evidence references, separates static declarations from actual
 validation, and carries justified decision changes through the existing handoff.
-Ordinary local changes retain the lightweight path. Independent measured benefit
-is required before this candidate replaces the installed RC18 release.
+Ordinary local changes retain the lightweight path. RC19 is merged and locally
+installed under the owner's engineering-release authorization; independent
+measured token/time benefit remains unverified. See the
+[installation audit](audits/rc19-installation.audit.json).
 
 Without UPG, an Agent can still complete a task, but cleanup, current-truth updates, validation evidence, scope discipline and handoff recovery depend on the Agent remembering to do them. With UPG active on a maintained-project change, the Agent first observes available capabilities, chooses local or structural mode, keeps work inside the smallest responsible layer, removes replaced residue when safe, validates affected behavior, and records explicit unknowns instead of inventing history.
 
@@ -188,6 +190,6 @@ Keep these stages separate:
 - **Empirical qualification:** locked evidence is admitted and all non-compensatory gates pass.
 - **Stable:** release promotion follows only after the qualification contract is met.
 
-**Qualification evidence boundary:** The RC9 field pilot retained weak single-family timing and governance-call aggregates for A0/A2; token totals were not instrumented, there was no A1 arm, and the observations cannot support a causal overhead estimate. RC12/RC13 smoke and micro-project outcomes remain historical diagnostics. RC14's local checks and smoke are recorded in [`PROJECT_STATE.md`](PROJECT_STATE.md). The frozen protocol still requires paired A0/A1/A2 evidence, non-compensatory safety gates, external isolation review, and three usable independent Agent families. Locked qualification is **NOT RUN**; empirical qualification and Stable remain **NOT ACHIEVED**. Development smoke is not release evidence.
+**Qualification evidence boundary:** The RC9 field pilot retained weak single-family timing and governance-call aggregates for A0/A2; token totals were not instrumented, there was no A1 arm, and the observations cannot support a causal overhead estimate. RC12/RC13 smoke and micro-project outcomes remain historical diagnostics. RC14's historical local checks and smoke are recorded in [`PROJECT_STATE.md`](PROJECT_STATE.md). The frozen protocol still requires paired A0/A1/A2 evidence, non-compensatory safety gates, external isolation review, and three usable independent Agent families. Locked qualification is **NOT RUN**; empirical qualification and Stable remain **NOT ACHIEVED**. Development smoke is not release evidence.
 
 License: Apache-2.0.
