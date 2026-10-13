@@ -11,11 +11,22 @@ any experimental acceptance gate, score, cost, unknown fence or qualification
 result. Independent joint token/time benefit remains unverified; RC19 is a
 release candidate, and formal qualification remains UNASSESSED.
 
-PR #20 carries the reviewed runtime and evidence. Integration and installation
-will be checked against the actual merged default-branch revision, its hosted
-CI, the exact installed file map, installed helper behavior and fresh official
-Skill discovery. Deployment progress is recorded separately from efficacy;
-historical statements below describe their original checkpoints. The
+PR #20 merged the reviewed runtime and evidence into default `main` at
+`a98449ce91e8bc60ae0d58fa584cbef7ab87c058`. Its content tree equals the tested
+PR head; merged-main CI run 38353591520 passed all 11 jobs, including both
+actual Skill loaders and 517 Windows tests.
+
+Local RC19 installation was verified on 2026-10-13: all 18 delivered files
+equal that merged-main revision, with 17 managed integrity entries and a
+verified 17-file RC18 backup. All 33 helper commands passed, including eight
+UTF-8 BOM planner contexts, lifecycle/idempotency and bounded read-only project
+recovery. A fresh official Codex CLI process force-reloaded exactly one enabled
+UPG with zero duplicates/discovery errors and a clean exit. Existing unmanaged
+files were preserved. These installation checks made no model calls.
+
+The [installation audit](audits/rc19-installation.audit.json) records this
+operational acceptance separately from efficacy; historical statements below
+describe their original checkpoints. The
 [owner release authorization](audits/rc19-owner-release-authorization.audit.json)
 records this change of release scope without rewriting experimental evidence.
 
