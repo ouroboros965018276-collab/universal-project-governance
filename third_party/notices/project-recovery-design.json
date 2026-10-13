@@ -1,0 +1,19 @@
+{
+  "kind": "pinned-design-reference-no-executable-dependency",
+  "repository": "https://github.com/zhaoxuya520/reverse-skill",
+  "commit": "cab634bd855fc287f6e420c1f36fd1a6b9245960",
+  "license": "MIT",
+  "files": {
+    "LICENSE": "050fb75594e1e739308940327c433069dc2a66f2",
+    "skills/reverse-engineering/references/re-agent-workflow.md": "7a9a31358885b914bd19d3c29765f47a531d0815",
+    "skills/ops/analysis-decision-framework.md": "9ff90171f46016bb35b44926643eb4c38e20e5c8",
+    "skills/ops/evidence-finding-path.md": "862ecca0f467040571da98f534519dc48626c0b8",
+    "skills/case-review/scripts/review_case.py": "4408bec6661f34a9f9318aa93b54cbea2ff3134f",
+    "skills/js-reverse/references/local-rebuild.md": "2ce5302dc844ac092c4e4097790031fb0768e1a6"
+  },
+  "file_identity_algorithm": "git-blob-sha1",
+  "adopted_concepts": ["task-dependent analysis routing", "static declarations versus dynamic validation", "evidence-backed findings and paths", "decision deltas and carried references", "bounded no-progress replanning", "minimal entry-and-environment reproduction"],
+  "implementation": "UPG-native helpers and existing handoff/planner schema; no imported executable source",
+  "excluded": ["automatic toolchain installation", "security exploitation workflows", "automatic validated findings", "second project truth or reporting system"],
+  "fixity_is_truth": false
+}

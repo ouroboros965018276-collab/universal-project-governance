@@ -1,0 +1,261 @@
+{
+  "schema_version": 1,
+  "kind": "prospective-real-native-nine-arm-development-registration",
+  "registered_at_utc": "2026-10-12T19:37:06.000842+00:00",
+  "protocol_id": "rc19-nine-native-development-v1-1f06cda0ff7e45d9856728ab33af92f5",
+  "status": "PREPARED-NOT-DISPATCHED",
+  "private_protocol_sha256": "3b60787eefc74c6080f7c791efbe4f441d58e3f16991bca3e23015dfb8bd0254",
+  "private_spec_file_sha256": "51f0da3a3682bbfde9b941ab73f88b31ab74fd5a72f91958636cf840594b1b66",
+  "private_registration_file_sha256": "3b243a971f30e170c4ca4b77d76219b64566b48a9c57468567c009bfbf9157ce",
+  "source_revision": "3a1653bf2aa3a6a6f3b0c021c5bcf7f1db40506a",
+  "candidate_source_revision": "1f286516896a83b1bf58a87fc362080b01ea778f",
+  "engine_sha256": "518bf1b4ab402bdcec26cd24643c03251fbf56ba2468e4f2137ee282ba9bd355",
+  "canonical_source_sha256": "96e55d825c182321ae3d453ea5cb53d5eb63b5a7d75a6bec88d6d8fe408c8e24",
+  "current_execution_artifact_sha256": "5904fd9d7efc7c4269b6cedb7fda8d49b473abe9c40dc64a15f233306ea9a047",
+  "registered_files_sha256": {
+    "eval-workspaces/rc19-nine-native-v1/driver.py": "7b241fa9dcc9ca3f8694562bd744e115dde77ec83ec0244000cd301c7f346e37",
+    "eval-workspaces/rc19-nine-native-v1/test_driver.py": "4b6e150efa48973343a07917b88a81301ffb22b9869e7c51c900e9555e763f6d",
+    "evolution/cli_transport.py": "c6f2ade9c12c072afed9fa5404e3187f7ea1a46feba9c8726f5b1cacbbb1282f",
+    "evolution/experiments/native_paired/transport.py": "d2b3898423656fb36aeee7dba6418d4f761508412f9657365546f9b978dd3759",
+    "evolution/native_codex.py": "619f5e19b782b4194455c7b4dcb179268e65dd675b50c3227137b0e770eddec4",
+    "evolution/task_benchmark.py": "27af694887318e9eadd22c129a34616f1c34899b27adc0dbf8fbede2279afb5e"
+  },
+  "historical": [
+    {
+      "execution_artifact_sha256": "8d4b8ea94c8376f37b6e68407512693e9139e32c302dd121e877a47fe28144e0",
+      "revision": "0808842e759763c722f77a2fd9b464842480a290",
+      "source_sha256": "ce16c88b15464296686087c1a522a79a66ba22fd6e00a37b2e7b8c93d6541d50"
+    },
+    {
+      "execution_artifact_sha256": "292d4ca8058f07167649d32296893d5553b9ff85961e32e125f593d19a99d1a8",
+      "revision": "29cf112b4629d6b90504b079e95a5370c206a4cb",
+      "source_sha256": "6aa8a9562d24f74a48bce082100c2ba1069f4c56a900ce0924f23869b36bdd81"
+    }
+  ],
+  "model": "gpt-6-luna",
+  "effort": "low",
+  "binary_sha256": "bd970316b98c725f01cbfb92fdd3a952cb0e45425e15b7fb81d1927a60992f1a",
+  "capability": {
+    "grader": {
+      "reference": "evolution.task_benchmark:grade",
+      "source_sha256": "27af694887318e9eadd22c129a34616f1c34899b27adc0dbf8fbede2279afb5e"
+    },
+    "native_config_sha256": "bb472dca56e0107c6855e4aec24a1016693858ef2107652f7c084ede0308c267"
+  },
+  "configuration_canonical_sha256": "149e93ed91e7522e9807c8d0f6814290a5bd1603cdc69da471f65e3935f7d862",
+  "configuration_file_sha256": "e97760b429d8f4122cf9d18b2b07de975d0b547fb9ae0856972484fdab375d16",
+  "arms": {
+    "full": {
+      "role": "treatment",
+      "search_modules": [
+        "reflection",
+        "chaos",
+        "de",
+        "curvature"
+      ]
+    },
+    "latest_baseline": {
+      "role": "current-version-regression-baseline",
+      "search_modules": []
+    },
+    "ordinary_annealing": {
+      "role": "chaos-mechanism-control",
+      "search_modules": [
+        "reflection",
+        "ordinary_annealing",
+        "de",
+        "curvature"
+      ]
+    },
+    "rc15": {
+      "role": "primary-baseline",
+      "search_modules": []
+    },
+    "reflection_only": {
+      "role": "learning-baseline",
+      "search_modules": [
+        "reflection"
+      ]
+    },
+    "without_chaos": {
+      "role": "conditional-ablation",
+      "search_modules": [
+        "reflection",
+        "de",
+        "curvature"
+      ]
+    },
+    "without_curvature": {
+      "role": "conditional-ablation",
+      "search_modules": [
+        "reflection",
+        "chaos",
+        "de"
+      ]
+    },
+    "without_de": {
+      "role": "conditional-ablation",
+      "search_modules": [
+        "reflection",
+        "chaos",
+        "curvature"
+      ]
+    },
+    "without_reflection": {
+      "role": "conditional-ablation",
+      "search_modules": [
+        "chaos",
+        "de",
+        "curvature"
+      ]
+    }
+  },
+  "search": {
+    "archive_size": 128,
+    "dimensions": 3,
+    "iterations": 1,
+    "population": 4,
+    "retries": 0
+  },
+  "budget_per_arm": {
+    "candidates": 48,
+    "model_calls": 80,
+    "tokens": 1500000,
+    "wall_seconds": 7200
+  },
+  "theoretical_nine_arm_upper_limits": {
+    "model_calls": 720,
+    "reported_tokens": 13500000,
+    "wall_seconds": 64800,
+    "not_expected_or_preallocated_usage": true
+  },
+  "tasks": {
+    "final": [],
+    "selection": [
+      {
+        "id": "rc19-nine-v1-select-timeout-config",
+        "family": "json-key-migration",
+        "task_sha256": "ae13db758d6cec83dc0bf2d2c08e4d74019966602779443229d48ef7b1dfc997"
+      }
+    ],
+    "training": [
+      {
+        "id": "rc19-nine-v1-train-empty-tag",
+        "family": "python-empty-default",
+        "task_sha256": "c3ba5645fb6d6225b4c68525f0365ef05c1dfbdbb3389c4f8fe398359007b108"
+      }
+    ]
+  },
+  "transport": {
+    "source_sha256": "d2b3898423656fb36aeee7dba6418d4f761508412f9657365546f9b978dd3759",
+    "profile_source_sha256": "c6f2ade9c12c072afed9fa5404e3187f7ea1a46feba9c8726f5b1cacbbb1282f",
+    "overrides": [
+      "model_provider=\"upg_openai_http\"",
+      "model_providers.upg_openai_http.name=\"OpenAI\"",
+      "model_providers.upg_openai_http.wire_api=\"responses\"",
+      "model_providers.upg_openai_http.requires_openai_auth=true",
+      "model_providers.upg_openai_http.supports_websockets=false",
+      "model_providers.upg_openai_http.request_max_retries=0",
+      "model_providers.upg_openai_http.stream_max_retries=0",
+      "features.unbounded_connection_retries=false"
+    ],
+    "retry_limit": "ordinary request/stream zero and unbounded connection disabled; auth recovery/failed partial billing unobserved"
+  },
+  "acceptance_contract": {
+    "thresholds": {
+      "core_requirement_failure_max": 0,
+      "cost_ratio_ci_upper_exclusive": 1.0,
+      "critical_failure_max": 0,
+      "full_task_tokens_ratio_max": 0.85,
+      "governance_context_ratio_max": 0.75,
+      "quality_noninferiority_margin": 0.0,
+      "wall_time_ratio_max": 0.9
+    },
+    "splits": {
+      "final_feedback_allowed": false,
+      "final_fraction": 0.2,
+      "final_reuse_after_failure_allowed": false,
+      "minimum_handoff_task_families": 6,
+      "minimum_model_families": 3,
+      "minimum_pairs_per_family": 8,
+      "minimum_task_families": 12,
+      "model_family_weights": "freeze-before-first-model-call",
+      "selection_fraction": 0.2,
+      "task_family_weights": "freeze-before-first-model-call",
+      "training_fraction": 0.6,
+      "unit": [
+        "project_id",
+        "task_family"
+      ]
+    },
+    "hard_constraints": {
+      "all_required_policies_and_dependencies_preserved": true,
+      "core_closure_preserved": true,
+      "generated_runtime_never_hand_edited": true,
+      "legal_theta_changes_presentation_only": true,
+      "optimizer_phi_not_runtime": true,
+      "runtime_complexity_and_project_state_boundaries_preserved": true
+    },
+    "evidence": {
+      "cache_hits_are_independent_samples": false,
+      "candidate_and_protocol_hashes_required": true,
+      "context_bytes_are_token_measurements": false,
+      "failed_retried_reworked_calls_included": true,
+      "grader_executable_and_artifact_hashes_required": true,
+      "independent_holdout_freeze_required": true,
+      "manual_pass_flags_are_evidence": false,
+      "provider_usage_required_for_every_attempt": true,
+      "real_model_tasks_only": true,
+      "synthetic_results_are_release_evidence": false,
+      "trusted_freeze_git_revision_required": true
+    },
+    "ablation": {
+      "derive_contributions_from_raw_paired_observations": true,
+      "equal_budget_required": true,
+      "negative_or_uncertain_contribution": "report-scope-and-block-universal-value-claim",
+      "same_task_distribution_required": true,
+      "unused_module_budget": "redistribute-to-remaining-modules"
+    },
+    "inference": {
+      "confidence": 0.95,
+      "method": "paired-family-stratified-bootstrap",
+      "repetitions": 4000,
+      "seed": 1729
+    },
+    "completion": {
+      "empirical": "independent-frozen-real-holdout-and-all-cost-quality-ablation-gates",
+      "engineering": "compile-lint-integrity-regression-algorithm-checks",
+      "formal_qualification": "qualification-protocol-only; never granted by evolution"
+    }
+  },
+  "preparation": {
+    "model_calls": 0,
+    "actual_external_wall_seconds": 2.2383984999905806,
+    "clock_receipt_sha256": "ccaaf98ebc2360f368575d2703410a19d6fc6e42bbda2326a66522b80672a5c4",
+    "preparation_audit_sha256": "7f4e264a67f9158e6ed7bcf7a81019255e817a7f02864fdef4f6cfab99f75fd8",
+    "measurement_scope": "Python startup, driver import, local hashes, Git archives and private registration writes; excludes later verification"
+  },
+  "scope": {
+    "development_only": true,
+    "provider": "OpenAI",
+    "model_identity": "requested CLI ID; internal selection unobserved",
+    "fixed_disclosed_artifact_tasks": 2,
+    "final_dispatches": 0,
+    "independent_tool_B": false,
+    "formal_qualification": "BLOCKED by existing coverage gates",
+    "operator_causal_contributions": null,
+    "historical_precompiled_current_compiled": true,
+    "shared_verified_preparation_cache": true,
+    "independent_samples_not_fabricated_from_cache": true,
+    "compiler_auth_unrelated_project_source_outbound": false,
+    "unknown_replay": false,
+    "all_arms_stop_on_unconfirmed_dispatch": true,
+    "source_preparation_not_free": true,
+    "net_benefit_claim": false,
+    "relative_registration_paths": "All private registered file paths absolute in this preparation; public file paths normalized repository-relative."
+  },
+  "supersedes_uncalled_registration": [
+    "rc19-nine-native-development-v1-f4973f8f05054080b366740086622e19",
+    "rc19-nine-native-development-v1-6821b9672aff4e6cba782c05207cfacf; uncommitted projection preserved locally; engine changed on A5 public registration"
+  ]
+}

@@ -13,7 +13,7 @@ if SUPPORTED:
     from evolution import controller
     from evolution.contracts import Budget
     from evolution.evaluator import evaluate
-    from evolution.skillopt_adapter import BudgetedBackend
+    from evolution.reflective import BudgetedBackend
 
 
 @unittest.skipUnless(SUPPORTED, "optional offline evolution requires Python 3.10+")
@@ -56,7 +56,7 @@ class SelectionBudgetTests(unittest.TestCase):
         requests = []
         with tempfile.TemporaryDirectory() as temporary, self.engine():
             run = controller.run_search(ROOT, self.protocol(candidates=2), Path(temporary) / "run.json",
-                                        runner=self.measured(requests), disabled=("skillopt", "annealing", "curvature"))
+                                        runner=self.measured(requests), disabled=("reflection", "annealing", "curvature"))
         self.assertEqual(run["status"], "completed")
         self.assertEqual(run["termination_reason"], "candidate-limit")
         self.assertEqual(len(run["candidates"]), 2)

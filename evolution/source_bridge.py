@@ -1,4 +1,4 @@
-"""Atomic, hash-bound edits from SkillOpt to canonical governance source.
+"""Atomic, hash-bound UPG edits to canonical governance source.
 
 Only existing policy prose is exposed. Structural governance (including the
 hot path, dependency closure, triggers, and thresholds) has no editable view.
@@ -30,7 +30,7 @@ class SourceBridge:
     ``update_target`` identifies ``policies/<unique ID>/<field>``;
     ``update_origin`` binds that edit to the original field's SHA-256.
     ``ranking_details.source_hash`` binds the entire patch to this model.
-    These are existing SkillOpt type fields, rather than a second patch type.
+    UPG patch fields identify one immutable source and one allowed prose field.
     """
 
     EDITABLE_FIELDS = frozenset({"statement", "closure"})
@@ -96,12 +96,12 @@ class SourceBridge:
         return result
 
     def bind_patch(self, patch: Any):
-        """Resolve unbound upstream text edits, rejecting ambiguous field targets.
+        """Resolve unbound text edits, rejecting ambiguous field targets.
 
         Already supplied bindings must match; this method never repairs stale
         hashes. Append requires an explicit field path because it has no anchor.
         """
-        from .skillopt_adapter import Patch
+        from .reflective import Patch
 
         raw = self._patch_dict(patch)
         details = raw.get("ranking_details") or {}
@@ -133,8 +133,6 @@ class SourceBridge:
 
     def apply(self, patch: Any) -> dict:
         """Apply every bound edit to a private copy or reject the entire patch."""
-        from .skillopt_adapter import _upstream
-
         raw = self._patch_dict(patch)
         details = raw.get("ranking_details")
         if not isinstance(details, dict) or details.get("source_hash") != self.source_hash:
@@ -157,9 +155,13 @@ class SourceBridge:
             content = edit.get("content", "")
             if any(marker in content for marker in ("<!-- SLOW_UPDATE", "<!-- APPENDIX")):
                 raise SourceBridgeError("protected optimizer markers are not policy prose")
-            updated, reports = _upstream("optimizer.skill").apply_patch_with_report(current, {"edits": [edit]})
-            if len(reports) != 1 or not reports[0]["status"].startswith("applied_"):
-                raise SourceBridgeError("upstream did not apply edit")
+            if op == "append":
+                updated = current.rstrip() + "\n\n" + content + "\n"
+            elif op == "insert_after":
+                anchor_end = current.index(target) + len(target)
+                updated = current[:anchor_end] + "\n" + content + "\n" + current[anchor_end:]
+            else:
+                updated = current.replace(target, content if op == "replace" else "", 1)
             if not updated.strip():
                 raise SourceBridgeError("policy prose must remain nonempty")
             result["policies"][index][field] = updated

@@ -1,0 +1,677 @@
+{
+  "schema_version": 1,
+  "audit_status": "PASS-EVIDENCE-CONSISTENT",
+  "audit_performed_at_utc": "2026-10-12T18:09:12.426549+00:00",
+  "protocol_id": "upg-rc19-tools-development-v7",
+  "collector_status": "unknown-call-blocked",
+  "net_benefit_gate": "FAIL",
+  "formal_qualification": "UNASSESSED",
+  "source_revision": "38d469126fb31e4572689a5934d0bac2b9a470cd",
+  "freeze_revision": "5b28efb6a4ab522da855a217d8de14d2c6b739ac",
+  "identities": {
+    "capabilities_sha256": "dc564727556dff4f54eb1f29a828d4aa5902ab155e0f68a38397f424a43708be",
+    "conditions_sha256": "b581a25012743e752c7c13a700e940cd3116c82d310fe6baed1d567636fbd1d0",
+    "configs_sha256": "78c0c2808ec07f5f54cabb11d92772e437c622126ece22ea36cc3aab4693460d",
+    "engine_sha256": "6db90de76b03ea2cb2c78bbd3910323c2b9680f7b2d057beeb43ecbec7944072",
+    "order_sha256": "ae686eb62f3557bc20a71e10c09bb94692cd552cf907a581df6e51cac3ea41cd",
+    "protocol_sha256": "94b6b1ba09e6fadc1f7a76525c15fa4ae623d3764e024924f638021d5546a376",
+    "task_manifest_sha256": "b32bd47d3127aee5433a179bc9fe64b8fe3eebfd21527040f0c35ca20ceb1775"
+  },
+  "owner_evidence_sha256": {
+    "rc19-development-v7-run.json": "433ad05f3991a8e5fefe5ac114c39c93ce7925af7f0f526e55b7e346d6941c6e",
+    "rc19-development-v7-summary.json": "3828697c9c06b2441620164eb619111f7257bd0157add67d48d4c6996c0308bc",
+    "rc19-development-v7-protocol.private.json": "fdf61bf60e60a032f18f262ab29cce49ecc60c1e247bef26ab6eff4a08d6ff9e",
+    "rc19-development-v7-tasks.private.json": "7f028f50be11421deec64c5950907515f56a09ec87a240bccbe86d5fbd52f58a",
+    "rc19-development-v7-configs.json": "40c9d6fe352d6c7cfbd49b74e2076259312f086cc3af0c9bc4ef9a32cf075b24",
+    "rc19-development-v7-freeze.json": "836201908dce1ba698b414323e194ff6a0c0392303791514ba0c7ff4c2295124"
+  },
+  "calls_dispatched": 8,
+  "completed_turns": 7,
+  "unknown_usage_dispatches": 1,
+  "known_reported_tokens": 668208,
+  "input_tokens": 662099,
+  "output_tokens": 6109,
+  "cached_input_tokens": 535552,
+  "reasoning_output_tokens_subset": 14,
+  "reported_provider_usd": null,
+  "stored_strict_passes": 7,
+  "completed_positive_artifact_checks": 16,
+  "completed_broker_events": 44,
+  "unknown_call_broker_events": 4,
+  "all_broker_events": 48,
+  "completed_tool_counts": {
+    "repo_read": 17,
+    "repo_patch": 12,
+    "repo_status": 8,
+    "repo_validate": 7
+  },
+  "unknown_tool_counts": {
+    "repo_read": 2,
+    "repo_patch": 2
+  },
+  "unique_raw_cli_threads": 8,
+  "unique_harness_requests": 8,
+  "actual_order_is_registered_prefix": true,
+  "summary_exact_recomputation": true,
+  "all_current_sources_equal_measured_engine": true,
+  "budget": {
+    "calls": 8,
+    "elapsed_seconds": 337.9219999999914,
+    "max_calls": 32,
+    "max_seconds": 7200,
+    "max_total_tokens": 5000000,
+    "total_tokens": 668208,
+    "unknown_usage": true
+  },
+  "gates": {
+    "complete_matched_collection": false,
+    "all_task_quality_pass": false,
+    "all_new_model_calls": false,
+    "unique_raw_call_receipts": false,
+    "at_least_two_families_per_model": false,
+    "total_tokens_ci_upper_improves": false,
+    "total_tokens_every_model_point_improves": false,
+    "wall_seconds_ci_upper_improves": false,
+    "wall_seconds_every_model_point_improves": false,
+    "joint_family_complete_cross_model_coverage": false,
+    "total_tokens_joint_family_ci_upper_improves": false,
+    "wall_seconds_joint_family_ci_upper_improves": false
+  },
+  "matched_row_pairs_diagnostic_only": 4,
+  "complete_known_usage_pairs": 3,
+  "expected_pairs": 16,
+  "planned_calls": 32,
+  "metric_warning": "Summary matched_pairs counts four paired rows, but one pair has an incomplete unknown turn. Wall-only ratios include observed failed-call time and are not a completed-pair benefit estimate; token/CLI/tool metrics are null.",
+  "metrics_diagnostic_only": {
+    "total_tokens": null,
+    "wall_seconds": {
+      "control_total": 167.62356519995956,
+      "treatment_total": 169.28269780002302,
+      "ratio": 1.0098979674968986,
+      "savings_fraction": -0.00989796749689864,
+      "paired_model_family_bootstrap_95_interval": [
+        0.9572475163864549,
+        1.0508017844985942
+      ]
+    },
+    "cli_wall_seconds": null,
+    "tool_calls": null
+  },
+  "calls": [
+    {
+      "sample_index": 0,
+      "model_requested": "gpt-6-luna",
+      "condition": "treatment",
+      "task_id": "dev-current-truth-29",
+      "retained_status": "completed",
+      "raw_usage": {
+        "input_tokens": 100590,
+        "output_tokens": 942,
+        "total_tokens": 101532,
+        "cost_usd": null,
+        "measurement": "actual-codex-cli-completed-tool-turn",
+        "cached_input_tokens": 81408,
+        "reasoning_output_tokens": 0,
+        "cache_write_input_tokens": 0
+      },
+      "collector_wall_seconds": 50.04406260000542,
+      "broker_events": 7,
+      "broker_tool_counts": {
+        "repo_read": 3,
+        "repo_patch": 2,
+        "repo_status": 1,
+        "repo_validate": 1
+      },
+      "owner_artifact_raw_sha256": {
+        "stdout.raw": "d2d452a842882b469014fd165b70149b4719ab77aaf22c60a936ffc6c8c8743f",
+        "stderr.raw": "d250194f3b40369bb1b648a3565bf847e73f6cc1c416cf7818b90b22d9a91e8a",
+        "broker.jsonl": "5d3e1cca343bb5616710b25773cb357aa6d2960c0019fd539e4e876290cae86e",
+        "broker.spec.json": "80f71ac5b1c1853289a2a27397e0843d00088dd4beed8391fccd638f3a6b2824",
+        "command.json": "d9195b9650ee9fa60d979c2a606390a9301d8c1906ec1ebc8ecc94d3bf8ddc1f",
+        "pending.json": "110601c12c657d0154cfa8041275d102fbbcdd302bd886c76f3e69efe0c196e5",
+        "prompt.txt": "77212f595a4c1241b89eadb8a90887ab3d2fadc7c843a2986b9d5bcb73fc968c",
+        "output.schema.json": "1a4deb71f67f62c476c866e28664d57e83df8e8742776620b33db80b7c70a1d9",
+        "receipt.json": "f18a5a1c4948c62d9ddadf7f05cac1da1110fb45940972241f6564387493f32b"
+      },
+      "original_receipt_artifact_hash_count": 9,
+      "one_unique_cli_thread": true,
+      "exact_prompt_argv_and_binding": true,
+      "structured_tool_effects_match_physical_files": true,
+      "stored_grade_unchanged": true,
+      "positive_artifact_checks_reverified": 3,
+      "stored_quality": {
+        "checks_passed": 3,
+        "checks_total": 3,
+        "failures": [],
+        "hard_pass": true,
+        "required_tools_ok": true,
+        "scope_ok": true,
+        "task_success": 1
+      },
+      "cli_wall_seconds": 49.45857709998381,
+      "result_canonical_sha256": "77c44ae258c2e5bf9b92e63985b4106211f22950592f5432cb4a33c42235d89b"
+    },
+    {
+      "sample_index": 1,
+      "model_requested": "gpt-6-luna",
+      "condition": "control",
+      "task_id": "dev-current-truth-29",
+      "retained_status": "completed",
+      "raw_usage": {
+        "input_tokens": 115097,
+        "output_tokens": 992,
+        "total_tokens": 116089,
+        "cost_usd": null,
+        "measurement": "actual-codex-cli-completed-tool-turn",
+        "cached_input_tokens": 90368,
+        "reasoning_output_tokens": 0,
+        "cache_write_input_tokens": 0
+      },
+      "collector_wall_seconds": 49.99023479997413,
+      "broker_events": 7,
+      "broker_tool_counts": {
+        "repo_read": 3,
+        "repo_patch": 2,
+        "repo_validate": 1,
+        "repo_status": 1
+      },
+      "owner_artifact_raw_sha256": {
+        "stdout.raw": "146d464bdcc6650eae90a6da2487cc200c7b8ae5888b416112fb5afc77605954",
+        "stderr.raw": "8e238fb45e93a77e2c4e9a6883bed56a62fc25cf91abeb349958408b63fd9ca0",
+        "broker.jsonl": "66a893ba7aab3a2b54e804e920b6556b1ded4509d3ebe17bed61ac5b06027cf8",
+        "broker.spec.json": "b00229f7f1cab3db14634dbf9c302f363aee9b03877a9d0b20237b7befa0c118",
+        "command.json": "94d0f85c5197462f3a928bacd5b81fcd21a5b693918fc75d9f3c6ae91856aa8c",
+        "pending.json": "d9fc60d64fd0c57189a640a1e52ec99c1044f72296746978d55ef43fbdd0be25",
+        "prompt.txt": "b67276dd423dddaf7162ffb288a8fe8206252c74fd6d9d74c8cd506edfd07474",
+        "output.schema.json": "1a4deb71f67f62c476c866e28664d57e83df8e8742776620b33db80b7c70a1d9",
+        "receipt.json": "ae67499528996353d304959c6f1f2dcf8dc09a406458cfb249172fb58e7a70df"
+      },
+      "original_receipt_artifact_hash_count": 9,
+      "one_unique_cli_thread": true,
+      "exact_prompt_argv_and_binding": true,
+      "structured_tool_effects_match_physical_files": true,
+      "stored_grade_unchanged": true,
+      "positive_artifact_checks_reverified": 3,
+      "stored_quality": {
+        "checks_passed": 3,
+        "checks_total": 3,
+        "failures": [],
+        "hard_pass": true,
+        "required_tools_ok": true,
+        "scope_ok": true,
+        "task_success": 1
+      },
+      "cli_wall_seconds": 49.41255629999796,
+      "result_canonical_sha256": "f8562f590b1150fd206afa9c6638dc3e202eea3485bdd84cb23caf0367b5c562"
+    },
+    {
+      "sample_index": 2,
+      "model_requested": "gpt-6-luna",
+      "condition": "control",
+      "task_id": "development-registry-01",
+      "retained_status": "completed",
+      "raw_usage": {
+        "input_tokens": 65553,
+        "output_tokens": 588,
+        "total_tokens": 66141,
+        "cost_usd": null,
+        "measurement": "actual-codex-cli-completed-tool-turn",
+        "cached_input_tokens": 49152,
+        "reasoning_output_tokens": 0,
+        "cache_write_input_tokens": 0
+      },
+      "collector_wall_seconds": 30.284405999991577,
+      "broker_events": 5,
+      "broker_tool_counts": {
+        "repo_read": 2,
+        "repo_patch": 1,
+        "repo_validate": 1,
+        "repo_status": 1
+      },
+      "owner_artifact_raw_sha256": {
+        "stdout.raw": "4d9435239a8e6509fe30effaab048f24224c5d4f84f04e2a471186103485bb7d",
+        "stderr.raw": "90001e76bd406ca8ba94181a729be55046b6dcf52283a4b0311980db0a68ac4b",
+        "broker.jsonl": "c73f4c003469621475814502c0ad8af3513d03d339745dad0ed61ce2cbbe638a",
+        "broker.spec.json": "2be339cffbda7240e65f5438dea5ec35811add466f3d327598296fc806930f38",
+        "command.json": "ca6f3b80bbe7dc3eeff1b782e5299a4ab1f22f1e2f8d34d145398afaf65fdb9f",
+        "pending.json": "f037b2dcb6008d0c3f3e923045cf18bcf9f94be28f8365bbba2df9ebb40c5897",
+        "prompt.txt": "684decabadc8ec1cf64dd7fbb8a0ebe2459d37c19c982214dfc7d9e0078aa435",
+        "output.schema.json": "1a4deb71f67f62c476c866e28664d57e83df8e8742776620b33db80b7c70a1d9",
+        "receipt.json": "e9be75f9b73dc165b3788c0de2293b03561e0b4b48df580bd03f85df5266682f"
+      },
+      "original_receipt_artifact_hash_count": 9,
+      "one_unique_cli_thread": true,
+      "exact_prompt_argv_and_binding": true,
+      "structured_tool_effects_match_physical_files": true,
+      "stored_grade_unchanged": true,
+      "positive_artifact_checks_reverified": 2,
+      "stored_quality": {
+        "checks_passed": 2,
+        "checks_total": 2,
+        "failures": [],
+        "hard_pass": true,
+        "required_tools_ok": true,
+        "scope_ok": true,
+        "task_success": 1
+      },
+      "cli_wall_seconds": 29.707472600013716,
+      "result_canonical_sha256": "0eed4bcc4641703efa192b9d71ad8931639707ea2d65dc6b91e09635c736aa8c"
+    },
+    {
+      "sample_index": 3,
+      "model_requested": "gpt-6-luna",
+      "condition": "treatment",
+      "task_id": "development-registry-01",
+      "retained_status": "completed",
+      "raw_usage": {
+        "input_tokens": 65406,
+        "output_tokens": 542,
+        "total_tokens": 65948,
+        "cost_usd": null,
+        "measurement": "actual-codex-cli-completed-tool-turn",
+        "cached_input_tokens": 49152,
+        "reasoning_output_tokens": 0,
+        "cache_write_input_tokens": 0
+      },
+      "collector_wall_seconds": 35.367224100016756,
+      "broker_events": 4,
+      "broker_tool_counts": {
+        "repo_read": 1,
+        "repo_patch": 1,
+        "repo_validate": 1,
+        "repo_status": 1
+      },
+      "owner_artifact_raw_sha256": {
+        "stdout.raw": "38558ce82536240e699b6e6063738d917e7eeeda6a05f51756ae62a42eb5f040",
+        "stderr.raw": "2ca636ce0cfaae17b39b22edcdfbf89b7c82b5fc0b67a0ad0deb93896193df3c",
+        "broker.jsonl": "b9d3499968fd9910dd35c9e780c40873af567c86f5646c2baed4105479853996",
+        "broker.spec.json": "f9f2ba608308f9941614d0fb996b989b8fc224eabf9689846b8c021da72510ce",
+        "command.json": "6a60a0996012f9011c0ff2596563e55eeb66f742331673676bb31c70aa62ea50",
+        "pending.json": "9d3cf28fecc6de631c38062b84ad63729814d173a8894812435b3f490d42bf8f",
+        "prompt.txt": "43df73323e81b45d47ce76577e69bdb0cf68e7ef95b4ffba1483933c5789c612",
+        "output.schema.json": "1a4deb71f67f62c476c866e28664d57e83df8e8742776620b33db80b7c70a1d9",
+        "receipt.json": "10e8ea676ab598593aade8fd416b56a7d1107748f409584e69b1d2deacdfbd75"
+      },
+      "original_receipt_artifact_hash_count": 9,
+      "one_unique_cli_thread": true,
+      "exact_prompt_argv_and_binding": true,
+      "structured_tool_effects_match_physical_files": true,
+      "stored_grade_unchanged": true,
+      "positive_artifact_checks_reverified": 2,
+      "stored_quality": {
+        "checks_passed": 2,
+        "checks_total": 2,
+        "failures": [],
+        "hard_pass": true,
+        "required_tools_ok": true,
+        "scope_ok": true,
+        "task_success": 1
+      },
+      "cli_wall_seconds": 34.78354559998843,
+      "result_canonical_sha256": "0674b442e9528399d7c8804e63ee557d9c49b3fb85306bbad08d7fb288b96edb"
+    },
+    {
+      "sample_index": 4,
+      "model_requested": "gpt-6-luna",
+      "condition": "treatment",
+      "task_id": "dev-recovery-29",
+      "retained_status": "completed",
+      "raw_usage": {
+        "input_tokens": 100002,
+        "output_tokens": 1157,
+        "total_tokens": 101159,
+        "cost_usd": null,
+        "measurement": "actual-codex-cli-completed-tool-turn",
+        "cached_input_tokens": 80384,
+        "reasoning_output_tokens": 0,
+        "cache_write_input_tokens": 0
+      },
+      "collector_wall_seconds": 48.90416770000593,
+      "broker_events": 6,
+      "broker_tool_counts": {
+        "repo_read": 2,
+        "repo_patch": 2,
+        "repo_validate": 1,
+        "repo_status": 1
+      },
+      "owner_artifact_raw_sha256": {
+        "stdout.raw": "93b38fa106ce53fb65703450cbc5f5cf54377f8d905c9025e995cba8826fc5fc",
+        "stderr.raw": "b513586d1865243303c03fb833a8c21fa991dd458efe29b549cd5220259e73d7",
+        "broker.jsonl": "6ea0e3abce83bacbcddf19d10d4ba52d548b0b1c64ba7bbf801fb105f8d2e09a",
+        "broker.spec.json": "79eff4041cd7eb16578866015150c395d94a49381b850ad84292b848253df326",
+        "command.json": "8b362a9075614c9bd486cb9ced1d444161565d6b9b8e84fe8b516d0052404e5f",
+        "pending.json": "3bb1d94bc400ba42a938d6d9c7456a116205839c9947d4c92e357d4adf82c962",
+        "prompt.txt": "db114e977479e5b41a7ce54221f53c03a49c0c3b295e93322e2f6d8746b399c9",
+        "output.schema.json": "1a4deb71f67f62c476c866e28664d57e83df8e8742776620b33db80b7c70a1d9",
+        "receipt.json": "a76a592d6d7577908c5b1d7b0dd5e71bc784614b3ace503acebcd645db59c24f"
+      },
+      "original_receipt_artifact_hash_count": 9,
+      "one_unique_cli_thread": true,
+      "exact_prompt_argv_and_binding": true,
+      "structured_tool_effects_match_physical_files": true,
+      "stored_grade_unchanged": true,
+      "positive_artifact_checks_reverified": 2,
+      "stored_quality": {
+        "checks_passed": 2,
+        "checks_total": 2,
+        "failures": [],
+        "hard_pass": true,
+        "required_tools_ok": true,
+        "scope_ok": true,
+        "task_success": 1
+      },
+      "cli_wall_seconds": 48.22263990002102,
+      "result_canonical_sha256": "f2f82e10ebe576ff3f0b21a96df7f72ee513be4d557c894c3ee3d363b593b0ad"
+    },
+    {
+      "sample_index": 5,
+      "model_requested": "gpt-6-luna",
+      "condition": "control",
+      "task_id": "dev-recovery-29",
+      "retained_status": "completed",
+      "raw_usage": {
+        "input_tokens": 115387,
+        "output_tokens": 958,
+        "total_tokens": 116345,
+        "cost_usd": null,
+        "measurement": "actual-codex-cli-completed-tool-turn",
+        "cached_input_tokens": 102400,
+        "reasoning_output_tokens": 0,
+        "cache_write_input_tokens": 0
+      },
+      "collector_wall_seconds": 43.95330710001872,
+      "broker_events": 7,
+      "broker_tool_counts": {
+        "repo_read": 3,
+        "repo_patch": 2,
+        "repo_validate": 1,
+        "repo_status": 1
+      },
+      "owner_artifact_raw_sha256": {
+        "stdout.raw": "f541a7575aa7f7ba4aa97db98447529e53dd3689aa139d8b01380ab71bae6505",
+        "stderr.raw": "701e6ae59d2f915078ed9d0c3fd7b98b855609ccbeec1a47a4328ff1b2367e1d",
+        "broker.jsonl": "b50b6aa75348448322c7fc7e722a7b989e10861d380aef8d6c79df8b32951d22",
+        "broker.spec.json": "30421e6f82c7e274d83fbaa5978ef9bdaaee3acf31ab396668e4ad08049d9f9a",
+        "command.json": "dad67c48bdc345c147872d80eb153606145a813409c1f8e8bc270c7deb317519",
+        "pending.json": "57c3b45a13e6ffe41ec87bb7f2e0d3705dcbad13d61984951ca0aa82751ea438",
+        "prompt.txt": "86097c721692bccde5d1c5f357115b4aa46e5b4c9114ae7a453fd2bcaa8fb6c4",
+        "output.schema.json": "1a4deb71f67f62c476c866e28664d57e83df8e8742776620b33db80b7c70a1d9",
+        "receipt.json": "c42ab3b1c43a0ab762753043f26de5e9a94cc1f3081bc52766cc219e35f0ac5d"
+      },
+      "original_receipt_artifact_hash_count": 9,
+      "one_unique_cli_thread": true,
+      "exact_prompt_argv_and_binding": true,
+      "structured_tool_effects_match_physical_files": true,
+      "stored_grade_unchanged": true,
+      "positive_artifact_checks_reverified": 2,
+      "stored_quality": {
+        "checks_passed": 2,
+        "checks_total": 2,
+        "failures": [],
+        "hard_pass": true,
+        "required_tools_ok": true,
+        "scope_ok": true,
+        "task_success": 1
+      },
+      "cli_wall_seconds": 43.156843300006585,
+      "result_canonical_sha256": "bfe9d0c71c844703a027b184b25bead59c632d60ae295afae3c55dc51d4e5ed5"
+    },
+    {
+      "sample_index": 6,
+      "model_requested": "gpt-6-sol",
+      "condition": "control",
+      "task_id": "dev-recovery-29",
+      "retained_status": "completed",
+      "raw_usage": {
+        "input_tokens": 100064,
+        "output_tokens": 930,
+        "total_tokens": 100994,
+        "cost_usd": null,
+        "measurement": "actual-codex-cli-completed-tool-turn",
+        "cached_input_tokens": 82688,
+        "reasoning_output_tokens": 14,
+        "cache_write_input_tokens": 0
+      },
+      "collector_wall_seconds": 43.39561729997513,
+      "broker_events": 8,
+      "broker_tool_counts": {
+        "repo_status": 2,
+        "repo_read": 3,
+        "repo_patch": 2,
+        "repo_validate": 1
+      },
+      "owner_artifact_raw_sha256": {
+        "stdout.raw": "94b47924cd5096fbf253e192db40787a7e64dda39ba41a369d35da4c5ff7779a",
+        "stderr.raw": "0bd0426e72aea57f966e3db5b95eb34d2179df2abe356bc286bbe325083c1364",
+        "broker.jsonl": "dbf0760b5aca509e2503dfd10b33044c1650d12d34f52b6a441cd08fe7226f0a",
+        "broker.spec.json": "fc6e4dee2d74736548155df4acc618483f2512616b68f2ba23b62b9a26a0b571",
+        "command.json": "239717b8b01612c378f0c39e3cb0d44b4b2b6e9c3c421e66f8973b1d8c62c0d9",
+        "pending.json": "e41cbe2fd1f9c1c1071320392fe7b9b38e7cad308c32511463352ba3ac4c0004",
+        "prompt.txt": "86097c721692bccde5d1c5f357115b4aa46e5b4c9114ae7a453fd2bcaa8fb6c4",
+        "output.schema.json": "1a4deb71f67f62c476c866e28664d57e83df8e8742776620b33db80b7c70a1d9",
+        "receipt.json": "2fc63fb8a181f6691867664456d5848decee8a0f1c7f58318c4c426227182ab1"
+      },
+      "original_receipt_artifact_hash_count": 9,
+      "one_unique_cli_thread": true,
+      "exact_prompt_argv_and_binding": true,
+      "structured_tool_effects_match_physical_files": true,
+      "stored_grade_unchanged": true,
+      "positive_artifact_checks_reverified": 2,
+      "stored_quality": {
+        "checks_passed": 2,
+        "checks_total": 2,
+        "failures": [],
+        "hard_pass": true,
+        "required_tools_ok": true,
+        "scope_ok": true,
+        "task_success": 1
+      },
+      "cli_wall_seconds": 42.88471529999515,
+      "result_canonical_sha256": "15ed2ba8b9213ee4f96ccaa3a5a5ca1ee8516e79a53085632c5a457a5cb3b2c5"
+    },
+    {
+      "sample_index": 7,
+      "model_requested": "gpt-6-sol",
+      "condition": "treatment",
+      "task_id": "dev-recovery-29",
+      "retained_status": "completed-identity-or-usage-unconfirmed",
+      "raw_usage": null,
+      "collector_wall_seconds": 34.96724339999491,
+      "broker_events": 4,
+      "broker_tool_counts": {
+        "repo_read": 2,
+        "repo_patch": 2
+      },
+      "owner_artifact_raw_sha256": {
+        "stdout.raw": "d7c5cd9032222d9dcd03ba76659c6d30f315c7bc4c97fc67316b6d10eff0599b",
+        "stderr.raw": "ee3331f3b72a144eb620085b68a753eb6a0ba469f4b86f80598602e8aa444246",
+        "broker.jsonl": "c62ef20f2d7400a609943bb996e323805c3c6548b8ea31326e24fb7de3d2873a",
+        "broker.spec.json": "d285cdf840ecc1847bb10d0556f9e828f38db6fa29dc5f747f571a4e9abb6e3a",
+        "command.json": "3d81c8f0351e06cf0b975a0f5aff81f9dcb1ac21f72dac1b144008f0aea2e9b7",
+        "pending.json": "444aa2a6bbafe5b24d7288e9ffd5c4761a8fe52d00f592251faaaab847e2cbc7",
+        "prompt.txt": "db114e977479e5b41a7ce54221f53c03a49c0c3b295e93322e2f6d8746b399c9",
+        "output.schema.json": "1a4deb71f67f62c476c866e28664d57e83df8e8742776620b33db80b7c70a1d9",
+        "receipt.json": "58d7f3761d087b2d90b4a5cc007af4acd22c00476cc5a5ce18cae4200d91289b"
+      },
+      "original_receipt_artifact_hash_count": 2,
+      "one_unique_cli_thread": true,
+      "exact_prompt_argv_and_binding": true,
+      "structured_tool_effects_match_physical_files": true,
+      "stored_grade_unchanged": true,
+      "terminal_error": "Connection failed: error sending request",
+      "cli_exit_code": 1,
+      "raw_completed_turns": 0,
+      "raw_failed_turns": 1,
+      "raw_error_events": 1,
+      "positive_artifact_checks_reverified": null,
+      "task_quality": "UNASSESSED-INCOMPLETE",
+      "unknown_usage_fence_verified": true,
+      "replay_permitted": false,
+      "note": "Four real tool calls and partial edits retained; no current validate/status evidence or final grade. No missing usage is charged as zero."
+    }
+  ],
+  "cumulative_rc19": [
+    {
+      "campaign": "rc19-development",
+      "completed_turns": 8,
+      "reported_tokens": 208596,
+      "unknown_usage_dispatches": 0,
+      "dispatches": 8,
+      "owner_run_sha256": "02f58feeca873cf60af9156f14cf978606ecfbe5caed2c65756a1570195cada0"
+    },
+    {
+      "campaign": "rc19-transport-probe-v2",
+      "completed_turns": 2,
+      "reported_tokens": 75349,
+      "unknown_usage_dispatches": 0,
+      "dispatches": 2,
+      "owner_run_sha256": "fb0ea419511e85d51957a778390d3a28f2d18aca8eb0dc625a5cb704bc4ed594"
+    },
+    {
+      "campaign": "rc19-transport-probe-v3",
+      "completed_turns": 2,
+      "reported_tokens": 147768,
+      "unknown_usage_dispatches": 0,
+      "dispatches": 2,
+      "owner_run_sha256": "edff657c76d27ac17e5efca857e2cda0c99c3dc974a444a8d332845320ea71aa"
+    },
+    {
+      "campaign": "rc19-development-v3",
+      "completed_turns": 16,
+      "reported_tokens": 1344852,
+      "unknown_usage_dispatches": 0,
+      "dispatches": 16,
+      "owner_run_sha256": "cd9880620b5b06cc0422e364fd7b11afad3ef4d0f73dfb6262d1d64749ff983b"
+    },
+    {
+      "campaign": "rc19-development-v4",
+      "completed_turns": 16,
+      "reported_tokens": 1078496,
+      "unknown_usage_dispatches": 0,
+      "dispatches": 16,
+      "owner_run_sha256": "e7069622a40b53403495df7f651fa884df706279445a27484d8bf5e55707f243"
+    },
+    {
+      "campaign": "rc19-development-v5",
+      "completed_turns": 6,
+      "reported_tokens": 407496,
+      "unknown_usage_dispatches": 1,
+      "dispatches": 7,
+      "owner_run_sha256": "b7c5e13552730f4f9171dc938e5eb61e7ddae5abb44b0d46cae1ba085bc43bef"
+    },
+    {
+      "campaign": "rc19-capability-recovery-v6",
+      "completed_turns": 4,
+      "reported_tokens": 424417,
+      "unknown_usage_dispatches": 0,
+      "dispatches": 4,
+      "owner_run_sha256": "fec5ce9a910e32ca5c752e14e26d05d4f919f256df4d184e20fe577b81580aae"
+    },
+    {
+      "campaign": "rc19-development-v7",
+      "completed_turns": 7,
+      "reported_tokens": 668208,
+      "unknown_usage_dispatches": 1,
+      "dispatches": 8,
+      "owner_run_sha256": "433ad05f3991a8e5fefe5ac114c39c93ce7925af7f0f526e55b7e346d6941c6e"
+    }
+  ],
+  "cumulative_totals": {
+    "completed_turns": 61,
+    "known_reported_tokens": 4355182,
+    "unknown_usage_dispatches": 2,
+    "dispatches": 63
+  },
+  "safety_and_limits": [
+    "No provider calls, application execution, replay, fence changes or grade changes were performed by this audit.",
+    "Known completed turns preserve original strict scores; only retained positive artifacts and evidence bindings were independently checked.",
+    "The unknown turn is not a quality pass or a zero-token call. Failed partial-response charges remain unobserved.",
+    "Request/stream retries are configured zero and unbounded connection retries disabled in both arms; auth recovery and provider-internal attempts remain unobserved.",
+    "Requested models share one provider; provider request IDs and internal model selection remain unknown.",
+    "Observed network error alone does not identify provider capacity, TLS, local network or server root cause.",
+    "Scope is known-family bounded repository tools with JSON/text/AST checks; no arbitrary application execution, OS isolation, universal benefit or Stable qualification.",
+    "Old v5 unknown fence remains; this audit never replays it or revises old results."
+  ],
+  "redaction": "Owner raw paths, thread/harness IDs, prompts and task bodies omitted; evidence hashes retained.",
+  "publication_provenance": {
+    "owner_original_sanitized_audit_sha256": "398e170287d0279d51253133bc6f0758a7ea7946d7009cf02f4ac407df94223a",
+    "owner_original_draft_sha256": "63a7b141250140d9c1dd25c2ba3a7d254f8f86dac6a05344df620aabf89951cd",
+    "owner_retained_verification_script_sha256": "cfb65e1b93019e04c6ad94d7f8ee7348eb8994caf996d98225dea22176ab540a",
+    "verification_script_distribution": "Owner-retained ignored evidence; no public script link or runtime dependency.",
+    "evidence_scope": "Original v7 findings retained; engineering validation separate, no regrade/replay."
+  },
+  "engineering_validation": {
+    "frozen_revision": "5b28efb6a4ab522da855a217d8de14d2c6b739ac",
+    "hosted_jobs_independently_observed": [
+      {
+        "event": "pull_request",
+        "run_id": 38286771981,
+        "completed_jobs": 11,
+        "successful_jobs": 11
+      },
+      {
+        "event": "push",
+        "run_id": 38286766579,
+        "completed_jobs": 11,
+        "successful_jobs": 11
+      }
+    ],
+    "hosted_log_observations": [
+      {
+        "run_id": 38286771981,
+        "job_id": 114936911905,
+        "platform": "Ubuntu",
+        "python": "3.8",
+        "discovered_tests": 477,
+        "skipped_tests": 230,
+        "executed_tests": 247,
+        "executed_passes": 247,
+        "seconds": 32.671,
+        "result": "OK (skipped=230)"
+      },
+      {
+        "run_id": 38286771981,
+        "job_id": 114936911828,
+        "platform": "Windows",
+        "python": "3.13",
+        "discovered_tests": 477,
+        "skipped_tests": 0,
+        "executed_tests": 477,
+        "executed_passes": 477,
+        "seconds": 71.716,
+        "result": "OK",
+        "real_windows_short_root_regression": "PASS"
+      },
+      {
+        "run_id": 38286766579,
+        "job_id": 114936900216,
+        "platform": "Windows",
+        "python": "3.13",
+        "discovered_tests": 477,
+        "skipped_tests": 0,
+        "executed_tests": 477,
+        "executed_passes": 477,
+        "seconds": 64.538,
+        "result": "OK",
+        "real_windows_short_root_regression": "PASS"
+      }
+    ],
+    "local_checks_reported_separately": {
+      "before_final_test_bootstrap": {
+        "discovered_tests": 477,
+        "passes": 475,
+        "actual_link_privilege_skips": 2,
+        "seconds": 119.699,
+        "release_gates_passed": 8,
+        "source": "Root-reported full-suite/release-check logs preceding final test-bootstrap edit."
+      },
+      "after_final_test_bootstrap": {
+        "focused_passes": 17,
+        "seconds": 0.633,
+        "scope": "16 continuity and one native compatibility test, standalone without PYTHONPATH.",
+        "source": "Runtime author reported execution; bootstrap source reviewed independently."
+      }
+    },
+    "interpretation": "Separate engineering runs, not additive samples or evidence of model benefit."
+  }
+}

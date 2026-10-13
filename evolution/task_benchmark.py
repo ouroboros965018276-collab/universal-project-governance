@@ -12,8 +12,33 @@ import json
 import math
 
 
+def _json(text, max_bytes=16384):
+    if not isinstance(text, str) or len(text.encode("utf-8")) > max_bytes:
+        raise ValueError("JSON artifact exceeds its text boundary")
+    def pairs(items):
+        result = {}
+        for key, value in items:
+            if key in result:
+                raise ValueError("duplicate JSON key")
+            result[key] = value
+        return result
+    def constant(unused):
+        raise ValueError("non-finite JSON constant")
+    return json.loads(text, object_pairs_hook=pairs, parse_constant=constant)
+
+
+def _canonical(value):
+    # Python equality conflates bool/int and int/float; contracts must not.
+    return json.dumps(value, sort_keys=True, separators=(",", ":"),
+                      ensure_ascii=False, allow_nan=False)
+
+
 def _equal(actual, expected, kind):
-    if len(actual.encode("utf-8")) > 16384:
+    try:
+        bounded = isinstance(actual, str) and len(actual.encode("utf-8")) <= 16384
+    except UnicodeError:
+        bounded = False
+    if not bounded:
         return False
     if kind == "python-ast":
         try:
@@ -22,22 +47,29 @@ def _equal(actual, expected, kind):
                 return False
             return ast.dump(tree, include_attributes=False) == ast.dump(
                 ast.parse(expected), include_attributes=False)
-        except (SyntaxError, TypeError, ValueError):
+        except (SyntaxError, TypeError, ValueError, RecursionError):
             return False
     if kind == "json":
         try:
-            return json.loads(actual) == json.loads(expected)
-        except (json.JSONDecodeError, TypeError):
+            return _canonical(_json(actual)) == _canonical(_json(expected))
+        except (ValueError, TypeError, UnicodeError, RecursionError):
             return False
     return actual == expected
 
 
 def grade(request):
     task, response = request["task"], request.get("response_json")
+    raw_valid = True
+    try:
+        _canonical(response)
+        if "response_text" in request:
+            raw_valid = _canonical(_json(request["response_text"], 1048576)) == _canonical(response)
+    except (ValueError, TypeError, UnicodeError, RecursionError):
+        raw_valid = False
     checks = task.get("artifact_checks", [])
     if not checks:
         raise ValueError("task has no positive artifact checks")
-    valid = (isinstance(response, dict) and set(response) == {"files", "validation"}
+    valid = (raw_valid and isinstance(response, dict) and set(response) == {"files", "validation"}
              and isinstance(response["files"], list) and response["validation"] == "not_run")
     files = {}
     if valid:

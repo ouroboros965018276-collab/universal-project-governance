@@ -1,0 +1,119 @@
+{
+  "schema_version": 1,
+  "audit_status": "PASS-PRE-CLI-FAILURE-RECONCILED",
+  "audit_performed_at_utc": "2026-10-12T19:27:41.972232+00:00",
+  "protocol_id": "upg-rc19-native-independent-a-v4",
+  "collector_status_preserved": "unknown-call-blocked",
+  "A_time_quality_gate": "FAIL",
+  "Tool_B_joint_gate_unchanged": true,
+  "formal_qualification": "UNASSESSED",
+  "source_revision": "0bd647a79a7270c674238916217385c4e749a399",
+  "freeze_revision": "1f8e6d5ab8fc8d4f9bea300c86d898083602ae8d",
+  "engine_sha256": "5f554c5e0b42e907062f19d17708c9ce9a47bf56b1a8f921475798335f282b9d",
+  "protocol_sha256": "4fe1b0942d0f1b20691b44428055c99615502ec1006585ff9c403f1a960d1fb2",
+  "owner_evidence_sha256": {
+    "protocol.private.json": "035861dda3e86e7e01c25c111566ffb3e286abc38ce39ea70a59c24943cf502d",
+    "run.json": "cf82c7dcd14fc8a41e5cd11c12cf597fb11f9f3edf4561b67bb3fd02a604835b",
+    "audit_verification_script": "466d58c583c3145ca1606a778d74463323f6a3582751e7e5269821a5a82e103b"
+  },
+  "planned_cli_dispatches": 32,
+  "parent_reserved_worker_attempts": 1,
+  "actual_native_runner_entries": 0,
+  "actual_cli_dispatches": 0,
+  "completed_cli_turns": 0,
+  "task_observations": 0,
+  "stored_reported_tokens": 0,
+  "collector_unknown_usage_preserved": true,
+  "pending_preserved": true,
+  "raw_provider_usage_or_billing_receipt": null,
+  "failure": {
+    "phase": "worker dispatch-input digest validation before native callback",
+    "exception": "UnicodeEncodeError",
+    "source_surrogate": "U+DC9D",
+    "frozen_worker_digest_check_line": 156,
+    "frozen_worker_callback_timer_line": 161,
+    "frozen_worker_native_runner_line": 165,
+    "parent_diagnostic": "RuntimeError: worker exited without an authoritative result",
+    "cause_inference": "Parent wrote UTF-8 JSON to a worker that read host-decoded text stdin; a text-encoding mismatch is consistent with the observed surrogate.",
+    "exact_child_stdin_encoding": null
+  },
+  "frozen_source_proof": {
+    "worker": {
+      "path": "evolution/experiments/native_paired/worker.py",
+      "sha256": "bf8dee01880580dd7561ad933720d52f49e40ae2764446669ee8c0d0268130f9"
+    },
+    "parent": {
+      "path": "evolution/experiments/native_paired/parent.py",
+      "sha256": "22eecb60e25232ee840ed53bee7c772d0978c5be2c7936d7dbac5204b454f943"
+    }
+  },
+  "worker_logs": [
+    {
+      "worker": "gpt-6-sol:control",
+      "event_types": [
+        "ready"
+      ],
+      "stdout_byte_size": 681,
+      "stdout_sha256": "888fa00636a9c0ed819b469e6eb653f7f1f0bf9a4ee962f712f354a76ed07fe3",
+      "stderr_byte_size": 842,
+      "stderr_sha256": "a0854b3d4016fd56f146b5ca9a9c223b28a0672796e981d7f2729bcf0201b3d6",
+      "registered_native_artifact_root_exists": false,
+      "ready_registration_matches": true
+    },
+    {
+      "worker": "gpt-6-luna:control",
+      "event_types": [
+        "ready"
+      ],
+      "stdout_byte_size": 682,
+      "stdout_sha256": "f52955964955420912888acf4d29884a9e833ccc4164d17bff59daaf99f314a2",
+      "stderr_byte_size": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "registered_native_artifact_root_exists": false,
+      "ready_registration_matches": true
+    },
+    {
+      "worker": "gpt-6-sol:treatment",
+      "event_types": [
+        "ready"
+      ],
+      "stdout_byte_size": 681,
+      "stdout_sha256": "dad1021387c2954e53349ffbe4e82af34111e7e392ae2e392fb14f6a4e01e3e1",
+      "stderr_byte_size": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "registered_native_artifact_root_exists": false,
+      "ready_registration_matches": true
+    },
+    {
+      "worker": "gpt-6-luna:treatment",
+      "event_types": [
+        "ready"
+      ],
+      "stdout_byte_size": 682,
+      "stdout_sha256": "a783a59ecf42df235a8d910b053a4268e0f57099dccb9f8f526eb40c1e6676b1",
+      "stderr_byte_size": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "registered_native_artifact_root_exists": false,
+      "ready_registration_matches": true
+    }
+  ],
+  "recorded_worker_processes_absent_at_audit": 4,
+  "known_ledger_elapsed_seconds": 1.3714394999842625,
+  "checks": {
+    "registered_pending_request_exact": true,
+    "all_four_ready_bindings_exact": true,
+    "all_four_native_artifact_roots_absent": true,
+    "zero_result_or_error_events": true,
+    "frozen_source_matches_registered_git": true,
+    "no_model_called_by_auditor": true,
+    "no_raw_protocol_ledger_or_fence_modified": true
+  },
+  "limitations": [
+    "No callback, token, quality or benefit estimate is available; this failed run is not successful independent evidence.",
+    "The retained parent reserved one attempt and conservatively fenced unknown usage; the original pending and ledger are not rewritten.",
+    "Independent source and local artifact evidence locate failure before the CLI launch; zero stored usage is not an invoice or provider billing attestation.",
+    "The child stdin encoding and raw child input were not recorded; the exact locale is unknown.",
+    "Existing A4 and nine-arm freezes must remain immutable; source corrections require a new registration before inference."
+  ],
+  "owner_independent_receipt_sha256": "116a9a54000ded24cdbd6a251b75667a90ac4df3a841602f38112f9e2880fd2b"
+}

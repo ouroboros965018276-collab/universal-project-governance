@@ -1,4 +1,5 @@
 """Positive grading and adversarial behavior of the real artifact benchmark."""
+import json
 import unittest
 from evolution.task_benchmark import grade, task
 
@@ -35,3 +36,32 @@ class BenchmarkTests(unittest.TestCase):
         spec["artifact_checks"] = []
         with self.assertRaises(ValueError):
             self.score(spec, {})
+
+    def test_json_types_duplicate_keys_and_nonfinite_values_fail(self):
+        spec = task("typed", "config", {"value.json": "old"},
+                    {"value.json": '{"enabled":true,"count":1,"ratio":1.0}'},
+                    "Preserve exact JSON types", kinds={"value.json": "json"})
+        correct = '{"ratio":1.0,"count":1,"enabled":true}'
+        self.assertEqual(self.score(spec, {"value.json": correct})["hard"], 1)
+        for text in ('{"enabled":1,"count":1,"ratio":1.0}',
+                     '{"enabled":true,"count":true,"ratio":1.0}',
+                     '{"enabled":true,"count":1.0,"ratio":1.0}',
+                     '{"enabled":true,"count":1,"ratio":1}',
+                     '{"enabled":false,"enabled":true,"count":1,"ratio":1.0}',
+                     '{"enabled":true,"count":1,"ratio":NaN}',
+                     '{"enabled":true,"count":1,"ratio":Infinity}'):
+            with self.subTest(text=text):
+                self.assertEqual(self.score(spec, {"value.json": text})["hard"], 0)
+
+    def test_raw_response_duplicate_keys_or_disagreement_cannot_be_lost_by_parser(self):
+        spec = task("raw", "config", {"value.json": "old"}, {"value.json": '{"v":2}'},
+                    "Increment", kinds={"value.json": "json"})
+        response = {"files": [{"path": "value.json", "content": '{"v":2}'}], "validation": "not_run"}
+        request = {"task": spec, "response_json": response,
+                   "usage": {"total_tokens": 123}, "wall_seconds": 2.0}
+        self.assertEqual(grade(dict(request, response_text=json.dumps(response)))["hard"], 1)
+        for raw in ('{"validation":"passed","files":' + json.dumps(response["files"]) + ',"validation":"not_run"}',
+                    '{"files":[{"path":"extra","path":"value.json","content":"{\\"v\\":2}"}],"validation":"not_run"}',
+                    json.dumps(dict(response, validation="passed")), '{"files":NaN,"validation":"not_run"}'):
+            with self.subTest(raw=raw):
+                self.assertEqual(grade(dict(request, response_text=raw))["hard"], 0)

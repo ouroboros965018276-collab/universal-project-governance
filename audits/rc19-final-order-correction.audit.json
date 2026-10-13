@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "kind": "rc19-final-order-correction-before-outcomes",
+  "observed_at_utc": "2026-10-12T21:51:03.440397+00:00",
+  "old_independent_protocol": {
+    "file": "evolution/protocol/rc19-independent-v11.json",
+    "private_sha256": "14ac24d1cd68c581703dc11cc0fc4fddabda144981cfeda8a2127c1f21be6db7",
+    "public_file_sha256": "92810e26c21e0d7f67252612a84837e1cbcf332e447660b83df8d43656d64e51",
+    "registered_revision": "f3848519da4043f944f5bc32c621cc9df8616d25",
+    "actual_model_calls": 0,
+    "retained_unchanged": true,
+    "review_boundary": "model first-arm totals 6/6, but four model/family strata 2/0 rather than 1/1; no final outcomes observed"
+  },
+  "correction": "New protocols explicitly opt in to model-task-family first-arm alternation after the unchanged fixed-seed pair shuffle. Each final stratum has two tasks, so each is exactly control-first once and treatment-first once. Seed remains 19012.",
+  "legacy_compatibility": "Missing option retains byte-identical legacy _order and old checkpoint shape; full protocol/order digests bind new opt-in and checkpoint metadata.",
+  "independent_source_review": {
+    "result": "PASS",
+    "focused_tests": 46,
+    "new_tests": 7,
+    "independent_property_strata": 300,
+    "runtime_model_calls": 0,
+    "invalid_configuration": "unknown enum/type, absent/blank family, and changed/missing checkpoint opt-in rejected before calls"
+  },
+  "local_release_gates": {
+    "passed": 8,
+    "total": 8,
+    "receipt_sha256": "9405a85622175c7edf6f1b7a3535b23bdf00f7e8f62477ca3402123c5ce13ac0"
+  },
+  "sha256": {
+    "evolution/tool_campaign.py": "7039e6ecc23d305aa015c9fec10712a4c616793f0c3cb248bdb20f654a22a9da",
+    "tests/test_tool_campaign.py": "5dc32f70dcae3bb754d972a529cce7b5fa72cfdef068b5e88ba4f03513ed9cf9",
+    "governance-src/templates/SKILL.template.md": "b7068c8dabd091395b22ce27b051d02175757f8b074c080514aa3e842a6b18c2",
+    "universal-project-governance/SKILL.md": "6204675e555304a07a35af46038883ce285caec0a0fbe8b4ff8d98cde00d2ee4",
+    "eval-workspaces/rc19-tools-v12.py": "331e9b829cf29c9630cda2ec3a7a79aa9b09b36b85bd69cc5a21d237d8ec40cb"
+  },
+  "preserved": [
+    "same 8303-byte candidate",
+    "same original sealed twelve task instances and six known families",
+    "same two requested OpenAI models and 48-call budget",
+    "same original and joint-family token/time/per-model/quality/freshness thresholds",
+    "default HTTP transport and old unknown no-replay fences",
+    "no final feedback for candidate tuning"
+  ],
+  "efficacy": "UNASSESSED; engineering/order checks do not establish net benefit",
+  "next": "Prepare, publicly register, freeze and independently review new independent-v12 before its first model call."
+}

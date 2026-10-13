@@ -17,7 +17,7 @@ from .contracts import Budget, BudgetExceeded, candidate_id, digest
 from .evaluator import candidate_source, evaluate, source_hash, validate_candidate
 from .search import AdaptiveDE, ChaoticAnnealing, local_sample_points, negative_curvature_candidates
 
-OPERATORS = ("skillopt", "annealing", "de", "curvature")
+OPERATORS = ("reflection", "annealing", "de", "curvature")
 
 
 class CandidateLimitReached(RuntimeError):
@@ -111,7 +111,7 @@ def save_run(path, run):
 
 def engine_identity(repo):
     root = Path(repo)
-    paths = [p for directory in ("evolution", "third_party/skillopt", "compiler", "tests/fixtures")
+    paths = [p for directory in ("evolution", "third_party/notices", "compiler", "tests/fixtures")
              for p in (root / directory).rglob("*")
              if p.is_file() and "__pycache__" not in p.parts and p.suffix not in {".pyc", ".pyo"}]
     paths += [root / "tools/governance_lint.py"]
@@ -147,9 +147,9 @@ def _run_search(repo, protocol, output, *, runner=None, backend=None, resume=Fal
     unknown = set(disabled) - set(OPERATORS)
     if unknown:
         raise ValueError("unknown operator: " + ",".join(sorted(unknown)))
-    if "skillopt" not in disabled and backend is None and runner is not None:
-        raise ValueError("real task mode requires an explicit learner backend or --disable skillopt")
-    if (backend is None) != (runner is None) and "skillopt" not in disabled:
+    if "reflection" not in disabled and backend is None and runner is not None:
+        raise ValueError("real task mode requires an explicit learner backend or --disable reflection")
+    if (backend is None) != (runner is None) and "reflection" not in disabled:
         raise ValueError("a real learner requires a real task runner; fixtures cannot mix with empirical tasks")
     budget_spec = protocol["budget"]
     max_candidates = int(budget_spec.get("candidates", 128))
@@ -317,11 +317,11 @@ def _run_search(repo, protocol, output, *, runner=None, backend=None, resume=Fal
                     raise CandidateLimitReached("candidate limit reached")
                 current = copy.deepcopy(state["current"])
                 annealing = ChaoticAnnealing.from_state(state["annealing"])
-                if "skillopt" not in disabled:
-                    from .skillopt_adapter import SkillOptLearner, SourceBridge, RolloutResult, fixture_backend
+                if "reflection" not in disabled:
+                    from .reflective import ReflectiveLearner, SourceBridge, RolloutResult, fixture_backend
                     from .source_bridge import SourceBridgeError
                     bridge = SourceBridge(current["model"])
-                    learner = SkillOptLearner(backend or fixture_backend, budget, bridge,
+                    learner = ReflectiveLearner(backend or fixture_backend, budget, bridge,
                                               max_retries=int(protocol.get("search", {}).get("retries", 0)))
                     learner.slow_update_context = state.get("memory", {}).get("slow_update", "")
                     learner.meta_skill_context = state.get("memory", {}).get("meta_skill", "")
@@ -348,7 +348,7 @@ def _run_search(repo, protocol, output, *, runner=None, backend=None, resume=Fal
                     learning_receipt_start = len(budget.records)
                     try:
                         patch = learner.learn(rollouts)
-                        proposal = dict(current, model=bridge.apply(patch), operator="skillopt")
+                        proposal = dict(current, model=bridge.apply(patch), operator="reflection")
                     except SourceBridgeError as error:
                         # A syntactically returned, charged proposal can fail the
                         # source contract. Provider/unknown/budget failures still
@@ -362,16 +362,16 @@ def _run_search(repo, protocol, output, *, runner=None, backend=None, resume=Fal
                             run["budget_overrun"] = overrun
                             raise BudgetExceeded("rejected proposal exceeded hard budget") from error
                         run["pending"] = None
-                        run["operator_counts"]["skillopt"]["attempted"] += 1
-                        event("skillopt", "proposal-rejected", error_type=type(error).__name__,
+                        run["operator_counts"]["reflection"]["attempted"] += 1
+                        event("reflection", "proposal-rejected", error_type=type(error).__name__,
                               reason=str(error), source_hash=bridge.source_hash,
                               trace=copy.deepcopy(learner.last_trace),
                               budget_receipt_attempts=[row["attempt"] for row in budget.records[learning_receipt_start:]])
                         checkpoint()
                     else:
                         run["pending"] = None
-                        item = assess(proposal, "skillopt")
-                        event("skillopt", "patch", patch=patch.to_dict(), trace=learner.last_trace)
+                        item = assess(proposal, "reflection")
+                        event("reflection", "patch", patch=patch.to_dict(), trace=copy.deepcopy(learner.last_trace))
                         def memory_rows(record):
                             if runner is None:
                                 return [RolloutResult(id="compiler-planner", hard=float(record["evaluation"]["ok"]),
@@ -395,12 +395,12 @@ def _run_search(repo, protocol, output, *, runner=None, backend=None, resume=Fal
                             run["pending"] = None
                             state["memory"] = {"slow_update": learner.slow_update_context,
                                                "meta_skill": learner.meta_skill_context}
-                            event("skillopt", "optimizer-memory", memory=memory)
+                            event("reflection", "optimizer-memory", memory=memory)
                         else:
-                            event("skillopt", "memory-skipped", reason="hard rejection has no paired replay")
+                            event("reflection", "memory-skipped", reason="hard rejection has no paired replay")
                         if numeric(item) < state["current_loss"]:
                             current, state["current_loss"] = proposal, numeric(item)
-                            run["operator_counts"]["skillopt"]["accepted"] += 1
+                            run["operator_counts"]["reflection"]["accepted"] += 1
                 if "annealing" not in disabled:
                     theta = annealing.propose(current["theta"])
                     if ordinary:

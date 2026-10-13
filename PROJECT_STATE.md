@@ -1,6 +1,388 @@
 # Project State
 
-Current candidate: **3.0.0-rc.18 — Grader Validity and Measured Runtime Compression**.
+Current candidate: **3.0.0-rc.19 — Project Fact Recovery and Measured Execution Cost**.
+
+## Owner-authorized RC19 integration
+
+After reviewing the incomplete independent results, the owner explicitly
+requested: "合并默认分支并安装 RC19！". This authorizes publishing the reviewed
+RC19 engineering candidate and upgrading the local Skill. It does not change
+any experimental acceptance gate, score, cost, unknown fence or qualification
+result. Independent joint token/time benefit remains unverified; RC19 is a
+release candidate, and formal qualification remains UNASSESSED.
+
+PR #20 carries the reviewed runtime and evidence. Integration and installation
+will be checked against the actual merged default-branch revision, its hosted
+CI, the exact installed file map, installed helper behavior and fresh official
+Skill discovery. Deployment progress is recorded separately from efficacy;
+historical statements below describe their original checkpoints. The
+[owner release authorization](audits/rc19-owner-release-authorization.audit.json)
+records this change of release scope without rewriting experimental evidence.
+
+## RC19 terminal independent confirmation checkpoint
+
+The [final B v12 audit](docs/rc19-tools-independent-v12.md) retains 10 completed
+strict passes / 730,397 reported tokens, one connection failure without
+completed usage, and 37 planned calls never dispatched. Its independent audit
+passed 1,242 assertions and preserved 228 original files byte-for-byte. B is
+incomplete and its original net-benefit gate remains FAIL.
+
+The single prospectively registered [additional C v13 round](docs/rc19-tools-independent-v13.md)
+also stopped at an unknown-usage connection failure. Four completed turns passed
+strict quality and reported 304,324 tokens; the fifth completed two read-only
+tool operations before failing without completed usage. No edit occurred in
+that unknown turn, and 43 planned calls were never dispatched. Independent
+audit passed 675 assertions with 154 original files unchanged. Both the original
+net-benefit gate and additional confirmation gate are FAIL; no 99% confirmation
+interval was calculated for the incomplete round. Connection-error evidence
+does not establish a local, proxy or provider root cause or a zero charge.
+
+The 8,303-byte candidate stayed frozen across B and C. C used twelve new sealed
+instances from the same six known families, generation seed 19013, unchanged
+models/transport/budget/original gates and the registered extra 99% requirement.
+The one additional round is exhausted: no further model round is planned for
+this frozen candidate, and neither incomplete prefix can be replayed, stitched
+or promoted. All original costs, raw records and unknown fences remain intact.
+Per-round intervals do not establish a single 95% guarantee for the whole
+multiround research sequence.
+
+Cumulative accounting is **383 known completed CLI turns / 14,537,062 reported
+tokens plus six unknown-usage dispatches: 389 actual CLI dispatches**. Cached
+input is already included in input; these reports are not invoices or the
+unobserved total for partial failures and internal attempts. The candidate
+passed eight local release gates; the C preregistration head passed hosted CI
+11/11, including both actual Skill loaders (Windows: 517 tests; Python 3.8:
+263 passes, 254 skips). Engineering validation does not establish model benefit.
+
+RC19 remains an unfinished draft in PR #20. Default main at
+`29cf112b4629d6b90504b079e95a5370c206a4cb` and the globally installed Skill
+remain RC18. Complete independent joint token/time benefit has not been
+verified, so no default-branch merge or local RC19 deployment has occurred.
+All following checkpoints are historical observations at their stated sources;
+their earlier preparation/next-action text is superseded by this checkpoint.
+
+## RC19 preceding development checkpoint
+
+The completed [v10 tool comparison](docs/rc19-tools-development-v10.md) retains
+32 fresh calls and 2,571,232 reported tokens without unknown usage. Independent
+raw/statistical audit passed: treatment quality 16/16, control 15/16; tokens
+fell 5.4389% with both registered interval upper bounds below one, while callback
+time increased 0.6230% and both requested model timing points regressed. The
+unchanged net-benefit gate remains FAIL. Subsequent [v11 focused development](docs/rc19-tools-development-v11.md) completed
+16 fresh calls and 1,473,594 tokens, with both arms 8/8 strict passes. Tokens fell
+8.5078% and callback time 14.2532%; both models improved. The original token
+interval [0.804729, 1.051075] still crosses one, so net admission remains FAIL.
+Cumulative known usage is 369 completed turns / 13,502,341 tokens, plus four
+unknown dispatches (373 actual CLI calls).
+
+Source `ff30c8a8f93b6bc12214bd5c73a875efb44b28c1` passed hosted PR run
+38307551411, all 11 jobs including both real Skill loaders; Windows discovered
+510 tests and passed, while Python 3.8 passed 263 with 247 skips. This validates
+that committed source rather than later text changes.
+
+The [cost diagnosis](docs/rc19-tools-v10-cost-diagnosis.md) supports a narrow
+clarification: dependent after-state checksums can use verified edit receipts
+and still-current reads. Content/contract inspection and all stale/missing/
+failed/later-edit exceptions remain mandatory when applicable. This single
+canonical clause was independently reviewed, compiled into an 8,303-byte Skill,
+and passed eight local gates under freeze
+`eb2312969d63541c4269ab9afc386c5673466f863465ef84beaa66b3b96aa9d1`.
+These are exposed development tasks and do not establish independent benefit.
+The same candidate was registered for final B at `f384851`, with hosted CI11/11.
+Before any final call, review found model-balanced order but four model/family
+strata with two same-first arms. The v11 final registration remains zero-call;
+a new opt-in family-balanced v12 will retain the seed, candidate and 48-call
+budget. The sealed six-family final B, original statistical/quality gates, default
+main RC18, global installed RC18 and all old unknown fences remain unchanged.
+Native preparation is repository-only and cannot be inserted into installed
+Skill timing or combined retrospectively with v10 to claim joint benefit.
+
+## Preceding RC19 recovery checkpoint
+
+Observed worktree HEAD is `9bf5e97693b225c87a6fab2af9b96fb5aed1f0b6`.
+Default `main` remains accepted RC18 at
+`29cf112b4629d6b90504b079e95a5370c206a4cb`, and the global installed Skill remains
+RC18. RC19 is active and unfinished; no merge or local promotion has occurred.
+
+The independently audited [native A5](docs/rc19-native-independent-a-v5.md) and
+[nine-arm development](docs/rc19-nine-native-development-v2.md) evidence was
+committed at `3ea`. A5 retained 32 fresh strict passes and 439,193 reported tokens;
+its full-callback time/quality gate passed, with ratio 0.785054 and 95% joint
+family-block interval [0.761984, 0.808256]. Its token interval crosses one and
+Luna tokens regress 1.2071%; A5 does not establish joint token/time benefit or
+relax Tool B gates. Nine-arm development retained 209 known turns and 3,302,409
+tokens, with no distinct or selected edits; empirical admission is BLOCKED and
+contribution/token/time-benefit claims remain unassessed.
+
+The [child-route v3 diagnostic](docs/rc19-child-route-v3.md) has independently
+reconciled evidence, with its new docs/audit still uncommitted at this checkpoint.
+Sol completed both tiny public tasks with 20,122 reported tokens; Luna's
+child-no-proxy call returned `Connection failed: error sending request` without
+completed usage. The fourth call was not dispatched. The unknown fence remains,
+and NO_PROXY has not been adopted. This is diagnostic evidence, not a routing,
+latency or reliability improvement. Cumulative RC19 accounting is **321 known
+completed CLI turns / 9,457,515 known reported tokens plus four unknown-usage
+dispatches: 325 actual CLI dispatches**. This includes the prior v2 known strict
+failure; A4's worker reservation had zero actual CLI dispatches and is excluded.
+
+Compact wording was adopted with unchanged model, eight HotPath items and sixteen
+policies. Its 8,172-byte form at `3ea` had an unquoted `: ` in the description;
+hosted CI at `9bf5e97` passed 9/11 jobs and both external Skill loaders rejected
+that YAML scalar. The current candidate uses a plain description with template
+SHA-256 `9248ce28b78103f9b8fa2dde485fc1ebd77c1d6bbc2d290db6ee620303ae9648`;
+the actual generated Skill is **8,180 bytes**. Six frontmatter regressions passed
+independently and all eight release checks passed. Two initial check preparations
+failed because TEMP was not redirected from the sandbox path; their receipts are
+retained, and the two checks passed with the correct project TEMP. These results
+do not replace external loader validation, which awaits the next pushed source.
+See the [frontmatter compatibility audit](audits/rc19-frontmatter-compatibility.audit.json).
+
+Development v9 made zero model calls because CI blocked it; its old registration
+remains unchanged. The v10 driver is SOURCE READY only, has not prepared a new
+protocol and has made no model calls. Next: commit the corrected source/evidence,
+obtain hosted loader acceptance, then create and review a fresh v10 freeze before
+any development dispatch. Sealed Tool B remains unexposed and uncalled. Preserve
+all original protocols, scores, costs and unknown fences; do not replay them or
+use final-task feedback for tuning. Formal qualification remains UNASSESSED.
+
+## Historical RC19 preparation and measurement checkpoints
+
+The default branch contains RC18 through PR #19, merge
+`29cf112b4629d6b90504b079e95a5370c206a4cb`; local RC18 installation was accepted.
+RC19 investigates the reported 23.6975% callback-time increase and prepares a
+new frozen comparison on two catalog-observed OpenAI models with actual bounded
+repository tools. [Diagnosis](docs/rc19-latency-diagnosis.md) records one tail
+pair contributing 95.74% of the historical increase and reproduced redundant
+binary hashing/compilation. Local warm preparation improves; new independent
+model token/time benefit remains pending. Formal qualification is UNASSESSED.
+Historical source, frozen measurements and unresolved limits below remain intact.
+
+The first [RC19 development transport](docs/rc19-tools-development-v1.md)
+completed eight known paid CLI turns using 208596 tokens, but the disabled
+Code Mode host prevented every tool call. Task quality was 0/8 and benefit
+admission failed. Original records and costs are retained; the pre-call
+`rc19-latency-tools.audit.json` is a historical preparation snapshot.
+No RC19 final independent calls, default-branch merge or local deployment have
+occurred at this checkpoint. The child transport is being corrected before
+a separately frozen development probe.
+
+The [two-call transport probe](docs/rc19-tools-transport-v2.md) subsequently
+confirmed both actual CLI host process paths and retained another 75349 tokens.
+Its registered MCP attempts were denied by the child's approval configuration;
+broker executions and passing tasks remained zero. The ten known failed turns
+therefore cost 283945 tokens in total, with no efficacy claim. A new child
+profile explicitly preapproves only the five authorized broker tools and keeps
+the global approval policy and native tool restrictions. Its separately frozen
+development probe must establish useful tool execution before final testing.
+
+The [v3 transport probe](docs/rc19-tools-transport-v3.md) subsequently passed
+2/2 tasks and all four positive checks, with 11 independently reconciled real
+broker calls and both registered host paths observed. Its one-family development
+scope does not establish efficiency; the unchanged coverage gate correctly fails.
+The three rounds total 12 known turns and 431713 tokens. A separately frozen
+16-turn development comparison now covers four known task families on
+`gpt-6-luna` and `gpt-6.1-sol`. Final instances remain unexposed to the models;
+they have distinct initial files and expected checks, while sharing these four
+task families, generic prompt templates and the protected NOTICE sentinel.
+
+The complete two-model development comparison subsequently passed 16/16 tasks,
+using 1344852 reported tokens and 102 broker requests (95 successful operations
+and seven recovered, correctly denied reads outside the registered path set).
+Its token point estimate
+was 3.6469% lower, but full callback time was 9.3737% higher; both 95% ratio
+intervals crossed one. Both model timing point estimates regressed. The unchanged
+net-benefit gate failed, so final tasks remain unstarted. Known RC19 rounds now
+total 28 turns and 1776565 tokens, including the ten failed transport turns.
+The next development candidate makes evidence reuse and batched inspection
+explicit, while preserving all policy/plan semantics. Hosted CI also exposed a
+terminal-budget snapshot mismatch: the collector now synchronizes its saved
+summary to the same advancing clock snapshot and blocks benefit if final summary
+work crosses the wall threshold. Historical experiment records are not rewritten.
+
+The [v4 development audit](docs/rc19-tools-development-v4.md) retains another
+16 completed calls and 1078496 tokens. All 32 positive artifact checks and all
+76 broker operations passed, but four calls contained transport errors, so strict
+task quality was 12/16. Token use fell 2.8023% with a ratio interval below one;
+callback time fell 6.1966% as a point estimate, but its interval crossed one and
+one model regressed slightly. Net admission therefore remains FAIL. The five
+RC19 rounds total 44 completed calls and 2855061 reported tokens; independent
+final tasks remain uncalled and the installed Skill remains accepted RC18.
+
+A prospective shared child HTTP profile is now being prepared for both arms.
+The matching official CLI loaded its provider configuration and retained the
+existing ChatGPT login in read-only RPC checks. No inference was performed in
+that check. This addresses the newly observed TLS/WebSocket errors, whose
+relation to the historical RC18 tail remains unknown. A separate artifact-grader
+repair rejects duplicate JSON keys, non-finite numbers and Python's bool/int
+equality ambiguity. It applies to new trials, not retrospective regrading.
+
+The new prospective [uncertainty registration](evolution/protocol/rc19-joint-family-uncertainty-v1.json)
+also requires joint task-family intervals preserving both requested models,
+in addition to every original acceptance gate. Four known families remain four
+independent blocks, regardless of model or instance count. A separately published
+[native callback collector](docs/evolution/native-paired-campaign.md) measures
+actual public-entry preparation, CLI and evidence costs in persistent matched
+workers; it has performed no inference at this checkpoint.
+
+**Owner-resumed RC19, client date 2026-10-13.** The [v5 partial audit](docs/rc19-tools-development-v5.md)
+retains six completed calls with 407496 reported tokens, 12/12 artifact checks
+and 5/6 strict admissions. The seventh dispatch returned model-capacity failure
+without completed usage; its unknown-call fence remains and it was not replayed.
+RC19 totals are 50 completed calls / 3262557 reported tokens plus one additional
+unknown-usage dispatch. Net benefit remains FAIL. Native A and independent final
+tool calls remain zero; default main and the accepted local RC18 Skill are unchanged.
+The previously paused model/protocol parameterization is independently reviewed;
+Windows aliases and trailing dots are rejected. New ordinary request, stream and
+unbounded-connection retry suppression is shared and hash-bound across arms;
+authentication recovery and failed partial-response billing remain explicit limits.
+Project fact recovery reuses the current handoff, explicit file scopes, positive
+source-state checks and static/dynamic validity distinctions. Native reflection
+replaces the executable third-party dependency. Source backups and historical
+license/provenance remain recoverable. Full regression, new protocol freezes and
+independent net-benefit measurement remain required before integration/deployment.
+
+Candidate source `60c8b0f44d7290f15e92a45de346be1c7d0a0aea` now passes
+473 tests (471 executed passes, two Windows link-privilege skips) and all eight
+release checks. Two package builds match SHA256
+`bc245bfc3af5e6a01149f8825f03631b5bed63e974bace31cd2353f250100e7f`.
+The runtime contains 18 files; its Skill is 8843 bytes versus RC18's 7940.
+No byte-saving claim is made. Native reflection and recovery received independent
+source review, including the repaired Git clean-filter execution boundary.
+
+The [fresh v6 recovery probe](docs/rc19-capability-recovery-v6.md) completed four
+new calls on requested `gpt-6-sol` and `gpt-6-luna`: strict quality 4/4,
+12/12 positive checks, 28 real tools, 424417 reported tokens. Pooled token point
+improves 7.84%; callback time improves only 0.24%, with Sol time regressing
+2.43%. Net benefit remains FAIL. Cumulative metered RC19 experiments now have
+54 completed turns / 3686974 reported tokens plus one preserved unknown dispatch.
+Development conversation and subagent usage are not included in those totals.
+The next six-family development protocol and independent native A v2 protocol
+are preregistered at `cf9f5dcd2c227a2717c303d4f4acacd8bbfb91d1`; neither has
+dispatched a model at this checkpoint. Independent tool fixtures remain sealed.
+
+Hosted CI for `5f57df8ac1dd667e8764b39b0a781478aaed0056` subsequently passed
+8/11 jobs. Python 3.8 exposed an optional offline-test version boundary;
+Windows 3.11 and 3.13 exposed a real reference-identity bug. Safe references now
+use canonical paths after link/reparse/hardlink rejection, preserving evidence
+through short-path and lexical directory aliases. Native offline tests explicitly
+require Python 3.10+, while installed helpers retain Python 3.8+ support.
+Local regression after these changes ran 477 tests (475 passes, two actual
+link-privilege skips), with all eight release checks passing. Hosted verification
+of the corrected source remains pending. Uncalled development v6 and native A v2
+are retained; corrected-source development v7 and native A v3 require new freezes.
+These engineering fixes establish no additional model efficiency result.
+
+The corrected source `38d469126fb31e4572689a5934d0bac2b9a470cd` and public freeze
+`5b28efb6a4ab522da855a217d8de14d2c6b739ac` now have independently observed
+[PR](https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/38286771981)
+and [push](https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/38286766579)
+CI success, 11/11 jobs each. Python 3.8 discovered 477 tests with 230 skips
+and 247 executed passes; PR Windows 3.13 passed all 477 in 71.716 seconds,
+including real short-root retention. These hosted runs are separate from the
+local full suite before the final test-bootstrap edit and the final 17-test
+standalone focus; their counts are not summed.
+
+The [v7 partial audit](docs/rc19-tools-development-v7.md) retains seven completed
+turns / 668208 reported tokens, all seven strict passes and 16/16 positive checks.
+The eighth dispatch made four real tools and two partial edits, then failed with
+`Connection failed: error sending request` without completed usage. Its network
+root cause remains unknown; the pending/unknown-call fence is preserved without
+replay. Net benefit remains FAIL and formal qualification UNASSESSED. Cumulative
+RC19 accounting is 61 completed known-usage turns / 4355182 reported tokens plus
+two unknown-usage dispatches (63 dispatches total); missing usage is not zero.
+Independent native A3 and sealed Tool B final calls remain zero. Earlier uncalled
+v6/A2 freezes and the separate v5 unknown fence remain unchanged; default main
+and the accepted local RC18 Skill have not been promoted by this partial result.
+
+The next [engineering preflight](audits/rc19-observed-receipts-preflight.audit.json)
+adds safe actual-byte patch hashes to the common tool scaffold, retaining all
+initial-read, scope and current validation/status gates. The Skill makes the
+smallest read/change/verify sequence explicit. Native completed-turn costs now
+survive raw/result/receipt persistence failures; unresolved evidence retains the
+original dispatch lock, including a lost receipt acknowledgement followed by
+both fence-write failures. Independent fault-injection reviews passed; no real
+call was replayed to test these failures.
+
+Local full regression passed 499 discovered tests (497 executed passes, two
+link-privilege skips) and eight release checks before the final two-line lock
+correction and its additional regression. Final native focus passed 41/41 and
+paired focus 30/30, with an independent 13/13 cost focus and combined-fault
+reproduction; these overlap the full suite. Final 500-test hosted verification
+is pending. Two actual package builds match
+`da2b98c2eb95ba209d8d29f3caca761073e08fbe1e4b3bea81df5d3c957f4b70`.
+The 18-file runtime Skill is 8814 bytes, still larger than RC18's 7940.
+There are no new model results or efficiency claims for this candidate. New v8,
+native A4 and nine-arm development registrations are required before dispatch.
+
+At source `0bd647a79a7270c674238916217385c4e749a399`, hosted PR verification
+[run 38292522683](https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/38292522683)
+passed 11/11 jobs, including all 500 tests on Windows Python 3.13 and the
+Python 3.8 compatibility discovery (257 executed passes, 243 skips).
+The [v8 capability probe](docs/rc19-tools-capability-recovery-v8.md) passed four
+strict tool tasks: token/time points improved 16.4199%/12.4302%, but its one-family
+scope fails the unchanged independent net-benefit gate. The subsequent
+[v8 development collection](docs/rc19-tools-development-v8.md) stopped after
+twelve strict passing completed turns and an unknown-usage connection failure.
+Its completed prefix regressed 4.9995% in tokens and 1.7636% in callback time;
+these incomplete diagnostic points establish no benefit. Retained actual CLI
+totals are 77 completed turns / 5685732 known reported tokens plus three unknown
+dispatches. Provider invoices and failed-partial usage remain unobserved.
+
+The newly attempted independent A4 collector stopped at its first worker input
+validation with a Windows Unicode decoding error, before the native callback.
+Its original reservation, pending state and raw worker logs are retained for
+independent reconciliation; no result is admitted as model evidence. A separately
+frozen encoding correction is required. Nine-arm native development and sealed
+Tool B have no new dispatches. Default main and the installed Skill remain RC18;
+neither the passing engineering checks nor the development probe authorize
+promotion without the required independent token/time/quality evidence.
+
+Independent [A4 reconciliation](docs/rc19-native-independent-a-v4.md) confirmed
+zero actual CLI entries before the failed input digest. The corrected strict
+ASCII JSONL wire passed 34 focused tests, including three real CP936 Python
+subprocess canaries; an independent run passed the four new cases. Source,
+digest, callback timing, grading and CLI argument semantics are preserved.
+The next cost-guidance candidate batches known source/consumer/contract/evidence/
+state reads and derives records from verified writes and unchanged current
+reads. Its 8807-byte Skill is seven bytes smaller than the v8 candidate; this
+is not token-benefit evidence. Policies and Hot Path are identical, all eight
+release checks pass, and the new qualification fingerprint is
+`sha256:10f15583bd1c3d7bcfd2168d6f751eac015b3aa421f37afbbef22f829cec965a`.
+New source-bound native and tool experiments are required before any promotion.
+
+The [A5 independent audit](docs/rc19-native-independent-a-v5.md) subsequently
+confirmed 32/32 fresh strict passes and 439193 reported tokens. Full callback
+time fell 21.4946%, with joint-family ratio interval [0.761984, 0.808256].
+Token benefit was not established: its interval crossed one and requested Luna
+regressed 1.2071%. All warnings, the unexplained first Sol control token excess
+and host-load limitations remain recorded. A5 applies to source `1f286516...`;
+it cannot substitute for independent Tool B evidence or certify later text edits.
+
+The [native nine-arm audit](docs/rc19-nine-native-development-v2.md) independently
+reconciled 209 real calls: 173 passing task turns and 36 learner turns, using
+3302409 reported tokens without unknown calls. All nine arms completed under
+equal ceilings. The learner proposed zero distinct edits; accepted search
+steps do not establish causal value. Empirical admission remains BLOCKED,
+formal qualification UNASSESSED, and savings/contributions null.
+
+A [bounded route diagnostic](audits/rc19-child-route-v2.audit.json) then stopped
+after one known 10059-token completion: the fixed JSON was correct but two CLI
+startup errors failed strict admission. No alternate-route call occurred and
+no network conclusion follows. Its original failed record and fence remain.
+Cumulative actual CLI accounting is 319 known completed turns / 9437393 reported
+tokens plus three unknown-usage dispatches; A4's pre-CLI reservation is excluded.
+
+The next reviewed wording candidate compiles to 8172 bytes / 79 Skill lines.
+It restores explicit preservation of all existing settings and ledger, retains
+16 policies / eight identical Hot Path invariants and passes all eight release
+checks. New qualification fingerprint:
+`sha256:9226a53376140b3cd2f3acd9a6adce35bf895b7fe808371889be98e766fdf50c`.
+This text-size change is not measured token/time benefit. Hosted PR
+[run 38303104830](https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/38303104830)
+passed all 11 jobs for the preceding committed candidate, including 504/504
+Windows Python 3.13 tests and 257 executed Python 3.8 passes / 247 skips.
+New source-bound tool testing and independent net admission remain required;
+default main and the installed Skill remain RC18.
 
 ## RC18 candidate — paired measurements and nine-arm matrix completed
 

@@ -1,0 +1,700 @@
+{
+  "schema_version": 1,
+  "audit_id": "upg-rc19-tools-development-v3-net-failure",
+  "observed_at_utc": "2026-10-12T14:17:35.867383Z",
+  "candidate_version": "3.0.0-rc.19",
+  "status": "known-completed-quality-pass-net-benefit-fail",
+  "frozen_source_revision": "47f665d1644f4c18adb25cde75413701bb430dbc",
+  "baseline_revision": "29cf112b4629d6b90504b079e95a5370c206a4cb",
+  "protocol_id": "upg-rc19-tools-development-v3",
+  "stage": "development",
+  "purpose": "frozen matched real-tool development comparison; not independent qualification",
+  "requested_models": [
+    "gpt-6-luna",
+    "gpt-6.1-sol"
+  ],
+  "requested_effort_by_model": {
+    "gpt-6-luna": "low",
+    "gpt-6.1-sol": "low"
+  },
+  "model_provider_internal_identity_verified": false,
+  "identities": {
+    "capabilities_sha256": "5a0c972355532952766ed36903f3806950c24d5e38281a211dc2701f23d1aca6",
+    "conditions_sha256": "975e24572eba942770027c61db4df79ec3caa85993c3283b9cf5294d2d521891",
+    "configs_sha256": "6f12063712d20393f9db57e3a9a2502548487785457629d7fd63116021ee24fd",
+    "engine_sha256": "392a0fc0c62b67c12ea7d688823fc1414b0fd4428c26e3ab9265469e40ad7899",
+    "order_sha256": "60d5f41d635d9f7f209344d6035bd015ee7e02e7a0e651a8894724f40bcd7538",
+    "protocol_sha256": "15e04e138e52421795f15412135fc84b43200035b2760a94e65fd4ff816ded47",
+    "task_manifest_sha256": "fb18cb8c76adea0459a481da5df8306248e120ba799d2e09914bd270ae9a2e07"
+  },
+  "conditions": {
+    "control": {
+      "source_sha256": "6aa8a9562d24f74a48bce082100c2ba1069f4c56a900ce0924f23869b36bdd81",
+      "runtime_sha256": "66c5cc02c02ed3834d9a79c7ac1c395f7e164602aa2a296ed3929520b80f99de",
+      "candidate_sha256": "5c2dcf24974129ca22d1fb65e6a64d61f069646510cc68446797c5825cf60a05",
+      "skill_utf8_bytes": 7940
+    },
+    "treatment": {
+      "source_sha256": "d7fe05eecf4a86af79fde1ce3aee6c1995b02aa109d3cce2d90401df31a803f5",
+      "runtime_sha256": "10f3c1a989bf0318ddba57729b3ddac5039ae29090ce4383587a22bf9b2c6a1b",
+      "candidate_sha256": "74cea4d23d4322f55267f97a39f9edebfb7c3cb88f8de3d1a4c3b99384770d0e",
+      "skill_utf8_bytes": 8140
+    }
+  },
+  "public_protocol": "evolution/protocol/rc19-development-v3.json",
+  "original_records_and_snapshots_modified": false,
+  "collection": {
+    "status": "completed",
+    "registered_task_families": [
+      "registry",
+      "toml",
+      "python",
+      "documentation"
+    ],
+    "registered_tasks": 4,
+    "requested_model_count": 2,
+    "matched_pairs": 8,
+    "fresh_completed_cli_turns": 16,
+    "distinct_cli_thread_identities": 16,
+    "distinct_raw_receipts": 16,
+    "cached_observations": 0,
+    "broker_requests": 102,
+    "successful_broker_operations": 95,
+    "recovered_denied_broker_reads": 7,
+    "requests_by_tool": {
+      "repo_read": 42,
+      "repo_patch": 16,
+      "repo_status": 27,
+      "repo_validate": 16,
+      "repo_search": 1
+    },
+    "cli_exit_zero": 16,
+    "final_validation_passed": 16,
+    "registered_application_code_executed": false,
+    "development_tasks_known_from_prior_development": true,
+    "independent_final_feedback_used": false
+  },
+  "actual_development_cost": {
+    "totals": {
+      "input_tokens": 1335100,
+      "output_tokens": 9752,
+      "total_tokens": 1344852,
+      "cached_tokens": 1067648,
+      "reasoning_tokens": 100,
+      "calls": 16,
+      "collector_callback_seconds": 487.10524380000425,
+      "cli_seconds": 467.1006607999443,
+      "non_cli_seconds": 20.004583000059938,
+      "broker_requests": 102,
+      "successful_operations": 95,
+      "denied_reads": 7
+    },
+    "by_condition": {
+      "control": {
+        "input_tokens": 679964,
+        "output_tokens": 4951,
+        "total_tokens": 684915,
+        "cached_tokens": 542720,
+        "reasoning_tokens": 52,
+        "calls": 8,
+        "collector_callback_seconds": 232.64875849999953,
+        "cli_seconds": 224.9116886999691,
+        "non_cli_seconds": 7.73706980003044,
+        "broker_requests": 52,
+        "successful_operations": 47,
+        "denied_reads": 5
+      },
+      "treatment": {
+        "input_tokens": 655136,
+        "output_tokens": 4801,
+        "total_tokens": 659937,
+        "cached_tokens": 524928,
+        "reasoning_tokens": 48,
+        "calls": 8,
+        "collector_callback_seconds": 254.45648530000472,
+        "cli_seconds": 242.18897209997522,
+        "non_cli_seconds": 12.267513200029498,
+        "broker_requests": 50,
+        "successful_operations": 48,
+        "denied_reads": 2
+      }
+    },
+    "by_model_condition": {
+      "gpt-6-luna": {
+        "control": {
+          "input_tokens": 345305,
+          "output_tokens": 2557,
+          "total_tokens": 347862,
+          "cached_tokens": 268800,
+          "reasoning_tokens": 24,
+          "calls": 4,
+          "collector_callback_seconds": 86.8169232000073,
+          "cli_seconds": 83.61207129995455,
+          "non_cli_seconds": 3.204851900052745,
+          "broker_requests": 24,
+          "successful_operations": 22,
+          "denied_reads": 2
+        },
+        "treatment": {
+          "input_tokens": 327008,
+          "output_tokens": 2515,
+          "total_tokens": 329523,
+          "cached_tokens": 246784,
+          "reasoning_tokens": 0,
+          "calls": 4,
+          "collector_callback_seconds": 89.14630819999729,
+          "cli_seconds": 82.30819640000118,
+          "non_cli_seconds": 6.838111799996113,
+          "broker_requests": 22,
+          "successful_operations": 22,
+          "denied_reads": 0
+        }
+      },
+      "gpt-6.1-sol": {
+        "treatment": {
+          "input_tokens": 328128,
+          "output_tokens": 2286,
+          "total_tokens": 330414,
+          "cached_tokens": 278144,
+          "reasoning_tokens": 48,
+          "calls": 4,
+          "collector_callback_seconds": 165.31017710000742,
+          "cli_seconds": 159.88077569997404,
+          "non_cli_seconds": 5.429401400033385,
+          "broker_requests": 28,
+          "successful_operations": 26,
+          "denied_reads": 2
+        },
+        "control": {
+          "input_tokens": 334659,
+          "output_tokens": 2394,
+          "total_tokens": 337053,
+          "cached_tokens": 273920,
+          "reasoning_tokens": 28,
+          "calls": 4,
+          "collector_callback_seconds": 145.83183529999224,
+          "cli_seconds": 141.29961740001454,
+          "non_cli_seconds": 4.532217899977695,
+          "broker_requests": 28,
+          "successful_operations": 25,
+          "denied_reads": 3
+        }
+      }
+    },
+    "measurement": "reported actual Codex CLI completed-turn usage and local collector timing",
+    "all_rejected_read_and_recovery_costs_included": true,
+    "cached_input_is_subset": true,
+    "reasoning_output_is_subset": true,
+    "cost_usd": null,
+    "provider_internal_retry_billing": "unknown",
+    "full_research_cost": "unknown"
+  },
+  "elapsed_reconciliation": {
+    "selected_source": "final checkpoint budget.elapsed_seconds",
+    "selected_seconds": 489.6570000000065,
+    "embedded_summary_snapshot_seconds": 489.3440000000119,
+    "difference_seconds": 0.3129999999946449,
+    "reason": "Embedded summary capture preceded the final local checkpoint.",
+    "separate_final_summary_matches_final_budget": true,
+    "same_call_token_counts_paired_metrics_and_gates": true,
+    "collector_setup_seconds": 1.829985000018496,
+    "collector_setup_in_condition_callback_wall": false,
+    "original_records_modified": false
+  },
+  "quality": {
+    "tasks_passed": 16,
+    "tasks_total": 16,
+    "positive_checks_passed": 32,
+    "positive_checks_total": 32,
+    "independent_checks": "JSON object equality, TOML object equality, AST structure, exact text, protected-file bytes, exact final file sets and current-state validation/status tool evidence",
+    "task_quality_gate": "PASS",
+    "net_benefit_gate": "FAIL",
+    "stored_gates": {
+      "complete_matched_collection": true,
+      "all_task_quality_pass": true,
+      "all_new_model_calls": true,
+      "unique_raw_call_receipts": true,
+      "at_least_two_families_per_model": true,
+      "total_tokens_ci_upper_improves": false,
+      "total_tokens_every_model_point_improves": true,
+      "wall_seconds_ci_upper_improves": false,
+      "wall_seconds_every_model_point_improves": false
+    },
+    "metrics": {
+      "total_tokens": {
+        "control_total": 684915,
+        "treatment_total": 659937,
+        "ratio": 0.9635312411029106,
+        "savings_fraction": 0.03646875889708945,
+        "paired_model_family_bootstrap_95_interval": [
+          0.8013572463494552,
+          1.1462223720325517
+        ]
+      },
+      "wall_seconds": {
+        "control_total": 232.64875849999953,
+        "treatment_total": 254.45648530000472,
+        "ratio": 1.093736699652344,
+        "savings_fraction": -0.0937366996523441,
+        "paired_model_family_bootstrap_95_interval": [
+          0.9434781459160894,
+          1.2186568281184482
+        ]
+      },
+      "cli_wall_seconds": {
+        "control_total": 224.9116886999691,
+        "treatment_total": 242.18897209997522,
+        "ratio": 1.0768180769077498,
+        "savings_fraction": -0.07681807690774978,
+        "paired_model_family_bootstrap_95_interval": [
+          0.9133921064381846,
+          1.2121401299722245
+        ]
+      },
+      "tool_calls": {
+        "control_total": 52,
+        "treatment_total": 50,
+        "ratio": 0.9615384615384616,
+        "savings_fraction": 0.038461538461538436,
+        "paired_model_family_bootstrap_95_interval": [
+          0.8363636363636363,
+          1.1041666666666667
+        ]
+      }
+    },
+    "per_model": {
+      "gpt-6-luna": {
+        "total_tokens": {
+          "control_total": 347862,
+          "treatment_total": 329523,
+          "ratio": 0.9472808182555151,
+          "savings_fraction": 0.052719181744484866,
+          "paired_model_family_bootstrap_95_interval": [
+            0.7156843713758106,
+            1.2639039161648125
+          ]
+        },
+        "wall_seconds": {
+          "control_total": 86.8169232000073,
+          "treatment_total": 89.14630819999729,
+          "ratio": 1.0268310015389925,
+          "savings_fraction": -0.026831001538992538,
+          "paired_model_family_bootstrap_95_interval": [
+            0.8441145954630377,
+            1.1575380819537173
+          ]
+        },
+        "cli_wall_seconds": {
+          "control_total": 83.61207129995455,
+          "treatment_total": 82.30819640000118,
+          "ratio": 0.9844056620093075,
+          "savings_fraction": 0.015594337990692542,
+          "paired_model_family_bootstrap_95_interval": [
+            0.7876254674073816,
+            1.1297350002942206
+          ]
+        },
+        "tool_calls": {
+          "control_total": 24,
+          "treatment_total": 22,
+          "ratio": 0.9166666666666666,
+          "savings_fraction": 0.08333333333333337,
+          "paired_model_family_bootstrap_95_interval": [
+            0.7142857142857143,
+            1.2
+          ]
+        }
+      },
+      "gpt-6.1-sol": {
+        "total_tokens": {
+          "control_total": 337053,
+          "treatment_total": 330414,
+          "ratio": 0.9803028010431594,
+          "savings_fraction": 0.019697198956840634,
+          "paired_model_family_bootstrap_95_interval": [
+            0.8175075616191518,
+            1.18189062655643
+          ]
+        },
+        "wall_seconds": {
+          "control_total": 145.83183529999224,
+          "treatment_total": 165.31017710000742,
+          "ratio": 1.1335671443752051,
+          "savings_fraction": -0.13356714437520512,
+          "paired_model_family_bootstrap_95_interval": [
+            0.9117118592625802,
+            1.2740687521069056
+          ]
+        },
+        "cli_wall_seconds": {
+          "control_total": 141.29961740001454,
+          "treatment_total": 159.88077569997404,
+          "ratio": 1.1315018302374935,
+          "savings_fraction": -0.1315018302374935,
+          "paired_model_family_bootstrap_95_interval": [
+            0.8905867264538435,
+            1.2792096990765516
+          ]
+        },
+        "tool_calls": {
+          "control_total": 28,
+          "treatment_total": 28,
+          "ratio": 1.0,
+          "savings_fraction": 0.0,
+          "paired_model_family_bootstrap_95_interval": [
+            0.8666666666666667,
+            1.1538461538461537
+          ]
+        }
+      }
+    },
+    "bootstrap": {
+      "method": "paired-task-family-block-bootstrap-stratified-by-requested-model",
+      "repetitions": 4000,
+      "seed": 19012,
+      "confidence": 0.95
+    },
+    "independent_bootstrap_reproduced_all_overall_and_per_model_metrics": true,
+    "thresholds_relaxed": false,
+    "quality_rule_for_recovered_denials_changed": false,
+    "known_development_metrics_establish_independent_benefit": false
+  },
+  "bounded_rejections": {
+    "count": 7,
+    "by_condition": {
+      "control": 5,
+      "treatment": 2
+    },
+    "all_tools": "repo_read",
+    "scope": "Guessed unavailable helper/project-state paths and other files outside the registered synthetic repository scope.",
+    "raw_cli_failed_status_matches_broker_rejection": true,
+    "successful_scope_escape": false,
+    "all_final_tasks_recovered_and_passed": true,
+    "frozen_grader_permits_recovered_registered_tool_denials": true,
+    "rejection_records": [
+      {
+        "sample_index": 2,
+        "requested_model": "gpt-6.1-sol",
+        "condition": "treatment",
+        "family": "documentation",
+        "tool": "repo_read",
+        "arguments_sha256": "eb9eb15c3b915af38056261b5f6de9fe92fd8a34ee2abefdf00a55bb3bc6a5d9",
+        "result_sha256": "fc7e89b93dab262900935104f8526662daf588ae86e8a87fb322e726af6d56c8",
+        "error": "ValueError: unsafe registered relative path",
+        "raw_mcp_status": "failed",
+        "scope_access_prevented": true,
+        "task_recovered": true
+      },
+      {
+        "sample_index": 3,
+        "requested_model": "gpt-6.1-sol",
+        "condition": "control",
+        "family": "documentation",
+        "tool": "repo_read",
+        "arguments_sha256": "9f3be7013b600d4da0b7da4b5de05ae834d1174460c64ba8447fa4fb22d9c6fc",
+        "result_sha256": "fc7e89b93dab262900935104f8526662daf588ae86e8a87fb322e726af6d56c8",
+        "error": "ValueError: unsafe registered relative path",
+        "raw_mcp_status": "failed",
+        "scope_access_prevented": true,
+        "task_recovered": true
+      },
+      {
+        "sample_index": 4,
+        "requested_model": "gpt-6.1-sol",
+        "condition": "control",
+        "family": "registry",
+        "tool": "repo_read",
+        "arguments_sha256": "8cee069756bb28cf1e0b7a6f046a27dc63b4229f760f7461acc07d0a3e53ab12",
+        "result_sha256": "cccbc18a25bf3998c2dae208d7c2e620262f30d8d28ad11c723bea22071a5fd4",
+        "error": "ValueError: path is outside the registered tool scope",
+        "raw_mcp_status": "failed",
+        "scope_access_prevented": true,
+        "task_recovered": true
+      },
+      {
+        "sample_index": 7,
+        "requested_model": "gpt-6.1-sol",
+        "condition": "control",
+        "family": "python",
+        "tool": "repo_read",
+        "arguments_sha256": "76e93b88c21b00678ebcee03e016e6769b9d0f106f4c73a4a3564386e848c056",
+        "result_sha256": "fc7e89b93dab262900935104f8526662daf588ae86e8a87fb322e726af6d56c8",
+        "error": "ValueError: unsafe registered relative path",
+        "raw_mcp_status": "failed",
+        "scope_access_prevented": true,
+        "task_recovered": true
+      },
+      {
+        "sample_index": 9,
+        "requested_model": "gpt-6.1-sol",
+        "condition": "treatment",
+        "family": "toml",
+        "tool": "repo_read",
+        "arguments_sha256": "1cdaf29550fda16ae7d048dbaf4655a6b8eadd699a4f8213994a229938bae984",
+        "result_sha256": "fc7e89b93dab262900935104f8526662daf588ae86e8a87fb322e726af6d56c8",
+        "error": "ValueError: unsafe registered relative path",
+        "raw_mcp_status": "failed",
+        "scope_access_prevented": true,
+        "task_recovered": true
+      },
+      {
+        "sample_index": 11,
+        "requested_model": "gpt-6-luna",
+        "condition": "control",
+        "family": "python",
+        "tool": "repo_read",
+        "arguments_sha256": "354beb79cbddf56ce5d1217e9d162d4795b05f53cbc639a5c8e58489423f5a3c",
+        "result_sha256": "cccbc18a25bf3998c2dae208d7c2e620262f30d8d28ad11c723bea22071a5fd4",
+        "error": "ValueError: path is outside the registered tool scope",
+        "raw_mcp_status": "failed",
+        "scope_access_prevented": true,
+        "task_recovered": true
+      },
+      {
+        "sample_index": 15,
+        "requested_model": "gpt-6-luna",
+        "condition": "control",
+        "family": "toml",
+        "tool": "repo_read",
+        "arguments_sha256": "464bcf042a0c10c5f76728816b8580c5643bee53c0f73d3cfffb05473677eea3",
+        "result_sha256": "cccbc18a25bf3998c2dae208d7c2e620262f30d8d28ad11c723bea22071a5fd4",
+        "error": "ValueError: path is outside the registered tool scope",
+        "raw_mcp_status": "failed",
+        "scope_access_prevented": true,
+        "task_recovered": true
+      }
+    ]
+  },
+  "diagnostic_observations": {
+    "callback_treatment_minus_control_seconds": 21.807726800005184,
+    "cli_treatment_minus_control_seconds": 17.277283400006127,
+    "non_cli_treatment_minus_control_seconds": 4.530443399999058,
+    "request_count_change": -2,
+    "successful_operation_count_change": 1,
+    "denied_read_count_change": -3,
+    "causal_server_scheduler_cache_or_guidance_effect_established": false,
+    "interpretation": "Both requested models regress in full callback time. Reduced total request count reflects fewer denied reads; successful operations did not decrease. Phase deltas are descriptive."
+  },
+  "measurement_scope": {
+    "condition_difference": "exact RC18 versus RC19 runtime Skill and planner text under the same current tool adapter",
+    "source_preparation": {
+      "status": "not measured by collector; source prepared before task calls"
+    },
+    "full_collector_callback_includes": [
+      "per-dispatch preparation and verification",
+      "CLI execution",
+      "independent grading",
+      "raw evidence commit"
+    ],
+    "full_collector_callback_excludes": [
+      "runtime source compilation",
+      "planner generation",
+      "initial client capability setup"
+    ],
+    "native_preparation_cache_benefit_measured": false,
+    "native_client_reuse_benefit_measured": false,
+    "actual_historical_vs_current_callback_end_to_end_compared": false,
+    "earlier_rc18_latency_finding_reversed": false,
+    "provider_scope": "Two explicitly requested OpenAI models; not multiple provider families.",
+    "provider_internal_model_identity_attested": false,
+    "submitted_application_execution": false,
+    "separate_process_path_monitor_attestation_for_this_round": false,
+    "earlier_transport_probe_host_observation_attests_later_calls": false,
+    "isolation_attested": false,
+    "stderr_shell_snapshot_warnings": 16
+  },
+  "integrity_audit": {
+    "status": "PASS",
+    "frozen_engine_git_blob_files": 181,
+    "preterminal_current_engine_files_matched_frozen_git": 181,
+    "post_terminal_historical_engine_reconstructed_from_exact_frozen_git": true,
+    "referenced_raw_artifact_hashes_verified": 144,
+    "canonical_result_digests_verified": 16,
+    "receipt_digests_verified": 16,
+    "exact_prompts_and_call_condition_engine_bindings_verified": true,
+    "preregistered_seed_order_independently_reproduced": true,
+    "condition_order_by_model": {
+      "gpt-6-luna": {
+        "control_first_pairs": 2,
+        "treatment_first_pairs": 2
+      },
+      "gpt-6.1-sol": {
+        "control_first_pairs": 2,
+        "treatment_first_pairs": 2
+      }
+    },
+    "all_cli_arguments_and_results_matched_independent_broker_journal": true,
+    "all_final_file_digests_verified": true,
+    "all_raw_calls_referenced_once": true,
+    "usage_records_reconcile_to_budget": true,
+    "duplicate_charges": 0,
+    "unknown_usage": false,
+    "pending_calls": 0,
+    "active_dispatch_locks": 0,
+    "unknown_call_fences": 0,
+    "receipt_references": [
+      {
+        "call_sha256": "5adebf83ecbdec83327efdab71acbe71880977d421ebade06a4d2b9d07e3cd9d",
+        "receipt_sha256": "ad33148b7dd2eaea074af4a8ccdeade5c515adc93fc6fbcad73982a89b0b1400",
+        "condition": "control",
+        "family": "documentation",
+        "requested_model": "gpt-6-luna",
+        "sample_index": 0
+      },
+      {
+        "call_sha256": "ec7368ca175b973c0cc9dd56c1b0c9f7d077160939d1403640602ec2234d620b",
+        "receipt_sha256": "cf4032bc571ae440952f229378c3738bd05cbdcf02a8de5533c5cb45d5057cef",
+        "condition": "treatment",
+        "family": "documentation",
+        "requested_model": "gpt-6-luna",
+        "sample_index": 1
+      },
+      {
+        "call_sha256": "6e26ec1ab1963cc9357738fc764fbb0ffe76f0a891414ef13bd449fc37720d22",
+        "receipt_sha256": "00721bdb6576db67a9590ea26626a9781dd3740dee5c41f3e8e6c7fbf1e87880",
+        "condition": "treatment",
+        "family": "documentation",
+        "requested_model": "gpt-6.1-sol",
+        "sample_index": 2
+      },
+      {
+        "call_sha256": "f48db9e283f6d22280a57601aebea779ebcf1b4209606ba40745979547d7336d",
+        "receipt_sha256": "e66818f65dd877efd34fb4d693c46851ac4ff4e09c883b9397a97b580b6b6a60",
+        "condition": "control",
+        "family": "documentation",
+        "requested_model": "gpt-6.1-sol",
+        "sample_index": 3
+      },
+      {
+        "call_sha256": "31376254e60541ae91238bfc30091914b7b3f6b161563f9f628b96afe5a512d2",
+        "receipt_sha256": "a9be05a147a920c397e129699b81b3bcb812ce91dc9262aba8d624fc19603a7e",
+        "condition": "control",
+        "family": "registry",
+        "requested_model": "gpt-6.1-sol",
+        "sample_index": 4
+      },
+      {
+        "call_sha256": "39723a687e1bfaf83b23a11bd35f1dd7956a64d4e14957b6848ccc525b4a308a",
+        "receipt_sha256": "251e0ac0f63d2d6ae630ea175b024f8988bd77569b7b4c1673192bf7d7efff66",
+        "condition": "treatment",
+        "family": "registry",
+        "requested_model": "gpt-6.1-sol",
+        "sample_index": 5
+      },
+      {
+        "call_sha256": "cc5d9c3062e829e430dd14cf7319bd00fa1e053a86357c47045c697b60a642d0",
+        "receipt_sha256": "285b6be7dd5c51e9ddc58cc9fc3fa14e608ccef56149b0900e503cacbdbc23df",
+        "condition": "treatment",
+        "family": "python",
+        "requested_model": "gpt-6.1-sol",
+        "sample_index": 6
+      },
+      {
+        "call_sha256": "0d2ab12dda4f66226be40cc3ac9ad0904a171cb9215e241d218aa1b167c136e1",
+        "receipt_sha256": "2e0185c35d9b2d175e64b0a9133ce7afae27202cd5d7b95ce5e36bdabb3eb2fd",
+        "condition": "control",
+        "family": "python",
+        "requested_model": "gpt-6.1-sol",
+        "sample_index": 7
+      },
+      {
+        "call_sha256": "688e62f6edc137fa3b0e385576a7798f98edf5f24527c2dbaf1f1b873a1fa5d0",
+        "receipt_sha256": "e9b84f5bd08f4b713a931873a1764e0375009df2697c658834ee7cf8e78079c7",
+        "condition": "control",
+        "family": "toml",
+        "requested_model": "gpt-6.1-sol",
+        "sample_index": 8
+      },
+      {
+        "call_sha256": "d32a63f0361ad0e1cecfc15989b86755e2778d91ce29fc8c5cc2a8916db8b9bf",
+        "receipt_sha256": "9461e2040b7be9b5406cd7321054051b31284dff2b28667cb8c76453f10f179b",
+        "condition": "treatment",
+        "family": "toml",
+        "requested_model": "gpt-6.1-sol",
+        "sample_index": 9
+      },
+      {
+        "call_sha256": "baea1f9935f765a92d660352164ebd503f652af205ec5108d8c502b47f39b00d",
+        "receipt_sha256": "92c9138dd1ee0c68f5c2a94f104ba47dc7c983c5c0a3f1395fb1ab9999e7d295",
+        "condition": "treatment",
+        "family": "python",
+        "requested_model": "gpt-6-luna",
+        "sample_index": 10
+      },
+      {
+        "call_sha256": "47c177ec8f03eb519b2715a381053b73dc86aacadd3c31e818aa27323507f675",
+        "receipt_sha256": "65493628f06b2d3314b258714e8d4f736163fb0377ac3c36d341692509b23586",
+        "condition": "control",
+        "family": "python",
+        "requested_model": "gpt-6-luna",
+        "sample_index": 11
+      },
+      {
+        "call_sha256": "81b598f68991ed280caaf4145f764adc3582fbf435e50076beb2b1e7779d256d",
+        "receipt_sha256": "b93fd1b725c55c76c60f4d9759f07268838c48269486cbe2591d7847ebc9e375",
+        "condition": "control",
+        "family": "registry",
+        "requested_model": "gpt-6-luna",
+        "sample_index": 12
+      },
+      {
+        "call_sha256": "65c992b4531bb692a5c6970e7d1b0dfd955abedc6f3e84dcbd428fcedf96a532",
+        "receipt_sha256": "e685a666db3fc33786c770ac13e7ea92522a0dd9a1f6544bd5dec51bc30ffdd2",
+        "condition": "treatment",
+        "family": "registry",
+        "requested_model": "gpt-6-luna",
+        "sample_index": 13
+      },
+      {
+        "call_sha256": "5ae9a26d45347dc50ba013f8844213e8776266bfab17b427ea456b859a3437f8",
+        "receipt_sha256": "9f0c7afa909290ec44a569dd74e57cd9f0e522aa943dc54ede935667a8f53280",
+        "condition": "treatment",
+        "family": "toml",
+        "requested_model": "gpt-6-luna",
+        "sample_index": 14
+      },
+      {
+        "call_sha256": "09bec5b014b61d35e10c878b6c984edfd12af18135a7d400a4932f57400de0c2",
+        "receipt_sha256": "931bdd23452a2cbb3d30f1d8cd2fd7d75400edb2a9b99f603e30c549d74d9572",
+        "condition": "control",
+        "family": "toml",
+        "requested_model": "gpt-6-luna",
+        "sample_index": 15
+      }
+    ],
+    "prior_run_final_hashes_unchanged": {
+      "rc19-development-run.json": "02f58feeca873cf60af9156f14cf978606ecfbe5caed2c65756a1570195cada0",
+      "rc19-transport-probe-v2-run.json": "fb0ea419511e85d51957a778390d3a28f2d18aca8eb0dc625a5cb704bc4ed594",
+      "rc19-transport-probe-v3-run.json": "edff657c76d27ac17e5efca857e2cda0c99c3dc974a444a8d332845320ea71aa"
+    }
+  },
+  "owner_local_evidence_sha256": {
+    "rc19-development-v3-run.json": "cd9880620b5b06cc0422e364fd7b11afad3ef4d0f73dfb6262d1d64749ff983b",
+    "rc19-development-v3-summary.json": "d3bbe795b0c44f4d5e328c30df6665643db9479d4c7aad60c5bfe2b0a518594d",
+    "rc19-development-v3-protocol.private.json": "3db994ff301690f75d614d3b23d6488238428cd809383776e9380958b3e5611f",
+    "rc19-development-v3-tasks.private.json": "70a7a2a89ff7cce342d543fe66e3121eec8b879cb59e1b7e390c1874bda9beda",
+    "rc19-development-v3-configs.json": "e7b634762e268fc6abc119be8a8ebba38ff30a8413a751f1c203908c325881df"
+  },
+  "four_round_cost": {
+    "rounds": [
+      "upg-rc19-tools-development-v1",
+      "upg-rc19-tools-transport-probe-v2",
+      "upg-rc19-tools-transport-probe-v3",
+      "upg-rc19-tools-development-v3"
+    ],
+    "known_completed_turns": 28,
+    "reported_completed_turn_tokens": 1776565,
+    "known_failed_task_turns_included": 10,
+    "scope": "These four rounds only; not full research cost. Failed rounds remain included."
+  },
+  "decision": {
+    "formal_qualification": "UNASSESSED",
+    "promotion_allowed": false,
+    "learned_candidate_promoted": false,
+    "independent_evaluation_admitted_by_this_result": false,
+    "original_calls_replayed": false,
+    "further_development_requires_new_frozen_identity": true
+  },
+  "public_scope": "Counts and digests only; host paths, process IDs, thread IDs, private task contents and model responses omitted.",
+  "report": "docs/rc19-tools-development-v3.md"
+}

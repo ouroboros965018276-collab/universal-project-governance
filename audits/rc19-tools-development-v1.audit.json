@@ -1,0 +1,215 @@
+{
+  "schema_version": 1,
+  "audit_id": "upg-rc19-tools-development-v1-failure",
+  "observed_at_utc": "2026-10-12T13:21:12Z",
+  "candidate_version": "3.0.0-rc.19",
+  "status": "known-completed-host-transport-failure",
+  "frozen_source_revision": "e1c29030cbd4b880fec67c101251eab1056d05fb",
+  "baseline_revision": "29cf112b4629d6b90504b079e95a5370c206a4cb",
+  "protocol_id": "upg-rc19-tools-development-v1",
+  "stage": "development",
+  "requested_model": "gpt-6-luna",
+  "requested_effort": "low",
+  "model_provider_internal_identity_verified": false,
+  "identities": {
+    "capabilities_sha256": "cb7209ca79d89bf9f613c3177b2891e055fe786c66739cdaaf2206690508947a",
+    "conditions_sha256": "975e24572eba942770027c61db4df79ec3caa85993c3283b9cf5294d2d521891",
+    "configs_sha256": "5bd60756a75da16df0ce093024aff180cda1a82da4673e7f0f991db52cf45722",
+    "engine_sha256": "f71003297c93d8caab6c7b5a8b841bfb2fce033b7667641c6b151ed1d8e27e27",
+    "order_sha256": "bc8edd369476e71afe15f8b84573f4f4ddce2496308782c5ea88f2a74b1dc942",
+    "protocol_sha256": "7bca8ba7f623dd86417329f3ac3ce7a7719c5249f1ed4027dc30a1175b479cc2",
+    "task_manifest_sha256": "fb18cb8c76adea0459a481da5df8306248e120ba799d2e09914bd270ae9a2e07"
+  },
+  "conditions": {
+    "control": {
+      "source_sha256": "6aa8a9562d24f74a48bce082100c2ba1069f4c56a900ce0924f23869b36bdd81",
+      "runtime_sha256": "66c5cc02c02ed3834d9a79c7ac1c395f7e164602aa2a296ed3929520b80f99de",
+      "candidate_sha256": "5c2dcf24974129ca22d1fb65e6a64d61f069646510cc68446797c5825cf60a05",
+      "skill_utf8_bytes": 7940
+    },
+    "treatment": {
+      "source_sha256": "d7fe05eecf4a86af79fde1ce3aee6c1995b02aa109d3cce2d90401df31a803f5",
+      "runtime_sha256": "10f3c1a989bf0318ddba57729b3ddac5039ae29090ce4383587a22bf9b2c6a1b",
+      "candidate_sha256": "74cea4d23d4322f55267f97a39f9edebfb7c3cb88f8de3d1a4c3b99384770d0e",
+      "skill_utf8_bytes": 8140
+    }
+  },
+  "frozen_snapshots": {
+    "public_protocol": "evolution/protocol/rc19-tools-development-v1.json",
+    "prepilot_audit": "audits/rc19-latency-tools.audit.json",
+    "modified": false
+  },
+  "collection": {
+    "status": "completed",
+    "registered_task_families": [
+      "documentation",
+      "python",
+      "registry",
+      "toml"
+    ],
+    "registered_tasks": 4,
+    "matched_pairs": 4,
+    "fresh_cli_turns": 8,
+    "distinct_cli_thread_identities": 8,
+    "distinct_raw_receipts": 8,
+    "cached_observations": 0,
+    "actual_repository_tool_calls": 0,
+    "empty_broker_journals": 8,
+    "cli_exit_zero": 8,
+    "final_validation_failed": 8,
+    "unchanged_task_repositories": 8,
+    "application_code_executed": false
+  },
+  "actual_failed_task_cost": {
+    "totals": {
+      "input_tokens": 207095,
+      "output_tokens": 1501,
+      "total_tokens": 208596,
+      "cached_tokens": 68096,
+      "reasoning_tokens": 153,
+      "calls": 8,
+      "collector_callback_seconds": 88.3016340000031,
+      "cli_seconds": 76.57311349999509
+    },
+    "by_condition": {
+      "treatment": {
+        "input_tokens": 97078,
+        "output_tokens": 751,
+        "total_tokens": 97829,
+        "cached_tokens": 34048,
+        "reasoning_tokens": 80,
+        "calls": 4,
+        "collector_callback_seconds": 40.32897450000746,
+        "cli_seconds": 36.16597409997485
+      },
+      "control": {
+        "input_tokens": 110017,
+        "output_tokens": 750,
+        "total_tokens": 110767,
+        "cached_tokens": 34048,
+        "reasoning_tokens": 73,
+        "calls": 4,
+        "collector_callback_seconds": 47.97265949999564,
+        "cli_seconds": 40.40713940002024
+      }
+    },
+    "measurement": "reported actual Codex CLI completed-turn usage and local collector timing",
+    "cached_input_is_subset": true,
+    "reasoning_output_is_subset": true,
+    "cost_usd": null,
+    "provider_internal_retry_billing": "unknown",
+    "full_research_cost": "unknown"
+  },
+  "elapsed_reconciliation": {
+    "selected_source": "final checkpoint budget.elapsed_seconds",
+    "selected_seconds": 89.89000000001397,
+    "embedded_summary_snapshot_seconds": 89.73400000002584,
+    "difference_seconds": 0.15599999998812564,
+    "reason": "The embedded summary preceded the final checkpoint; later budget state includes that local checkpoint interval.",
+    "same_call_token_counts_paired_metrics_and_gates": true,
+    "original_records_modified": false
+  },
+  "host_failure": {
+    "code_mode_host_disabled_error_items": 8,
+    "skip_host_skill_discovery_unstable_warning_items": 8,
+    "total_cli_error_items": 16,
+    "supported_observation": "This configured official CLI profile did not expose usable bounded tools; no broker call occurred.",
+    "candidate_instruction_causation_established": false,
+    "transport_repaired_in_this_round": false
+  },
+  "quality": {
+    "tasks_passed": 0,
+    "tasks_total": 8,
+    "positive_checks_passed": 0,
+    "positive_checks_total": 16,
+    "task_quality_gate": "FAIL",
+    "net_benefit_gate": "FAIL",
+    "failed_task_token_ratio": 0.8831962588135456,
+    "failed_task_collector_time_ratio": 0.8406658067395893,
+    "ratios_establish_useful_savings": false
+  },
+  "integrity_audit": {
+    "status": "PASS",
+    "frozen_engine_git_blob_files_matched": 178,
+    "source_runtime_skill_and_candidate_identities_match_protocol": true,
+    "condition_plan_values_match_except_candidate_version": true,
+    "current_cli_git_python_adapter_broker_capability_matches_raw": true,
+    "all_referenced_raw_artifact_sha256_verified": true,
+    "all_canonical_result_digests_verified": true,
+    "all_exact_prompts_and_bindings_verified": true,
+    "all_final_file_digests_verified": true,
+    "all_raw_calls_referenced_once": true,
+    "usage_records_reconcile_to_budget": true,
+    "duplicate_charges": 0,
+    "unknown_usage": false,
+    "pending_calls": 0,
+    "active_dispatch_locks": 0,
+    "unknown_call_fences": 0,
+    "receipt_references": [
+      {
+        "call_sha256": "e010a6ee8323e70c0eb587899354e653d2af2a61db91f80dc46c55000daa6891",
+        "receipt_sha256": "3815dd615e452f84700ea7b987f045361b93dc35221e48974f2810ccb030c5b6",
+        "family": "python",
+        "condition": "treatment"
+      },
+      {
+        "call_sha256": "4385f39b2edb4172b5a1166dc06115842cadea29abfe5c66dd2960bd105b1e53",
+        "receipt_sha256": "1dcd63f41bbdca58d37c82b22851af117e8167560f09f7b1b319267517d06b07",
+        "family": "python",
+        "condition": "control"
+      },
+      {
+        "call_sha256": "37aba777dafb935c746e1b16e27ed566864ed36587a58350f898d679f2ed85ab",
+        "receipt_sha256": "8d725b93f11b35ec074b837229a755178b0fd09c4828b54f5bff616f460fb2fa",
+        "family": "toml",
+        "condition": "control"
+      },
+      {
+        "call_sha256": "284eb4d5a7e06ebe576dc1563baf78f2418a973a4bbb30a3efbd191ee3c7c6cb",
+        "receipt_sha256": "d9b0d641040a409be1d86caf48794d4700d97c2fedb6114daeab7ce55957486c",
+        "family": "toml",
+        "condition": "treatment"
+      },
+      {
+        "call_sha256": "fbb867f0ec9c58b969ccecda581819f174ea55d12f0c3e6302db365cc49ecee9",
+        "receipt_sha256": "e2f556738e28da9e66602861e74cbf59aa617c67a3e81fab027aded7a14f1f4d",
+        "family": "documentation",
+        "condition": "treatment"
+      },
+      {
+        "call_sha256": "78666b899ec4f8e4af9ff17bfda8f55229754474351af3d1f948344f29b53fc2",
+        "receipt_sha256": "1388bb2f079b445b0ad27044091394d9f574ccb5bc846c1ad4bbd76ca88aa815",
+        "family": "documentation",
+        "condition": "control"
+      },
+      {
+        "call_sha256": "5b098818cc697ae434d00b62beb32c8c55f0ce500ad176243968fb8407ae2f08",
+        "receipt_sha256": "a9fcd06b85444ad2ea144f6347b50a8f9b9c78dce5c76e96be9c2c7ede2412d8",
+        "family": "registry",
+        "condition": "control"
+      },
+      {
+        "call_sha256": "cdb65df1fbaa2ad5ed7fe3e16e8b759a5192f28c8a562865d7a8940e185c921e",
+        "receipt_sha256": "d283607e28f86b256112a0a67bb77d8a7866f00842804209fd22042f48c7f922",
+        "family": "registry",
+        "condition": "treatment"
+      }
+    ]
+  },
+  "owner_local_evidence_sha256": {
+    "rc19-development-run.json": "02f58feeca873cf60af9156f14cf978606ecfbe5caed2c65756a1570195cada0",
+    "rc19-development-summary.json": "3fb6bae84758753349b02822524bf1efdd1f054aa2da0dbe0805084c6b494b0a",
+    "rc19-development-protocol.private.json": "45b5395e5cfe4279b82676034fda005dc7713bcc0a806b61e5888d5b8b6fd99e",
+    "rc19-development-tasks.private.json": "70a7a2a89ff7cce342d543fe66e3121eec8b879cb59e1b7e390c1874bda9beda"
+  },
+  "decision": {
+    "formal_qualification": "UNASSESSED",
+    "promotion_allowed": false,
+    "learned_candidate_promoted": false,
+    "independent_evaluation_authorized_by_this_result": false,
+    "original_calls_replayed": false,
+    "next_transport_round_requires_new_frozen_identity": true
+  },
+  "public_scope": "Hashes and aggregate observations only; host paths, thread IDs, private task contents and model responses omitted.",
+  "report": "docs/rc19-tools-development-v1.md"
+}

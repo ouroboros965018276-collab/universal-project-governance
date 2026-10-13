@@ -1,0 +1,361 @@
+{
+  "schema_version": 1,
+  "audit_id": "upg-rc19-tools-transport-probe-v3-capability",
+  "observed_at_utc": "2026-10-12T13:59:15.372170Z",
+  "candidate_version": "3.0.0-rc.19",
+  "status": "known-completed-real-tool-transport-and-task-quality-pass",
+  "frozen_source_revision": "649809daa3950b020f3bc1a4d9b3489cdc554859",
+  "baseline_revision": "29cf112b4629d6b90504b079e95a5370c206a4cb",
+  "protocol_id": "upg-rc19-tools-transport-probe-v3",
+  "stage": "development",
+  "purpose": "single-family development tool-transport capability probe; not independent efficacy qualification",
+  "requested_model": "gpt-6-luna",
+  "requested_effort": "low",
+  "model_provider_internal_identity_verified": false,
+  "identities": {
+    "capabilities_sha256": "7847e9283e0560162a18f734ca90c2ef9a21a4432b9fd0774392fd7a67811986",
+    "conditions_sha256": "593fb3f45956df558b9e2a593d67a62f4c778b382c3c6b949013c5aaf68afb30",
+    "configs_sha256": "aec0627f55defafc9dc85385067da29e95bec03544a5dc5e1103c8721942f3cc",
+    "engine_sha256": "e5d8e62c5463a2b9bfb029964bfa30667f0fd3c8a62515723e1da12889bf76c6",
+    "order_sha256": "c655e1a53b3e6536ad099d706ffc5cb3b5347a00e394e68293afe530527c7deb",
+    "protocol_sha256": "1898946f99684db13fd48b2e7eb9072b4ffd762f653b70fb502ba455f5d85cdb",
+    "task_manifest_sha256": "c5a993163c7773c97de134416109b34949833d2eaa05fc03fb8cd1133ce9fdf2"
+  },
+  "conditions": {
+    "control": {
+      "source_sha256": "6aa8a9562d24f74a48bce082100c2ba1069f4c56a900ce0924f23869b36bdd81",
+      "runtime_sha256": "66c5cc02c02ed3834d9a79c7ac1c395f7e164602aa2a296ed3929520b80f99de",
+      "candidate_sha256": "5c2dcf24974129ca22d1fb65e6a64d61f069646510cc68446797c5825cf60a05",
+      "skill_utf8_bytes": 7940
+    },
+    "treatment": {
+      "source_sha256": "d7fe05eecf4a86af79fde1ce3aee6c1995b02aa109d3cce2d90401df31a803f5",
+      "runtime_sha256": "10f3c1a989bf0318ddba57729b3ddac5039ae29090ce4383587a22bf9b2c6a1b",
+      "candidate_sha256": "74cea4d23d4322f55267f97a39f9edebfb7c3cb88f8de3d1a4c3b99384770d0e",
+      "skill_utf8_bytes": 8140
+    }
+  },
+  "public_protocol": "evolution/protocol/rc19-transport-probe-v3.json",
+  "prior_failure_audits": [
+    "audits/rc19-tools-development-v1.audit.json",
+    "audits/rc19-tools-transport-v2.audit.json"
+  ],
+  "original_records_and_snapshots_modified": false,
+  "collection": {
+    "status": "completed",
+    "registered_task_families": [
+      "python"
+    ],
+    "registered_tasks": 1,
+    "matched_pairs": 1,
+    "fresh_completed_cli_turns": 2,
+    "distinct_cli_thread_identities": 2,
+    "distinct_raw_receipts": 2,
+    "cached_observations": 0,
+    "completed_mcp_calls": 11,
+    "executed_repository_broker_tools": 11,
+    "registered_tools_exercised": [
+      "repo_read",
+      "repo_patch",
+      "repo_validate",
+      "repo_status"
+    ],
+    "registered_tools_unexercised": [
+      "repo_search"
+    ],
+    "cli_exit_zero": 2,
+    "final_validation_passed": 2,
+    "final_repositories_identical": true,
+    "registered_application_code_executed": false,
+    "development_task_reused_from_failed_transport_probe": true,
+    "independent_final_feedback_used": false
+  },
+  "actual_probe_cost": {
+    "totals": {
+      "input_tokens": 146493,
+      "output_tokens": 1275,
+      "total_tokens": 147768,
+      "cached_tokens": 120320,
+      "reasoning_tokens": 0,
+      "calls": 2,
+      "collector_callback_seconds": 45.815815100009786,
+      "cli_seconds": 43.37040529999649,
+      "executed_tools": 11
+    },
+    "by_condition": {
+      "control": {
+        "input_tokens": 77150,
+        "output_tokens": 576,
+        "total_tokens": 77726,
+        "cached_tokens": 60160,
+        "reasoning_tokens": 0,
+        "calls": 1,
+        "collector_callback_seconds": 27.53344470000593,
+        "cli_seconds": 26.02506600000197,
+        "non_cli_seconds": 1.5083787000039592,
+        "adapter_seconds": 27.469568500004243,
+        "adapter_prepare_seconds": 1.4014526999962982,
+        "grading_seconds": 0.03871550000621937,
+        "executed_tools": 5,
+        "tool_counts": {
+          "repo_read": 2,
+          "repo_patch": 1,
+          "repo_validate": 1,
+          "repo_status": 1
+        }
+      },
+      "treatment": {
+        "input_tokens": 69343,
+        "output_tokens": 699,
+        "total_tokens": 70042,
+        "cached_tokens": 60160,
+        "reasoning_tokens": 0,
+        "calls": 1,
+        "collector_callback_seconds": 18.282370400003856,
+        "cli_seconds": 17.34533929999452,
+        "non_cli_seconds": 0.9370311000093352,
+        "adapter_seconds": 18.224857199995313,
+        "adapter_prepare_seconds": 0.8445549999887589,
+        "grading_seconds": 0.032212399994023144,
+        "executed_tools": 6,
+        "tool_counts": {
+          "repo_status": 2,
+          "repo_read": 2,
+          "repo_patch": 1,
+          "repo_validate": 1
+        }
+      }
+    },
+    "measurement": "reported actual Codex CLI completed-turn usage and local collector timing",
+    "cached_input_is_subset": true,
+    "reasoning_output_is_subset": true,
+    "cost_usd": null,
+    "provider_internal_retry_billing": "unknown",
+    "full_research_cost": "unknown"
+  },
+  "elapsed_reconciliation": {
+    "selected_source": "final checkpoint budget.elapsed_seconds",
+    "selected_seconds": 48.0,
+    "embedded_summary_snapshot_seconds": 47.921999999991385,
+    "difference_seconds": 0.07800000000861473,
+    "reason": "Embedded summary capture preceded the final local checkpoint.",
+    "separate_final_summary_matches_final_budget": true,
+    "same_call_token_counts_paired_metrics_and_gates": true,
+    "collector_setup_seconds": 2.0844465999980457,
+    "collector_setup_in_condition_callback_wall": false,
+    "original_records_modified": false
+  },
+  "host_observation": {
+    "status": "PASS",
+    "cli_processes_observed": 2,
+    "direct_child_host_processes_observed": 2,
+    "each_cli_has_registered_host": true,
+    "normalized_cli_path_sha256": "9997f20cad23d1fa168deeba2069a1330dc08f4fd53c60bd8f3e9d869d462412",
+    "normalized_host_path_sha256": "a5d0a600ef858dd84d6b69e7850b0f35933c079990e9748ca075756fc4963738",
+    "registered_host_file_sha256": "f03190749208b5594fd5125d2d2b09e4ad00e2a1f74aeb11f60a6673dde83c43",
+    "registered_package_manifest_sha256": "7ccdf045d5cb1b0673662d8c0a03c9f335950052709fb250992953f2c861107c",
+    "path_mismatches": 0,
+    "unresolved_path_queries": 0,
+    "snapshots": 380,
+    "interval_seconds": 0.1,
+    "monitor_elapsed_seconds": 48.437000000005355,
+    "command_lines_environments_authentication_read": false,
+    "process_memory_read": false,
+    "loaded_image_attested": false,
+    "isolation_attested": false,
+    "adapter_capability_process_path_attested": false,
+    "scope": "External process-path observation and registered-file byte check; separate from unchanged adapter capability receipt."
+  },
+  "transport_profile": {
+    "global_approval_policy": "never",
+    "cli_sandbox": "read-only",
+    "preapproved_registered_tools": [
+      "repo_read",
+      "repo_search",
+      "repo_patch",
+      "repo_validate",
+      "repo_status"
+    ],
+    "ambient_tools_added": false,
+    "broker_execution": "bounded repository text/data/AST contracts and fixed Git status; no submitted application-code execution",
+    "raw_cli_error_or_unregistered_item_count": 0,
+    "stderr_shell_snapshot_warnings": 2,
+    "raw_stderr_retained": true
+  },
+  "observed_dispatch_patterns": {
+    "by_condition": {
+      "control": {
+        "max_outstanding_cli_tool_requests": 3,
+        "final_read_validate_status_started_before_any_of_the_three_completed": true,
+        "initial_status_read_started_before_either_completed": false,
+        "broker_request_handling": "serial",
+        "concurrent_broker_execution_established": false
+      },
+      "treatment": {
+        "max_outstanding_cli_tool_requests": 3,
+        "final_read_validate_status_started_before_any_of_the_three_completed": true,
+        "initial_status_read_started_before_either_completed": true,
+        "broker_request_handling": "serial",
+        "concurrent_broker_execution_established": false
+      }
+    },
+    "tool_count_reduction": false,
+    "causal_latency_effect_established": false,
+    "per_request_overlap_duration_established": false,
+    "interpretation": "CLI request start/completion order proves outstanding grouped requests only; broker handling is serial."
+  },
+  "quality": {
+    "tasks_passed": 2,
+    "tasks_total": 2,
+    "positive_checks_passed": 4,
+    "positive_checks_total": 4,
+    "independent_checks": "AST structure, JSON object equality, protected-file bytes, exact final registered-file set, current-state validation/status tool evidence",
+    "task_quality_gate": "PASS",
+    "net_benefit_gate": "FAIL",
+    "family_coverage_gate": false,
+    "family_coverage_failure_expected_for_probe": true,
+    "one_pair_family_bootstrap_supports_meaningful_uncertainty": false,
+    "stored_gates": {
+      "complete_matched_collection": true,
+      "all_task_quality_pass": true,
+      "all_new_model_calls": true,
+      "unique_raw_call_receipts": true,
+      "at_least_two_families_per_model": false,
+      "total_tokens_ci_upper_improves": true,
+      "total_tokens_every_model_point_improves": true,
+      "wall_seconds_ci_upper_improves": true,
+      "wall_seconds_every_model_point_improves": true
+    },
+    "descriptive_paired_metrics": {
+      "total_tokens": {
+        "control_total": 77726,
+        "treatment_total": 70042,
+        "ratio": 0.9011399017059929,
+        "savings_fraction": 0.0988600982940071,
+        "paired_model_family_bootstrap_95_interval": [
+          0.9011399017059929,
+          0.9011399017059929
+        ]
+      },
+      "wall_seconds": {
+        "control_total": 27.53344470000593,
+        "treatment_total": 18.282370400003856,
+        "ratio": 0.6640059244021842,
+        "savings_fraction": 0.3359940755978158,
+        "paired_model_family_bootstrap_95_interval": [
+          0.6640059244021842,
+          0.6640059244021842
+        ]
+      },
+      "cli_wall_seconds": {
+        "control_total": 26.02506600000197,
+        "treatment_total": 17.34533929999452,
+        "ratio": 0.666485890948104,
+        "savings_fraction": 0.33351410905189605,
+        "paired_model_family_bootstrap_95_interval": [
+          0.666485890948104,
+          0.666485890948104
+        ]
+      },
+      "tool_calls": {
+        "control_total": 5,
+        "treatment_total": 6,
+        "ratio": 1.2,
+        "savings_fraction": -0.19999999999999996,
+        "paired_model_family_bootstrap_95_interval": [
+          1.2,
+          1.2
+        ]
+      }
+    },
+    "descriptive_metrics_establish_independent_benefit": false
+  },
+  "measurement_scope": {
+    "condition_difference": "exact RC18 versus RC19 runtime Skill and planner text under the same current tool adapter",
+    "source_preparation": {
+      "status": "not measured by collector; source prepared before task calls"
+    },
+    "full_collector_callback_includes": [
+      "per-dispatch preparation and verification",
+      "CLI execution",
+      "independent grading",
+      "raw evidence commit"
+    ],
+    "full_collector_callback_excludes": [
+      "runtime source compilation",
+      "planner generation",
+      "initial client capability setup"
+    ],
+    "native_preparation_cache_benefit_measured": false,
+    "native_client_reuse_benefit_measured": false,
+    "actual_historical_vs_current_callback_end_to_end_compared": false,
+    "earlier_rc18_latency_finding_reversed": false,
+    "cross_model_inference": false,
+    "cross_provider_inference": false,
+    "required_future_evidence": "Separate frozen actual historical/current callback comparison on fresh matched tasks with real cold and warm costs; unchanged quality and net criteria."
+  },
+  "integrity_audit": {
+    "status": "PASS",
+    "frozen_engine_git_blob_files_matched": 180,
+    "referenced_raw_artifact_hashes_verified": 18,
+    "canonical_result_digests_verified": 2,
+    "receipt_digests_verified": 2,
+    "exact_prompts_and_call_condition_engine_bindings_verified": true,
+    "all_final_file_digests_verified": true,
+    "all_raw_calls_referenced_once": true,
+    "usage_records_reconcile_to_budget": true,
+    "duplicate_charges": 0,
+    "unknown_usage": false,
+    "pending_calls": 0,
+    "active_dispatch_locks": 0,
+    "unknown_call_fences": 0,
+    "receipt_references": [
+      {
+        "call_sha256": "c16319b9e80d73c67bc6e47594b07899548ef74154cc0c71355fe2b8ed7b6ef6",
+        "receipt_sha256": "830f892e24551f78da98fb6b4769b3cc3b45c607839073c846c15a52245de3b8",
+        "condition": "control",
+        "family": "python"
+      },
+      {
+        "call_sha256": "df00bce0a6c454eb6f26c62372e3e129fe4898fc639492863865934226642aa5",
+        "receipt_sha256": "baf147b964212013a670f8faf65c8e028ef2c97251ba00cc596388291d9337cd",
+        "condition": "treatment",
+        "family": "python"
+      }
+    ],
+    "prior_run_final_hashes_unchanged": {
+      "rc19-development-run.json": "02f58feeca873cf60af9156f14cf978606ecfbe5caed2c65756a1570195cada0",
+      "rc19-transport-probe-v2-run.json": "fb0ea419511e85d51957a778390d3a28f2d18aca8eb0dc625a5cb704bc4ed594"
+    }
+  },
+  "owner_local_evidence_sha256": {
+    "rc19-transport-probe-v3-run.json": "edff657c76d27ac17e5efca857e2cda0c99c3dc974a444a8d332845320ea71aa",
+    "rc19-transport-probe-v3-summary.json": "05bebde9d6879b4d1f2bcf75305f29f1704042afd4f300833011d8ddeae03ab9",
+    "rc19-transport-probe-v3-host-observation.private.json": "fc6eb97a272813fbf0c1f02874291f7c5dc93467ddf16cbfac6b603ad7840b70",
+    "rc19-transport-probe-v3-protocol.private.json": "2b6f683a32328d66e16150b0279afcf235d33eb3cff6d94aa439536637d2f244",
+    "rc19-transport-probe-v3-tasks.private.json": "0054816eb7e266e9ea503fd9aed5903e8e12cf5536bf3c4ba22a81a3462db463",
+    "rc19-transport-probe-v3-context.private.json": "f22ad1cfd7f3a984d09a00160f836255542b0ba5bee5ffc8d94dcd1c528b74be",
+    "rc19-observe-host.py": "5aeb20d1c73e59105825b0d953e6aa68e21cab40a6f0d04914a8cfdd706ece09"
+  },
+  "three_round_cost": {
+    "rounds": [
+      "upg-rc19-tools-development-v1",
+      "upg-rc19-tools-transport-probe-v2",
+      "upg-rc19-tools-transport-probe-v3"
+    ],
+    "known_completed_turns": 12,
+    "reported_completed_turn_tokens": 431713,
+    "scope": "These three rounds only; not full research cost. Failed rounds remain included."
+  },
+  "decision": {
+    "formal_qualification": "UNASSESSED",
+    "promotion_allowed": false,
+    "learned_candidate_promoted": false,
+    "independent_evaluation_admitted_by_this_result": false,
+    "usable_bounded_transport_established_for_profile": true,
+    "original_calls_replayed": false,
+    "net_thresholds_relaxed": false
+  },
+  "public_scope": "Counts and digests only; host paths, process IDs, thread IDs, private task contents and model responses omitted.",
+  "report": "docs/rc19-tools-transport-v3.md"
+}

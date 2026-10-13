@@ -13,7 +13,7 @@ SUPPORTED = sys.version_info >= (3, 10)
 ROOT = Path(__file__).resolve().parents[1]
 if SUPPORTED:
     from evolution import controller
-    from evolution.skillopt_adapter import Patch, SkillOptLearner, fixture_backend
+    from evolution.reflective import Patch, ReflectiveLearner, fixture_backend
     from evolution.source_bridge import SourceBridgeError
 
 
@@ -61,8 +61,8 @@ class InvalidProposalTests(unittest.TestCase):
         self.assertEqual(rejected[0]["error_type"], "SourceBridgeError")
         self.assertIn("one policy field", rejected[0]["reason"])
         self.assertTrue(rejected[0]["budget_receipt_attempts"])
-        self.assertEqual(run["operator_counts"]["skillopt"]["attempted"], 1)
-        self.assertEqual(run["operator_counts"]["skillopt"]["evaluated"], 0)
+        self.assertEqual(run["operator_counts"]["reflection"]["attempted"], 1)
+        self.assertEqual(run["operator_counts"]["reflection"]["evaluated"], 0)
         self.assertGreater(run["operator_counts"]["annealing"]["attempted"], 0)
         self.assertGreater(run["operator_counts"]["de"]["attempted"], 0)
         self.assertGreater(run["operator_counts"]["curvature"]["attempted"], 0)
@@ -80,7 +80,7 @@ class InvalidProposalTests(unittest.TestCase):
             return Patch.from_dict({"edits": [], "ranking_details": {"source_hash": "stale"}})
         def backend(**request):
             return "synthetic response", {"total_tokens": 3}
-        with tempfile.TemporaryDirectory() as temporary, self.engine(), patch.object(SkillOptLearner, "learn", new=malformed_patch):
+        with tempfile.TemporaryDirectory() as temporary, self.engine(), patch.object(ReflectiveLearner, "learn", new=malformed_patch):
             run = controller.run_search(ROOT, self.protocol(), Path(temporary) / "run.json", runner=self.runner,
                                         backend=backend, disabled=("annealing", "de", "curvature"))
         self.assertEqual(run["status"], "completed")

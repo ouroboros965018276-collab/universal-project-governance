@@ -8,6 +8,8 @@ Unknown calls leave a durable fence; restarting an optimizer never replays them.
 """
 from __future__ import annotations
 
+from collections import OrderedDict
+from functools import lru_cache
 import hashlib
 import importlib
 import inspect
@@ -155,13 +157,23 @@ class NativeCodex:
             raise ValueError("cli_version must be a declared string")
         self.binary_sha256 = _sha(self.binary.read_bytes())
         self.config_sha256 = digest(dict(config, binary_sha256=self.binary_sha256))
+        self._preparation_cache = OrderedDict()
+        self._dispatch_blocked = False
 
     @classmethod
     def from_environment(cls):
         configured = os.environ.get("UPG_NATIVE_CONFIG")
         if not configured or not Path(configured).is_absolute():
             raise ValueError("UPG_NATIVE_CONFIG must explicitly name an absolute JSON config path")
-        return cls(json.loads(Path(configured).read_text(encoding="utf-8")))
+        config = json.loads(Path(configured).read_text(encoding="utf-8"))
+        return _configured_client(canonical_bytes(config).decode("utf-8"))
+
+    def _registered_binding(self):
+        """Constructor anchor for preparation; dispatch still verifies binary bytes."""
+        if digest(dict(self.config, binary_sha256=self.binary_sha256)) != self.config_sha256:
+            raise ValueError("native configuration changed after registration")
+        unused, grader_identity = _grader(self.config.get("grader"))
+        return {"native_config_sha256": self.config_sha256, "grader": grader_identity}
 
     def binding(self):
         """Read the exact capability identity to preregister in runner_config."""
@@ -169,11 +181,74 @@ class NativeCodex:
         if (binary_sha256 != self.binary_sha256 or
                 digest(dict(self.config, binary_sha256=binary_sha256)) != self.config_sha256):
             raise ValueError("native configuration or binary changed after registration")
-        unused, grader_identity = _grader(self.config.get("grader"))
-        return {"native_config_sha256": self.config_sha256, "grader": grader_identity}
+        return self._registered_binding()
+
+    def _prepare(self, source, artifact, context):
+        """Cache only deterministic local preparation, never model observations."""
+        # Digests detect changed bytes inside this trusted Python process;
+        # process memory and its cache anchors are not an authorization boundary.
+        started = time.perf_counter()
+        key = digest({"version": 1, "source": source, "artifact": artifact, "context": context,
+                      "python": {"executable": sys.executable, "version": sys.version}})
+        phases = {"cache_hit": key in self._preparation_cache, "compile_seconds": 0.0,
+                  "plan_seconds": 0.0, "cache_verify_seconds": 0.0}
+        if key not in self._preparation_cache:
+            self.artifacts.mkdir(parents=True, exist_ok=True)
+            with tempfile.TemporaryDirectory(prefix="upg-native-", dir=self.artifacts) as temporary:
+                isolated = Path(temporary)
+                _text_files(isolated / "governance-src", source)
+                runtime = isolated / "universal-project-governance"
+                if artifact.get("runtime") is not None:
+                    _text_files(runtime, artifact["runtime"])
+                else:
+                    compiler = isolated / "compiler/compile_governance.py"
+                    compiler.parent.mkdir()
+                    compiler.write_bytes(artifact["compiler"].encode("utf-8"))
+                    (isolated / "LICENSE").write_bytes(artifact["license"].encode("utf-8"))
+                    phase_started = time.perf_counter()
+                    compiled = subprocess.run([sys.executable, "-B", str(compiler), "--repo", str(isolated),
+                                               "--write", "--confirm-generated-runtime-update"],
+                                              capture_output=True, timeout=60, check=False)
+                    phases["compile_seconds"] = time.perf_counter() - phase_started
+                    if compiled.returncode:
+                        raise ValueError("exact-source native runtime compilation failed")
+                context_path = isolated / "context.json"
+                context_path.write_bytes(canonical_bytes(context))
+                phase_started = time.perf_counter()
+                planned = subprocess.run([sys.executable, "-B", str(runtime / "scripts/plan_governance.py"),
+                                          "--context", str(context_path), "--json"],
+                                         capture_output=True, timeout=30, check=False)
+                phases["plan_seconds"] = time.perf_counter() - phase_started
+                if planned.returncode:
+                    raise ValueError("exact-source native governance planning failed")
+                files = {p.relative_to(runtime).as_posix(): p.read_bytes().decode("utf-8")
+                         for p in sorted(runtime.rglob("*")) if p.is_file()}
+                payload = {"runtime": files, "plan": json.loads(planned.stdout)}
+                blob = canonical_bytes(payload)
+            self._preparation_cache[key] = (blob, _sha(blob))
+            while len(self._preparation_cache) > 32:
+                self._preparation_cache.popitem(last=False)
+        phase_started = time.perf_counter()
+        blob, expected = self._preparation_cache[key]
+        if not isinstance(blob, bytes) or _sha(blob) != expected:
+            raise ValueError("native preparation cache artifact hash mismatch")
+        prepared = json.loads(blob)
+        runtime_identity = digest({name: _sha(text.encode("utf-8")) for name, text in prepared["runtime"].items()})
+        self._preparation_cache.move_to_end(key)
+        phases["cache_verify_seconds"] = time.perf_counter() - phase_started
+        phases["prepare_seconds"] = time.perf_counter() - started
+        skill = prepared["runtime"]["SKILL.md"].replace("\r\n", "\n").replace("\r", "\n")
+        return skill, prepared["plan"], runtime_identity, phases
 
     def _unknown(self, directory, receipt):
-        _atomic(directory / "receipt.json", receipt)
+        # Set this before evidence I/O: a full/unwritable disk must never permit
+        # a second launch or erase usage already observed in completed stdout.
+        self._dispatch_blocked = True
+        receipt["dispatch_evidence_unconfirmed"] = True
+        try:
+            _atomic(directory / "receipt.json", receipt)
+        except OSError as error:
+            receipt["receipt_persistence_error"] = type(error).__name__ + ": " + str(error)[:240]
         # The unresolved call blocks the entire configured experiment root,
         # including retries whose prompts or candidate identifiers differ.
         fence = self.artifacts / "UNKNOWN_CALL.json"
@@ -186,10 +261,15 @@ class NativeCodex:
                 os.fsync(stream.fileno())
         except FileExistsError:
             pass
+        except OSError as error:
+            receipt["fence_persistence_error"] = type(error).__name__ + ": " + str(error)[:240]
 
-    def _call(self, *, key, prompt, bindings, output_schema=None):
+    def _call(self, *, key, prompt, bindings, output_schema=None, local_timings=None):
+        if self._dispatch_blocked:
+            raise NativeCallPending("native evidence is unresolved in this process; no automatic replay")
         self.artifacts.mkdir(parents=True, exist_ok=True)
         lock = self.artifacts / ".native-dispatch.lock"
+        result, call_error = None, None
         try:
             descriptor = os.open(str(lock), os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
         except FileExistsError as error:
@@ -197,15 +277,36 @@ class NativeCodex:
         try:
             os.write(descriptor, canonical_bytes({"pid": os.getpid(), "key_sha256": digest(key)}))
             os.fsync(descriptor)
-            return self._locked_call(key=key, prompt=prompt, bindings=bindings, output_schema=output_schema)
+            result = self._locked_call(key=key, prompt=prompt, bindings=bindings, output_schema=output_schema,
+                                       local_timings=local_timings)
+        except BaseException as error:
+            call_error = error
+            raise
         finally:
-            os.close(descriptor)
-            lock.unlink()
+            try:
+                os.close(descriptor)
+                if not self._dispatch_blocked:
+                    lock.unlink()
+            except OSError as error:
+                self._dispatch_blocked = True
+                cleanup = type(error).__name__ + ": " + str(error)[:240]
+                if result is not None:
+                    receipt = dict(result["receipt"], status="dispatch-lock-cleanup-failed",
+                                   original_status=result["receipt"]["status"], dispatch_lock_cleanup_error=cleanup)
+                    directory = self.artifacts / receipt["raw_artifact_reference"]
+                    self._unknown(directory, receipt)
+                    raise NativeCallError(receipt["status"], usage=result["usage"],
+                                          provider_receipt=receipt) from error
+                if getattr(call_error, "provider_receipt", None) is not None:
+                    call_error.provider_receipt["dispatch_lock_cleanup_error"] = cleanup
+        return result
 
-    def _locked_call(self, *, key, prompt, bindings, output_schema=None):
+    def _locked_call(self, *, key, prompt, bindings, output_schema=None, local_timings=None):
         if (self.artifacts / "UNKNOWN_CALL.json").exists():
             raise NativeCallPending("unresolved native call: independently reconcile UNKNOWN_CALL.json before dispatch")
+        verify_started = time.perf_counter()
         capability = self.binding()
+        capability_verify_seconds = time.perf_counter() - verify_started
         if "capability" in bindings and bindings["capability"] != capability:
             raise ValueError("native capability changed while preparing this call")
         frozen = self.artifacts / "CAPABILITY.json"
@@ -222,6 +323,13 @@ class NativeCodex:
             if previous.is_dir() and (not (previous / "result.json").is_file()
                                       or not (previous / "receipt.json").is_file()):
                 raise NativeCallPending("an interrupted native dispatch needs reconciliation; no automatic replay")
+            if previous.is_dir():
+                try:
+                    prior_receipt = json.loads((previous / "receipt.json").read_text(encoding="utf-8"))
+                except (OSError, ValueError) as error:
+                    raise NativeCallPending("prior native receipt is unreadable; no automatic replay") from error
+                if prior_receipt.get("dispatch_evidence_unconfirmed") is True:
+                    raise NativeCallPending("prior native evidence is unresolved; no automatic replay")
         try:
             directory.mkdir()
         except FileExistsError:
@@ -241,6 +349,7 @@ class NativeCodex:
                 raise NativeCallError("prior native call failed; no automatic retry",
                                       usage=result.get("usage"), provider_receipt=receipt)
             result["receipt"] = dict(receipt, replayed_from_local_receipt=True)
+            result["dispatch_timings"] = {"capability_verify_seconds": capability_verify_seconds}
             return result
 
         request_id = str(uuid.uuid4())
@@ -264,6 +373,7 @@ class NativeCodex:
         started = time.perf_counter()
         started_at = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
         stdout, stderr, exit_code, failure = b"", b"", None, None
+        dispatch_error = None
         try:
             completed = subprocess.run(arguments, input=prompt.encode("utf-8"),
                                        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
@@ -271,21 +381,15 @@ class NativeCodex:
             stdout, stderr, exit_code = _bytes(completed.stdout), _bytes(completed.stderr), completed.returncode
         except subprocess.TimeoutExpired as error:
             stdout, stderr, failure = _bytes(error.stdout), _bytes(error.stderr), "timeout-unknown-provider-state"
+            dispatch_error = error
         except BaseException as error:
             failure = type(error).__name__ + "-dispatch-state-unconfirmed"
-            (directory / "stdout.raw").write_bytes(stdout)
-            (directory / "stderr.raw").write_bytes(stderr)
-            receipt = {"receipt_type": "codex_cli_thread", "harness_request_id": request_id,
-                       "status": failure, "provider_request_id": None,
-                       "wall_seconds": time.perf_counter() - started, "usage": None,
-                       "bindings": bindings, "stdout_sha256": _sha(stdout), "stderr_sha256": _sha(stderr)}
-            self._unknown(directory, receipt)
-            if not isinstance(error, Exception):
-                raise
-            raise NativeCallError(failure, provider_receipt=receipt) from error
+            dispatch_error = error
+            stdout, stderr = _bytes(getattr(error, "stdout", None)), _bytes(getattr(error, "stderr", None))
         elapsed = time.perf_counter() - started
-        (directory / "stdout.raw").write_bytes(stdout)
-        (directory / "stderr.raw").write_bytes(stderr)
+        # Mechanical accounting precedes every post-dispatch evidence write.
+        # A unique completed turn is measured usage, never proof of success or
+        # completeness of failed/partial provider-side attempts.
         events = _events(stdout)
         usage = _usage(events)
         threads = [event.get("thread_id") for event in events if event.get("type") == "thread.started"]
@@ -314,14 +418,37 @@ class NativeCodex:
                    "adapter_retries": 0, "provider_retry_configuration_verified": False,
                    "retry_accounting_limit": "native provider retry configuration is not independently verified; usage is the reported completed turn",
                    "replayed_from_local_receipt": False}
+        receipt["local_timings"] = dict(local_timings or {}, cli_seconds=elapsed,
+                                        capability_verify_seconds=capability_verify_seconds)
+        if dispatch_error is not None:
+            receipt["dispatch_error"] = type(dispatch_error).__name__ + ": " + str(dispatch_error)[:240]
+        try:
+            (directory / "stdout.raw").write_bytes(stdout)
+            (directory / "stderr.raw").write_bytes(stderr)
+        except OSError as error:
+            receipt.update(original_status=receipt["status"], status="raw-evidence-persistence-failed",
+                           raw_persistence_error=type(error).__name__ + ": " + str(error)[:240])
+            self._unknown(directory, receipt)
+            if dispatch_error is not None and not isinstance(dispatch_error, Exception):
+                raise dispatch_error
+            raise NativeCallError(receipt["status"], usage=usage, provider_receipt=receipt) from error
         if failure is not None or usage is None or len(threads) != 1:
             self._unknown(directory, receipt)
-            raise NativeCallError(receipt["status"], usage=usage, provider_receipt=receipt)
-        _atomic(directory / "result.json", result)
-        _atomic(directory / "receipt.json", receipt)
+            if dispatch_error is not None and not isinstance(dispatch_error, Exception):
+                raise dispatch_error
+            raise NativeCallError(receipt["status"], usage=usage, provider_receipt=receipt) from dispatch_error
+        try:
+            _atomic(directory / "result.json", result)
+            _atomic(directory / "receipt.json", receipt)
+        except OSError as error:
+            receipt.update(original_status=receipt["status"], status="post-dispatch-evidence-unconfirmed",
+                           evidence_persistence_error=type(error).__name__ + ": " + str(error)[:240])
+            self._unknown(directory, receipt)
+            raise NativeCallError(receipt["status"], usage=usage, provider_receipt=receipt) from error
         if not success:
             raise NativeCallError("native response failed or used forbidden tools", usage=usage, provider_receipt=receipt)
         result["receipt"] = receipt
+        result["dispatch_timings"] = {"capability_verify_seconds": capability_verify_seconds}
         return result
 
     def backend(self, *, system, user, max_completion_tokens, stage="optimizer", **unused):
@@ -334,7 +461,7 @@ class NativeCodex:
         prompt = ("Use no tools and do not read or modify files. Return only the exact output required by the following optimizer stage. "
                   "Requested completion budget: %d tokens (instruction only).\n\n" % max_completion_tokens
                   + canonical_bytes({"stage": stage, "system": system, "user": user}).decode("utf-8"))
-        capability = self.binding()
+        capability = self._registered_binding()
         # Separate ablation arms owe the cost of their own learning calls.
         # Interrupted learning is fenced by the controller and this adapter.
         invocation_id = str(uuid.uuid4())
@@ -345,10 +472,11 @@ class NativeCodex:
         return result["text"], usage
 
     def runner(self, request):
+        started = time.perf_counter()
         if not isinstance(request, dict) or not isinstance(request.get("source"), dict):
             raise ValueError("native runner requires exact candidate source")
         registered = request.get("config")
-        capability = self.binding()
+        capability = self._registered_binding()
         if not isinstance(registered, dict) or any(
                 registered.get(key) != value for key, value in capability.items()):
             raise ValueError("runner_config must match the frozen native configuration and grader")
@@ -381,34 +509,7 @@ class NativeCodex:
         artifact = request.get("execution_artifact")
         if not isinstance(artifact, dict) or not isinstance(artifact.get("compiler"), str) or not isinstance(artifact.get("license"), str):
             raise ValueError("native runner requires pinned execution compiler and license")
-        self.artifacts.mkdir(parents=True, exist_ok=True)
-        with tempfile.TemporaryDirectory(prefix="upg-native-", dir=self.artifacts) as temporary:
-            isolated = Path(temporary)
-            _text_files(isolated / "governance-src", source)
-            runtime = isolated / "universal-project-governance"
-            if artifact.get("runtime") is not None:
-                _text_files(runtime, artifact["runtime"])
-            else:
-                compiler = isolated / "compiler/compile_governance.py"
-                compiler.parent.mkdir()
-                compiler.write_bytes(artifact["compiler"].encode("utf-8"))
-                (isolated / "LICENSE").write_bytes(artifact["license"].encode("utf-8"))
-                compiled = subprocess.run([sys.executable, "-B", str(compiler), "--repo", str(isolated),
-                                           "--write", "--confirm-generated-runtime-update"],
-                                          capture_output=True, timeout=60, check=False)
-                if compiled.returncode:
-                    raise ValueError("exact-source native runtime compilation failed")
-            context_path = isolated / "context.json"
-            context_path.write_bytes(canonical_bytes(context))
-            planned = subprocess.run([sys.executable, "-B", str(runtime / "scripts/plan_governance.py"),
-                                      "--context", str(context_path), "--json"],
-                                     capture_output=True, timeout=30, check=False)
-            if planned.returncode:
-                raise ValueError("exact-source native governance planning failed")
-            plan = json.loads(planned.stdout)
-            skill = (runtime / "SKILL.md").read_text(encoding="utf-8")
-            runtime_identity = digest({p.relative_to(runtime).as_posix(): _sha(p.read_bytes())
-                                       for p in sorted(runtime.rglob("*")) if p.is_file()})
+        skill, plan, runtime_identity, local_timings = self._prepare(source, artifact, context)
         bindings = {"kind": "task", "source_sha256": source_identity, "candidate_id": candidate,
                     "task_sha256": digest(task), "runtime_sha256": runtime_identity,
                     "execution_artifact_sha256": digest(artifact), "grader": grader_identity,
@@ -420,7 +521,8 @@ class NativeCodex:
                   + canonical_bytes(payload).decode("utf-8"))
         result = self._call(key={"kind": "task", "cache_key": request.get("cache_key"),
                                  "attempt": request.get("attempt", 0), "bindings": bindings},
-                            prompt=prompt, bindings=bindings, output_schema=task.get("output_schema"))
+                            prompt=prompt, bindings=bindings, output_schema=task.get("output_schema"),
+                            local_timings=local_timings)
         try:
             parsed = json.loads(result["text"])
         except json.JSONDecodeError:
@@ -429,6 +531,7 @@ class NativeCodex:
                           "plan": plan, "source_sha256": source_identity, "candidate_id": candidate,
                           "usage": result["usage"], "wall_seconds": result["wall_seconds"],
                           "receipt": result["receipt"]}
+        grade_started = time.perf_counter()
         try:
             outcome = grader(graded_request)
             if not isinstance(outcome, dict):
@@ -442,15 +545,30 @@ class NativeCodex:
         except Exception as error:
             raise NativeCallError("trusted grader failed: " + type(error).__name__, usage=result["usage"],
                                   provider_receipt=result["receipt"]) from error
+        local_timings.update(grade_seconds=time.perf_counter() - grade_started,
+                             cli_seconds=result["wall_seconds"], total_seconds=time.perf_counter() - started,
+                             capability_verify_seconds=result.get("dispatch_timings", {}).get("capability_verify_seconds"))
         return {"status": "completed", "usage": result["usage"], "provider_receipt": result["receipt"],
-                "outcome": outcome, "native_wall_seconds": result["wall_seconds"]}
+                "outcome": outcome, "native_wall_seconds": result["wall_seconds"],
+                "local_timings": local_timings}
+
+
+@lru_cache(maxsize=4)
+def _configured_client(config_json):
+    return NativeCodex(json.loads(config_json))
 
 
 def runner(request):
     """Evaluator callback; capability is explicitly selected by UPG_NATIVE_CONFIG."""
-    return NativeCodex.from_environment().runner(request)
+    started = time.perf_counter()
+    client = NativeCodex.from_environment()
+    setup_seconds = time.perf_counter() - started
+    result = client.runner(request)
+    result["local_timings"].update(client_setup_seconds=setup_seconds,
+                                   total_seconds=time.perf_counter() - started)
+    return result
 
 
 def backend(**request):
-    """SkillOpt backend callback returning the unmodified response and actual usage."""
+    """UPG reflection callback returning the unmodified response and actual usage."""
     return NativeCodex.from_environment().backend(**request)

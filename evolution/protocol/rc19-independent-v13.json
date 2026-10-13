@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "protocol_id": "upg-rc19-tools-independent-v13",
+  "stage": "independent",
+  "seed": 19012,
+  "order_stratification": "model-task-family",
+  "models": [
+    "gpt-6-sol",
+    "gpt-6-luna"
+  ],
+  "task_ids": [
+    "independent-c-registry-720",
+    "independent-c-registry-905",
+    "independent-c-toml-720",
+    "independent-c-toml-905",
+    "independent-c-python-720",
+    "independent-c-python-905",
+    "independent-c-documentation-720",
+    "independent-c-documentation-905",
+    "independent-c-current-truth-720",
+    "independent-c-current-truth-905",
+    "independent-c-recovery-720",
+    "independent-c-recovery-905"
+  ],
+  "task_manifest_sha256": "39227a1fdce5a6c5bddab868974303ba3fdd260478d8b78901a47696fad72597",
+  "configuration_sha256": "a66ee47d1c0fa3db088230bf504f9e20a3fb21fe59fd376b606676bee243fbfe",
+  "baseline_revision": "29cf112b4629d6b90504b079e95a5370c206a4cb",
+  "source_revision": "754bc07a41d89f6c19851c4aa7617f0201feff01",
+  "budget": {
+    "model_calls": 48,
+    "tokens": 5000000,
+    "wall_seconds": 7200
+  },
+  "acceptance": {
+    "tokens_ci_upper_exclusive": 1.0,
+    "wall_ci_upper_exclusive": 1.0,
+    "per_model_ratio_exclusive": 1.0
+  },
+  "scope": {
+    "provider": "OpenAI",
+    "model_identity": "requested CLI IDs; internal identity unverified",
+    "tool_execution": "real bounded file/Git MCP operations",
+    "application_execution": false,
+    "formal_qualification": "UNASSESSED",
+    "final_feedback_for_tuning": false,
+    "ordinary_retries": "shared request/stream zero and unbounded connection retry disabled",
+    "authentication_recovery": "may issue another request; failed partial billing unknown",
+    "unknown_replay": false,
+    "previous_unknown": "v5 retained; never resumed or charged as zero",
+    "family_generalization": "6 known task families; parameterized final instances, shared templates remain known",
+    "preparation_estimand": "outside task callback; native callback timing is a separate experiment"
+  },
+  "source_preparation": {
+    "wall_seconds": 8.804865199985215,
+    "model_calls": 0,
+    "script_sha256": "d42e8500524c6c0d606685dcad0742704ac7be9018a31f5ca780c9962a4b0679",
+    "catalog_sha256": "b1b58dc21270ced184a43118e7434b558fb969e30abeedf3664324896025ed73"
+  },
+  "confirmation": {
+    "single_additional_round_only": true,
+    "trigger": "B transport-incomplete, not selection on observed benefit",
+    "candidate_unchanged": {
+      "source_sha256": "446962e05843838b2c1c7d74405a85cdca5d9b5760fe5bafc851bb8524039b71",
+      "runtime_sha256": "394a7d5d3e45cdf2b092f801d9a8d13b73726e76ab03b84ff64610dc1d3d03b7",
+      "candidate_sha256": "5737581cb324125101e4572255ecd7d467157e5682ce4bcb63c0afbedd36c1c6",
+      "skill_utf8_bytes": 8303
+    },
+    "sealed_generation_seed": 19013,
+    "sealed_registration_files_sha256": {
+      "tasks.private.json": "6478e0838841b201971df7ac308996488b92ab7f77a21bf38f5784feda760a8f",
+      "registration.json": "85157c720c4c3cfeec59429d4a602679f8618122b43727683903f7c990b67670",
+      "generate.py": "4c6dc172700bfa2ba8c0c60aa351e9c98677f9f71e61e3e94fecb429fd695d65",
+      "READY.json": "6dd0f2773210a04970bc29e94a7ab95a709428847992d48dfcdde7ab4a929213"
+    },
+    "sealed_tasks_raw_sha256": "6478e0838841b201971df7ac308996488b92ab7f77a21bf38f5784feda760a8f",
+    "sealed_tasks_canonical_sha256": "d3e8dce8802eb345049a9f8beb9af8286bd4fa536c347f610bb80b5b1e488833",
+    "analysis_script_sha256": "c0010747d7bc86ea478e2ef1dbfd8fdc42abe34c79b159b922f6be32a91cfe73",
+    "confidence": 0.99,
+    "repetitions": 20000,
+    "seed": 19012,
+    "methods": [
+      "requested-model-family",
+      "joint-shared-family"
+    ],
+    "metrics": [
+      "total_tokens",
+      "wall_seconds"
+    ],
+    "acceptance": "Original net gate PASS AND all four additional 99% upper bounds strictly below 1",
+    "analysis_cost": "Separate post-collection analysis wall, excluded from measured task callback",
+    "multiplicity_limit": "No claim of full multi-round development-sequence FWER control",
+    "prior_incomplete_B": {
+      "protocol_id": "upg-rc19-tools-independent-v12",
+      "protocol_sha256": "3aac153ae3cad9b4d4136ddbbd099d13a2ad570418c952eb41d73a28d807e6d6",
+      "status": "unknown-call-blocked",
+      "original_net_gate": "FAIL",
+      "known_completed_calls": 10,
+      "known_reported_tokens": 730397,
+      "unknown_calls": 1,
+      "failed_B_and_all_costs_retained": true,
+      "unknown_consumption_is_not_zero": true,
+      "resume_replay_or_sample_pooling": false
+    }
+  },
+  "conditions": {
+    "control": {
+      "source_sha256": "6aa8a9562d24f74a48bce082100c2ba1069f4c56a900ce0924f23869b36bdd81",
+      "runtime_sha256": "66c5cc02c02ed3834d9a79c7ac1c395f7e164602aa2a296ed3929520b80f99de",
+      "candidate_sha256": "5c2dcf24974129ca22d1fb65e6a64d61f069646510cc68446797c5825cf60a05",
+      "skill_utf8_bytes": 7940
+    },
+    "treatment": {
+      "source_sha256": "446962e05843838b2c1c7d74405a85cdca5d9b5760fe5bafc851bb8524039b71",
+      "runtime_sha256": "394a7d5d3e45cdf2b092f801d9a8d13b73726e76ab03b84ff64610dc1d3d03b7",
+      "candidate_sha256": "5737581cb324125101e4572255ecd7d467157e5682ce4bcb63c0afbedd36c1c6",
+      "skill_utf8_bytes": 8303
+    }
+  },
+  "private_execution_protocol_sha256": "f026923ce3392a787df3ff96b6791f911d1a15cd6b370eeeff2a46028becbddf"
+}

@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "candidate_version": "3.0.0-rc.19",
+  "baseline_revision": "29cf112b4629d6b90504b079e95a5370c206a4cb",
+  "status": "engineering-pass-development-model-calls-pending",
+  "engine_sha256": "f71003297c93d8caab6c7b5a8b841bfb2fce033b7667641c6b151ed1d8e27e27",
+  "source_sha256": "d7fe05eecf4a86af79fde1ce3aee6c1995b02aa109d3cce2d90401df31a803f5",
+  "engineering": {
+    "unit_tests": {
+      "passed": 346,
+      "total": 346,
+      "seconds": 117.601,
+      "log_sha256": "05dc7522e449af991ce681f2810629d50630ada23cb5f9fe3094c60b52b4190f"
+    },
+    "gates": {
+      "passed": 8,
+      "total": 8,
+      "receipt_sha256": "008a56c103c01846ee049217daff1c8f21356596739e82081cd1578e319efccc"
+    },
+    "initial_full_attempt": {
+      "total": 339,
+      "failures": 6,
+      "errors": 15,
+      "reason": "candidate source/runtime changed while qualification freeze still RC18; admission failed closed",
+      "log_sha256": "255a813a27bec2c644c191fe3cdafbf53670159ca1c960e342c524f8e2d8789d"
+    }
+  },
+  "latency_diagnosis": "docs/rc19-latency-diagnosis.md",
+  "development_protocol": "evolution/protocol/rc19-tools-development-v1.json",
+  "new_model_calls": 0,
+  "net_benefit": "NOT MEASURED",
+  "formal_qualification": "UNASSESSED",
+  "learned_candidate_promoted": false,
+  "installed_skill": "RC18 accepted release; RC19 deployment pending",
+  "limitations": {
+    "vendors": [
+      "OpenAI"
+    ],
+    "model_identity": "requested CLI model; provider-internal identity not verified",
+    "actual_tools": [
+      "repo_read",
+      "repo_search",
+      "repo_patch",
+      "repo_validate",
+      "repo_status"
+    ],
+    "validation": "trusted JSON/TOML/AST/text structural suites; no candidate application code execution",
+    "formal_qualification": "UNASSESSED",
+    "final_feedback_for_tuning": false,
+    "uncertain_call_retry": false,
+    "monetary_billing": "unknown",
+    "development_task_ids_disjoint": true
+  }
+}

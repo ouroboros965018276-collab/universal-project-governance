@@ -1,0 +1,305 @@
+{
+  "schema_version": 1,
+  "protocol_id": "rc19-prospective-child-route-v3",
+  "audit_status": "PASS-UNKNOWN-FAILURE-RECONCILED",
+  "audited_at_utc": "2026-10-12T20:40:16.723949+00:00",
+  "audit_script_sha256": "55c0ff537050458fbb2e059297ce9f28bdd282bcd595c502ee6ed061b0e77f71",
+  "registration_canonical_sha256": "fa810d430250c9c562ad789be525645fe69b5359e5a385e621f4fc9251f23e8c",
+  "public_registration_raw_sha256": "b74e78e525cd6ec97a5ac9e546e3fd8de2ec37bd97aa37f559ede07c68f00df9",
+  "source_freeze_commit": "9bf5e97693b225c87a6fab2af9b96fb5aed1f0b6",
+  "campaign_sha256": "ba4e429b1cf71ad38509d3181536b7fdbf2ab1bf981a0e2829116323db5e8c4f",
+  "no_replay_fence_sha256": "469c39b44719120871efed339c68f3923fbb8098bf7f7d67b68d668311d559df",
+  "registered_file_sha256": {
+    "codex-code-mode-host.exe": "f03190749208b5594fd5125d2d2b09e4ad00e2a1f74aeb11f60a6673dde83c43",
+    "codex.exe": "bd970316b98c725f01cbfb92fdd3a952cb0e45425e15b7fb81d1927a60992f1a",
+    "python.exe": "4d6f5f81a4bca11191c4c7c6b43632694d0a4ce74e068619d8fdc161d469859a",
+    "eval-workspaces/rc19-model-catalog.json": "b1b58dc21270ced184a43118e7434b558fb969e30abeedf3664324896025ed73",
+    "eval-workspaces/rc19-route-probe-candidate/harness_v3.py": "26760a150cc73110d1c34dc1cc80df28053493ff59fceefc5552bcb3736ef088",
+    "evolution/cli_transport.py": "c6f2ade9c12c072afed9fa5404e3187f7ea1a46feba9c8726f5b1cacbbb1282f",
+    "evolution/contracts.py": "c64915a5d2a4ed199ba5c62a46885f8e5149541fcd43452eeb94fa44090692a2",
+    "evolution/native_codex.py": "619f5e19b782b4194455c7b4dcb179268e65dd675b50c3227137b0e770eddec4",
+    "evolution/tool_broker.py": "ee83a71436bd48e40deb3dc334fe603c4b51e79d7c50d6c9d4c3af5f2b46a62c",
+    "evolution/tool_codex.py": "27336ad9767d8cf8bf24b0c89448a5131343b16278a13cdcbd7ff31c8396ec66"
+  },
+  "prompt_sha256": "a3b78425582795476747a56dd940c2b495172aef449536d25752c24dcf35317d",
+  "profile": [
+    "model_provider=\"upg_openai_http\"",
+    "model_providers.upg_openai_http.name=\"OpenAI\"",
+    "model_providers.upg_openai_http.wire_api=\"responses\"",
+    "model_providers.upg_openai_http.requires_openai_auth=true",
+    "model_providers.upg_openai_http.supports_websockets=false",
+    "model_providers.upg_openai_http.request_max_retries=0",
+    "model_providers.upg_openai_http.stream_max_retries=0",
+    "features.unbounded_connection_retries=false"
+  ],
+  "startup_common_overrides": [
+    "features.code_mode.enabled=false",
+    "features.code_mode_host=true",
+    "suppress_unstable_features_warning=true"
+  ],
+  "route_contract": {
+    "child-no-proxy": "only child NO_PROXY=* plus both proxy feature flags false; OS/TUN route unobserved",
+    "existing-profile": "same registered HTTP flags and inherited environment; effective exec system routing unobserved"
+  },
+  "collector_status_preserved": "stopped-unknown",
+  "actual_cli_dispatches": 3,
+  "completed_known_turns": 2,
+  "strict_pass_labels_preserved": 2,
+  "known_reported_tokens": 20122,
+  "unknown_usage_dispatches": 1,
+  "remaining_planned_calls_not_dispatched": 1,
+  "unique_threads": 3,
+  "unique_harness_request_ids": 3,
+  "event_counts": {
+    "thread.started": 3,
+    "turn.started": 3,
+    "item.completed": 2,
+    "turn.completed": 2,
+    "error": 1,
+    "turn.failed": 1
+  },
+  "tool_events": 0,
+  "stderr_warning_count": 3,
+  "stderr_taxonomy": "PowerShell shell snapshot unsupported WARN only",
+  "elapsed_campaign_seconds": 32.371911099995486,
+  "budget_overrun": false,
+  "observations": [
+    {
+      "slot": 1,
+      "model_requested": "gpt-6-sol",
+      "route": "existing-profile",
+      "status_preserved": "completed",
+      "reported_usage": {
+        "cache_write_input_tokens": 0,
+        "cached_tokens": 0,
+        "cost_usd": null,
+        "input_tokens": 10036,
+        "measurement": "actual-codex-cli-turn.completed",
+        "output_tokens": 23,
+        "reasoning_tokens": 0,
+        "total_tokens": 10059
+      },
+      "call_wall_seconds": 5.13017079999554,
+      "exit_code": 0,
+      "quality_errors_preserved": [],
+      "argv_sha256": "332b438325b5d894e2dfa9e3922c2f0979d5744ef6396d9849f0947bf7d92e1a",
+      "stdout_sha256": "66f98238359f085d7a3a2e5eff8e33ec1b5b59321a17fb5fe4036aba7cac1066",
+      "stderr_sha256": "3a1140cac1335c172f9e55b1d7deec6919a9acc4e803dc4bf70ede8d9a440a82",
+      "receipt_sha256": "43c5b2b7e652ef592ecdda23b0847bd6c80d6c12878148880098c130ad26ad0c",
+      "pending_sha256": "89835ad0b50092b8969e5689b24766e13c88151fce3af9a4d4d70bcbd17de9b3",
+      "thread_id_sha256": "3c28e0c0b0ac07d288b3613baca255817475826be2516fc37169a1e9dad62b67",
+      "harness_request_id_sha256": "e1b227f5270ecec6689db3c07f02cc9b65189e69f534872f3a43abcdc3a33be0",
+      "environment_strategy": "inherited unchanged",
+      "proxy_variables_present": {
+        "ALL_PROXY": false,
+        "HTTPS_PROXY": false,
+        "HTTP_PROXY": false,
+        "NO_PROXY": true
+      },
+      "raw_event_types": [
+        "thread.started",
+        "turn.started",
+        "item.completed",
+        "turn.completed"
+      ]
+    },
+    {
+      "slot": 2,
+      "model_requested": "gpt-6-sol",
+      "route": "child-no-proxy",
+      "status_preserved": "completed",
+      "reported_usage": {
+        "cache_write_input_tokens": 0,
+        "cached_tokens": 0,
+        "cost_usd": null,
+        "input_tokens": 10040,
+        "measurement": "actual-codex-cli-turn.completed",
+        "output_tokens": 23,
+        "reasoning_tokens": 0,
+        "total_tokens": 10063
+      },
+      "call_wall_seconds": 3.562587699998403,
+      "exit_code": 0,
+      "quality_errors_preserved": [],
+      "argv_sha256": "fc7696805ff0fd8cccf89ae11d19525644618801e7f09c721ccbdeb980a34fc1",
+      "stdout_sha256": "b82c955ef64690c0fbf28aebfbc49dd06f6ca3f7dadbfa41bf0f3c4d9fd3316d",
+      "stderr_sha256": "c433f209ced54d8bd4768bf4dfee85d75650ea6291cde88f8663d45bee1cf3cc",
+      "receipt_sha256": "e11ee4c80707b8f23a5ac01b00babae47d827460206a00c1cc1cf4a5f207c850",
+      "pending_sha256": "72294063661e72c2286d8fad611674ccd8fefaac950ea7ede0e4405132d90ab4",
+      "thread_id_sha256": "f724ac80c5ba9358eb574bff9c730e06f2e8b9fd431fa7611e4363c6ba710a93",
+      "harness_request_id_sha256": "60ccef8b4e77a032e46c88e8354d38c5115eaa1a87074a42d6dba27c49bb1998",
+      "environment_strategy": "child-only NO_PROXY=*",
+      "proxy_variables_present": {
+        "ALL_PROXY": false,
+        "HTTPS_PROXY": false,
+        "HTTP_PROXY": false,
+        "NO_PROXY": true
+      },
+      "raw_event_types": [
+        "thread.started",
+        "turn.started",
+        "item.completed",
+        "turn.completed"
+      ]
+    },
+    {
+      "slot": 3,
+      "model_requested": "gpt-6-luna",
+      "route": "child-no-proxy",
+      "status_preserved": "unknown",
+      "reported_usage": null,
+      "call_wall_seconds": 22.639027299999725,
+      "exit_code": 1,
+      "quality_errors_preserved": [
+        "cli-turn-count-invalid",
+        "cli-event:error",
+        "cli-event:turn.failed",
+        "fixed-answer-invalid"
+      ],
+      "argv_sha256": "30588935dd970843d787d0c7e1d5a21d4cc653b93de36f4489541177c0302dee",
+      "stdout_sha256": "da009991a2218eea1efc09d712f302b4d7046da774938cca7ca9c7f9e29898b6",
+      "stderr_sha256": "5ad71105adfe0282b3ba3409edb030ce7f363a8df06a9afd4ba635bddd5f345d",
+      "receipt_sha256": "4aae644480cf5c7b5d61532775af6d0b6bc9e35bf5f85d1966a91c94029faab1",
+      "pending_sha256": "138cf01cd1fc8408635e6ad704ca5904f3fbec3711569323043744e2e28f572b",
+      "thread_id_sha256": "c2950c100bb21d95415e92a0ab6f44a0259948163e48ca6966feb7913ee794a1",
+      "harness_request_id_sha256": "cdd21e348910829f8a68d6a052c1e3577678a8e673be6360b45e553df347ce3c",
+      "environment_strategy": "child-only NO_PROXY=*",
+      "proxy_variables_present": {
+        "ALL_PROXY": false,
+        "HTTPS_PROXY": false,
+        "HTTP_PROXY": false,
+        "NO_PROXY": true
+      },
+      "raw_event_types": [
+        "thread.started",
+        "turn.started",
+        "error",
+        "turn.failed"
+      ]
+    }
+  ],
+  "checks": {
+    "registration_canonical_identity": 1,
+    "durable_original_registration": 1,
+    "public_preregistration_exact_bytes": 1,
+    "public_preregistration_frozen_in_git": 1,
+    "public_private_common_contract": 9,
+    "public_private_startup_contract": 1,
+    "fixed_four_slot_order": 1,
+    "fixed_bounded_budget": 1,
+    "no_precap_or_retry_claim": 1,
+    "registered_source_binary_runtime_catalog_bytes": 10,
+    "public_registered_file_hashes": 10,
+    "registered_engine_git_freeze": 5,
+    "fixed_public_prompt_source_identity": 1,
+    "fixed_public_schema_and_expected": 1,
+    "exact_shared_startup_flags": 1,
+    "child_environment_copy_only_strategy_source": 1,
+    "registered_actual_launch_env_and_stdin_source": 1,
+    "no_parent_environment_assignment_in_harness": 1,
+    "per_launch_frozen_identity_guard_source": 1,
+    "terminal_three_attempts_one_unknown": 1,
+    "fourth_slot_not_created_or_dispatched": 1,
+    "actual_dispatch_order_and_directory": 3,
+    "durable_actual_receipt": 3,
+    "durable_prelaunch_pending": 3,
+    "pending_identity_retained": 3,
+    "empty_prompt_only_workspace_schema": 3,
+    "complete_actual_argv_exact_registered_route": 3,
+    "environment_strategy_and_sanitized_presence": 3,
+    "prompt_and_requested_identity_no_invented_provider_identity": 3,
+    "actual_raw_stdout_stderr_hashes": 3,
+    "one_actual_thread_and_turn_start": 3,
+    "actual_process_return_not_timeout": 3,
+    "only_known_shell_snapshot_stderr_warning": 3,
+    "known_calls_exact_normal_stream": 2,
+    "original_completed_quality_labels_preserved": 2,
+    "actual_final_text_receipt_binding": 2,
+    "fixed_public_final_json_identity_not_rescored": 2,
+    "actual_completed_turn_usage": 2,
+    "known_charge_counters_no_invoice_claim": 2,
+    "unknown_call_exact_failure_stream": 1,
+    "exact_actual_connection_failure": 1,
+    "missing_usage_is_unknown_not_zero": 1,
+    "original_failure_labels_preserved": 1,
+    "unique_actual_threads_and_harness_requests": 1,
+    "known_cost_and_budget_retained": 1,
+    "unknown_no_replay_fence_binds_last_dispatch": 1,
+    "all_original_registration_raw_receipts_and_fences_unchanged": 1,
+    "cumulative_cost_reconciliation": 1
+  },
+  "cumulative_rounds": [
+    {
+      "round": "through-development-v7",
+      "completed": 61,
+      "reported_tokens": 4355182,
+      "unknown": 2
+    },
+    {
+      "round": "rc19-capability-recovery-v8",
+      "completed": 4,
+      "reported_tokens": 378030,
+      "unknown": 0
+    },
+    {
+      "round": "rc19-development-v8",
+      "completed": 12,
+      "reported_tokens": 952520,
+      "unknown": 1
+    },
+    {
+      "round": "native-independent-A5",
+      "completed": 32,
+      "reported_tokens": 439193,
+      "unknown": 0
+    },
+    {
+      "round": "nine-arm-development-v2",
+      "completed": 209,
+      "reported_tokens": 3302409,
+      "unknown": 0
+    },
+    {
+      "round": "prompt-only-route-v2-diagnostic-known-failure",
+      "completed": 1,
+      "reported_tokens": 10059,
+      "unknown": 0
+    },
+    {
+      "round": "prompt-only-route-v3-diagnostic",
+      "completed": 2,
+      "reported_tokens": 20122,
+      "unknown": 1
+    }
+  ],
+  "cumulative_RC19_through_route_v3": {
+    "completed_known_turns": 321,
+    "known_reported_tokens": 9457515,
+    "unknown_usage_dispatches": 4,
+    "all_cli_dispatches": 325
+  },
+  "prior_cumulative_audit_sha256": "6b12d2622c56e2e7d173463a7062ebb88d52139b2473d5a9b56eba714b0a5775",
+  "preservation": {
+    "no_models_invoked_by_audit": true,
+    "no_replay": true,
+    "no_grader_invoked": true,
+    "no_quality_label_changes": true,
+    "unknown_usage_not_zero": true,
+    "original_raw_receipts_and_fences_unchanged": true,
+    "no_source_profile_host_or_auth_changes": true,
+    "A4_worker_reservation_has_zero_actual_CLI_dispatches_not_counted": true
+  },
+  "limitations": [
+    "Prompt-only connectivity diagnostic; not task efficacy, benefit, reliability or vendor independence.",
+    "Existing-route effective proxy/OS path is unobserved. Child-no-proxy records the copied-env strategy and exact proxy flags; OS/TUN/effective inference path remains unobserved.",
+    "The full inherited environment and actual stdin bytes were intentionally not persisted. Registered source, fixed prompt hash and argv/strategy receipts bind the intended launch; external environment/route attestation is absent.",
+    "Two Sol completions are one observation per route; the Luna comparison is incomplete. No comparative latency or routing-causality claim is supported.",
+    "The failed Luna process had no completed turn or usage. Its paid cost is unknown, not zero. Generic connection failure does not identify DNS/TLS/proxy/socket/provider cause.",
+    "CLI-reported completed-turn tokens are retained; provider billing, auth recovery/partial internal attempts and internal model identity remain unverified.",
+    "Installed Code Mode host bytes are registered; actual child-host process-path selection was not independently monitored. No tools were observed.",
+    "Call wall time includes evidence/registration hashing, process startup, execution and parsing; it is not isolated network latency."
+  ],
+  "private_independent_audit_receipt_sha256": "e4be9882164dcb2b63f226bf4a3c1746d6e03f55982743c29c1702165c1ebff1",
+  "diagnostic_outcome": "STOPPED-UNKNOWN; evidence/accounting audit PASS does not mean route success",
+  "publication": "Sanitized projection; no absolute host paths, raw thread/request IDs, inherited environment values or credentials."
+}

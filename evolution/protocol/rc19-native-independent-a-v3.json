@@ -1,0 +1,465 @@
+{
+  "schema_version": 1,
+  "protocol_id": "upg-rc19-native-independent-a-v3",
+  "stage": "independent-artifact-estimand-A",
+  "status": "PREPARED-NOT-DISPATCH-AUTHORIZED",
+  "seed": 19012,
+  "models": [
+    "gpt-6-sol",
+    "gpt-6-luna"
+  ],
+  "task_manifest_sha256": "dbf0ea5a2623c48d0a79e36e2f858f1f94e2452a2eb3a2d508e4a335f76b8791",
+  "order": [
+    {
+      "model": "gpt-6-sol",
+      "task_id": "native-rc19-python-refactor-cold-731",
+      "context_group": "python-refactor",
+      "context_phase": "cold",
+      "condition": "control",
+      "sample_index": 0
+    },
+    {
+      "model": "gpt-6-sol",
+      "task_id": "native-rc19-python-refactor-cold-731",
+      "context_group": "python-refactor",
+      "context_phase": "cold",
+      "condition": "treatment",
+      "sample_index": 1
+    },
+    {
+      "model": "gpt-6-luna",
+      "task_id": "native-rc19-python-refactor-cold-731",
+      "context_group": "python-refactor",
+      "context_phase": "cold",
+      "condition": "treatment",
+      "sample_index": 2
+    },
+    {
+      "model": "gpt-6-luna",
+      "task_id": "native-rc19-python-refactor-cold-731",
+      "context_group": "python-refactor",
+      "context_phase": "cold",
+      "condition": "control",
+      "sample_index": 3
+    },
+    {
+      "model": "gpt-6-luna",
+      "task_id": "native-rc19-dependency-cold-731",
+      "context_group": "dependency",
+      "context_phase": "cold",
+      "condition": "control",
+      "sample_index": 4
+    },
+    {
+      "model": "gpt-6-luna",
+      "task_id": "native-rc19-dependency-cold-731",
+      "context_group": "dependency",
+      "context_phase": "cold",
+      "condition": "treatment",
+      "sample_index": 5
+    },
+    {
+      "model": "gpt-6-luna",
+      "task_id": "native-rc19-json-migration-cold-731",
+      "context_group": "json-migration",
+      "context_phase": "cold",
+      "condition": "treatment",
+      "sample_index": 6
+    },
+    {
+      "model": "gpt-6-luna",
+      "task_id": "native-rc19-json-migration-cold-731",
+      "context_group": "json-migration",
+      "context_phase": "cold",
+      "condition": "control",
+      "sample_index": 7
+    },
+    {
+      "model": "gpt-6-luna",
+      "task_id": "native-rc19-documentation-cold-731",
+      "context_group": "documentation",
+      "context_phase": "cold",
+      "condition": "control",
+      "sample_index": 8
+    },
+    {
+      "model": "gpt-6-luna",
+      "task_id": "native-rc19-documentation-cold-731",
+      "context_group": "documentation",
+      "context_phase": "cold",
+      "condition": "treatment",
+      "sample_index": 9
+    },
+    {
+      "model": "gpt-6-sol",
+      "task_id": "native-rc19-json-migration-cold-731",
+      "context_group": "json-migration",
+      "context_phase": "cold",
+      "condition": "treatment",
+      "sample_index": 10
+    },
+    {
+      "model": "gpt-6-sol",
+      "task_id": "native-rc19-json-migration-cold-731",
+      "context_group": "json-migration",
+      "context_phase": "cold",
+      "condition": "control",
+      "sample_index": 11
+    },
+    {
+      "model": "gpt-6-sol",
+      "task_id": "native-rc19-dependency-cold-731",
+      "context_group": "dependency",
+      "context_phase": "cold",
+      "condition": "control",
+      "sample_index": 12
+    },
+    {
+      "model": "gpt-6-sol",
+      "task_id": "native-rc19-dependency-cold-731",
+      "context_group": "dependency",
+      "context_phase": "cold",
+      "condition": "treatment",
+      "sample_index": 13
+    },
+    {
+      "model": "gpt-6-sol",
+      "task_id": "native-rc19-documentation-cold-731",
+      "context_group": "documentation",
+      "context_phase": "cold",
+      "condition": "treatment",
+      "sample_index": 14
+    },
+    {
+      "model": "gpt-6-sol",
+      "task_id": "native-rc19-documentation-cold-731",
+      "context_group": "documentation",
+      "context_phase": "cold",
+      "condition": "control",
+      "sample_index": 15
+    },
+    {
+      "model": "gpt-6-sol",
+      "task_id": "native-rc19-documentation-repeat-947",
+      "context_group": "documentation",
+      "context_phase": "repeat",
+      "condition": "control",
+      "sample_index": 16
+    },
+    {
+      "model": "gpt-6-sol",
+      "task_id": "native-rc19-documentation-repeat-947",
+      "context_group": "documentation",
+      "context_phase": "repeat",
+      "condition": "treatment",
+      "sample_index": 17
+    },
+    {
+      "model": "gpt-6-luna",
+      "task_id": "native-rc19-dependency-repeat-947",
+      "context_group": "dependency",
+      "context_phase": "repeat",
+      "condition": "treatment",
+      "sample_index": 18
+    },
+    {
+      "model": "gpt-6-luna",
+      "task_id": "native-rc19-dependency-repeat-947",
+      "context_group": "dependency",
+      "context_phase": "repeat",
+      "condition": "control",
+      "sample_index": 19
+    },
+    {
+      "model": "gpt-6-sol",
+      "task_id": "native-rc19-python-refactor-repeat-947",
+      "context_group": "python-refactor",
+      "context_phase": "repeat",
+      "condition": "treatment",
+      "sample_index": 20
+    },
+    {
+      "model": "gpt-6-sol",
+      "task_id": "native-rc19-python-refactor-repeat-947",
+      "context_group": "python-refactor",
+      "context_phase": "repeat",
+      "condition": "control",
+      "sample_index": 21
+    },
+    {
+      "model": "gpt-6-luna",
+      "task_id": "native-rc19-python-refactor-repeat-947",
+      "context_group": "python-refactor",
+      "context_phase": "repeat",
+      "condition": "control",
+      "sample_index": 22
+    },
+    {
+      "model": "gpt-6-luna",
+      "task_id": "native-rc19-python-refactor-repeat-947",
+      "context_group": "python-refactor",
+      "context_phase": "repeat",
+      "condition": "treatment",
+      "sample_index": 23
+    },
+    {
+      "model": "gpt-6-sol",
+      "task_id": "native-rc19-json-migration-repeat-947",
+      "context_group": "json-migration",
+      "context_phase": "repeat",
+      "condition": "control",
+      "sample_index": 24
+    },
+    {
+      "model": "gpt-6-sol",
+      "task_id": "native-rc19-json-migration-repeat-947",
+      "context_group": "json-migration",
+      "context_phase": "repeat",
+      "condition": "treatment",
+      "sample_index": 25
+    },
+    {
+      "model": "gpt-6-sol",
+      "task_id": "native-rc19-dependency-repeat-947",
+      "context_group": "dependency",
+      "context_phase": "repeat",
+      "condition": "treatment",
+      "sample_index": 26
+    },
+    {
+      "model": "gpt-6-sol",
+      "task_id": "native-rc19-dependency-repeat-947",
+      "context_group": "dependency",
+      "context_phase": "repeat",
+      "condition": "control",
+      "sample_index": 27
+    },
+    {
+      "model": "gpt-6-luna",
+      "task_id": "native-rc19-json-migration-repeat-947",
+      "context_group": "json-migration",
+      "context_phase": "repeat",
+      "condition": "treatment",
+      "sample_index": 28
+    },
+    {
+      "model": "gpt-6-luna",
+      "task_id": "native-rc19-json-migration-repeat-947",
+      "context_group": "json-migration",
+      "context_phase": "repeat",
+      "condition": "control",
+      "sample_index": 29
+    },
+    {
+      "model": "gpt-6-luna",
+      "task_id": "native-rc19-documentation-repeat-947",
+      "context_group": "documentation",
+      "context_phase": "repeat",
+      "condition": "control",
+      "sample_index": 30
+    },
+    {
+      "model": "gpt-6-luna",
+      "task_id": "native-rc19-documentation-repeat-947",
+      "context_group": "documentation",
+      "context_phase": "repeat",
+      "condition": "treatment",
+      "sample_index": 31
+    }
+  ],
+  "order_sha256": "972a7a126052993f06c5359c49c36c562a038ea6de0fb18904901f8df6c5c816",
+  "budget": {
+    "model_calls": 32,
+    "tokens": 1500000,
+    "wall_seconds": 7200
+  },
+  "acceptance": {
+    "primary": "full-public-callback-time-and-quality",
+    "callback_time_ci_upper_exclusive": 1.0,
+    "all_quality_required": true,
+    "all_fresh_calls_required": true
+  },
+  "bootstrap": {
+    "method": "paired-joint-family-block-preserving-models-and-cold-repeat",
+    "seed": 19012,
+    "repetitions": 4000
+  },
+  "common_grader": {
+    "selection": "operator-selected treatment-release grader, identical in both arms",
+    "revision": "38d469126fb31e4572689a5934d0bac2b9a470cd",
+    "git_path": "evolution/task_benchmark.py",
+    "sha256": "27af694887318e9eadd22c129a34616f1c34899b27adc0dbf8fbede2279afb5e"
+  },
+  "scope": {
+    "provider": "OpenAI",
+    "model_identity": "requested CLI IDs; internal selection unverified",
+    "formal_qualification": "UNASSESSED",
+    "validation": "JSON/Python AST/exact text; no application-code execution",
+    "tool_calls": "forbidden",
+    "B_joint_gate_unchanged": true,
+    "tokens": "all reported, including regressions; A cannot establish joint token benefit",
+    "cache_scope": "first/repeat exact context in persistent arm workers; OS/provider caches uncontrolled",
+    "automatic_resume": false
+  },
+  "source_preparation": {
+    "seconds": 10.051519300002838,
+    "measurement_end": "before private protocol/derived manifest publication"
+  },
+  "harness_files": {
+    "D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution\\evolution\\experiments\\native_paired\\worker.py": "bf8dee01880580dd7561ad933720d52f49e40ae2764446669ee8c0d0268130f9",
+    "D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution\\evolution\\experiments\\native_paired\\parent.py": "22eecb60e25232ee840ed53bee7c772d0978c5be2c7936d7dbac5204b454f943",
+    "D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution\\evolution\\experiments\\native_paired\\prepare.py": "2cee706fccb0d5ba7fee191638a8ecd6bd8a1bfac3d7b9c1c67efd70425fec0f",
+    "D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution\\evolution\\experiments\\native_paired\\tasks.py": "e2ee4ae87c628e46b52a01d06c0ae024d6deddcd56eab0f21fd7687d7dc0d236",
+    "D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution\\evolution\\experiments\\native_paired\\transport.py": "d2b3898423656fb36aeee7dba6418d4f761508412f9657365546f9b978dd3759",
+    "D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution\\evolution\\experiments\\native_paired\\__init__.py": "514c57183d5f507a04a461a6ef7cb9487394d4122adda2c9543a10cbdc020871",
+    "D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution\\evolution\\experiments\\__init__.py": "b096f112ab76a78d6979ba19f6cbbfd9b4452009718f78f2303e2a7da1d8b168",
+    "D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution\\evolution\\cli_transport.py": "c6f2ade9c12c072afed9fa5404e3187f7ea1a46feba9c8726f5b1cacbbb1282f",
+    "D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution\\tests\\test_native_paired.py": "d4201d523863b8bd9903e3cdce2ee333e0ca2a4620dfd7a4291b70574a8a42ca",
+    "D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution\\docs\\evolution\\native-paired-campaign.md": "9230d6505fb14447c58bfd565c0a96a31e2fabb8abcde3bc19eed149dfdbfade"
+  },
+  "transport": {
+    "path": "D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution\\evolution\\experiments\\native_paired\\transport.py",
+    "source_sha256": "d2b3898423656fb36aeee7dba6418d4f761508412f9657365546f9b978dd3759",
+    "profile_source": {
+      "path": "D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution\\evolution\\cli_transport.py",
+      "sha256": "c6f2ade9c12c072afed9fa5404e3187f7ea1a46feba9c8726f5b1cacbbb1282f"
+    },
+    "profile": [
+      "model_provider=\"upg_openai_http\"",
+      "model_providers.upg_openai_http.name=\"OpenAI\"",
+      "model_providers.upg_openai_http.wire_api=\"responses\"",
+      "model_providers.upg_openai_http.requires_openai_auth=true",
+      "model_providers.upg_openai_http.supports_websockets=false",
+      "model_providers.upg_openai_http.request_max_retries=0",
+      "model_providers.upg_openai_http.stream_max_retries=0",
+      "features.unbounded_connection_retries=false"
+    ],
+    "scope": "identical child-only HTTP overrides; historical and current callbacks under common transport scaffold"
+  },
+  "model_catalog": {
+    "path": "D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution\\eval-workspaces\\rc19-model-catalog.json",
+    "sha256": "b1b58dc21270ced184a43118e7434b558fb969e30abeedf3664324896025ed73",
+    "observed_at_utc": "2026-10-12T12:40:53.293415+00:00",
+    "selected_models": [
+      "gpt-6-sol",
+      "gpt-6-luna"
+    ],
+    "state": "listed low-effort support; provider access and observed model identity not attested"
+  },
+  "private_execution_protocol_sha256": "4dfb30c409e45de0cc537a4049a78c5aae7a080cd1d8b3e31e9f4a1624e03552",
+  "private_protocol_file_sha256": "b5a0d67647803837b3e20c9ad157e346a16eac2fee034db6bb84470bb7fd3f1f",
+  "conditions": {
+    "control": {
+      "revision": "29cf112b4629d6b90504b079e95a5370c206a4cb",
+      "source_sha256": "6aa8a9562d24f74a48bce082100c2ba1069f4c56a900ce0924f23869b36bdd81",
+      "execution_artifact_sha256": "5904fd9d7efc7c4269b6cedb7fda8d49b473abe9c40dc64a15f233306ea9a047",
+      "candidate_id": "31bda7b2571fe739154e959a92a0382a079b8cfe51fde52433048dcfbca5b621",
+      "expected_runtime_sha256": "9b108b7e900d91acc5a2a7897c1696f5be45fec9f23ffaefac9316a18d1ace60"
+    },
+    "treatment": {
+      "revision": "38d469126fb31e4572689a5934d0bac2b9a470cd",
+      "source_sha256": "86843423c77ec636b1358d086c18bf036796d279de3a46b215ef340db5220dd1",
+      "execution_artifact_sha256": "5904fd9d7efc7c4269b6cedb7fda8d49b473abe9c40dc64a15f233306ea9a047",
+      "candidate_id": "f950ebcd5227473b039750c1c3e76d1e53413acf2fdac7026590119ccc81670b",
+      "expected_runtime_sha256": "6e990ce6fc7dbd35bbc739e73ae4b01d1a107f42507c36f30ce06a1307a70448"
+    }
+  },
+  "tasks": {
+    "native-rc19-json-migration-cold-731": {
+      "task_sha256": "0d1a1eb4acb32502578e6a7927c7b7c8aa256994202739d93f927391513d9c93",
+      "family": "json-migration",
+      "context_group": "json-migration",
+      "context_phase": "cold"
+    },
+    "native-rc19-dependency-cold-731": {
+      "task_sha256": "0579833102556900747e25f4cb9856627777e132e45c71671780b818449d172c",
+      "family": "dependency",
+      "context_group": "dependency",
+      "context_phase": "cold"
+    },
+    "native-rc19-python-refactor-cold-731": {
+      "task_sha256": "1356b3c70e596db59dcd7b96b86fd4a5d3ba344f6e8501649b4e084e9e8b008d",
+      "family": "python-refactor",
+      "context_group": "python-refactor",
+      "context_phase": "cold"
+    },
+    "native-rc19-documentation-cold-731": {
+      "task_sha256": "b5643c713e724e3c8a6789e9b134b78f57bb6d8439cb03949e79860171260af8",
+      "family": "documentation",
+      "context_group": "documentation",
+      "context_phase": "cold"
+    },
+    "native-rc19-json-migration-repeat-947": {
+      "task_sha256": "eea8502526a76ea28d1ea135e83a63896c1da70f779191022c8787e2657ddf91",
+      "family": "json-migration",
+      "context_group": "json-migration",
+      "context_phase": "repeat"
+    },
+    "native-rc19-dependency-repeat-947": {
+      "task_sha256": "0646b179dcc78e92bf5ac9c27114d3948dd11ba1ace33b13f3de93653c11ac4a",
+      "family": "dependency",
+      "context_group": "dependency",
+      "context_phase": "repeat"
+    },
+    "native-rc19-python-refactor-repeat-947": {
+      "task_sha256": "7285c9d8b58ec1bfade9d84946294a272bed7d30e98968475ad6756fc6a02ac8",
+      "family": "python-refactor",
+      "context_group": "python-refactor",
+      "context_phase": "repeat"
+    },
+    "native-rc19-documentation-repeat-947": {
+      "task_sha256": "1cbc8512611dd4ec3da540ccf1bd15a2a859c07e21d8e778b7c960c6654c0651",
+      "family": "documentation",
+      "context_group": "documentation",
+      "context_phase": "repeat"
+    }
+  },
+  "workers": {
+    "gpt-6-sol:control": {
+      "files": {
+        "evolution/__init__.py": "8f155482d42c365d2ef36fa9d13e130b462da7a7beb3cdb56c5a7f5b4d9ea69e",
+        "evolution/contracts.py": "c64915a5d2a4ed199ba5c62a46885f8e5149541fcd43452eeb94fa44090692a2",
+        "evolution/native_codex.py": "1897f46e58c073bdfeb1d6d6361afd757d6e11d08864b9e093d2c0386ae6e6d4",
+        "upg_native_common_grader.py": "27af694887318e9eadd22c129a34616f1c34899b27adc0dbf8fbede2279afb5e"
+      },
+      "config_sha256": "0dadad3155f276a3d4bb27a8802a06129e1568d0705c71ac0f39bd553795e07f"
+    },
+    "gpt-6-luna:control": {
+      "files": {
+        "evolution/__init__.py": "8f155482d42c365d2ef36fa9d13e130b462da7a7beb3cdb56c5a7f5b4d9ea69e",
+        "evolution/contracts.py": "c64915a5d2a4ed199ba5c62a46885f8e5149541fcd43452eeb94fa44090692a2",
+        "evolution/native_codex.py": "1897f46e58c073bdfeb1d6d6361afd757d6e11d08864b9e093d2c0386ae6e6d4",
+        "upg_native_common_grader.py": "27af694887318e9eadd22c129a34616f1c34899b27adc0dbf8fbede2279afb5e"
+      },
+      "config_sha256": "71e2aea821273e0a936ce50cf41052376b8bd7f57001dffe908423d3c052e94f"
+    },
+    "gpt-6-sol:treatment": {
+      "files": {
+        "evolution/__init__.py": "8f155482d42c365d2ef36fa9d13e130b462da7a7beb3cdb56c5a7f5b4d9ea69e",
+        "evolution/contracts.py": "c64915a5d2a4ed199ba5c62a46885f8e5149541fcd43452eeb94fa44090692a2",
+        "evolution/native_codex.py": "c126625582f7c39ec939168b003d2868769b02de8ba431681388e1b461702295",
+        "upg_native_common_grader.py": "27af694887318e9eadd22c129a34616f1c34899b27adc0dbf8fbede2279afb5e"
+      },
+      "config_sha256": "27eb36d63c2c7b521029ac4de89d40a53ecaa4542c5c0d019ba68f90f47129e5"
+    },
+    "gpt-6-luna:treatment": {
+      "files": {
+        "evolution/__init__.py": "8f155482d42c365d2ef36fa9d13e130b462da7a7beb3cdb56c5a7f5b4d9ea69e",
+        "evolution/contracts.py": "c64915a5d2a4ed199ba5c62a46885f8e5149541fcd43452eeb94fa44090692a2",
+        "evolution/native_codex.py": "c126625582f7c39ec939168b003d2868769b02de8ba431681388e1b461702295",
+        "upg_native_common_grader.py": "27af694887318e9eadd22c129a34616f1c34899b27adc0dbf8fbede2279afb5e"
+      },
+      "config_sha256": "bfa4afdb4b8b0cd57cc93b139f4db830d853391467fd729f1bbb08b5267f5d11"
+    }
+  },
+  "preparation_receipt": {
+    "sha256": "823c64cd46fe98a87dcbbbeac58ef6e6bf219ddb0c83bca499d983bf86500534",
+    "value": {
+      "protocol_sha256": "4dfb30c409e45de0cc537a4049a78c5aae7a080cd1d8b3e31e9f4a1624e03552",
+      "total_seconds_before_this_receipt": 10.064164800016442,
+      "models_dispatched": 0,
+      "public_protocol_created": false
+    }
+  },
+  "release_gate_scope": "A reports quality and complete-callback timing; it cannot excuse a failed independent B joint token/time gate."
+}

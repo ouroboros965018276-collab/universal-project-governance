@@ -14,7 +14,21 @@ from datetime import datetime
 
 
 def load(path: Path):
-    return json.loads(path.read_text(encoding="utf-8-sig"))
+    def pairs(items):
+        result = {}
+        for key, value in items:
+            if key in result: raise ValueError("duplicate JSON key")
+            result[key] = value
+        return result
+    def constant(value): raise ValueError("nonfinite JSON constant: " + value)
+    def finite(value):
+        number = float(value)
+        if not math.isfinite(number): raise ValueError("nonfinite JSON number")
+        return number
+    try:
+        return json.loads(path.read_text(encoding="utf-8-sig"), object_pairs_hook=pairs, parse_constant=constant, parse_float=finite)
+    except RecursionError as error:
+        raise ValueError("JSON nesting exceeds bounded parser depth") from error
 
 
 def schema_root() -> Path:
@@ -115,30 +129,39 @@ def reference_path(ref, project_root: Path) -> Path:
     posix, windows = PurePosixPath(relative), PureWindowsPath(relative)
     if posix.is_absolute() or windows.drive or windows.root or "\\" in relative or ":" in relative or any(p in {"..", ".", ""} for p in relative.split("/")):
         raise ValueError("validation_ref.path must be a project-relative path without traversal")
-    root = Path(project_root).resolve()
-    target = (root / relative).resolve()
+    from project_facts import safe_path
+    root = Path(project_root).absolute()
+    target = safe_path(root, relative)
     try:
         target.relative_to(root)
     except ValueError:
         raise ValueError("validation_ref.path escapes project root")
     if not target.is_file():
         raise ValueError("validation_ref file unavailable: %s" % relative)
-    return target
+    # Keep reference identity canonical after rejecting unsafe paths. Windows
+    # short/long ancestors and lexical '..' aliases can otherwise make compact
+    # mistake its own referenced execution file for an unreferenced file.
+    return target.resolve(strict=True)
 
 
-def resolve_validation_ref(ref, project_root: Path) -> dict:
+def resolve_validation_ref(ref, project_root: Path, source_bytes=None) -> dict:
     schema = load(schema_root() / "handoff.schema.json")["properties"]["validation_ref"]
     errors = validate_node(ref, schema, "$.validation_ref")
     if errors:
         raise ValueError("; ".join(errors))
     target = reference_path(ref, project_root)
-    with target.open("rb") as stream:
-        raw = stream.read(4 * 1024 * 1024 + 1)
+    if source_bytes is None:
+        with target.open("rb") as stream:
+            raw = stream.read(4 * 1024 * 1024 + 1)
+    else:
+        if not isinstance(source_bytes, bytes): raise ValueError("validation source bytes must be immutable bytes")
+        raw = source_bytes
     if len(raw) > 4 * 1024 * 1024:
         raise ValueError("validation_ref source exceeds the 4 MiB read limit")
     if hashlib.sha256(raw).hexdigest() != ref["sha256"]:
         raise ValueError("stale validation_ref: source SHA-256 changed; reconcile from canonical truth")
-    source = json.loads(raw.decode("utf-8"))
+    from project_facts import strict_json
+    source = strict_json(raw)
     if "pointer" in ref:
         run = source
         pointer = ref["pointer"]
@@ -171,6 +194,9 @@ def validate_file(path: Path, schema_name: str, project_root: Path = None) -> li
     errors = validate_node(data, schema)
     if not errors and "validation_runs" in data:
         errors += validation_run_errors(data["validation_runs"])
+    if not errors and "recovery" in data:
+        from project_facts import recovery_errors
+        errors += recovery_errors(data["recovery"])
     if not errors and "validation_ref" in data:
         try:
             resolve_validation_ref(data["validation_ref"], project_root)
@@ -219,6 +245,13 @@ def render(path: Path, schema_name: str, project_root: Path = None, current_revi
             run = resolve_validation_ref(data["validation_ref"], project_root)
             lines += ["Canonical reference: %s (run %s)." % (data["validation_ref"]["path"], data["validation_ref"]["run_id"]), ""]
             lines += render_validation_runs([run], current_revision)
+        if "recovery" in data:
+            recovered = data["recovery"]
+            lines += ["## Project fact recovery", "", "Read-only observations and reference fixity do not establish semantic truth or completion.", "",
+                      "- Scoped files: %d; carried references: %d; unresolved gaps: %d." %
+                      (len(recovered["scope"]), len(recovered["carry_forward_refs"]), len(recovered["gaps"]))]
+            lines += bullet_list("Decision delta", recovered["decision_delta"])
+            lines += bullet_list("Recovery gaps", recovered["gaps"])
         return "\n".join(lines).rstrip() + "\n"
     if schema_name == "execution":
         lines = ["# Engineering Execution Evidence", "", "- **Updated:** %s" % data["updated_at"], "- **Level:** %s" % data["level"], "- **Task:** %s" % data["task"], "- **Status:** %s" % data["status"], ""]
@@ -324,6 +357,9 @@ def main() -> int:
     r = sub.add_parser("render"); r.add_argument("path"); r.add_argument("--schema"); r.add_argument("--output"); r.add_argument("--project-root"); r.add_argument("--current-revision")
     c = sub.add_parser("compact"); c.add_argument("root", nargs="?", default="."); c.add_argument("--apply", action="store_true"); c.add_argument("--close-handoff", action="store_true")
     e = sub.add_parser("export"); e.add_argument("root", nargs="?", default="."); e.add_argument("--output", required=True)
+    f = sub.add_parser("recover", help="read-only task-scoped project fact recovery")
+    f.add_argument("root"); f.add_argument("--scope", action="append", required=True)
+    f.add_argument("--handoff"); f.add_argument("--git-binary")
     args = ap.parse_args()
     try:
         if args.cmd in {"validate","render"}:
@@ -350,6 +386,10 @@ def main() -> int:
         elif args.cmd == "export":
             export_bundle(Path(args.root).resolve(), Path(args.output))
             print("Evidence bundle written: %s" % args.output)
+        elif args.cmd == "recover":
+            from project_facts import recover
+            print(json.dumps(recover(args.root, args.scope, handoff=args.handoff, git_binary=args.git_binary),
+                             ensure_ascii=True, allow_nan=False, separators=(",", ":")))
     except (OSError, ValueError, json.JSONDecodeError) as exc:
         print("error: %s" % exc, file=sys.stderr)
         return 2

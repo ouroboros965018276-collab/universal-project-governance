@@ -25,15 +25,15 @@ def main(argv=None):
     commands = parser.add_subparsers(dest="command", required=True)
     for name in ("run", "ablate", "paired"):
         sub = commands.add_parser(name)
-        sub.add_argument("--spec", default="evolution/protocol/upg-evolution.json")
+        sub.add_argument("--spec", default="evolution/protocol/upg-evolution-v2.json")
         sub.add_argument("--repo", default=".")
         sub.add_argument("--output", default="eval-workspaces/evolution/" + ("run.json" if name == "run" else "matrix"))
         sub.add_argument("--runner", help="trusted module:function returning actual task receipts")
-        sub.add_argument("--backend", help="trusted module:function for SkillOpt model calls")
+        sub.add_argument("--backend", help="trusted module:function for UPG reflection model calls")
         if name == "run":
             run_parser = sub
     run_parser.add_argument("--resume", action="store_true")
-    run_parser.add_argument("--disable", action="append", default=[], choices=["skillopt", "annealing", "de", "curvature"])
+    run_parser.add_argument("--disable", action="append", default=[], choices=["reflection", "annealing", "de", "curvature"])
     run_parser.add_argument("--ordinary", action="store_true", help="ordinary perturbation control")
     for name in ("inspect", "verify", "propose"):
         sub = commands.add_parser(name)

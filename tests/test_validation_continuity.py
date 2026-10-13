@@ -7,7 +7,10 @@ from pathlib import Path
 import subprocess
 import sys
 import tempfile
+import stat
+from types import SimpleNamespace
 import unittest
+from unittest.mock import patch
 
 sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parents[1]
@@ -50,6 +53,15 @@ def ref(path, root, run_id="focused", **extra):
 
 
 class ValidationContinuityTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        helper_spec = importlib.util.spec_from_file_location("project_facts", TOOL.with_name("project_facts.py"))
+        helper = importlib.util.module_from_spec(helper_spec)
+        helper_spec.loader.exec_module(helper)
+        modules = patch.dict(sys.modules, project_facts=helper)
+        modules.start()
+        cls.addClassCleanup(modules.stop)
+
     def test_scopes_keep_their_own_denominators_and_revisions(self):
         with tempfile.TemporaryDirectory() as directory:
             path = write(Path(directory) / "execution.json", execution([
@@ -175,6 +187,70 @@ class ValidationContinuityTests(unittest.TestCase):
             write(source, execution([run(pending_retest=True)]))
             with self.assertRaisesRegex(ValueError, "stale validation_ref"):
                 state.compact(root, True, False)
+            self.assertTrue(source.exists())
+
+    def test_compaction_preserves_reference_through_noncanonical_root(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "ancestor").mkdir()
+            alias = root / "ancestor" / ".."
+            source = write(root / ".governance/execution/latest.json", execution([run()]))
+            reference = ref(source, root)
+            write(root / ".governance/handoff.json", handoff(reference))
+            before = source.read_bytes()
+            self.assertEqual(state.reference_path(reference, alias), source.resolve())
+            self.assertEqual(state.compact(alias, False, False), [])
+            self.assertEqual(state.compact(alias, True, False), [])
+            self.assertEqual(source.read_bytes(), before)
+            write(source, execution([run(pending_retest=True)]))
+            with self.assertRaisesRegex(ValueError, "stale validation_ref"):
+                state.compact(alias, True, False)
+            self.assertTrue(source.exists())
+
+    def test_reference_rejects_link_metadata_before_canonicalization(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = write(root / "execution_status.json", {"validation_runs": [run()]})
+            reference = ref(source, root)
+            before = source.read_bytes()
+            original = Path.lstat
+            for override in ({"st_file_attributes": 1024}, {"st_nlink": 2}, {"st_mode": stat.S_IFLNK | 0o777}):
+                def lstat(path, *args, **kwargs):
+                    value = original(path, *args, **kwargs)
+                    if path == source:
+                        metadata = {"st_mode": value.st_mode, "st_nlink": value.st_nlink,
+                                    "st_file_attributes": getattr(value, "st_file_attributes", 0)}
+                        return SimpleNamespace(**dict(metadata, **override))
+                    return value
+                with self.subTest(override=override), patch.object(Path, "lstat", lstat), self.assertRaisesRegex(ValueError, "symlink/reparse|hardlinked"):
+                    state.reference_path(reference, root)
+            self.assertEqual(source.read_bytes(), before)
+
+    @unittest.skipUnless(os.name == "nt", "Windows short-path identity regression")
+    def test_compaction_preserves_reference_through_windows_short_root(self):
+        import ctypes
+        with tempfile.TemporaryDirectory(prefix="validation-continuity-long-name-") as directory:
+            root = Path(directory)
+            get_short_path = ctypes.windll.kernel32.GetShortPathNameW
+            get_short_path.argtypes = [ctypes.c_wchar_p, ctypes.c_wchar_p, ctypes.c_uint32]
+            get_short_path.restype = ctypes.c_uint32
+            buffer = ctypes.create_unicode_buffer(32768)
+            length = get_short_path(str(root), buffer, len(buffer))
+            if not length or length >= len(buffer):
+                self.skipTest("Windows short-path alias unavailable on this volume")
+            alias = Path(buffer.value)
+            if alias == alias.resolve():
+                self.skipTest("Windows short and canonical paths are identical on this volume")
+            source = write(root / ".governance/execution/latest.json", execution([run()]))
+            reference = ref(source, root)
+            write(root / ".governance/handoff.json", handoff(reference))
+            before = source.read_bytes()
+            self.assertEqual(state.reference_path(reference, alias), source.resolve())
+            self.assertEqual(state.compact(alias, True, False), [])
+            self.assertEqual(source.read_bytes(), before)
+            write(source, execution([run(pending_retest=True)]))
+            with self.assertRaisesRegex(ValueError, "stale validation_ref"):
+                state.compact(alias, True, False)
             self.assertTrue(source.exists())
 
     def test_cli_resolves_reference_only_with_explicit_project_root(self):

@@ -1,6 +1,17 @@
 # Publishing and Test-Freeze Gates
 
-Current candidate: **3.0.0-rc.18 — Grader Validity and Measured Runtime Compression**
+Current candidate: **3.0.0-rc.19 — Project Fact Recovery and Measured Execution Cost**
+
+RC19 starts from merged RC18 `29cf112b4629d6b90504b079e95a5370c206a4cb`.
+Its [latency investigation](docs/rc19-latency-diagnosis.md) separates historical
+tail latency from reproducible local preparation overhead. Bounded repository
+tools, exact positive structural contracts and actual CLI usage support a new
+two-model comparison. Independent measurements and this candidate's release
+checks are pending; no real-model speedup, net-benefit or Stable claim is made.
+Installed local RC18 remains the accepted release until integration and a fresh
+deployment acceptance record. The records below retain RC18's original stages.
+
+## Historical RC18 record
 
 RC18 repairs demonstrated task-grader false positives, compacts canonical runtime instructions, accepts UTF-8 BOM JSON in runtime helpers, and binds native development measurements to their exact execution inputs and budgets. Completed paired measurements, the audited nine-arm development round and release work are recorded in [PROJECT_STATE.md](PROJECT_STATE.md); RC17's audit retains its original scope. Final local regression passes 299/299 tests in 98.700 seconds, including post-measurement bounded checkpoint-I/O retry hardening, and all eight local release gates pass. Hosted CI passes 11/11 at measured freeze `8d1cb51945c5d98bf3db7c2e72557d7e50274275`; final PR/main CI is recorded separately. Publish only after this candidate's own compile, regression, integrity, isolated lifecycle, deterministic-package and privacy checks pass. Qualification thresholds and historical outcomes are unchanged. Empirical admission remains BLOCKED and formal qualification is UNASSESSED: locked qualification is NOT RUN; empirical qualification and Stable are NOT ACHIEVED. No learned candidate is promoted. Pre-merge installation snapshot: the user-level Skill is RC17, and RC18 is prepared but not installed at that snapshot; later deployment needs its own observed acceptance record.
 

@@ -61,7 +61,7 @@ def interrupted_runner(request):
 
 
 def measured_backend(**request):
-    from evolution.skillopt_adapter import fixture_backend
+    from evolution.reflective import fixture_backend
     BACKEND_REQUESTS.append(copy.deepcopy(request))
     DISPATCH.append(("backend", request.get("stage")))
     response, usage = fixture_backend(**request)
@@ -150,7 +150,7 @@ class ControllerTests(unittest.TestCase):
         self.assertEqual(run["status"], "completed")
         for operator in controller.OPERATORS:
             self.assertGreater(run["operator_counts"][operator]["attempted"], 0, operator)
-        self.assertTrue(any(event["operator"] == "skillopt" and event["kind"] == "patch"
+        self.assertTrue(any(event["operator"] == "reflection" and event["kind"] == "patch"
                             for event in run["events"]))
         self.assertTrue(any(event["operator"] == "curvature" and event["kind"] == "surrogate-diagnostics"
                             for event in run["events"]))
@@ -180,7 +180,7 @@ class ControllerTests(unittest.TestCase):
 
     def test_compiled_plateaus_are_evaluated_once(self):
         with self.fast_engine(), contextlib.redirect_stdout(io.StringIO()):
-            run = controller.run_search(ROOT, self.protocol(), self.output, disabled=("skillopt",))
+            run = controller.run_search(ROOT, self.protocol(), self.output, disabled=("reflection",))
         identities = [item["id"] for item in run["candidates"]]
         self.assertEqual(len(identities), len(set(identities)))
         self.assertTrue(any(counts["cache_hits"] for counts in run["operator_counts"].values()))
@@ -256,7 +256,7 @@ class ControllerTests(unittest.TestCase):
         protocol["budget"]["candidates"] = 1
         with self.fast_engine():
             run = controller.run_search(ROOT, protocol, self.output.with_name("candidate-limit.json"),
-                                        disabled=("skillopt",))
+                                        disabled=("reflection",))
         self.assertEqual(run["status"], "completed")
         self.assertEqual(run["termination_reason"], "candidate-limit")
         self.assertEqual(len(run["candidates"]), 1)
@@ -361,7 +361,7 @@ class ControllerTests(unittest.TestCase):
         self.assertFalse(proposal.exists())
 
     def test_hard_rejected_real_learner_patch_skips_unpaired_memory(self):
-        from evolution.skillopt_adapter import SkillOptLearner
+        from evolution.reflective import ReflectiveLearner
 
         def changed_patch(learner, rollouts):
             policy = next(policy for policy in learner.bridge.model["policies"] if "closure" in policy)
@@ -372,13 +372,13 @@ class ControllerTests(unittest.TestCase):
             }], "reasoning": "synthetic rejected patch contract"})
 
         def validation(candidate, repo):
-            if candidate.get("operator") == "skillopt":
+            if candidate.get("operator") == "reflection":
                 return {"ok": False, "errors": ["synthetic protected-rule rejection"]}
             return self.engineering_validation(candidate, repo)
 
         with self.fast_engine(), patch.object(controller, "validate_candidate", side_effect=validation), \
-                patch.object(SkillOptLearner, "learn", new=changed_patch), \
-                patch.object(SkillOptLearner, "update_memory", side_effect=AssertionError("unpaired memory")) as memory_update:
+                patch.object(ReflectiveLearner, "learn", new=changed_patch), \
+                patch.object(ReflectiveLearner, "update_memory", side_effect=AssertionError("unpaired memory")) as memory_update:
             run = controller.run_search(ROOT, self.protocol(iterations=1), self.output,
                                         runner=measured_runner, backend=measured_backend,
                                         disabled=("annealing", "de", "curvature"))
@@ -388,7 +388,7 @@ class ControllerTests(unittest.TestCase):
         rejected = [item for item in run["candidates"] if not item["evaluation"]["ok"]]
         self.assertTrue(rejected)
         self.assertTrue(all(not item["observations"] and item["loss"] is None for item in rejected))
-        self.assertEqual(run["operator_counts"]["skillopt"]["accepted"], 0)
+        self.assertEqual(run["operator_counts"]["reflection"]["accepted"], 0)
         memory_update.assert_not_called()
         self.assertTrue(any(event["kind"] == "memory-skipped" for event in run["events"]))
 
