@@ -845,6 +845,43 @@ class ProviderToolsTests(_ProviderFixture, unittest.TestCase):
         self.assertIsNone(lab._totals([usage, dict(usage, cached_tokens=None)])["cached_tokens"])
         self.assertEqual(lab._totals([usage, dict(usage, cached_tokens=None)])["total_tokens"], 30)
 
+    def test_usage_details_allow_only_missing_null_or_dict_and_counters_remain_strict(self):
+        base = {"prompt_tokens": 10, "completion_tokens": 5, "total_tokens": 15}
+        for field, counter in (("prompt_tokens_details", "cached_tokens"), ("completion_tokens_details", "reasoning_tokens")):
+            for malformed in ([], False, 0, "", [0], "details", True):
+                with self.subTest(field=field, malformed=malformed):
+                    self.assertIsNone(lab._usage(dict(base, **{field: malformed})))
+            for allowed in (None, {}):
+                self.assertIsNone(lab._usage(dict(base, **{field: allowed}))[counter])
+            for invalid in (True, False, -1, 11, "0"):
+                with self.subTest(field=field, invalid=invalid):
+                    self.assertIsNone(lab._usage(dict(base, **{field: {counter: invalid}})))
+        self.assertIsNone(lab._usage(base)["cached_tokens"])
+        self.assertIsNone(lab._usage(base)["reasoning_tokens"])
+        # A bool alias must not compare equal to an otherwise valid integer 0.
+        self.assertIsNone(lab._usage(dict(base, prompt_cache_hit_tokens=False,
+                                         prompt_tokens_details={"cached_tokens": 0})))
+        self.assertEqual(lab._usage(dict(base, prompt_cache_hit_tokens=0,
+                                        prompt_tokens_details={"cached_tokens": 0}))["cached_tokens"], 0)
+        self.assertIsNone(lab._usage(dict(base, prompt_cache_hit_tokens=None))["cached_tokens"])
+
+    def test_invalid_detail_shape_preserves_private_raw_basic_components_and_unknown_fence(self):
+        for index, (field, value) in enumerate((("prompt_tokens_details", []), ("completion_tokens_details", False))):
+            self.artifacts, self.before, self.after = self.base / ("invalid-details-" + str(index)), [], []
+            raw = self.read(1)
+            raw["usage"][field] = value
+            with patch.object(lab, "_post", return_value=(200, {}, canonical(raw))) as post:
+                result = self.run_actor()
+            self.assertEqual(post.call_count, 1)
+            self.assertTrue(result["unknown_usage"])
+            self.assertIsNone(result["known_usage"]["total_tokens"])
+            self.assertIsNone(self.after[0]["usage"])
+            self.assertTrue((self.artifacts / "requests/01.pending.json").exists())
+            actual = json.loads((self.artifacts / "requests/01.response.json").read_bytes())["response"]["usage"]
+            self.assertEqual(actual, raw["usage"])
+            self.assertEqual((actual["prompt_tokens"], actual["completion_tokens"], actual["total_tokens"]), (10, 5, 15))
+            self.assertEqual(result["tool_events"], [])
+
     def test_connection_only_failures_record_attempt_and_prove_no_http_without_retry(self):
         cases = [(socket.gaierror(11001, SECRET), "gaierror"),
                  (lab.ssl.SSLCertVerificationError(1, "Bearer " + SECRET), "SSLCertVerificationError"),

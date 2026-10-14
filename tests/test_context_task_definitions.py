@@ -250,7 +250,8 @@ class SemanticTaskFixtures(unittest.TestCase):
                      "须移除旧绕过符号，保留消费者和驱动。应用测试未运行，延迟与旧作者更多意图未知。" % limit) + links + "。\n"
         else:
             prose = ("- 参照 " + links + "。\n- 待实现范围含端点0和%s；None、负数、高于%s的输入都应返回False。"
-                     "清除旧绕过，保留消费者与驱动。\n- 应用测试尚未运行，延迟未知，磁盘以外的旧作者意图未知。\n" % (limit, limit))
+                     "当前进度以HANDOFF和实际源码为准，清除旧绕过并保留消费者与驱动。\n"
+                     "- 应用测试尚未运行，延迟未知，磁盘以外的旧作者意图未知。\n" % (limit, limit))
         files[pair["document_path"]] = prose
         return files
 
@@ -299,16 +300,72 @@ class SemanticTaskFixtures(unittest.TestCase):
                 receiver = GEN.document_receiver_from_snapshot(pair, snapshot)
                 self.assertEqual(receiver["task"]["initial_files"], snapshot)
                 self.assertEqual(receiver["correct_files"][pair["document_path"]], snapshot[pair["document_path"]])
-                self.assertEqual(receiver["task"]["semantic_contract"]["protected_files"][pair["document_path"]], GEN.sha(snapshot[pair["document_path"]]))
+                self.assertNotIn(pair["document_path"], receiver["task"]["semantic_contract"]["protected_files"])
+                self.assertEqual(receiver["source_snapshot_sha256"], GEN.sha(json.dumps(snapshot, sort_keys=True, ensure_ascii=False)))
                 self.assertFalse(receiver["conversation_history_transferred"])
                 task = GEN.to_broker_task(receiver)
                 self.assertIs(validate_task(task), task)
+                self.assertEqual(task["writable_files"], [receiver["roles"]["core"], pair["handoff_path"], pair["document_path"]])
+                document_check = next(check for check in task["checks"] if check["path"] == pair["document_path"])
+                self.assertEqual(document_check, pair["source"]["task"]["checks"][0])
+                # The finite mechanical check cannot detect source-stage wording
+                # becoming stale. Stage-specific factual review remains required.
                 self.assertTrue(self.assess(receiver, receiver["correct_files"])["ok"])
                 self.assertTrue(self.assess(receiver, GEN.equivalent_files(receiver))["ok"])
                 self.assertFalse(self.assess(receiver, snapshot)["ok"])
                 changed = copy.deepcopy(receiver["correct_files"])
-                changed[pair["document_path"]] += "receiver changed protected prose\n"
-                self.assertFalse(self.assess(receiver, changed)["ok"])
+                changed[pair["document_path"]] += "核心现按目标实现；应用测试仍未运行，延迟与磁盘外作者意图仍未知。\n"
+                self.assertTrue(self.assess(receiver, changed)["ok"])
+
+    def test_receiver_can_maintain_final_document_after_both_legitimate_source_wordings(self):
+        pair = self.document_pair()
+        for variant in (1, 2):
+            snapshot = self.document_snapshot(pair, variant)
+            receiver = GEN.document_receiver_from_snapshot(pair, snapshot)
+            files = copy.deepcopy(receiver["correct_files"])
+            links = "、".join("[当前资料](%s)" % path for path in pair["source"]["task"]["checks"][0]["expected"]["required_links"])
+            core = receiver["roles"]["core"]
+            limit = receiver["task"]["semantic_contract"]["modules"][core]["constants"]["LIMIT"]
+            files[pair["document_path"]] = ("当前核心保留消费者和驱动，移除了旧绕过；非None数值仅在闭区间0..%s内返回True，"
+                "None、负数和越界返回False。应用测试未运行，延迟与磁盘之外的作者意图未知。" % limit) + links + "。\n"
+            final_prose = files[pair["document_path"]]
+            GEN.apply_exact(files, receiver["task"]["exact_checks"])
+            self.assertEqual(files[pair["document_path"]], final_prose)
+            self.assertNotEqual(final_prose, snapshot[pair["document_path"]])
+            self.assertTrue(self.assess(receiver, files)["ok"])
+            self.assertEqual(receiver["task"]["initial_files"], snapshot)
+            self.assertEqual(receiver["task"]["semantic_contract"]["protected_files"],
+                             {path: GEN.sha(text) for path, text in snapshot.items() if path not in receiver["task"]["writable_files"]})
+            with tempfile.TemporaryDirectory(prefix="doc-maintenance-fixture-", dir=Path(__file__).resolve().parents[1] / "eval-workspaces") as directory:
+                root = Path(directory)
+                for path, text in files.items():
+                    (root / path).write_bytes(text.encode("utf-8"))
+                broker = RepoBroker(root, GEN.to_broker_task(receiver), "forbidden-unused-git")
+                self.assertTrue(broker.validate()["ok"])
+                (root / pair["document_path"]).write_text("缺少必需链接。\n", encoding="utf-8")
+                self.assertFalse(broker.validate()["ok"])
+
+    def test_document_positive_contract_is_required_without_claiming_factual_approval(self):
+        pair = self.document_pair()
+        receiver = GEN.document_receiver_from_snapshot(pair, self.document_snapshot(pair))
+        self.assertTrue(self.assess(receiver, receiver["correct_files"])["ok"])
+        self.assertIn("UNASSESSED", pair["external_document_review"])
+        self.assertNotIn("factual_pass", receiver)
+        contract = json.loads(next(text for path, text in receiver["task"]["initial_files"].items() if path.endswith("_CONTRACT.json")))
+        self.assertIn("source-stage", contract["document_contract"]["semantic_scope"])
+        self.assertIn("final-stage", contract["document_contract"]["semantic_scope"])
+        for mode in ("missing", "duplicate", "unsupported-kind"):
+            changed = copy.deepcopy(receiver)
+            checks = changed["task"]["exact_checks"]
+            document = next(check for check in checks if check["kind"] == "document_assertions")
+            if mode == "missing":
+                checks.remove(document)
+            elif mode == "duplicate":
+                checks.append(copy.deepcopy(document))
+            else:
+                document["kind"] = "unregistered_assertion"
+            with self.subTest(mode=mode), self.assertRaises(ValueError):
+                GEN.to_broker_task(changed)
 
     def test_document_snapshot_rejects_drift_and_keeps_factual_review_external(self):
         pair = self.document_pair()

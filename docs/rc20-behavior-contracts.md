@@ -117,7 +117,12 @@ README、HANDOFF 等文件内声明和所有终态报告，回到原 CONTRACT、
 `build_document_handoff_development(instance, seed=..., namespace=...)` 仅构造显式
 公开开发夹具，没有默认注册身份、唯一文案答案或人工重复段落。writer 只改已有
 README；receiver 从机械准入的实际快照启动、新建 journal，并按现有 VM 和正向
-JSON 交接契约完成修改。`document_receiver_from_snapshot` 不转移聊天，不替换
+JSON 交接契约完成修改，同时可维护受影响的 README，并对最终 README 使用同一
+`document_assertions`。实际 source 文档原始字节绑定 receiver 的初始快照，必须先读
+再改；它不再是最终不可变文件，其他保护哈希不变。独审按 writer 结束时的事实审
+source 文档，按 receiver 结束时的事实审最终文档；状态指针是合法写法之一，不是
+唯一文案。旧“待修复”表述在实现后过期只能由事实审阅否决，有限链接检查不伪装
+能自动识别陈旧事实。`document_receiver_from_snapshot` 不转移聊天，不替换
 参考文案，也不代替 source 的原生工具证据。两阶段的读写范围分别从各自任务元数据
 投影；完整保护哈希不依赖 Agent 是否读过无关文件。此开发夹具不能充作独立正式样本。
 

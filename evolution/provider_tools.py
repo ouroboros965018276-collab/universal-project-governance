@@ -239,8 +239,12 @@ def _usage(raw):
         return None
     if raw["total_tokens"] != raw["prompt_tokens"] + raw["completion_tokens"]:
         return None
-    prompt_details = raw.get("prompt_tokens_details") or {}
-    completion_details = raw.get("completion_tokens_details") or {}
+    prompt_details = raw.get("prompt_tokens_details")
+    completion_details = raw.get("completion_tokens_details")
+    if prompt_details is None:
+        prompt_details = {}
+    if completion_details is None:
+        completion_details = {}
     if not isinstance(prompt_details, dict) or not isinstance(completion_details, dict):
         return None
     cached = prompt_details.get("cached_tokens", raw.get("prompt_cache_hit_tokens"))
@@ -248,8 +252,11 @@ def _usage(raw):
     for value, maximum in ((cached, raw["prompt_tokens"]), (reasoning, raw["completion_tokens"])):
         if value is not None and (type(value) is not int or not 0 <= value <= maximum):
             return None
-    if "prompt_cache_hit_tokens" in raw and cached != raw["prompt_cache_hit_tokens"]:
-        return None
+    if "prompt_cache_hit_tokens" in raw:
+        legacy_cached = raw["prompt_cache_hit_tokens"]
+        if (legacy_cached is not None and (type(legacy_cached) is not int or not 0 <= legacy_cached <= raw["prompt_tokens"])
+                or cached != legacy_cached):
+            return None
     return {"input_tokens": raw["prompt_tokens"], "output_tokens": raw["completion_tokens"],
             "total_tokens": raw["total_tokens"], "cached_tokens": cached, "reasoning_tokens": reasoning,
             "measurement": "actual-official-chat-api-response"}
