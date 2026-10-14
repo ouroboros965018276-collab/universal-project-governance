@@ -1,15 +1,15 @@
 # Publishing and Test-Freeze Gates
 
-Current candidate: **3.0.0-rc.19 — Project Fact Recovery and Measured Execution Cost**
+Current candidate: **3.0.0-rc.20 — Task Context and Complete Change Discipline**
 
-RC19 starts from merged RC18 `29cf112b4629d6b90504b079e95a5370c206a4cb`.
-Its [latency investigation](docs/rc19-latency-diagnosis.md) separates historical
-tail latency from reproducible local preparation overhead. Bounded repository
-tools, exact positive structural contracts and actual CLI usage support a new
-two-model comparison. Independent measurements and this candidate's release
-checks are pending; no real-model speedup, net-benefit or Stable claim is made.
-Installed local RC18 remains the accepted release until integration and a fresh
-deployment acceptance record. The records below retain RC18's original stages.
+RC20 starts from merged RC19 `bd4a4d5c1c6fb9fca829e410729879d1b01f05b9`.
+Current release, validation and installation facts belong in
+[PROJECT_STATE.md](PROJECT_STATE.md). RC19's [installation acceptance](audits/rc19-installation.audit.json)
+is historical baseline evidence and does not validate RC20. RC20 needs its own
+compiled-runtime, regression, navigation, integrity, package and installation
+acceptance. Source-group comparisons must retain every registered call, failed
+result and unknown-usage fence; neither tests nor shorter documents establish
+net benefit. Stable still requires the unchanged formal qualification gates.
 
 ## Historical RC18 record
 
@@ -30,6 +30,7 @@ python tools/validate_repository.py .
 python tools/validate_skill_bundle.py universal-project-governance
 python universal-project-governance/scripts/validate_integrity.py universal-project-governance
 python tools/security_audit.py .
+python tools/validate_navigation.py .
 python -m unittest discover -s tests -v
 ```
 

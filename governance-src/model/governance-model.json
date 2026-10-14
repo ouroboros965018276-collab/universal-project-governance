@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "name": "universal-project-governance",
-  "version": "3.0.0-rc.19",
+  "version": "3.0.0-rc.20",
   "architecture": "compiled-governance",
   "principles": [
     "ONE_SEMANTIC_RULE_ONE_CANONICAL_DEFINITION",
@@ -44,6 +44,36 @@
     {
       "id": "STRUCTURAL_INTEGRATION",
       "statement": "Except for truly local low-risk edits, integrate at the smallest responsible canonical layer and remove superseded patch paths; structural mode never authorizes unrelated redesign, API change, migration, or cleanup outside task scope."
+    }
+  ],
+  "execution_guidance": [
+    {
+      "id": "decision_relevance",
+      "policy_ids": [
+        "TRUTH_CURRENT"
+      ],
+      "statement": "Retain only information current readers need to use, maintain, validate or take over the project. Follow the user's language. Put operational self-explanation in the delivery, not README unless needed for project understanding. Choose expression and format for the task and reader, without mechanical style rules or extra model polishing calls."
+    },
+    {
+      "id": "complete_change",
+      "policy_ids": [
+        "STRUCTURAL_INTEGRATION"
+      ],
+      "statement": "Make the complete task-bounded change at the existing correct responsible layer; preserve contracts, safety and error handling, and resolve affected consumers, tests and obsolete paths. Minimize unnecessary work, not lines, diff size or deletion volume. Prioritize user intent, then correctness/safety/truth, contracts/structure, maintainability/readability, and cost."
+    },
+    {
+      "id": "evidence_fidelity",
+      "policy_ids": [
+        "EVIDENCE_AFFECTED"
+      ],
+      "statement": "Use concrete details over empty generalities; match claim strength to observed evidence. Preserve technical identifiers, numbers, references, negation and unknowns when rewriting or shortening."
+    },
+    {
+      "id": "task_scoped_reading",
+      "policy_ids": [
+        "EVIDENCE_AFFECTED"
+      ],
+      "statement": "Locate task modules, symbols or document anchors through existing indexes or bounded search; indexes route reads, never prove complete dependencies. Expand through implementation, contracts, consumers and tests. Widen for stale/conflicting indexes, dynamic dependencies or insufficient coverage; recover interrupted/stale/contradictory state with the existing fact-recovery path. Read budgets never prove completion."
     }
   ],
   "risk_model": {

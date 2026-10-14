@@ -1,6 +1,6 @@
 # Contributing
 
-Current candidate: **3.0.0-rc.19 — Latency Accounting and Bounded Real Tools**. Change canonical source, regenerate the runtime, and keep engineering, bounded development measurements, independent efficacy evidence, and formal qualification distinct. Qualification thresholds remain unchanged; current checks and measurements are pending in [PROJECT_STATE.md](PROJECT_STATE.md).
+Current candidate: **3.0.0-rc.20 — Task Context and Complete Change Discipline**. Change canonical source, regenerate the runtime, and keep engineering, bounded development measurements, independent efficacy evidence, and formal qualification distinct. Qualification thresholds remain unchanged; current checks and measurements are pending in [PROJECT_STATE.md](PROJECT_STATE.md).
 
 ## Structural contribution rule
 

@@ -1,0 +1,11 @@
+# Selective upstream rule provenance
+
+[`third_party/upstream-sources.json`](../third_party/upstream-sources.json) is the single source for the reviewed commit/file/license identities, selected concepts, excluded behavior, UPG targets, triggers and UPM acceptance contracts. [`THIRD_PARTY_NOTICES.md`](../THIRD_PARTY_NOTICES.md) is the public acknowledgment entry. The existing legal and historical records under [`third_party/notices/`](../third_party/notices/README.md) remain intact.
+
+The map records independent conceptual adaptations. It is provenance and an acceptance contract; `governance-src/model/governance-model.json` remains authoritative for governance semantics. Daily runtime instructions are compiled from that source and do not concatenate external SKILL documents. Reading an external SKILL neither activates its persona nor authorizes its tools, network calls, credential access or installation.
+
+Each `sources[].selected_files` entry has a complete pinned commit URL and Git blob identity. `mappings[]` joins an inspected file/section to existing policy IDs, optional execution-guidance IDs, a concrete trigger and one acceptance case. Exclusions state where the original behavior would conflict with complete structural repair, factual precision, scoped evidence or user instructions. The map distinguishes the current license from legacy or transitive notices; public attribution does not imply endorsement or import permission for unrelated assets.
+
+UPM cases specify positive and failure conditions. Existing `test_references` identify relevant deterministic coverage; their presence is not a claim that a new run passed. The release audit must bind executed results to the actual tested source. Empty test references mark criteria requiring added fixture coverage or explicit review. Static/fixture validation, source hashes and public acknowledgment do not establish model quality, token/time savings, causal operator benefit or formal qualification.
+
+New-source ablations may remove their added execution guidance only. Existing core policies, truthful evidence, security, required validation and handoff obligations remain mandatory in every control. Historical offline-learning runs keep their original identities; unsuccessful or no-gain runs do not authorize promotion. This provenance work runs no model inference.

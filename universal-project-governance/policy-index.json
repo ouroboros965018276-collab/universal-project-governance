@@ -109,7 +109,7 @@
         "automation",
         "design"
       ],
-      "closure": "Synchronize existing canonical project documentation/state with what is true now; do not append a second independently editable truth.",
+      "closure": "Synchronize existing canonical project documentation/state with what is true now; do not append a second independently editable truth. Retain only information current readers need to use, maintain, validate or take over the project. Follow the user's language. Put operational self-explanation in the delivery, not README unless needed for project understanding. Choose expression and format for the task and reader, without mechanical style rules or extra model polishing calls.",
       "conflicts_with": [],
       "eval_tags": [
         "truth",
@@ -156,7 +156,7 @@
         "automation",
         "design"
       ],
-      "closure": "Validate the actual claims made by the change using the smallest sufficient checks; report any unverified surface explicitly.",
+      "closure": "Validate the actual claims made by the change using the smallest sufficient checks; report any unverified surface explicitly. Use concrete details over empty generalities; match claim strength to observed evidence. Preserve technical identifiers, numbers, references, negation and unknowns when rewriting or shortening. Locate task modules, symbols or document anchors through existing indexes or bounded search; indexes route reads, never prove complete dependencies. Expand through implementation, contracts, consumers and tests. Widen for stale/conflicting indexes, dynamic dependencies or insufficient coverage; recover interrupted/stale/contradictory state with the existing fact-recovery path. Read budgets never prove completion.",
       "conflicts_with": [],
       "eval_tags": [
         "validation",
@@ -359,7 +359,7 @@
         "design",
         "governance"
       ],
-      "closure": "For non-trivial work, identify the smallest responsible canonical layer, integrate the requested change there, remove superseded patch/shim/duplicate paths when safe, and stop at the task boundary. Structural integration never authorizes unrelated redesign, API/contract change, architectural migration, or opportunistic refactoring.",
+      "closure": "For non-trivial work, identify the smallest responsible canonical layer, integrate the requested change there, remove superseded patch/shim/duplicate paths when safe, and stop at the task boundary. Structural integration never authorizes unrelated redesign, API/contract change, architectural migration, or opportunistic refactoring. Make the complete task-bounded change at the existing correct responsible layer; preserve contracts, safety and error handling, and resolve affected consumers, tests and obsolete paths. Minimize unnecessary work, not lines, diff size or deletion volume. Prioritize user intent, then correctness/safety/truth, contracts/structure, maintainability/readability, and cost.",
       "conflicts_with": [],
       "eval_tags": [
         "structural-integration",
@@ -926,7 +926,7 @@
     "release_operation_forces": "audit"
   },
   "schema_version": 1,
-  "source_sha256": "985b9094164a3973d529023b6795f91207920056824ce00d9c741c0a80b97801",
+  "source_sha256": "139d4072bec6df5550501578c954e018f4673fcd06f17e876709c31207892fb4",
   "structural_integration": {
     "exempt_operations": [
       "release"
@@ -980,5 +980,5 @@
       "governance_upgrade"
     ]
   },
-  "version": "3.0.0-rc.19"
+  "version": "3.0.0-rc.20"
 }

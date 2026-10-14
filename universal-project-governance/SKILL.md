@@ -4,7 +4,7 @@ description: Govern maintained-project changes across project types and hosts wi
 license: Apache-2.0
 compatibility: Core needs no runtime. Optional deterministic planner/state/integrity helpers use Python 3.8+.
 metadata:
-  version: "3.0.0-rc.19"
+  version: "3.0.0-rc.20"
   standard: "agentskills.io"
   maturity: "release-candidate"
   architecture: "compiled-governance"
@@ -34,15 +34,21 @@ Legacy adoption: in place, no restructuring/migration. Artifacts are evidence; f
 
 ## Execution
 
-Low-risk local corrections: hot path/proportional evidence, no architecture work. Non-trivial: STRUCTURAL_INTEGRATION; remove in-scope superseded shims/branches/compatibility paths/detached fixes. No unrelated redesign/API/contract change/migration/refactor.
+**decision_relevance** — Retain only information current readers need to use, maintain, validate or take over the project. Follow the user's language. Put operational self-explanation in the delivery, not README unless needed for project understanding. Choose expression and format for the task and reader, without mechanical style rules or extra model polishing calls.
 
-Bound context; batch known source/consumer/contract/evidence/state reads and related edits. Derive records, including dependent after-state checksums, from verified actual-byte edit receipts and still-current unchanged-content reads; do not reread solely to obtain an already verified current checksum. Re-read for missing/stale evidence, failed checks, later edits or required project inspection. Run required checks on final scoped state; batch independent checks/applicable status. Reuse only with matching source/tool/context identities and validated cached bytes. Finish with successful required checks, applicable verified receipts and evidence for acceptance/all governance obligations; preserve task quality.
+**complete_change** — Make the complete task-bounded change at the existing correct responsible layer; preserve contracts, safety and error handling, and resolve affected consumers, tests and obsolete paths. Minimize unnecessary work, not lines, diff size or deletion volume. Prioritize user intent, then correctness/safety/truth, contracts/structure, maintainability/readability, and cost.
+
+**evidence_fidelity** — Use concrete details over empty generalities; match claim strength to observed evidence. Preserve technical identifiers, numbers, references, negation and unknowns when rewriting or shortening.
+
+**task_scoped_reading** — Locate task modules, symbols or document anchors through existing indexes or bounded search; indexes route reads, never prove complete dependencies. Expand through implementation, contracts, consumers and tests. Widen for stale/conflicting indexes, dynamic dependencies or insufficient coverage; recover interrupted/stale/contradictory state with the existing fact-recovery path. Read budgets never prove completion.
+
+Batch known reads/edits and independent checks/status. Derive records and dependent after-state checksums from verified actual-byte edit receipts or still-current unchanged-content reads; do not reread solely for an already verified current checksum. Re-read for missing/stale evidence, failed checks, later edits or required inspection. Reuse validated cached bytes only with matching source/tool/context identities. Run required checks on final scoped state; finish with successful results, verified receipts and evidence for acceptance/all governance obligations.
 
 Helpers: verified Python 3.8+; Windows: resolve `py -3` or its executable, never assume `python3`. Substitute below. Typed context: `python scripts/plan_governance.py --project-root <root> --context <context.json>`.
 
 Planner validates context schema/binding/reporting health; follow change mode/scope guard/rule closure/evidence/report level/handoff, no unrelated policy. Unknown optional profiles: universal task/risk rules, exclude no projects. No helpers: match `policy-index.json` operation/domains/signals plus `requires` closure.
 
-Assess observable scope/reversibility/security/data impact/external consumers/migration/contract change/unknowns/handoff need. Confidence is not evidence; file/line counts secondary.
+Assess observable scope, reversibility, security/data impact, consumers, migration, contracts, unknowns and handoff need; confidence is not evidence.
 
 ## Evidence and reports
 

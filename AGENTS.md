@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Current candidate: **3.0.0-rc.19 — Project Fact Recovery and Measured Execution Cost**.
+Current candidate: **3.0.0-rc.20 — Task Context and Complete Change Discipline**.
 
 ## First modifying activation
 
@@ -53,3 +53,7 @@ Do not edit a frozen surface after a real result round begins.
 Exposed regression fixtures cannot become an independent holdout again. Keep RC18's bounded native-CLI artifact tasks separate from real tool execution, cross-Agent handoff, and formal qualification evidence. Requested model names, reported completed-turn usage, and provider-internal attempt coverage must retain their observed limits.
 
 Evidence overrides desired release outcomes.
+
+## Task context and maintained content
+
+Apply the canonical execution_guidance from governance-src/model/governance-model.json through the generated Skill and planner. MODULE_MAP.md is this repository's source/contract/consumer/test routing entry. Keep governance semantics in that canonical source; this file does not define another writing, change or reading policy.

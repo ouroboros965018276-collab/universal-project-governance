@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.0.0-rc.20 — 2026-10-14 — candidate
+
+- Integrates four canonical guidance groups for reader relevance, complete changes, evidence fidelity and task-scoped reading through the existing policy graph; required safety/quality closures remain protected.
+- Pins and acknowledges Caveman, Ponytail, Academic Humanizer, reverse-skill and SkillOpt with explicit adaptation/exclusion and acceptance mapping; no external persona or toolchain is automatically installed.
+- Routes maintenance through the existing module map and bounded link/anchor validation, with progressive expansion and stale-state recovery rather than whole-document loading.
+- Keeps current usage/state concise and links frozen historical evidence; no model-effectiveness or Stable claim follows from tests or document shortening.
+
+
 ## 3.0.0-rc.19 — 2026-10-13 — candidate
 
 - Separates RC18 historical tail latency from reproduced preparation costs; retains the original paired outcome.
