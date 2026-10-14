@@ -35,7 +35,7 @@ PUBLIC_LANGUAGE = {
     "version": "bounded-ast-behavior-v1",
     "semantics": "Behavioral equivalence is accepted within this published finite language; exact AST text is not required.",
     "statements": ["function definitions with positional/keyword-only parameters and constant defaults", "local assignment", "if/else", "return", "raise ValueError/TypeError"],
-    "expressions": ["JSON primitive/list/dict literals", "names", "subscript without slices", "+ - * %", "unary +/-/not", "and/or", "comparisons including is/in", "conditional expression", "registered pure function calls"],
+    "expressions": ["None/bool/bounded-int/string/list/dict literals; dict keys must be strings; float values are unsupported", "names", "subscript without slices", "+ - * and integer %", "unary +/-/not", "and/or", "comparisons including in/not in; is/is not only for None/bool", "conditional expression", "registered pure function calls"],
     "builtins": ["len", "str", "int", "bool", "abs"],
     "string_methods": ["strip", "casefold", "upper", "lower"],
     "imports": "static from <registered module> import <export>; local aliases are allowed; canonical target and result dependency must remain",
