@@ -1,0 +1,143 @@
+{
+  "schema_version": 1,
+  "study_id": "upg-rc20-tools-thinking-development-v1",
+  "registered_at_utc": "2026-10-14T17:50:21.128752+00:00",
+  "scope": "DEVELOPMENT only, full candidate only; mode and cap change together. No baseline, causal thinking effect, independent efficacy, population or Stable claim. Document mechanical admission is not full semantic PASS; external factual review remains UNKNOWN until terminal.",
+  "protocol_sha256": "11ca27346df362d7d37b9801213a42368da6d859a64f7d9e570c87fb8d28ba06",
+  "candidate_source_commit": "85838b9bcd248e0a39e8fc74bc250a43806456c6",
+  "seed": 90140,
+  "namespace": "rc20_tools_thinking_development_v1",
+  "providers": {
+    "deepseek": "deepseek-flash",
+    "mimo": "mimo-v2.6-pro"
+  },
+  "profile": {
+    "output_cap": 8192,
+    "profile_id": "thinking-enabled-8192-v1",
+    "response_json_mode": false,
+    "terminal_report": "native-tool",
+    "thinking": "enabled"
+  },
+  "provider_profiles": {
+    "deepseek": {
+      "model": "deepseek-flash",
+      "output_cap": 8192,
+      "reasoning_effort": "low",
+      "thinking": "enabled"
+    },
+    "mimo": {
+      "model": "mimo-v2.6-pro",
+      "output_cap": 8192,
+      "reasoning_effort": null,
+      "thinking": "enabled"
+    }
+  },
+  "caps": {
+    "actors": 20,
+    "deepseek_USD": "2",
+    "known_reported_tokens_soft": 2500000,
+    "mimo_CNY": "12",
+    "mimo_USD": "2",
+    "ordinary_strict_failures": 2,
+    "request_slots": 240,
+    "round_seconds_soft": 1800
+  },
+  "order": {
+    "chain_kinds": [
+      "core",
+      "core",
+      "document",
+      "document"
+    ],
+    "direct_families": [
+      "single-feature-navigation",
+      "public-api-consumers",
+      "stale-map-source-conflict",
+      "simplification-preserves-safety",
+      "evidence-fidelity",
+      "interrupted-handoff-recovery"
+    ],
+    "direct_providers": [
+      "deepseek",
+      "mimo"
+    ],
+    "handoffs_first": [
+      [
+        "deepseek",
+        "mimo"
+      ],
+      [
+        "mimo",
+        "deepseek"
+      ],
+      [
+        "deepseek",
+        "mimo"
+      ],
+      [
+        "mimo",
+        "deepseek"
+      ]
+    ]
+  },
+  "planned_actor_max": 20,
+  "failure_stop": "Two native/mechanical strict actor failures stop this DEVELOPMENT collection; actual unsafe/unknown state stops immediately. No automatic retry or continuation after stop.",
+  "source_map_sha256": "c4b08d6236f57cdadf1642c251bd754683058b10cdfadb70e3d16f5383be92d6",
+  "source_file_count": 115,
+  "source_and_external_audit_archive_map_sha256": "4be1a1e94fb579bc818429dc15594e7505ad884e2f5e4bea1f2558ea30ceba07",
+  "source_and_external_audit_archive_count": 124,
+  "execution_source_sha256": {
+    "eval-workspaces/rc20-semantic-api-v1.py": "16f35ee8dcfd326e4c97dcba11c8a8c261808fdb3b558aafbcd6cf2672f2aa05",
+    "eval-workspaces/rc20-tools-thinking-development-ledger-v1.py": "6d575971a020dea957562c02d7e4a5e191604b9e514989ed9fe6c0e8db2ec649",
+    "eval-workspaces/rc20-tools-thinking-development-v1.py": "10f7e970741f1d850e1feb12a3b3841dc997b4c43d0db88b598d0560e544ddf4",
+    "eval-workspaces/rc20_provider_vault.py": "06dbe6ebf4573a0e514849864f118f3c162ae41ec206a7c379edd6f26e93426b",
+    "evolution/experiments/context_tasks.py": "38fc8d605e52b52719c4a75387fb330fe3e6f89df493e20f0a8e24ca2a3516ed",
+    "evolution/provider_tools.py": "6752e77cb02a9aca196443b9334d54d75de64142f537f06904df087f83d2f9ef",
+    "evolution/semantic_contract.py": "cf6a6c207c47f003e7877b2a7f93c7e192415ffa229e80693276d1fb23298286",
+    "evolution/tool_broker.py": "12f699943e85aec4857bd14086e756de112117119a7551ff76da9cc1cde7590e",
+    "evolution/tool_campaign.py": "1fe49c9f725688529a487aa31bea8c4c503988919d662734b761c906c1d5b4e2",
+    "tools/validate_navigation.py": "ce8cc0e107284ae10abde3e52f54f22529fc838059e91cf05c8a94c829aeb947",
+    "eval-workspaces/rc20-semantic-api-independent-audit-tests.py": "9cc77bda912eb8aa35db9f56615f6075f2d28933dc2d21675f96f66497cd44c0",
+    "eval-workspaces/rc20-semantic-api-independent-audit.py": "01e19f0c85475bdee68beac826ff4c8de7da7e4a46c7a6a07e828acd6c6dd87a",
+    "eval-workspaces/rc20-tools-thinking-development-independent-audit-tests.py": "e4aa5001d83fff503db96e9a08fe1d73e2d06598fa536df5aa04ca84ac25b58f",
+    "eval-workspaces/rc20-tools-thinking-development-independent-audit.py": "35a66f7bab5478976052ba7e0fb92cc3d20dc13167ff436c285aee967d01713e",
+    "eval-workspaces/rc20-tools-thinking-development-ledger-v1-tests.py": "53e5f6cb37e5caa8a44b4ec083110005dc2f4af11f66d84d04e94898403cbf1c",
+    "eval-workspaces/rc20-tools-thinking-development-v1-tests.py": "38833900a0843451aa48e0824092e8f772d8cc164e0265764a4b8d5c74262c21",
+    "eval-workspaces/rc20-tools-thinking-development-v1.manual-rubric.json": "be1cc7494d7565a805993cfe2c2430f809c29a53d487948bc1451754a3f537a1",
+    "eval-workspaces/rc20-thinking-raw-auditor-freeze-v1/freeze.json": "b00d67003f43e843b134f3f20ebf7e40410cfbf32a255341bb070bf1302e6e3a",
+    "eval-workspaces/rc20-thinking-development-independent-final.json": "9f37393bfc7da286607d8249d5f1ece94d4dde0875d0cd90b2338fb0ec8fd856"
+  },
+  "engineering_validation": {
+    "local_gates_passed": 9,
+    "unit_discovered": 764,
+    "unit_passed": 762,
+    "platform_skipped": 2,
+    "source_before_after_unchanged": true,
+    "exact_candidate_hosted_run": 38608508816,
+    "hosted_jobs_passed": 11
+  },
+  "private_collector_independent_review_sha256": "9f37393bfc7da286607d8249d5f1ece94d4dde0875d0cd90b2338fb0ec8fd856",
+  "raw_auditor_readiness_sha256": "b00d67003f43e843b134f3f20ebf7e40410cfbf32a255341bb070bf1302e6e3a",
+  "raw_auditor_synthetic_tests": {
+    "author_passed": 25,
+    "author_seconds": 2.319,
+    "root_passed": 25,
+    "root_seconds": 2.307
+  },
+  "independence": "Independent raw receipt/payload replay/current-byte prefix/Decimal accounting; explicitly shared finite VM and pure Markdown links/headings parser. No producer/provider/ledger/broker grader/factory imports for audit conclusions.",
+  "manual_factual_review": {
+    "rubric_sha256": "be1cc7494d7565a805993cfe2c2430f809c29a53d487948bc1451754a3f537a1",
+    "scope": "Writer-stage and receiver-stage actual README/HANDOFF/source facts and ALL invoked native report attempts; terminal-only, only-veto/limit, no mechanical FAIL rescue.",
+    "status": "UNASSESSED",
+    "tokens": null,
+    "wall_seconds": null
+  },
+  "application_code_execution": false,
+  "original_wire_attestation": false,
+  "replay_resume_or_append_allowed": false,
+  "new_paid_calls_at_registration": 0,
+  "net_benefit": "NOT_ESTABLISHED",
+  "formal_qualification": "UNASSESSED",
+  "locked_holdout": "NOT_RUN",
+  "main_and_installed_skill": "RC19"
+}
