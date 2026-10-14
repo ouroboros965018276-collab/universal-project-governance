@@ -11,6 +11,7 @@ from pathlib import Path
 import socket
 import subprocess
 import sys
+import tempfile
 import unittest
 from unittest.mock import patch
 
@@ -19,7 +20,7 @@ if sys.version_info < (3, 10):
 
 from evolution.experiments import context_tasks as GEN
 from evolution import semantic_contract as VM
-from evolution.tool_broker import validate_task
+from evolution.tool_broker import MAX_FILE_BYTES, RepoBroker, validate_task
 
 
 class SemanticTaskFixtures(unittest.TestCase):
@@ -286,6 +287,240 @@ class SemanticTaskFixtures(unittest.TestCase):
                 del snapshot[pair["handoff_path"]]
             with self.assertRaises(ValueError):
                 GEN.receiver_from_snapshot(pair, snapshot, VM.validate_behavior)
+
+    def test_development_identity_is_explicit_without_reusing_historical_registration(self):
+        self.assertEqual((GEN.SEED, GEN.NAMESPACE), (20023, "rc20_semantic_fresh_v1"))
+        self.assertEqual((GEN.DEVELOPMENT_SEED, GEN.DEVELOPMENT_NAMESPACE),
+                         (90139, "rc20_tools_development_v3"))
+        self.assertNotEqual(GEN.DEVELOPMENT_NAMESPACE, GEN.NAMESPACE)
+        case = GEN.build_case("chinese-documentation", 1, seed=GEN.DEVELOPMENT_SEED,
+                              namespace=GEN.DEVELOPMENT_NAMESPACE)
+        self.assertEqual(case["identity"]["seed"], 90139)
+        self.assertEqual(case["measurement"]["qualification"], "UNASSESSED")
+        self.assertFalse(case["measurement"]["new_distribution_claim"])
+        self.assertFalse(case["measurement"]["whole_python_equivalence_claim"])
+
+    def test_handoff_required_reads_are_the_six_public_clues_not_unrelated_content(self):
+        for instance in (1, 2):
+            pair = GEN.build_handoff_pair(instance, seed=GEN.DEVELOPMENT_SEED,
+                                          namespace=GEN.DEVELOPMENT_NAMESPACE)
+            source = pair["source"]
+            receiver = GEN.receiver_from_snapshot(pair, GEN.equivalent_files(source), VM.validate_behavior)
+            for case in (source, receiver):
+                task, roles = case["task"], case["roles"]
+                contract_path = next(path for path in task["initial_files"] if path.endswith("_CONTRACT.json"))
+                expected = {"MODULE_MAP.md", contract_path, pair["handoff_path"],
+                            roles["core"], roles["consumer"], roles["driver"]}
+                self.assertEqual(len(task["required_read_paths"]), 6)
+                self.assertEqual(set(task["required_read_paths"]), expected)
+                visible = json.loads(task["initial_files"][contract_path])
+                self.assertEqual(visible["required_read_paths"], task["required_read_paths"])
+                irrelevant = [path for path in task["initial_files"] if path.endswith(("_NOTES.md", "_unrelated.py"))]
+                self.assertEqual(len(irrelevant), 2)
+                self.assertGreater(sum(len(task["initial_files"][path].encode()) for path in irrelevant), 16000)
+                self.assertTrue(set(irrelevant).isdisjoint(expected))
+                self.assertTrue(set(irrelevant) <= set(task["semantic_contract"]["protected_files"]))
+                self.assertEqual(set(task["semantic_contract"]["protected_files"]),
+                                 set(task["initial_files"]) - set(task["writable_files"]))
+                self.assertTrue(self.assess(case, case["correct_files"])["ok"])
+
+    def test_every_affected_artifact_is_required_without_unrelated_document_reads(self):
+        for family in GEN.FAMILIES:
+            for instance in (1, 2):
+                case = GEN.build_case(family, instance, seed=GEN.DEVELOPMENT_SEED,
+                                      namespace=GEN.DEVELOPMENT_NAMESPACE)
+                task = GEN.to_broker_task(case)
+                required = task["required_read_paths"]
+                contract_path = next(path for path in task["initial_files"] if path.endswith("_CONTRACT.json"))
+                self.assertEqual(json.loads(task["initial_files"][contract_path])["required_read_paths"], required)
+                self.assertEqual(len(required), len(set(required)))
+                self.assertTrue(set(task["writable_files"]) <= set(required))
+                for path in task["initial_files"]:
+                    if path.endswith(("_NOTES.md", "_unrelated.py")) or (path.endswith("_README.md") and path not in task["writable_files"]):
+                        self.assertNotIn(path, required)
+                if family in {"chinese-documentation", "evidence-fidelity"}:
+                    artifact = case["task"]["exact_checks"][0]["path"]
+                    broker = RepoBroker.__new__(RepoBroker)
+                    broker.task = task
+                    def read_event(paths):
+                        return {"tool": "repo_read", "arguments": {"paths": paths}, "result": {"ok": True,
+                            "files": {path: {"text": task["initial_files"][path], "sha256": GEN.sha(task["initial_files"][path])} for path in paths}}}
+                    patch = {"tool": "repo_patch", "arguments": {}, "result": {"ok": True}}
+                    self.assertEqual(broker.read_evidence_failures([read_event(required), patch]), [])
+                    self.assertTrue(broker.read_evidence_failures([read_event([path for path in required if path != artifact]), patch]))
+
+    def test_omitting_irrelevant_reads_does_not_waive_real_initial_clue_evidence(self):
+        pair = GEN.build_handoff_pair(1, seed=GEN.DEVELOPMENT_SEED, namespace=GEN.DEVELOPMENT_NAMESPACE)
+        for case in (pair["source"], GEN.receiver_from_snapshot(pair, pair["source"]["correct_files"], VM.validate_behavior)):
+            task = GEN.to_broker_task(case)
+            broker = RepoBroker.__new__(RepoBroker)
+            broker.task = task
+            def read_event(paths):
+                return {"tool": "repo_read", "arguments": {"paths": paths}, "result": {"ok": True,
+                    "files": {path: {"text": task["initial_files"][path], "sha256": GEN.sha(task["initial_files"][path])} for path in paths}}}
+            required = task["required_read_paths"]
+            patch = {"tool": "repo_patch", "arguments": {}, "result": {"ok": True}}
+            self.assertEqual(broker.read_evidence_failures([read_event(required), patch]), [])
+            core = case["roles"]["core"]
+            missing = [path for path in required if path != core]
+            irrelevant = [path for path in task["initial_files"] if path.endswith(("_NOTES.md", "_unrelated.py"))]
+            self.assertTrue(broker.read_evidence_failures([read_event(missing + irrelevant), patch]))
+            self.assertTrue(broker.read_evidence_failures([read_event(missing), patch, read_event([core])]))
+
+    def test_handoff_stage_write_scopes_share_the_same_protected_public_contract(self):
+        for instance in (1, 2):
+            pair = GEN.build_handoff_pair(instance, seed=GEN.DEVELOPMENT_SEED,
+                                          namespace=GEN.DEVELOPMENT_NAMESPACE)
+            source = pair["source"]
+            receiver = GEN.receiver_from_snapshot(pair, GEN.equivalent_files(source), VM.validate_behavior)
+            path = next(name for name in source["task"]["initial_files"] if name.endswith("_CONTRACT.json"))
+            raw = source["task"]["initial_files"][path]
+            visible = json.loads(raw)
+            self.assertNotIn("writable_files", visible)
+            self.assertEqual(visible["stage_writable_files"], {
+                "source": source["task"]["writable_files"], "receiver": receiver["task"]["writable_files"]})
+            self.assertEqual(visible["stage_writable_files"]["source"], [source["roles"]["core"], pair["handoff_path"]])
+            self.assertEqual(visible["stage_writable_files"]["receiver"], [source["roles"]["consumer"], pair["handoff_path"]])
+            self.assertEqual(receiver["task"]["writable_files"], pair["receiver_blueprint"]["task"]["writable_files"])
+            for case in (source, receiver):
+                self.assertEqual(case["task"]["initial_files"][path], raw)
+                self.assertEqual(case["task"]["semantic_contract"]["protected_files"][path], GEN.sha(raw))
+                self.assertTrue(self.assess(case, case["correct_files"])["ok"])
+
+    def test_handoff_duplicate_json_key_rejected_by_pure_admission_and_real_broker(self):
+        pair = GEN.build_handoff_pair(1, seed=GEN.DEVELOPMENT_SEED, namespace=GEN.DEVELOPMENT_NAMESPACE)
+        case = pair["source"]
+        files = copy.deepcopy(case["correct_files"])
+        files[pair["handoff_path"]] = '{"project_status":"wrong",' + files[pair["handoff_path"]].lstrip()[1:]
+        self.assertFalse(self.assess(case, files)["ok"])
+        with self.assertRaises(ValueError):
+            GEN.receiver_from_snapshot(pair, files, VM.validate_behavior)
+        with tempfile.TemporaryDirectory(prefix="duplicate-json-fixture-",
+                dir=Path(__file__).resolve().parents[1] / "eval-workspaces") as directory:
+            root = Path(directory)
+            for name, text in files.items():
+                (root / name).write_bytes(text.encode("utf-8"))
+            self.assertFalse(RepoBroker(root, GEN.to_broker_task(case), "forbidden-unused-git").validate()["ok"])
+
+    def test_evidence_boolean_cannot_be_replaced_with_integer_in_either_grader(self):
+        case = GEN.build_case("evidence-fidelity", 1, seed=GEN.DEVELOPMENT_SEED,
+                              namespace=GEN.DEVELOPMENT_NAMESPACE)
+        files = copy.deepcopy(case["correct_files"])
+        path = next(check["path"] for check in case["task"]["exact_checks"] if check["kind"] == "file_hash_manifest")
+        evidence = json.loads(files[path])
+        self.assertIs(evidence["claims"]["application_executed"], False)
+        evidence["claims"]["application_executed"] = 0
+        files[path] = json.dumps(evidence)
+        self.assertFalse(self.assess(case, files)["ok"])
+        with tempfile.TemporaryDirectory(prefix="typed-json-fixture-",
+                dir=Path(__file__).resolve().parents[1] / "eval-workspaces") as directory:
+            root = Path(directory)
+            for name, text in files.items():
+                (root / name).write_bytes(text.encode("utf-8"))
+            self.assertFalse(RepoBroker(root, GEN.to_broker_task(case), "forbidden-unused-git").validate()["ok"])
+
+    def test_exact_raw_byte_cap_is_checked_before_universal_newlines(self):
+        pair = GEN.build_handoff_pair(1, seed=GEN.DEVELOPMENT_SEED, namespace=GEN.DEVELOPMENT_NAMESPACE)
+        source = pair["source"]
+        source_files = copy.deepcopy(source["correct_files"])
+        source_files[pair["handoff_path"]] += "\r\n" * 33000
+        document = GEN.build_case("chinese-documentation", 1, seed=GEN.DEVELOPMENT_SEED,
+                                  namespace=GEN.DEVELOPMENT_NAMESPACE)
+        check = document["task"]["exact_checks"][0]
+        check["expected"] = "\n" * 33000 + "x\n"
+        document_files = copy.deepcopy(document["correct_files"])
+        document_files[check["path"]] = check["expected"].replace("\n", "\r\n")
+        for case, files, path in ((source, source_files, pair["handoff_path"]),
+                                  (document, document_files, check["path"])):
+            with self.subTest(kind=case["task"]["exact_checks"][0]["kind"]):
+                self.assertGreater(len(files[path].encode("utf-8")), MAX_FILE_BYTES)
+                self.assertLess(len(files[path].replace("\r\n", "\n").encode("utf-8")), MAX_FILE_BYTES)
+                self.assertFalse(self.assess(case, files)["ok"])
+                with tempfile.TemporaryDirectory(prefix="raw-byte-cap-fixture-",
+                        dir=Path(__file__).resolve().parents[1] / "eval-workspaces") as directory:
+                    root = Path(directory)
+                    for name, text in files.items():
+                        (root / name).write_bytes(text.encode("utf-8"))
+                    with self.assertRaises(ValueError):
+                        RepoBroker(root, GEN.to_broker_task(case), "forbidden-unused-git")
+
+    def test_each_exact_kind_accepts_the_raw_byte_limit_and_rejects_one_more(self):
+        pair = GEN.build_handoff_pair(1, seed=GEN.DEVELOPMENT_SEED, namespace=GEN.DEVELOPMENT_NAMESPACE)
+        document = GEN.build_case("chinese-documentation", 1, seed=GEN.DEVELOPMENT_SEED,
+                                  namespace=GEN.DEVELOPMENT_NAMESPACE)
+        document["task"]["exact_checks"][0]["expected"] = "x" * (MAX_FILE_BYTES - 1) + "\n"
+        document["correct_files"][document["task"]["exact_checks"][0]["path"]] = document["task"]["exact_checks"][0]["expected"]
+        evidence = GEN.build_case("evidence-fidelity", 1, seed=GEN.DEVELOPMENT_SEED,
+                                 namespace=GEN.DEVELOPMENT_NAMESPACE)
+        for case in (pair["source"], document, evidence):
+            check = case["task"]["exact_checks"][0]
+            path = check["path"]
+            files = copy.deepcopy(case["correct_files"])
+            files[path] += " " * (MAX_FILE_BYTES - len(files[path].encode("utf-8")))
+            for oversized in (False, True):
+                with self.subTest(kind=check["kind"], oversized=oversized):
+                    current = copy.deepcopy(files)
+                    current[path] += " " if oversized else ""
+                    self.assertEqual(len(current[path].encode("utf-8")), MAX_FILE_BYTES + int(oversized))
+                    self.assertEqual(self.assess(case, current)["ok"], not oversized)
+                    with tempfile.TemporaryDirectory(prefix="exact-limit-fixture-",
+                            dir=Path(__file__).resolve().parents[1] / "eval-workspaces") as directory:
+                        root = Path(directory)
+                        for name, text in current.items():
+                            (root / name).write_bytes(text.encode("utf-8"))
+                        if oversized:
+                            with self.assertRaises(ValueError):
+                                RepoBroker(root, GEN.to_broker_task(case), "forbidden-unused-git")
+                        else:
+                            self.assertTrue(RepoBroker(root, GEN.to_broker_task(case), "forbidden-unused-git").validate()["ok"])
+
+    def test_handoff_unread_protected_bytes_still_fail_in_both_stages(self):
+        pair = GEN.build_handoff_pair(1, seed=GEN.DEVELOPMENT_SEED, namespace=GEN.DEVELOPMENT_NAMESPACE)
+        source = pair["source"]
+        receiver = GEN.receiver_from_snapshot(pair, source["correct_files"], VM.validate_behavior)
+        for case in (source, receiver):
+            for suffix in ("_NOTES.md", "_unrelated.py"):
+                changed = copy.deepcopy(case["correct_files"])
+                path = next(path for path in changed if path.endswith(suffix))
+                self.assertNotIn(path, case["task"]["required_read_paths"])
+                changed[path] += "\nchanged protected bytes\n"
+                self.assertFalse(self.assess(case, changed)["ok"])
+
+    def test_documentation_fixed_comparison_is_public_and_does_not_claim_general_quality(self):
+        case = GEN.build_case("chinese-documentation", 1, seed=GEN.DEVELOPMENT_SEED,
+                              namespace=GEN.DEVELOPMENT_NAMESPACE)
+        task = case["task"]
+        path = next(name for name in task["initial_files"] if name.endswith("_CONTRACT.json"))
+        visible = json.loads(task["initial_files"][path])
+        contract = visible["documentation_contract"]
+        check = next(check for check in task["exact_checks"] if check["kind"] == "text")
+        self.assertEqual((contract["path"], contract["expected_text"]), (check["path"], check["expected"]))
+        self.assertEqual(contract["comparison"], {"kind": "text", "encoding": "utf-8", "newlines": "universal-to-LF",
+            "whitespace": "exact", "terminal_newline": "required", "paraphrases_accepted": False,
+            "alternative_markdown_accepted": False})
+        self.assertIn("不是任意等价中文改写", contract["measurement_scope"])
+        self.assertEqual(visible["required_read_paths"], task["required_read_paths"])
+        for mutation in (lambda text: text.replace("只读取", "仅阅读"), lambda text: text.replace("# 当前契约", "#  当前契约"),
+                         lambda text: text.rstrip("\n")):
+            changed = copy.deepcopy(case["correct_files"])
+            changed[check["path"]] = mutation(changed[check["path"]])
+            self.assertFalse(self.assess(case, changed)["ok"])
+
+    def test_documentation_newline_contract_agrees_with_real_static_broker(self):
+        case = GEN.build_case("chinese-documentation", 1, seed=GEN.DEVELOPMENT_SEED,
+                              namespace=GEN.DEVELOPMENT_NAMESPACE)
+        task = GEN.to_broker_task(case)
+        path = next(check["path"] for check in task["checks"] if check["kind"] == "text")
+        for newline in ("\n", "\r\n", "\r"):
+            with self.subTest(newline=repr(newline)), tempfile.TemporaryDirectory(prefix="doc-contract-fixture-",
+                    dir=Path(__file__).resolve().parents[1] / "eval-workspaces") as directory:
+                files = copy.deepcopy(case["correct_files"])
+                files[path] = files[path].replace("\n", newline)
+                self.assertTrue(self.assess(case, files)["ok"])
+                root = Path(directory)
+                for name, text in files.items():
+                    (root / name).write_bytes(text.encode("utf-8"))
+                self.assertTrue(RepoBroker(root, task, "forbidden-unused-git").validate()["ok"])
 
     def test_generator_import_has_no_io_or_model_cli_entry(self):
         source = Path(GEN.__file__).read_text(encoding="utf-8")

@@ -66,8 +66,20 @@ contracts. This module does not replace those checks or alter historical
 `behavior_contract`. Registration validates the contract schema independently of
 the intentionally faulty initial implementation. One validation evaluates the
 whole contract once and maps its result to each registered Python output path.
-The existing broker result shape and ordinary failure feedback remain unchanged;
-private probe inputs and expected values are never returned to the model.
+Legacy broker results remain unchanged. Behavior checks retain the original
+five result fields and failure types, with an additional `diagnostics` list.
+The broker projects only fixed categories and registered paths, sorted and
+deduplicated with a limit of 16. These hints never contribute to PASS/FAIL;
+probe indices, inputs, expected values and source fragments stay private.
+
+The repository API adapter's v4 profile supplies every condition with the same
+public path metadata; it does not substitute for required reads. Transport
+receipts distinguish completed connection-only failures from requests that may
+have started. Unknown or late responses remain fenced, without retries. New
+API collectors must explicitly select `build_prompt(...,
+terminal_report="native-tool")`; the default JSON terminal prompt preserves
+historical collectors. These scaffold changes require new frozen identities and
+cannot repair or regrade old observations.
 
 Task definitions live in `evolution/experiments/context_tasks.py`. Import and
 metadata discovery do not construct registered instances. A prospective study

@@ -94,7 +94,7 @@ class _ProviderFixture:
         kwargs.setdefault("response_json_mode", False)
         kwargs.setdefault("thinking", "disabled")
         return lab.run_actor(kwargs.pop("provider", "deepseek"), "mock-requested-model", self.task,
-                             self.workspace, self.artifacts, self.git, "公开合成条件", self.key,
+                             self.workspace, self.artifacts, self.git, kwargs.pop("system_context", "公开合成条件"), self.key,
                              before_request=self.reserve, after_request=self.account, **kwargs)
 
     def positive(self, provider, payload, key, timeout):
@@ -172,6 +172,17 @@ class _ProviderFixture:
             result = self.run_actor()
         self.assertEqual(post.call_count, len(steps))
         return result
+
+    def semantic_task(self):
+        (self.workspace / "target.txt").unlink()
+        source = "def transform(value):\n    return value\n"
+        (self.workspace / "core.py").write_bytes(source.encode("utf-8"))
+        self.task.update(initial_files={"core.py": source, "contract.json": "{}\n"}, writable_files=["core.py"],
+            required_read_paths=["core.py", "contract.json"], checks=[{"path": "core.py", "kind": "python_behavior", "expected": None}],
+            behavior_contract={"schema_version": 1, "modules": {"core.py": {"required_functions": {
+                "transform": {"params": ["value"], "kwonly": [], "defaults": {}, "kwdefaults": {}}}}},
+                "protected_files": {"contract.json": sha(b"{}\n")}, "probes": [
+                    {"path": "core.py", "function": "transform", "args": [5], "kwargs": {}, "expect": {"return": 10}}]})
 
 
 @unittest.skipUnless(SUPPORTED, "repository API helper tests require Python 3.10+; runtime 3.8 has separate tests")
@@ -405,6 +416,8 @@ class ProviderToolsTests(_ProviderFixture, unittest.TestCase):
             self.assertTrue(returned.wait(1))
         self.assertTrue(result["unknown_usage"])
         self.assertTrue((self.artifacts / "requests/01.pending.json").exists())
+        self.assertEqual(self.after[0]["transport"], {"phase": "deadline-wait", "exception_class": None,
+            "connection_attempted": None, "http_dispatch": "unknown"})
 
     def test_hard_request_and_tool_caps_are_not_overridable(self):
         with self.assertRaises(ValueError):
@@ -831,6 +844,179 @@ class ProviderToolsTests(_ProviderFixture, unittest.TestCase):
                 self.assertIsNone(lab._usage(record))
         self.assertIsNone(lab._totals([usage, dict(usage, cached_tokens=None)])["cached_tokens"])
         self.assertEqual(lab._totals([usage, dict(usage, cached_tokens=None)])["total_tokens"], 30)
+
+    def test_connection_only_failures_record_attempt_and_prove_no_http_without_retry(self):
+        cases = [(socket.gaierror(11001, SECRET), "gaierror"),
+                 (lab.ssl.SSLCertVerificationError(1, "Bearer " + SECRET), "SSLCertVerificationError"),
+                 (ConnectionRefusedError(SECRET), "ConnectionRefusedError")]
+        for index, (error, category) in enumerate(cases):
+            with self.subTest(category=category):
+                self.artifacts, self.before, self.after = self.base / ("connect-" + str(index)), [], []
+                connection = Mock()
+                connection.connect.side_effect = error
+                with patch.object(lab.http.client, "HTTPSConnection", return_value=connection) as constructor:
+                    result = self.run_actor()
+                self.assertEqual(constructor.call_count, 1)
+                self.assertEqual(connection.connect.call_count, 1)
+                connection.request.assert_not_called()
+                connection.close.assert_called_once()
+                receipt = self.after[0]
+                self.assertEqual(receipt["transport"], {"phase": "connect", "exception_class": category,
+                    "connection_attempted": True, "http_dispatch": "not_started"})
+                self.assertEqual((receipt["dispatched"], receipt["not_invoked"], receipt["unknown"]), (False, True, False))
+                self.assertEqual(result["requests"], 1)  # A bounded transport slot, not a fabricated HTTP dispatch.
+                self.assertEqual(result["status"], "transport-failed-not-invoked")
+                self.assertFalse(result["quality"]["hard_pass"])
+                self.assertIsNone(receipt["usage"])
+                self.assertFalse((self.artifacts / "requests/01.pending.json").exists())
+                self.assertTrue((self.artifacts / "requests/01.receipt.json").exists())
+                self.assertFalse((self.artifacts / "requests/01.response.json").exists())
+                for path in self.artifacts.rglob("*.json"):
+                    self.assertNotIn(SECRET, path.read_text(encoding="utf-8"))
+
+    def test_entered_request_header_and_body_failures_remain_unknown_even_for_dns_class(self):
+        cases = [("request", socket.gaierror(11001, SECRET), "http-request", "gaierror", "may_have_started"),
+                 ("request", TimeoutError(SECRET), "http-request", "TimeoutError", "may_have_started"),
+                 ("headers", lab.http.client.RemoteDisconnected(SECRET), "response-headers", "RemoteDisconnected", "may_have_started"),
+                 ("body", lab.http.client.IncompleteRead(SECRET.encode()), "response-body", "IncompleteRead", "response_received")]
+        for index, (where, error, phase, category, dispatch) in enumerate(cases):
+            with self.subTest(where=where, category=category):
+                self.artifacts, self.before, self.after = self.base / ("sent-" + str(index)), [], []
+                response, connection = Mock(status=200), Mock()
+                response.getheaders.return_value = []
+                response.read.return_value = canonical(completion(1))
+                connection.getresponse.return_value = response
+                {"request": connection.request, "headers": connection.getresponse, "body": response.read}[where].side_effect = error
+                with patch.object(lab.http.client, "HTTPSConnection", return_value=connection) as constructor:
+                    result = self.run_actor()
+                self.assertEqual(constructor.call_count, 1)
+                self.assertEqual(connection.request.call_count, 1)
+                self.assertEqual(connection.auto_open, 0)
+                self.assertEqual(self.after[0]["transport"], {"phase": phase, "exception_class": category,
+                    "connection_attempted": True, "http_dispatch": dispatch})
+                self.assertEqual((self.after[0]["dispatched"], self.after[0]["not_invoked"], self.after[0]["unknown"]), (True, False, True))
+                self.assertTrue(result["unknown_usage"])
+                self.assertTrue((self.artifacts / "requests/01.pending.json").exists())
+                for path in self.artifacts.rglob("*.json"):
+                    self.assertNotIn(SECRET, path.read_text(encoding="utf-8"))
+
+    def test_worker_deadline_and_completed_connect_deadline_prove_no_http(self):
+        with patch.object(lab.time, "perf_counter", side_effect=[0.0, 2.0]), patch.object(lab, "_post") as post:
+            with self.assertRaises(lab.TransportFailure) as raised:
+                lab._bounded_post("deepseek", {}, SECRET, 1)
+        post.assert_not_called()
+        self.assertEqual(raised.exception.transport, {"phase": "worker-before-request", "exception_class": "DeadlineBeforeDispatch",
+            "connection_attempted": False, "http_dispatch": "not_started"})
+        connection = Mock()
+        with patch.object(lab.time, "perf_counter", side_effect=[0.0, 2.0]), patch.object(lab.http.client, "HTTPSConnection", return_value=connection):
+            with self.assertRaises(lab.TransportFailure) as raised:
+                lab._post("deepseek", {}, SECRET, 1)
+        self.assertEqual(raised.exception.transport["exception_class"], "DeadlineBeforeDispatch")
+        self.assertTrue(raised.exception.transport["connection_attempted"])
+        self.assertEqual(raised.exception.transport["http_dispatch"], "not_started")
+        connection.request.assert_not_called()
+        with patch.object(lab.http.client, "HTTPSConnection", side_effect=OSError(SECRET)):
+            with self.assertRaises(lab.TransportFailure) as raised:
+                lab._post("deepseek", {}, SECRET, 1)
+        self.assertEqual(raised.exception.transport, {"phase": "connection-create", "exception_class": "OSError",
+            "connection_attempted": False, "http_dispatch": "not_started"})
+
+    def test_transport_serializes_fixed_classes_and_preserves_response_processing_phase(self):
+        dynamic = type("secret_" + SECRET, (Exception,), {})
+        with patch.object(lab, "_post", side_effect=dynamic("Bearer " + SECRET)):
+            result = self.run_actor()
+        self.assertTrue(result["unknown_usage"])
+        self.assertEqual(self.after[0]["transport"]["exception_class"], "OtherError")
+        self.assertNotIn(SECRET, json.dumps(self.after))
+        for index, body in enumerate((b"not JSON", b"\xff")):
+            self.artifacts, self.before, self.after = self.base / ("decode-" + str(index)), [], []
+            with patch.object(lab, "_post", return_value=(200, {}, body)):
+                result = self.run_actor()
+            self.assertTrue(result["unknown_usage"])
+            self.assertEqual(self.after[0]["transport"]["phase"], "response-decode")
+            self.assertIn(self.after[0]["transport"]["exception_class"], {"ValueError", "UnicodeError"})
+            self.assertTrue((self.artifacts / "requests/01.response.json").exists())
+        self.artifacts, self.before, self.after = self.base / "persist", [], []
+        write = lab._write_new
+        def failing_write(path, value, secret=""):
+            if str(path).endswith("01.response.json"):
+                raise OSError("Bearer " + SECRET)
+            return write(path, value, secret)
+        with patch.object(lab, "_post", return_value=(200, {}, canonical(completion(1)))), patch.object(lab, "_write_new", side_effect=failing_write):
+            result = self.run_actor()
+        self.assertEqual(self.after[0]["transport"]["phase"], "response-persist")
+        self.assertEqual(self.after[0]["transport"]["exception_class"], "OSError")
+        self.assertTrue(result["unknown_usage"])
+        self.assertTrue((self.artifacts / "requests/01.pending.json").exists())
+        self.artifacts, self.before, self.after = self.base / "owner-interrupt", [], []
+        with patch.object(lab, "_bounded_post", side_effect=KeyboardInterrupt):
+            result = self.run_actor()
+        self.assertTrue(result["unknown_usage"])
+        self.assertEqual(self.after[0]["error_type"], "KeyboardInterrupt")
+        self.assertEqual(self.after[0]["transport"]["exception_class"], "KeyboardInterrupt")
+        self.assertEqual(self.after[0]["transport"]["http_dispatch"], "unknown")
+        self.assertTrue((self.artifacts / "requests/01.pending.json").exists())
+
+    def test_public_path_manifest_is_identical_for_conditions_and_providers_and_is_not_read_evidence(self):
+        self.task["checks"][0]["expected"] = "PRIVATE_EXPECTED_MARKER"
+        users = []
+        for index, arm in enumerate(("rc19", "attention", "full_rc20", "minus_decision_relevance", "minus_complete_change", "minus_evidence_fidelity")):
+            self.artifacts, self.before, self.after = self.base / ("manifest-" + arm), [], []
+            def capture(provider, payload, key, timeout):
+                users.append(payload["messages"][1]["content"])
+                return 200, {}, canonical(self.final(1))
+            with patch.object(lab, "_post", side_effect=capture):
+                result = self.run_actor(provider="deepseek" if index % 2 else "mimo", system_context=arm, max_requests=1)
+            self.assertFalse(result["quality"]["required_tools_ok"])
+            self.assertEqual(result["tool_events"], [])
+        self.assertTrue(all(user == users[0] for user in users))
+        manifest = json.loads(users[0].split("\n")[-1])
+        self.assertEqual(manifest, {"initial_paths": ["contract.json", "target.txt"],
+            "required_read_paths": ["contract.json", "target.txt"], "writable_files": ["target.txt"]})
+        self.assertNotIn("PRIVATE_EXPECTED_MARKER", users[0])
+        self.assertNotIn('"checks"', users[0])
+
+    def test_semantic_feedback_repair_and_existing_multi_read_validate_status_batches_pass(self):
+        self.semantic_task()
+        def read_after_failure(payload):
+            feedback = self.feedback(payload)
+            self.assertEqual(feedback["diagnostics"], [{"code": "return-mismatch", "path": "core.py"}])
+            self.assertEqual((feedback["checks_passed"], feedback["checks_total"]), (0, 1))
+            return completion(2, [call("read-contract", "repo_read", {"paths": ["contract.json"]}),
+                                  call("read-core", "repo_read", {"paths": ["core.py"]})])
+        def repair(payload):
+            digest = self.feedback(payload)["files"]["core.py"]["sha256"]
+            return completion(3, [call("repair", "repo_patch", {"operations": [{"path": "core.py", "old_sha256": digest,
+                "new_text": "def transform(value):\n    result = value * 2\n    return result\n"}]})])
+        result = self.execute([completion(1, [call("negative", "repo_validate", {})]), read_after_failure, repair,
+            self.validate_and_status(4), self.final(5)])
+        self.assertTrue(result["quality"]["hard_pass"], result["quality"])
+        self.assertEqual(result["quality"]["validation"]["diagnostics"], [])
+        self.assertEqual(result["requests"], 5)
+        self.assertEqual(len(result["tool_events"]), 6)
+        self.assertEqual(result["tool_attempts"], 7)
+        self.assert_negative_preserved(result, 1, result["tool_events"][0]["result"])
+        serialized = json.dumps(result["tool_events"][0]["result"])
+        for field in ('"probe"', '"input"', '"expected"', '"source"'):
+            self.assertNotIn(field, serialized)
+
+    def test_semantic_feedback_schema_cannot_relax_scope_or_expose_unbounded_payloads(self):
+        self.semantic_task()
+        valid = {"ok": False, "suite": "registered-static-contracts-v1", "checks_passed": 0, "checks_total": 1,
+            "failures": ["contract-failed:core.py:ValueError"], "diagnostics": [{"code": "return-mismatch", "path": "core.py"}]}
+        event = {"state_sha256": "known-state"}
+        self.assertTrue(lab._recoverable_tool_feedback("repo_validate", {}, valid, event, self.task))
+        bad = [[], [{"code": "private-" + SECRET, "path": "core.py"}], [{"code": "return-mismatch", "path": "outside.py"}],
+            [{"code": "return-mismatch", "path": "core.py", "probe": 0}], valid["diagnostics"] * 2,
+            valid["diagnostics"] * 17, "not-list"]
+        for diagnostics in bad[1:]:  # [] is legal for scope-only/no-locatable ordinary feedback.
+            with self.subTest(diagnostics=diagnostics):
+                self.assertFalse(lab._recoverable_tool_feedback("repo_validate", {}, dict(valid, diagnostics=diagnostics), event, self.task))
+        missing = dict(valid)
+        del missing["diagnostics"]
+        self.assertFalse(lab._recoverable_tool_feedback("repo_validate", {}, missing, event, self.task))
+        self.assertFalse(lab._recoverable_tool_feedback("repo_validate", {}, dict(valid, failures=["protected-file-changed:contract.json"]), event, self.task))
+        self.assertFalse(lab._recoverable_tool_feedback("repo_validate", {}, valid, {"state_sha256": None}, self.task))
 
 
 if __name__ == "__main__":

@@ -1,8 +1,10 @@
 """Fresh finite-contract task definitions; import has no construction or I/O.
 
 No CLI, seal, build_registered, prepare or model entry point is provided. Tests
-construct only fixture namespaces with fixture seeds. The future registered
-seed/order below requires reviewed integration, full gates and a separate freeze.
+construct only exposed fixture namespaces with fixture seeds. SEED/NAMESPACE
+identify the immutable historical registration and must not be reused for these
+changed definitions. The explicit DEVELOPMENT identity below is not an independent
+registration; future formal instances require a new reviewed seed and freeze.
 Private probes are separate from the project-visible general contract/examples.
 """
 from __future__ import annotations
@@ -13,9 +15,12 @@ import hashlib
 import json
 import random
 from evolution.semantic_contract import DEFAULT_LIMITS
+from evolution.tool_broker import canonical, normalize
 
 SEED = 20023
 NAMESPACE = "rc20_semantic_fresh_v1"
+DEVELOPMENT_SEED = 90139
+DEVELOPMENT_NAMESPACE = "rc20_tools_development_v3"
 FAMILIES = (
     "chinese-documentation", "single-feature-navigation", "public-api-consumers",
     "stale-map-source-conflict", "simplification-preserves-safety",
@@ -50,7 +55,7 @@ def sha(text):
 
 
 def registration_plan():
-    """Metadata only: does not call build_case or create target source bodies."""
+    """Historical metadata only; never reseal this identity after definition changes."""
     return {"schema_version": 1, "seed": SEED, "namespace": NAMESPACE,
             "order": [{"family": family, "instance": instance} for family in FAMILIES for instance in (1, 2)],
             "handoff_instances": [1, 2], "handoff_namespace": NAMESPACE + "_chain",
@@ -117,14 +122,18 @@ def build_case(family, instance, *, seed, namespace):
                 "if not text:", "    raise ValueError('empty')", "return text.casefold()"]
         broken = ["return str(value)"]
         values, oracle = [None, "", "  ", " Demo ", "ZH_NEGATIVE", *labels, 0, 17], _known_text
-        summary = "将受影响说明改写为简洁中文并修正文档中所述规范化函数；保留必要否定、数字和未知。"
+        summary = "按公开 documentation_contract 的固定文字与比较规则更新中文说明，并修正文档所述规范化函数；保留必要否定、数字和未知。"
         doc = ("# 当前契约\n\n只读取受影响实现、契约与消费者即可完成。\n"
                "输入 None 必须返回 UNKNOWN；不得把未知历史改写为已验证事实。\n"
                "非 None 输入先转字符串、去首尾空白，再 casefold；空白文本必须抛 ValueError。\n"
                "最多 12 次 HTTP、32 次工具尝试只是当前任务说明中的数字；不得改成已执行次数。\n"
                "应用测试未运行，延迟未知；不得删除本句以制造完成证据。\n")
         extra_exact.append({"path": readme, "kind": "text", "expected": doc})
-        general["documentation_contract"] = doc
+        general["documentation_contract"] = {"path": readme, "expected_text": doc,
+            "comparison": {"kind": "text", "encoding": "utf-8", "newlines": "universal-to-LF",
+                "whitespace": "exact", "terminal_newline": "required", "paraphrases_accepted": False,
+                "alternative_markdown_accepted": False},
+            "measurement_scope": "仅验收此公开固定文本与代码契约；不是任意等价中文改写或一般文档质量的证明。"}
     elif family == "single-feature-navigation":
         constants = {"RATE": rate, "LIMIT": cap}
         body = ["if value is None:", "    raise ValueError('unknown')", "if value < 0:", "    raise ValueError('negative')",
@@ -272,6 +281,9 @@ def build_case(family, instance, *, seed, namespace):
         writable.append(check["path"])
         if check["path"] not in initial:
             initial[check["path"]] = "{}\n"
+    required_reads = list(dict.fromkeys(["MODULE_MAP.md", core, consumer, driver, contract_path]
+                                        + [check["path"] for check in extra_exact]))
+    general["required_read_paths"] = list(required_reads)
     general["writable_files"] = list(writable)
     initial[contract_path] = json.dumps(general, ensure_ascii=False, indent=2) + "\n"
     modules = {
@@ -286,11 +298,10 @@ def build_case(family, instance, *, seed, namespace):
     correct.update({core: correct_core, consumer: correct_consumer, driver: correct_driver})
     apply_exact(correct, extra_exact)
     task = {"id": stem, "family": family, "prompt": summary + "\n以 MODULE_MAP.md、实际源码与项目内契约为准；保留受保护文件。",
-        "initial_files": initial, "writable_files": writable, "required_read_paths": ["MODULE_MAP.md", core, consumer, driver, contract_path],
+        "initial_files": initial, "writable_files": writable, "required_read_paths": required_reads,
         "required_tools": ["repo_read", "repo_patch", "repo_validate", "repo_status"],
         "semantic_contract": contract, "exact_checks": extra_exact}
     if family == "interrupted-handoff-recovery":
-        task["required_read_paths"].append(stem + "_HANDOFF.json")
         initial[stem + "_HANDOFF.json"] = json.dumps({"project_status": "partial", "unfinished": [core],
             "known_from_disk": "consumer and driver are already wired", "previous_actor_intent": None}) + "\n"
     return {"task": task, "correct_files": correct, "public_examples": public_examples,
@@ -390,12 +401,14 @@ def assess_case(case, files, validate_behavior):
     for check in task["exact_checks"]:
         try:
             raw, expected = files[check["path"]], check["expected"]
-            actual = raw if check["kind"] == "text" else json.loads(raw)
+            actual = normalize(check["kind"], raw)
+            if check["kind"] == "text":
+                actual = actual.replace("\r\n", "\n").replace("\r", "\n")
             if check["kind"] == "file_hash_manifest":
                 expected = {"source_sha256": {name: sha(files[name]) for name in expected["sources"]}, "claims": expected["claims"]}
-            if actual != expected:
+            if canonical(actual) != canonical(expected):
                 failures.append("EXACT_CONTRACT")
-        except (KeyError, ValueError, TypeError):
+        except (KeyError, ValueError, TypeError, RecursionError, MemoryError):
             failures.append("EXACT_CONTRACT")
     return {"ok": not failures, "failures": failures, "behavior": result}
 
@@ -435,6 +448,7 @@ def build_handoff_pair(instance, *, seed, namespace):
     roles, receiver = case["roles"], case["task"]
     core, consumer, driver = (roles[key] for key in ("core", "consumer", "driver"))
     handoff_path = next(check["path"] for check in receiver["exact_checks"] if check["kind"] == "json")
+    receiver["writable_files"] = [consumer, handoff_path]
     initial = copy.deepcopy(receiver["initial_files"])
     initial[consumer] = "from %s import %s\n\ndef %s(value):\n    raise ValueError('pending receiver')\n" % (core[:-3], roles["function"], roles["render"])
     initial[driver] = case["correct_files"][driver]
@@ -446,11 +460,14 @@ def build_handoff_pair(instance, *, seed, namespace):
     source_contract["modules"][consumer]["required_calls"] = {}
     source_contract["protected_files"] = {path: sha(text) for path, text in initial.items() if path not in {core, handoff_path}}
     source_task = {"id": receiver["id"] + "_source", "family": "planned-project-handoff", "prompt": "只完成 canonical core；保留 consumer 待办并按项目内契约写 partial HANDOFF。",
-        "initial_files": initial, "writable_files": [core, handoff_path], "required_read_paths": list(initial),
+        "initial_files": initial, "writable_files": [core, handoff_path], "required_read_paths": list(receiver["required_read_paths"]),
         "required_tools": list(receiver["required_tools"]), "semantic_contract": source_contract,
         "exact_checks": [{"path": handoff_path, "kind": "json", "expected": partial}]}
     contract_path = next(path for path in initial if path.endswith("_CONTRACT.json"))
     visible_contract = json.loads(initial[contract_path])
+    del visible_contract["writable_files"]
+    visible_contract["stage_writable_files"] = {"source": list(source_task["writable_files"]),
+        "receiver": list(receiver["writable_files"])}
     visible_contract["stage1_handoff_contract"] = partial
     visible_contract["stage1_behavior_scope"] = {"probed_modules": [core], "pending_modules": [consumer],
         "current_stage_required_routes": [], "final_stage_required_routes": visible_contract["required_routes"],
@@ -475,8 +492,7 @@ def receiver_from_snapshot(pair, snapshot, validate_behavior):
     roles, task = receiver["roles"], receiver["task"]
     task["id"] += "_receiver"
     task["initial_files"] = copy.deepcopy(snapshot)
-    task["writable_files"] = [roles["consumer"], pair["handoff_path"]]
-    task["required_read_paths"] = list(snapshot)
+    task["required_read_paths"] = list(pair["source"]["task"]["required_read_paths"])
     task["semantic_contract"]["protected_files"] = {path: sha(text) for path, text in snapshot.items() if path not in task["writable_files"]}
     correct = copy.deepcopy(snapshot)
     correct[roles["consumer"]] = receiver["correct_files"][roles["consumer"]]

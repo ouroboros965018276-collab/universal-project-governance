@@ -1,6 +1,7 @@
 """Real disk/Git integration of finite behavior checks and existing tool receipts."""
 from copy import deepcopy
 from pathlib import Path
+import json
 import shutil
 import sys
 import tempfile
@@ -11,7 +12,8 @@ if sys.version_info < (3, 10):
     raise unittest.SkipTest("Finite Python behavior profile requires Python 3.10+")
 
 from evolution import semantic_contract
-from evolution.tool_broker import RepoBroker, git_command, sha, validate_task
+from evolution.tool_broker import (RepoBroker, SEMANTIC_DIAGNOSTIC_CODES,
+                                   SEMANTIC_DIAGNOSTIC_LIMIT, git_command, sha, validate_task)
 from evolution.provider_tools import _recoverable_tool_feedback
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -73,6 +75,77 @@ class SemanticBrokerTests(unittest.TestCase):
         self.assertTrue(self.broker.validate()["ok"])
         self.assertEqual((self.root / "driver.txt").read_bytes(), b"protected driver contract\r\n")
 
+    def test_diagnostics_do_not_change_existing_success_or_failure_fields(self):
+        failed = self.broker.validate()
+        self.assertEqual({key: value for key, value in failed.items() if key != "diagnostics"}, {
+            "ok": False, "suite": "registered-static-contracts-v1", "checks_passed": 0,
+            "checks_total": 2, "failures": ["contract-failed:core.py:ValueError",
+                                            "contract-failed:consumer.py:ValueError"]})
+        self.assertEqual(failed["diagnostics"], [{"code": "return-mismatch", "path": "consumer.py"}])
+        self.assertTrue(self.repair()["ok"])
+        self.assertEqual(self.broker.validate(), {"ok": True, "suite": "registered-static-contracts-v1",
+                         "checks_passed": 2, "checks_total": 2, "failures": [], "diagnostics": []})
+
+    def test_none_guard_exception_and_unsupported_method_are_distinguishable(self):
+        self.task["behavior_contract"]["probes"] = [
+            {"path": "core.py", "function": "accept", "args": [None, True],
+             "expect": {"return": "UNKNOWN"}}] * 3
+        implementations = [
+            ("if attempts is None:\n        raise ValueError\n    return 'UNKNOWN'", "exception-mismatch"),
+            ("return attempts.strip()", "unsupported-method"),
+        ]
+        for body, code in implementations:
+            with self.subTest(code=code):
+                self.assertTrue(self.repair(source="LIMIT = 72\ndef accept(attempts, trusted):\n    " + body + "\n")["ok"])
+                result = self.broker.validate()
+                self.assertFalse(result["ok"])
+                self.assertEqual(result["diagnostics"], [{"code": code, "path": "core.py"}])
+                self.assertEqual(result["checks_passed"], 0)
+                self.assertEqual(result["failures"], ["contract-failed:core.py:ValueError",
+                                                     "contract-failed:consumer.py:ValueError"])
+
+    def test_diagnostics_strip_private_fields_and_unregistered_values(self):
+        private = "PRIVATE_INPUT_EXPECTED_SOURCE_FRAGMENT"
+        fake = {"ok": False, "status": "FAIL", "failures": [
+            {"code": private, "path": "outside/" + private, "probe": 417,
+             "input": private, "expected": private, "source": private},
+            {"code": "return-mismatch", "path": "consumer.py", "probe": 418,
+             "input": private, "expected": private},
+        ]}
+        with patch.object(semantic_contract, "validate_behavior", return_value=fake):
+            result = self.broker.validate()
+        self.assertEqual(result["diagnostics"], [
+            {"code": "behavior-contract-failed", "path": "consumer.py"},
+            {"code": "behavior-contract-failed", "path": "core.py"},
+            {"code": "return-mismatch", "path": "consumer.py"},
+        ])
+        encoded = json.dumps(result)
+        for forbidden in [private, "probe", "417", "418", "expected", "input", "source"]:
+            self.assertNotIn(forbidden, encoded)
+        self.assertTrue(all(set(item) == {"code", "path"} for item in result["diagnostics"]))
+
+    def test_diagnostics_are_deduplicated_sorted_and_bounded(self):
+        failures = [{"code": code, "path": path, "probe": index}
+                    for index in range(2) for path in ["core.py", "consumer.py", "driver.txt"]
+                    for code in SEMANTIC_DIAGNOSTIC_CODES]
+        with patch.object(semantic_contract, "validate_behavior",
+                          return_value={"ok": False, "status": "FAIL", "failures": failures}):
+            result = self.broker.validate()
+        pairs = [(item["code"], item["path"]) for item in result["diagnostics"]]
+        self.assertEqual(len(pairs), SEMANTIC_DIAGNOSTIC_LIMIT)
+        self.assertEqual(pairs, sorted(set(pairs)))
+        self.assertTrue(set(path for code, path in pairs) <= {"core.py", "consumer.py", "driver.txt"})
+
+    def test_syntax_and_pathless_resource_failures_only_expose_safe_categories(self):
+        self.assertTrue(self.repair(source="LIMIT = 72\ndef accept(attempts, trusted):\n    return (\n")["ok"])
+        result = self.broker.validate()
+        self.assertEqual(result["diagnostics"], [{"code": "syntax-error", "path": "core.py"}])
+        with patch.object(semantic_contract, "validate_behavior", return_value={
+                "ok": False, "status": "UNSUPPORTED", "failures": [{"code": "step-limit", "probe": 0}]}):
+            result = self.broker.validate()
+        self.assertEqual(result["diagnostics"], [{"code": "resource-limit", "path": "consumer.py"},
+                                                {"code": "resource-limit", "path": "core.py"}])
+
     def test_behavior_evaluated_once_for_all_python_paths_on_each_validation(self):
         self.assertTrue(self.repair()["ok"])
         with patch.object(semantic_contract, "validate_behavior", wraps=semantic_contract.validate_behavior) as observed:
@@ -97,7 +170,9 @@ class SemanticBrokerTests(unittest.TestCase):
                             {"state_sha256": "observed-state"}, self.task))
             self.assertNotIn("probes", str(result))
         self.repair(source="LIMIT = 72\n")
-        self.assertFalse(self.broker.validate()["ok"])
+        result = self.broker.validate()
+        self.assertFalse(result["ok"])
+        self.assertEqual(result["diagnostics"], [{"code": "required-function-mismatch", "path": "core.py"}])
 
     def test_consumer_cannot_bypass_canonical_implementation(self):
         caller = "from core import accept\n\ndef run(n, trusted):\n    ignored = accept(n, trusted)\n    return trusted and 0 <= n < 72\n"
@@ -110,10 +185,16 @@ class SemanticBrokerTests(unittest.TestCase):
             path = self.root / name
             raw = path.read_bytes()
             path.unlink()
-            self.assertFalse(self.broker.validate()["ok"])
+            result = self.broker.validate()
+            self.assertFalse(result["ok"])
+            self.assertEqual(result["failures"], ["scope-invalid:ValueError"])
+            self.assertEqual(result["diagnostics"], [])
             path.write_bytes(raw)
         (self.root / "driver.txt").write_bytes(b"protected driver contract\n")
-        self.assertFalse(self.broker.validate()["ok"])
+        result = self.broker.validate()
+        self.assertFalse(result["ok"])
+        self.assertIn("protected-file-changed:driver.txt", result["failures"])
+        self.assertEqual(result["diagnostics"], [{"code": "protected-file-mismatch", "path": "driver.txt"}])
 
     def test_registration_rejects_unregistered_contract_path_or_duplicate_contract(self):
         mutations = []
@@ -136,7 +217,9 @@ class SemanticBrokerTests(unittest.TestCase):
     def test_unsupported_host_code_fails_without_execution(self):
         source = "import os\nLIMIT = 72\ndef accept(attempts, trusted):\n    os.remove('driver.txt')\n    return True\n"
         self.assertTrue(self.repair(source=source)["ok"])
-        self.assertFalse(self.broker.validate()["ok"])
+        result = self.broker.validate()
+        self.assertFalse(result["ok"])
+        self.assertEqual(result["diagnostics"], [{"code": "unsupported-language", "path": "core.py"}])
         self.assertTrue((self.root / "driver.txt").exists())
 
     def test_legacy_ast_stays_exact_and_task_without_contract_still_valid(self):
@@ -146,9 +229,13 @@ class SemanticBrokerTests(unittest.TestCase):
             check.update(kind="python_ast", expected=self.task["initial_files"][check["path"]])
         self.assertIs(validate_task(legacy), legacy)
         broker = RepoBroker(self.root, legacy, self.git)
-        self.assertTrue(broker.validate()["ok"])
+        result = broker.validate()
+        self.assertTrue(result["ok"])
+        self.assertNotIn("diagnostics", result)
         self.repair(source="LIMIT = 72\n\ndef accept(attempts, trusted):\n    result = True\n    return result\n")
-        self.assertFalse(broker.validate()["ok"])
+        result = broker.validate()
+        self.assertFalse(result["ok"])
+        self.assertNotIn("diagnostics", result)
         legacy["behavior_contract"] = self.task["behavior_contract"]
         with self.assertRaises(ValueError):
             validate_task(legacy)

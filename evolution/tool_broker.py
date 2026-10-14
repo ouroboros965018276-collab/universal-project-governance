@@ -27,6 +27,43 @@ MAX_TOTAL_BYTES = 1048576
 MAX_FILES = 64
 _RESERVED = {"CON", "PRN", "AUX", "NUL"} | {f"{p}{i}" for p in ("COM", "LPT") for i in range(1, 10)}
 TOOLS = ("repo_read", "repo_search", "repo_patch", "repo_validate", "repo_status")
+# Public feedback vocabulary, shared with the native tool-result validator.
+# VM diagnostics remain private; only these categories and registered paths
+# may leave the broker, without probe indices, values or source fragments.
+SEMANTIC_DIAGNOSTIC_LIMIT = 16
+SEMANTIC_DIAGNOSTIC_CODES = (
+    "return-mismatch", "exception-mismatch", "signature-mismatch",
+    "required-function-mismatch", "constant-mismatch", "required-import-mismatch",
+    "required-call-not-in-result", "missing-import-export", "forbidden-symbol-present",
+    "protected-file-mismatch", "unsupported-method", "syntax-error",
+    "unsupported-language", "resource-limit", "behavior-contract-failed",
+)
+
+
+def _behavior_diagnostics(result, task):
+    """Bounded category/path hints; they never contribute to PASS or FAIL.
+
+    A pathless whole-contract failure names the affected behavior-check paths,
+    rather than claiming to locate a particular probe or source expression.
+    """
+    contract = task["behavior_contract"]
+    registered = set(task["initial_files"]) | set(task["writable_files"])
+    paths = (set(contract["modules"]) | set(contract.get("protected_files", {}))) & registered
+    fallback = {check["path"] for check in task["checks"] if check["kind"] == "python_behavior"}
+    diagnostics = set()
+    for failure in result.get("failures", []):
+        if not isinstance(failure, dict):
+            continue
+        code = failure.get("code")
+        if code not in SEMANTIC_DIAGNOSTIC_CODES:
+            if result.get("status") == "UNSUPPORTED":
+                code = "resource-limit" if isinstance(code, str) and code.endswith("-limit") else "unsupported-language"
+            else:
+                code = "behavior-contract-failed"
+        path = failure.get("path")
+        for name in ({path} if isinstance(path, str) and path in paths else fallback):
+            diagnostics.add((code, name))
+    return [{"code": code, "path": path} for code, path in sorted(diagnostics)[:SEMANTIC_DIAGNOSTIC_LIMIT]]
 
 
 def canonical(value):
@@ -269,6 +306,8 @@ class RepoBroker:
 
     def validate(self):
         failures, passed = [], 0
+        diagnostics = []
+        has_behavior = any(check["kind"] == "python_behavior" for check in self.task["checks"])
         try:
             files = self.snapshot()
             behavior_ok = None
@@ -282,10 +321,12 @@ class RepoBroker:
                             from evolution.semantic_contract import validate_behavior
                             # Preserve raw UTF-8/CRLF for protected-file hashes.
                             sources = {name: self.path(name).read_bytes().decode("utf-8") for name in files}
-                            behavior_ok = validate_behavior(sources, self.task["behavior_contract"])["ok"]
+                            behavior = validate_behavior(sources, self.task["behavior_contract"])
+                            behavior_ok = behavior["ok"]
+                            if not behavior_ok:
+                                diagnostics = _behavior_diagnostics(behavior, self.task)
                         if not behavior_ok:
-                            # Keep ordinary model feedback fixed and probe-free;
-                            # the native API adapter already accepts this type.
+                            # Preserve the existing ordinary failure type.
                             raise ValueError("Python behavior contract failed")
                         passed += 1
                         continue
@@ -305,8 +346,11 @@ class RepoBroker:
                     failures.append("contract-failed:" + check["path"] + ":" + type(error).__name__)
         except (OSError, ValueError, UnicodeError) as error:
             failures.append("scope-invalid:" + type(error).__name__)
-        return {"ok": not failures, "suite": "registered-static-contracts-v1",
-                "checks_passed": passed, "checks_total": len(self.task["checks"]), "failures": failures}
+        result = {"ok": not failures, "suite": "registered-static-contracts-v1",
+                  "checks_passed": passed, "checks_total": len(self.task["checks"]), "failures": failures}
+        if has_behavior:
+            result["diagnostics"] = diagnostics
+        return result
 
     def read_evidence_failures(self, events):
         """Task-specific whole-file observations must precede the first edit.
