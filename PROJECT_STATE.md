@@ -4,11 +4,15 @@ Current candidate: **3.0.0-rc.20 — Task Context and Complete Change Discipline
 
 ## 当前工作
 
-基线为 RC19 默认分支 `bd4a4d5c1c6fb9fca829e410729879d1b01f05b9`。RC20 正在整合表达相关性、完整改动、证据保真和按需读取；语义由规范源定义，编译后进入既有政策闭包，保持 16 项政策、8 项 Hot Path 和轻量本地路径。
+基线为 RC19 默认分支 `bd4a4d5c1c6fb9fca829e410729879d1b01f05b9`。RC20 正在整合表达相关性、完整改动、证据保真和按需读取；语义由规范源定义：四组执行指引在 Skill 中各保留一次，工作流与恢复细节由既有政策、报告级别和灰测状态按需送入计划。保持 16 项政策、8 项 Hot Path、3 项默认规则和 18 个交付文件；无辅助工具时按同一索引手工解析。
 
 本轮观察日期为 **2026-10-14 Asia/Shanghai**；精确工作开始时间未知。工程验收、真实对照、默认分支整合与本地安装须分别留存实际结果。未完成的检查不记为通过，缺失用量不记为零；当前不能宣布独立净收益或 Stable。
 
 来源、选用与排除、触发和验收映射由 [upstream-sources.json](third_party/upstream-sources.json) 维护；[鸣谢](THIRD_PARTY_NOTICES.md)保留五个上游及适用许可。三个新增来源的规则组只在预注册对照中消融，不撤销原有正确性、安全、真实性、必需验证或交接约束。
+
+RC20 原生 CLI 轮次因一次用量未知而中断；API 开发 v1 受执行器反馈处理混杂，v2 虽完成且原始记录核对通过，严格质量与净收益仍 FAIL，含 MiMo 完整版低于两个对照的反转。失败与成本保留在[原生审计](audits/rc20-native-context.audit.json)、[API v1](audits/rc20-api-tools-v1.audit.json)、[API v2 开发审计](audits/rc20-api-tools-v2-development.audit.json)，不作为独立改善证据。
+
+两个官方 API 的[微型原生工具与报告互操作探测](audits/rc20-api-terminal-probe.audit.json)均通过，共 9 次 HTTP、12,519 个报告 token、无未知用量。它只验证脚手架互操作；新候选的跨模型配对效果尚待新任务实测。仓库内 API helper 不随 Skill 安装，不给普通项目新增 provider 或密钥依赖。
 
 ## 最近一次重要发布：RC19
 

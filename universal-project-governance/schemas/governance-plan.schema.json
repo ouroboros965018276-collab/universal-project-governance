@@ -132,5 +132,6 @@
         "constraints"
       ]
     }
-  }
+  },
+  "description": "Task projection used with the loaded Skill. Its four execution guidance groups remain in the Skill. required_closures contains active policy closures and each applicable source-derived operational block once; operational blocks do not add policies. Without helpers apply the Skill and matching policy-index routing."
 }

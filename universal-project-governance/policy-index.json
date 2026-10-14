@@ -54,6 +54,30 @@
     }
   ],
   "name": "universal-project-governance",
+  "operational_guidance": [
+    {
+      "id": "tracked_state",
+      "on_field_reporting": true,
+      "policy_ids": [
+        "STRUCTURAL_INTEGRATION",
+        "HANDOFF_CONTINUITY"
+      ],
+      "report_levels": [
+        "engineering",
+        "audit"
+      ],
+      "statement": "For non-trivial or cross-session work, keep a stable workflow ID and minimal project_tool begin checkpoint when available. Start facts are immutable. Update only observed after-state, result/validation revisions and sourced occurrence time; Git committer time dates a commit, never work start. Keep unknowns explicit. Reuse evidence and existing schemas for payload fields: structured state is canonical, Markdown rendered; no second history database. Use state_tool validation/render/compact/export as needed. When writable, keep one current handoff for unfinished work or actor/session transitions. Keep one validation source with run ID, scope, denominator, tested state, result and pending retest. Never overlap counts or equate focused passes with full regression. Validate state references against the project root. Order events by causal parents/revisions and persistent sequence; recorded_at is observation time. Preserve the previous change, validate tested state and reconcile stale handoffs with current truth. At tracked non-trivial boundaries, call project_tool finish when available with the same workflow ID and observed change. Keep unfinished stages partial/blocked, their ID active and stage history intact. Reporting on appends exactly one report; off advances bounded latest/previous without a ledger. Keep immutable workflow/status receipts: identical retries are idempotent, conflicts fail. Bound scopes/metadata/evidence; never include source bodies, secrets or private reasoning. Export and verify before epoch rotation; never reset sequence. Recheck binding. Helper gaps remain verification gaps, never backfilled historical success."
+    },
+    {
+      "id": "recovery_tools",
+      "on_field_reporting": false,
+      "policy_ids": [
+        "HANDOFF_CONTINUITY"
+      ],
+      "report_levels": [],
+      "statement": "Reconstruct UPG state and unresolved artifacts as part of the existing HANDOFF_CONTINUITY closure. Optional read-only scripts/state_tool.py recover <root> --scope <file> supports repeated scopes, explicit --handoff and a registered --git-binary. Carry deltas/references into the current handoff."
+    }
+  ],
   "policies": [
     {
       "applies_to": [
@@ -109,7 +133,7 @@
         "automation",
         "design"
       ],
-      "closure": "Synchronize existing canonical project documentation/state with what is true now; do not append a second independently editable truth. Retain only information current readers need to use, maintain, validate or take over the project. Follow the user's language. Put operational self-explanation in the delivery, not README unless needed for project understanding. Choose expression and format for the task and reader, without mechanical style rules or extra model polishing calls.",
+      "closure": "Synchronize existing canonical project documentation/state with what is true now; do not append a second independently editable truth.",
       "conflicts_with": [],
       "eval_tags": [
         "truth",
@@ -156,7 +180,7 @@
         "automation",
         "design"
       ],
-      "closure": "Validate the actual claims made by the change using the smallest sufficient checks; report any unverified surface explicitly. Use concrete details over empty generalities; match claim strength to observed evidence. Preserve technical identifiers, numbers, references, negation and unknowns when rewriting or shortening. Locate task modules, symbols or document anchors through existing indexes or bounded search; indexes route reads, never prove complete dependencies. Expand through implementation, contracts, consumers and tests. Widen for stale/conflicting indexes, dynamic dependencies or insufficient coverage; recover interrupted/stale/contradictory state with the existing fact-recovery path. Read budgets never prove completion.",
+      "closure": "Validate the actual claims made by the change using the smallest sufficient checks; report any unverified surface explicitly.",
       "conflicts_with": [],
       "eval_tags": [
         "validation",
@@ -359,7 +383,7 @@
         "design",
         "governance"
       ],
-      "closure": "For non-trivial work, identify the smallest responsible canonical layer, integrate the requested change there, remove superseded patch/shim/duplicate paths when safe, and stop at the task boundary. Structural integration never authorizes unrelated redesign, API/contract change, architectural migration, or opportunistic refactoring. Make the complete task-bounded change at the existing correct responsible layer; preserve contracts, safety and error handling, and resolve affected consumers, tests and obsolete paths. Minimize unnecessary work, not lines, diff size or deletion volume. Prioritize user intent, then correctness/safety/truth, contracts/structure, maintainability/readability, and cost.",
+      "closure": "For non-trivial work, identify the smallest responsible canonical layer, integrate the requested change there, remove superseded patch/shim/duplicate paths when safe, and stop at the task boundary. Structural integration never authorizes unrelated redesign, API/contract change, architectural migration, or opportunistic refactoring.",
       "conflicts_with": [],
       "eval_tags": [
         "structural-integration",
@@ -926,7 +950,7 @@
     "release_operation_forces": "audit"
   },
   "schema_version": 1,
-  "source_sha256": "139d4072bec6df5550501578c954e018f4673fcd06f17e876709c31207892fb4",
+  "source_sha256": "17424d48d25e1e04f6433f16c759a098aad4da1312df856a34794983022f5307",
   "structural_integration": {
     "exempt_operations": [
       "release"

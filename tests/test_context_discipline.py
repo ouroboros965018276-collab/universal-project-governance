@@ -52,7 +52,7 @@ class ContextDisciplineTests(unittest.TestCase):
         self.assertEqual(len(self.model["hot_path"]), 8)
         self.assertEqual(len(self.model["default_rules"]), 3)
 
-    def test_local_code_and_docs_receive_guidance_without_forcing_architecture_work(self):
+    def test_local_code_and_docs_keep_global_guidance_without_forcing_architecture_work(self):
         for context in ({"operation": "edit", "domains": ["code"]},
                         {"operation": "docs", "domains": ["docs"]}):
             with self.subTest(context=context):
@@ -61,11 +61,13 @@ class ContextDisciplineTests(unittest.TestCase):
                 self.assertEqual(plan["scope_guard"], "local-only")
                 self.assertEqual(set(plan["active_rules"]), set(self.model["default_rules"]))
                 closures = "\n".join(plan["required_closures"])
-                for group in ("decision_relevance", "evidence_fidelity", "task_scoped_reading"):
-                    self.assertEqual(closures.count(self.groups[group]["statement"]), 1)
-                self.assertNotIn(self.groups["complete_change"]["statement"], closures)
+                skill = COMPILER.render_skill(SOURCE, self.model)
+                for group in self.groups.values():
+                    self.assertEqual(skill.count(group["statement"]), 1)
+                    self.assertNotIn(group["statement"], closures)
+                self.assertFalse(any(c.startswith("Operational ") for c in plan["required_closures"]))
 
-    def test_nontrivial_and_forced_work_receive_complete_change_with_scope_guard(self):
+    def test_nontrivial_and_forced_work_keep_base_closures_and_scope_guard(self):
         contexts = [
             {"operation": "edit", "domains": ["code"], "risk": {"scope": 2, "reversibility": 2}},
             {"operation": "architecture", "domains": ["code"]},
@@ -78,9 +80,11 @@ class ContextDisciplineTests(unittest.TestCase):
                 self.assertIn("STRUCTURAL_INTEGRATION", plan["active_rules"])
                 closures = "\n".join(plan["required_closures"])
                 for group in self.groups.values():
-                    self.assertEqual(closures.count(group["statement"]), 1)
+                    self.assertNotIn(group["statement"], closures)
+                self.assertEqual(sum(c.startswith("Operational tracked_state: ")
+                                     for c in plan["required_closures"]), 1)
 
-    def test_single_canonical_statements_reach_skill_and_target_closures(self):
+    def test_global_guidance_reaches_skill_once_and_preserves_all_base_policy_definitions(self):
         skill = COMPILER.render_skill(SOURCE, self.model)
         index = COMPILER.compile_index(SOURCE, self.model)
         template = (SOURCE / "templates/SKILL.template.md").read_text(encoding="utf-8")
@@ -91,8 +95,9 @@ class ContextDisciplineTests(unittest.TestCase):
             self.assertEqual(skill.count(group["statement"]), 1)
             self.assertIn(group["id"], skill)
             for policy in index["policies"]:
-                self.assertEqual(policy["closure"].count(group["statement"]),
-                                 int(policy["id"] in group["policy_ids"]))
+                self.assertNotIn(group["statement"], policy["closure"])
+        self.assertEqual(index["policies"], self.model["policies"])
+        self.assertEqual(index["operational_guidance"], self.model["operational_guidance"])
 
     def test_each_source_group_can_be_ablated_without_changing_policy_contracts(self):
         context = {"operation": "architecture", "domains": ["code"]}
@@ -104,13 +109,12 @@ class ContextDisciplineTests(unittest.TestCase):
                 plan = self.plan(context, ablated)
                 skill = COMPILER.render_skill(SOURCE, ablated)
                 closures = "\n".join(plan["required_closures"])
-                for key in ("active_rules", "risk_level", "change_mode", "scope_guard", "evidence", "report", "handoff"):
-                    self.assertEqual(plan[key], full_plan[key])
+                self.assertEqual(plan, full_plan)
                 for key in ("policies", "hot_path", "default_rules"):
                     self.assertEqual(ablated[key], self.model[key])
                 for group_id, group in self.groups.items():
                     self.assertEqual(group["statement"] in skill, group_id != removed)
-                    self.assertEqual(group["statement"] in closures, group_id != removed)
+                    self.assertNotIn(group["statement"], closures)
 
     def test_compile_does_not_mutate_canonical_model_or_accumulate_guidance(self):
         original = copy.deepcopy(self.model)
@@ -121,7 +125,7 @@ class ContextDisciplineTests(unittest.TestCase):
         self.assertEqual(self.model, original)
         for compiled in first["policies"]:
             source = next(p for p in original["policies"] if p["id"] == compiled["id"])
-            self.assertTrue(compiled["closure"].startswith(source["closure"]))
+            self.assertEqual(compiled, source)
 
     def test_candidates_without_guidance_keep_original_policy_semantics(self):
         legacy = copy.deepcopy(self.model)

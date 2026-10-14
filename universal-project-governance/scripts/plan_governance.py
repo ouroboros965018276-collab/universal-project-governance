@@ -91,6 +91,35 @@ def risk(index: dict, ctx: dict):
     return level, score, report
 
 
+def operational_closures(index: dict, active: set, field_reporting: bool, report: str) -> list:
+    """Read only source-derived blocks selected by existing policy/report state."""
+    import re
+    groups = index.get("operational_guidance", [])
+    if not isinstance(groups, list):
+        raise ValueError("invalid operational guidance")
+    policy_ids = {policy["id"] for policy in index["policies"]}
+    seen, result = set(), []
+    for group in groups:
+        if (not isinstance(group, dict)
+                or set(group) != {"id", "policy_ids", "on_field_reporting", "report_levels", "statement"}):
+            raise ValueError("invalid operational guidance block")
+        identity, targets, statement = group["id"], group["policy_ids"], group["statement"]
+        levels = group["report_levels"]
+        if (not isinstance(identity, str) or re.fullmatch(r"[a-z][a-z0-9_]{0,63}", identity) is None
+                or identity in seen or not isinstance(targets, list) or not targets
+                or any(not isinstance(item, str) or item not in policy_ids for item in targets)
+                or len(set(targets)) != len(targets) or type(group["on_field_reporting"]) is not bool
+                or not isinstance(levels, list)
+                or any(not isinstance(level, str) or level not in REPORT_ORDER for level in levels)
+                or len(set(levels)) != len(levels)
+                or not isinstance(statement, str) or not statement.strip()):
+            raise ValueError("invalid operational guidance routing")
+        seen.add(identity)
+        if set(targets) & active or report in levels or (group["on_field_reporting"] and field_reporting):
+            result.append("Operational %s: %s" % (identity, statement))
+    return result
+
+
 def compile_plan(index: dict, ctx: dict) -> dict:
     validate_context(ctx, index)
     policies = {p["id"]: p for p in index["policies"]}
@@ -162,6 +191,9 @@ def compile_plan(index: dict, ctx: dict) -> dict:
     budget = index["complexity_budget"]["default_active_policies_max"]
     if risk_level in {"trivial", "low"} and len(active) > budget:
         warnings.append("low-risk plan activates %d policies; default budget is %d" % (len(active), budget))
+
+    closures.extend(operational_closures(index, active, ctx.get("field_test_reporting",
+        index.get("project_binding", {}).get("field_test_reporting")) is True, report))
 
     plan = {
         "version": index["version"],

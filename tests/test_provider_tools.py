@@ -1,0 +1,837 @@
+"""Offline behavior checks for the repository-only native API helper.
+
+All HTTP, sockets, Git/subprocess calls and key material are synthetic. Tests
+use one local fixture and the public module; no historical workspace is read.
+Python 3.8 runtime tests are separate: this repository helper suite skips before
+importing repository engine modules on Python versions below 3.10.
+"""
+from __future__ import annotations
+
+from decimal import Decimal
+import inspect
+import json
+from pathlib import Path
+import socket
+import subprocess
+import sys
+import tempfile
+import threading
+from types import SimpleNamespace
+import unittest
+from unittest.mock import Mock, patch
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.dont_write_bytecode = True
+sys.path.insert(0, str(ROOT))
+SUPPORTED = sys.version_info >= (3, 10)
+if SUPPORTED:
+    from evolution import provider_tools as lab
+    from evolution import tool_broker
+    from evolution.tool_broker import canonical, sha
+
+SECRET = "mock-secret-never-on-disk-38195"
+FINAL = {"summary": "Public mock complete", "validation": "passed",
+         "helper_gap": "project_tool unavailable in bounded broker"}
+
+
+def completion(index, calls=None, content=None, usage=True, **extra):
+    result = {"id": "mock-response-" + str(index), "model": "mock-observed-model", "object": "chat.completion",
+              "choices": [{"finish_reason": "tool_calls" if calls else "stop", "message": {
+                  "role": "assistant", "content": content, "reasoning_content": "mock non-private test field", "tool_calls": calls}}]}
+    if usage:
+        result["usage"] = {"prompt_tokens": 10, "completion_tokens": 5, "total_tokens": 15,
+                           "prompt_tokens_details": {"cached_tokens": 2}, "completion_tokens_details": {"reasoning_tokens": 0}}
+    result.update(extra)
+    return result
+
+
+def call(identifier, tool, arguments):
+    return {"id": identifier, "type": "function", "function": {"name": tool, "arguments": json.dumps(arguments)}}
+
+
+class _ProviderFixture:
+    def setUp(self):
+        harmless = SimpleNamespace(returncode=0, stdout=b"", stderr=b"")
+        fence = patch.object(tool_broker, "git_command", return_value=harmless)
+        self.git_status = fence.start()
+        self.addCleanup(fence.stop)
+        for name in ("Popen", "run", "check_output", "call", "check_call"):
+            fence = patch.object(subprocess, name, side_effect=AssertionError("real CLI forbidden"))
+            fence.start()
+            self.addCleanup(fence.stop)
+        for target, name in ((socket, "socket"), (socket, "create_connection"), (lab.http.client, "HTTPSConnection")):
+            fence = patch.object(target, name, side_effect=AssertionError("live network forbidden"))
+            fence.start()
+            self.addCleanup(fence.stop)
+        temporary = tempfile.TemporaryDirectory(prefix="provider-tools-mock-")
+        self.addCleanup(temporary.cleanup)
+        self.base = Path(temporary.name)
+        self.workspace = self.base / "repository"
+        self.workspace.mkdir()
+        self.artifacts = self.base / "evidence"
+        self.task = {"id": "public-http-mock", "family": "public-http-mock", "prompt": "将target.txt改为fixed并保留契约。",
+                     "initial_files": {"target.txt": "old\n", "contract.json": "{}\n"}, "writable_files": ["target.txt"],
+                     "checks": [{"path": "target.txt", "kind": "text", "expected": "fixed\n"}],
+                     "required_read_paths": ["target.txt", "contract.json"],
+                     "required_tools": ["repo_read", "repo_patch", "repo_validate", "repo_status"]}
+        for name, text in self.task["initial_files"].items():
+            (self.workspace / name).write_bytes(text.encode("utf-8"))
+        self.git = str(self.base / "mock-git-entry")
+        self.loaded, self.before, self.after = [], [], []
+
+    def key(self, provider):
+        self.loaded.append(provider)
+        return SECRET
+
+    def reserve(self, metadata):
+        self.before.append(metadata)
+        return {"reservation_id": metadata["request_id"]}
+
+    def account(self, metadata):
+        self.after.append(metadata)
+
+    def run_actor(self, **kwargs):
+        kwargs.setdefault("response_json_mode", False)
+        kwargs.setdefault("thinking", "disabled")
+        return lab.run_actor(kwargs.pop("provider", "deepseek"), "mock-requested-model", self.task,
+                             self.workspace, self.artifacts, self.git, "公开合成条件", self.key,
+                             before_request=self.reserve, after_request=self.account, **kwargs)
+
+    def positive(self, provider, payload, key, timeout):
+        definitions = {item["function"]["name"]: item["function"] for item in payload["tools"]}
+        self.assertEqual(set(definitions), {"repo_read", "repo_search", "repo_patch", "repo_validate", "repo_status", "repo_finish"})
+        self.assertEqual(definitions["repo_finish"]["parameters"], lab.FINAL_SCHEMA)
+        self.assertNotIn("response_format", payload)
+        index = len(self.before)
+        self.assertEqual(key, SECRET)
+        self.assertTrue((self.artifacts / "requests" / ("%02d.pending.json" % index)).exists())
+        self.assertEqual(payload["thinking"], {"type": "disabled"})
+        self.assertNotIn("strict", json.dumps(payload["tools"]))
+        self.assertEqual(payload["max_tokens" if provider == "deepseek" else "max_completion_tokens"], 4096)
+        self.assertLessEqual(timeout, 180)
+        if index == 1:
+            response = completion(index, [call("read-1", "repo_read", {"paths": ["target.txt", "contract.json"]})])
+        elif index == 2:
+            previous = json.loads(payload["messages"][-1]["content"])
+            response = completion(index, [call("patch-1", "repo_patch", {"operations": [{"path": "target.txt", "old_sha256": previous["files"]["target.txt"]["sha256"], "new_text": "fixed\n"}]})])
+            self.assertEqual(payload["messages"][-2]["reasoning_content"], "mock non-private test field")
+        elif index == 3:
+            response = completion(index, [call("validate-1", "repo_validate", {}), call("status-1", "repo_status", {})])
+        else:
+            response = completion(index, [call("finish-" + str(index), "repo_finish", {
+                "summary": "完整修复；应用测试未运行。", "validation": "passed",
+                "helper_gap": "project_tool unavailable in bounded broker"})])
+        response["debug"] = {"api_key": SECRET, "echo": SECRET, "authorization": "Bearer " + SECRET}
+        return 200, {"x-request-id": "safe-header-" + str(index)}, canonical(response)
+
+    def scripted(self, steps):
+        def post(provider, payload, key, timeout):
+            index = len(self.before)
+            self.assertTrue((self.artifacts / "requests" / ("%02d.pending.json" % index)).exists())
+            step = steps[index - 1]
+            response = step(payload) if callable(step) else step
+            return 200, {}, canonical(response)
+        return post
+
+    def feedback(self, payload):
+        self.assertEqual(payload["messages"][-1]["role"], "tool")
+        return json.loads(payload["messages"][-1]["content"])
+
+    def read(self, index):
+        return completion(index, [call("read-" + str(index), "repo_read", {"paths": ["target.txt", "contract.json"]})])
+
+    def patch_from_read(self, index, text):
+        def response(payload):
+            current = self.feedback(payload)["files"]["target.txt"]["sha256"]
+            return completion(index, [call("patch-" + str(index), "repo_patch", {"operations": [
+                {"path": "target.txt", "old_sha256": current, "new_text": text}]})])
+        return response
+
+    def validate_and_status(self, index):
+        return completion(index, [call("validate-" + str(index), "repo_validate", {}),
+                                  call("status-" + str(index), "repo_status", {})])
+
+    def final(self, index, **changes):
+        return completion(index, [call("finish-" + str(index), "repo_finish", dict(FINAL, **changes))])
+
+    def assert_negative_preserved(self, result, sequence, expected):
+        event = result["tool_events"][sequence - 1]
+        self.assertEqual(event["result"], expected)
+        self.assertEqual(event["result_sha256"], sha(canonical(expected)))
+        trace = result["api_tool_trace"][sequence - 1]
+        self.assertEqual(trace["broker_event_sha256"], sha(canonical(event)))
+        self.assertEqual(trace["result_sha256"], event["result_sha256"])
+        disk = [json.loads(line) for line in (self.artifacts / "broker.jsonl").read_text(encoding="utf-8").splitlines()]
+        self.assertEqual(disk[sequence - 1], event)
+
+    def ready(self):
+        return [self.read(1), self.patch_from_read(2, "fixed\n"), self.validate_and_status(3)]
+
+    def execute(self, steps):
+        with patch.object(lab, "_post", side_effect=self.scripted(steps)) as post:
+            result = self.run_actor()
+        self.assertEqual(post.call_count, len(steps))
+        return result
+
+
+@unittest.skipUnless(SUPPORTED, "repository API helper tests require Python 3.10+; runtime 3.8 has separate tests")
+class ProviderToolsTests(_ProviderFixture, unittest.TestCase):
+    def test_native_api_broker_chain_and_budget_receipts_pass(self):
+        with patch.object(lab, "_post", side_effect=self.positive) as post:
+            result = self.run_actor()
+        self.assertTrue(result["quality"]["hard_pass"], result["quality"])
+        self.assertEqual(result["adapter"], lab.ADAPTER)
+        self.assertEqual(post.call_count, 4)
+        self.assertEqual(result["usage"]["total_tokens"], 60)
+        self.assertEqual(len(result["api_tool_trace"]), 4)
+        self.assertEqual(result["final_state_snapshot"]["target.txt"], sha(b"fixed\n"))
+        self.assertTrue(all(row["dispatched"] and row["receipt_sha256"] for row in self.after))
+        self.assertTrue(all(row["input_utf8_bytes"] > 0 and row["output_cap"] == 4096 for row in self.before))
+        self.assertFalse(list(self.artifacts.rglob("*.pending.json")))
+        self.assertNotIn("item.completed", json.dumps(result))
+        for path in self.artifacts.rglob("*"):
+            if path.is_file():
+                self.assertNotIn(SECRET.encode(), path.read_bytes(), path)
+        self.assertNotIn(SECRET, json.dumps(self.before + self.after + [result]))
+
+    def test_mimo_uses_official_completion_limit_and_same_native_contract(self):
+        with patch.object(lab, "_post", side_effect=self.positive):
+            result = self.run_actor(provider="mimo")
+        self.assertTrue(result["quality"]["hard_pass"])
+        self.assertEqual(self.loaded, ["mimo"])
+
+    def test_partial_usage_stops_before_tools_and_fences_replay(self):
+        response = completion(1, [call("read-1", "repo_read", {"paths": ["target.txt"]})], usage=False)
+        with patch.object(lab, "_post", return_value=(200, {}, canonical(response))) as post:
+            result = self.run_actor()
+            with self.assertRaises(lab.ActorFence):
+                self.run_actor()
+        self.assertEqual(post.call_count, 1)
+        self.assertEqual(result["status"], "unknown-call-blocked")
+        self.assertIsNone(result["usage"])
+        self.assertTrue(result["unknown_usage"])
+        self.assertEqual(result["tool_events"], [])
+        self.assertTrue(self.after[0]["unknown"])
+        self.assertTrue((self.artifacts / "requests/01.pending.json").exists())
+        self.assertEqual(self.loaded, ["deepseek"])
+
+    def test_missing_message_is_unknown_before_pending_release(self):
+        response = completion(1)
+        del response["choices"][0]["message"]
+        with patch.object(lab, "_post", return_value=(200, {}, canonical(response))):
+            result = self.run_actor()
+        self.assertTrue(result["unknown_usage"])
+        self.assertEqual(result["known_usage"]["total_tokens"], 15)
+        self.assertTrue(self.after[0]["unknown"])
+        self.assertTrue((self.artifacts / "requests/01.pending.json").exists())
+
+    def test_redirect_is_not_followed_and_official_auth_stays_in_memory(self):
+        response = Mock(status=302)
+        response.read.return_value = b'{}'
+        response.getheaders.return_value = [("Location", "https://attacker.invalid/")]
+        connection = Mock()
+        connection.getresponse.return_value = response
+        with patch.object(lab.http.client, "HTTPSConnection", return_value=connection) as constructor:
+            result = self.run_actor(provider="mimo")
+        self.assertEqual(constructor.call_count, 1)
+        self.assertEqual(constructor.call_args.args[0], "api.xiaomimimo.com")
+        self.assertEqual(connection.request.call_count, 1)
+        self.assertEqual(connection.request.call_args.args[:2], ("POST", "/v1/chat/completions"))
+        self.assertEqual(connection.request.call_args.kwargs["headers"]["api-key"], SECRET)
+        self.assertTrue(result["unknown_usage"])
+
+    def test_transport_exception_does_not_log_credentials_or_retry(self):
+        with patch.object(lab, "_post", side_effect=RuntimeError("Bearer " + SECRET)) as post:
+            result = self.run_actor()
+        self.assertEqual(post.call_count, 1)
+        self.assertTrue(result["unknown_usage"])
+        for path in self.artifacts.rglob("*.json"):
+            self.assertNotIn(SECRET, path.read_text(encoding="utf-8"))
+
+    def test_unregistered_path_is_denied_without_mutation(self):
+        response = completion(1, [call("escape-1", "repo_read", {"paths": ["../secret.txt"]})])
+        with patch.object(lab, "_post", return_value=(200, {}, canonical(response))) as post:
+            result = self.run_actor()
+        self.assertEqual(post.call_count, 1)
+        self.assertFalse(result["quality"]["hard_pass"])
+        self.assertFalse(result["quality"]["scope_ok"])
+        self.assertEqual((self.workspace / "target.txt").read_text(), "old\n")
+        self.assertEqual(len(result["api_tool_trace"]), 1)
+
+    def test_schema_extra_argument_and_secret_tool_payload_are_rejected(self):
+        for args in ({"paths": ["target.txt"], "extra": True}, {"paths": [SECRET]}):
+            with self.subTest(arguments=args):
+                self.artifacts = self.base / ("rejected-" + str(len(args)) + str(len(args["paths"][0])))
+                response = completion(1, [call("invalid-1", "repo_read", args)])
+                with patch.object(lab, "_post", return_value=(200, {}, canonical(response))):
+                    result = self.run_actor()
+                self.assertFalse(result["quality"]["hard_pass"])
+                self.assertEqual(result["tool_events"], [])
+
+    def test_escaped_credential_is_rejected_before_broker_or_file_write(self):
+        escaped = "".join("\\u%04x" % ord(character) for character in SECRET)
+        arguments = '{"operations":[{"path":"target.txt","old_sha256":"' + sha(b"old\n") + '","new_text":"' + escaped + '"}]}'
+        self.assertNotIn(SECRET, arguments)
+        response = completion(1, [{"id": "escaped-secret", "type": "function", "function": {"name": "repo_patch", "arguments": arguments}}])
+        with patch.object(lab, "_post", return_value=(200, {}, canonical(response))):
+            result = self.run_actor()
+        self.assertFalse(result["quality"]["hard_pass"])
+        self.assertEqual(result["tool_events"], [])
+        self.assertFalse((self.artifacts / "broker.jsonl").exists())
+        self.assertEqual((self.workspace / "target.txt").read_bytes(), b"old\n")
+        for path in self.artifacts.rglob("*.json"):
+            text = path.read_text(encoding="utf-8")
+            self.assertNotIn(SECRET, text)
+            self.assertNotIn(escaped.replace("\\", "\\\\"), text)
+
+    def test_final_serialized_payload_guard_runs_before_every_post(self):
+        original_redact = lab._redact
+        def unsafe_passthrough(value, secret):
+            # Simulate an upstream bug in conversation redaction; send guard
+            # must still stop a credential-bearing second request.
+            if isinstance(value, str) and value == "inject-credential-next-message":
+                return SECRET
+            return original_redact(value, secret)
+        response = completion(1, [call("read-1", "repo_read", {"paths": ["target.txt", "contract.json"]})])
+        response["choices"][0]["message"]["reasoning_content"] = "inject-credential-next-message"
+        with patch.object(lab, "_post", return_value=(200, {}, canonical(response))) as post, patch.object(lab, "_redact", side_effect=unsafe_passthrough):
+            result = self.run_actor()
+        self.assertEqual(post.call_count, 1)
+        self.assertEqual(result["status"], "preparation-failed-not-invoked")
+        self.assertEqual(len(self.after), 2)
+        self.assertTrue(self.after[-1]["not_invoked"])
+
+    def test_budget_refusal_loads_no_key_and_sends_no_request(self):
+        self.reserve = Mock(side_effect=ValueError("budget limit"))
+        with patch.object(lab, "_post") as post:
+            result = self.run_actor()
+        post.assert_not_called()
+        self.assertEqual(self.loaded, [])
+        self.assertEqual(result["status"], "outer-budget-refused")
+        self.assertEqual(result["requests"], 0)
+
+    def test_reservation_time_exhaustion_sends_no_http_and_releases_reservation(self):
+        ticks = [0.0]
+        def slow_reservation(metadata):
+            ticks[0] = .03
+            return {"reservation_id": metadata["request_id"]}
+        self.reserve = slow_reservation
+        with patch.object(lab, "_post") as post, patch.object(lab.time, "perf_counter", side_effect=lambda: ticks[0]):
+            result = self.run_actor(timeout_seconds=.02)
+        post.assert_not_called()
+        self.assertEqual(self.loaded, [])
+        self.assertEqual(result["requests"], 0)
+        self.assertEqual(result["status"], "wall-budget-exhausted")
+        self.assertTrue(self.after[-1]["not_invoked"])
+
+    def test_key_loader_failure_is_definitely_not_dispatched(self):
+        self.key = Mock(side_effect=RuntimeError(SECRET))
+        with patch.object(lab, "_post") as post:
+            result = self.run_actor()
+        post.assert_not_called()
+        self.assertFalse(result["unknown_usage"])
+        self.assertTrue(self.after[0]["not_invoked"])
+        self.assertFalse(self.after[0]["dispatched"])
+        self.assertNotIn(SECRET, json.dumps(result))
+
+    def test_fresh_takeover_requires_explicit_received_task_from_driver(self):
+        (self.workspace / "target.txt").write_bytes(b"partial\n")
+        self.task["initial_files"]["target.txt"] = "partial\n"
+        with patch.object(lab, "_post", side_effect=self.positive):
+            result = self.run_actor()
+        self.assertTrue(result["quality"]["hard_pass"])
+        self.assertEqual(result["input_task_sha256"], sha(canonical(self.task)))
+        self.assertEqual(result["effective_task_sha256"], result["input_task_sha256"])
+        self.assertEqual(result["received_state_sha256"], sha(canonical({"target.txt": sha(b"partial\n"), "contract.json": sha(b"{}\n")})))
+
+    def test_changed_input_file_is_not_blessed_during_takeover(self):
+        (self.workspace / "contract.json").write_bytes(b'{"changed":true}\n')
+        with patch.object(lab, "_post") as post, self.assertRaisesRegex(ValueError, "exact input task"):
+            self.run_actor()
+        post.assert_not_called()
+        self.assertEqual(self.loaded, [])
+
+    def test_preexisting_writable_only_target_is_rejected_before_key_or_log(self):
+        self.task["writable_files"].append("created.txt")
+        self.task["checks"].append({"path": "created.txt", "kind": "text", "expected": "new target\n"})
+        (self.workspace / "created.txt").write_bytes(SECRET.encode("utf-8"))
+        with patch.object(lab, "_post") as post, self.assertRaisesRegex(ValueError, "exact input task"):
+            self.run_actor()
+        post.assert_not_called()
+        self.assertEqual(self.loaded, [])
+        self.assertFalse((self.artifacts / "broker.jsonl").exists())
+
+    def test_duplicate_response_id_stops_and_preserves_both_reported_charges(self):
+        def repeat(provider, payload, key, timeout):
+            index = len(self.before)
+            response = completion(1, [call("read-" + str(index), "repo_read", {"paths": ["target.txt", "contract.json"]})])
+            return 200, {}, canonical(response)
+        with patch.object(lab, "_post", side_effect=repeat) as post:
+            result = self.run_actor()
+        self.assertEqual(post.call_count, 2)
+        self.assertTrue(result["unknown_usage"])
+        self.assertEqual(result["known_usage"]["total_tokens"], 30)
+        self.assertEqual(len(result["tool_events"]), 1)
+        self.assertTrue(self.after[-1]["unknown"])
+        self.assertTrue((self.artifacts / "requests/02.pending.json").exists())
+
+    def test_provider_usage_overrun_is_retained_and_stops_before_tools(self):
+        response = completion(1, [call("read-1", "repo_read", {"paths": ["target.txt"]})])
+        response["usage"].update(completion_tokens=4097, total_tokens=4107)
+        with patch.object(lab, "_post", return_value=(200, {}, canonical(response))) as post:
+            result = self.run_actor()
+        self.assertEqual(post.call_count, 1)
+        self.assertEqual(result["status"], "unexpected-overrun-blocked")
+        self.assertEqual(result["usage"]["output_tokens"], 4097)
+        self.assertTrue(self.after[0]["unexpected_overrun"])
+        self.assertEqual(result["tool_events"], [])
+
+    def test_actor_deadline_returns_unknown_without_waiting_for_late_response(self):
+        entered, release, returned = threading.Event(), threading.Event(), threading.Event()
+        def slow(*unused):
+            entered.set()
+            try:
+                release.wait(2)
+                return 200, {}, canonical(completion(1))
+            finally:
+                returned.set()
+        try:
+            with patch.object(lab, "_post", side_effect=slow), patch.object(lab.time, "perf_counter", return_value=0.0):
+                result = self.run_actor(timeout_seconds=.04)
+            self.assertTrue(entered.is_set())
+            self.assertFalse(release.is_set())
+        finally:
+            release.set()
+            self.assertTrue(returned.wait(1))
+        self.assertTrue(result["unknown_usage"])
+        self.assertTrue((self.artifacts / "requests/01.pending.json").exists())
+
+    def test_hard_request_and_tool_caps_are_not_overridable(self):
+        with self.assertRaises(ValueError):
+            self.run_actor(max_requests=13)
+        response = completion(1, [call(str(index), "repo_status", {}) for index in range(33)])
+        with patch.object(lab, "_post", return_value=(200, {}, canonical(response))) as post:
+            result = self.run_actor(max_requests=1)
+        self.assertEqual(post.call_count, 1)
+        self.assertEqual(result["tool_events"], [])
+        self.assertFalse(result["quality"]["hard_pass"])
+
+    def test_initial_negative_validate_is_feedback_then_complete_repair_passes(self):
+        failed = {"ok": False, "suite": "registered-static-contracts-v1", "checks_passed": 0,
+                  "checks_total": 1, "failures": ["contract-failed:target.txt:ValueError"]}
+        def after_negative(payload):
+            self.assertEqual(self.feedback(payload), failed)
+            return self.read(2)
+        steps = [completion(1, [call("initial-validate", "repo_validate", {})]), after_negative,
+                 self.patch_from_read(3, "fixed\n"), self.validate_and_status(4), self.final(5)]
+        with patch.object(lab, "_post", side_effect=self.scripted(steps)) as post:
+            result = self.run_actor()
+        self.assertTrue(result["quality"]["hard_pass"], result["quality"])
+        self.assertEqual(post.call_count, 5)
+        self.assertEqual(len(result["tool_events"]), 5)
+        self.assert_negative_preserved(result, 1, failed)
+        self.assertFalse(result["quality"]["failures"])
+
+    def test_negative_validate_after_edit_allows_another_fresh_repair(self):
+        def after_negative(payload):
+            feedback = self.feedback(payload)
+            self.assertIs(feedback["ok"], False)
+            self.assertEqual(feedback["failures"], ["contract-failed:target.txt:ValueError"])
+            return self.read(4)
+        steps = [self.read(1), self.patch_from_read(2, "partially-fixed\n"),
+                 completion(3, [call("intermediate-validate", "repo_validate", {})]), after_negative,
+                 self.patch_from_read(5, "fixed\n"), self.validate_and_status(6), self.final(7)]
+        with patch.object(lab, "_post", side_effect=self.scripted(steps)):
+            result = self.run_actor()
+        self.assertTrue(result["quality"]["hard_pass"], result["quality"])
+        self.assertEqual(result["requests"], 7)
+        self.assertEqual(result["tool_events"][2]["state_sha256"],
+                         sha(canonical({"contract.json": sha(b"{}\n"), "target.txt": sha(b"partially-fixed\n")})))
+        self.assert_negative_preserved(result, 3, result["tool_events"][2]["result"])
+
+    def test_wrong_patch_hash_is_returned_then_fresh_read_and_correct_patch_pass(self):
+        failed = {"ok": False, "error": "ValueError: patch precondition hash mismatch"}
+        wrong = {"operations": [{"path": "target.txt", "old_sha256": "0" * 64, "new_text": "fixed\n"}]}
+        def after_stale(payload):
+            self.assertEqual(self.feedback(payload), failed)
+            self.assertEqual((self.workspace / "target.txt").read_bytes(), b"old\n")
+            return self.read(3)
+        steps = [self.read(1), completion(2, [call("stale-patch", "repo_patch", wrong)]), after_stale,
+                 self.patch_from_read(4, "fixed\n"), self.validate_and_status(5), self.final(6)]
+        with patch.object(lab, "_post", side_effect=self.scripted(steps)):
+            result = self.run_actor()
+        self.assertTrue(result["quality"]["hard_pass"], result["quality"])
+        self.assert_negative_preserved(result, 2, failed)
+        self.assertEqual(result["requests"], 6)
+
+    def test_protected_patch_is_still_terminal(self):
+        operation = {"path": "contract.json", "old_sha256": sha(b"{}\n"), "new_text": "changed\n"}
+        with patch.object(lab, "_post", return_value=(200, {}, canonical(completion(1, [
+                call("protected-patch", "repo_patch", {"operations": [operation]})])))) as post:
+            result = self.run_actor()
+        self.assertEqual(post.call_count, 1)
+        self.assertEqual(result["status"], "tool-contract-failed")
+        self.assertIn("protected", result["tool_events"][0]["result"]["error"])
+        self.assertFalse(result["quality"]["hard_pass"])
+        self.assertEqual((self.workspace / "contract.json").read_bytes(), b"{}\n")
+
+    def test_stale_hash_cannot_mask_a_later_protected_or_duplicate_operation(self):
+        stale = {"path": "target.txt", "old_sha256": "0" * 64, "new_text": "fixed\n"}
+        for position, later in enumerate((dict(stale, path="contract.json"), stale)):
+            with self.subTest(later_path=later["path"]):
+                self.artifacts = self.base / ("masked-invalid-" + str(position))
+                response = completion(1, [call("masked-patch", "repo_patch", {"operations": [stale, later]})])
+                with patch.object(lab, "_post", return_value=(200, {}, canonical(response))) as post:
+                    result = self.run_actor()
+                self.assertEqual(post.call_count, 1)
+                self.assertEqual(result["status"], "tool-contract-failed")
+                self.assertFalse(result["quality"]["hard_pass"])
+
+    def test_validate_protected_failure_is_still_terminal(self):
+        def external_protected_drift(provider, payload, key, timeout):
+            (self.workspace / "contract.json").write_bytes(b'{"external":true}\n')
+            return 200, {}, canonical(completion(1, [call("validate-protected", "repo_validate", {})]))
+        with patch.object(lab, "_post", side_effect=external_protected_drift) as post:
+            result = self.run_actor()
+        self.assertEqual(post.call_count, 1)
+        self.assertEqual(result["status"], "tool-contract-failed")
+        self.assertIn("protected-file-changed:contract.json", result["tool_events"][0]["result"]["failures"])
+        self.assertFalse(result["quality"]["hard_pass"])
+
+    def test_scope_failure_during_validate_remains_unknown_and_terminal(self):
+        def external_scope_drift(provider, payload, key, timeout):
+            (self.workspace / "unregistered.txt").write_bytes(b"external drift\n")
+            return 200, {}, canonical(completion(1, [call("validate-scope", "repo_validate", {})]))
+        with patch.object(lab, "_post", side_effect=external_scope_drift) as post:
+            result = self.run_actor()
+        self.assertEqual(post.call_count, 1)
+        self.assertTrue(result["unknown_usage"])
+        self.assertEqual(result["status"], "unknown-workspace-state-blocked")
+        self.assertFalse(result["quality"]["hard_pass"])
+        self.assertTrue((self.artifacts / "actor.pending.json").exists())
+
+    def test_only_the_exact_registered_validation_structure_is_recoverable(self):
+        valid = {"ok": False, "suite": "registered-static-contracts-v1", "checks_passed": 0,
+                 "checks_total": 1, "failures": ["contract-failed:target.txt:ValueError"]}
+        event = {"state_sha256": "known-state"}
+        self.assertTrue(lab._recoverable_tool_feedback("repo_validate", {}, valid, event, self.task))
+        invalid = [dict(valid, checks_passed=False), dict(valid, checks_total=2), dict(valid, suite="unknown"),
+                   dict(valid, failures=[]), dict(valid, failures=["scope-invalid:ValueError"]),
+                   dict(valid, failures=["protected-file-changed:contract.json"]),
+                   dict(valid, failures=["contract-failed:contract.json:ValueError"]),
+                   dict(valid, failures=["contract-failed:target.txt:RuntimeError"]),
+                   dict(valid, error="unexpected"), dict(valid, write_state="partial-or-unverified")]
+        for result in invalid:
+            with self.subTest(result=result):
+                self.assertFalse(lab._recoverable_tool_feedback("repo_validate", {}, result, event, self.task))
+        self.assertFalse(lab._recoverable_tool_feedback("repo_validate", {}, valid, {"state_sha256": None}, self.task))
+
+    def test_normal_negative_feedback_cannot_expand_twelve_http_requests(self):
+        def always_negative(provider, payload, key, timeout):
+            index = len(self.before)
+            return 200, {}, canonical(completion(index, [call("validate-" + str(index), "repo_validate", {})]))
+        with patch.object(lab, "_post", side_effect=always_negative) as post:
+            result = self.run_actor()
+        self.assertEqual(post.call_count, 12)
+        self.assertEqual(result["requests"], 12)
+        self.assertEqual(len(result["tool_events"]), 12)
+        self.assertEqual(result["status"], "request-budget-exhausted")
+        self.assertFalse(result["quality"]["hard_pass"])
+        self.assertEqual(len(self.after), 12)
+
+    def test_normal_negative_feedback_cannot_expand_thirty_two_tools(self):
+        first = completion(1, [call("validate-" + str(index), "repo_validate", {}) for index in range(32)])
+        second = completion(2, [call("validate-33", "repo_validate", {})])
+        with patch.object(lab, "_post", side_effect=self.scripted([first, second])) as post:
+            result = self.run_actor()
+        self.assertEqual(post.call_count, 2)
+        self.assertEqual(len(result["tool_events"]), 32)
+        self.assertEqual(result["max_tools"], 32)
+        self.assertEqual(result["status"], "tool-contract-failed")
+        self.assertIn("api-tool-rejected:tool-budget-or-shape", result["quality"]["failures"])
+
+    def test_both_profile_parameters_are_required_and_invalid_values_send_nothing(self):
+        signature = inspect.signature(lab.run_actor)
+        for name in ("response_json_mode", "thinking"):
+            self.assertIs(signature.parameters[name].default, inspect.Parameter.empty)
+        for profile in ({"response_json_mode": 1, "thinking": "disabled"},
+                        {"response_json_mode": False, "thinking": "omitted"}):
+            with patch.object(lab, "_post") as post, self.assertRaises(ValueError):
+                self.run_actor(**profile)
+            post.assert_not_called()
+        self.assertEqual(self.loaded, [])
+
+    def test_native_finish_profile_pair_is_frozen_and_alternatives_send_nothing(self):
+        # V3 deliberately freezes the compatibility-selected pair, no new flags.
+        for json_mode, thinking in ((True, "disabled"), (False, "enabled"), (True, "enabled")):
+            with self.subTest(json_mode=json_mode, thinking=thinking):
+                with patch.object(lab, "_post") as post, self.assertRaises(ValueError):
+                    self.run_actor(response_json_mode=json_mode, thinking=thinking)
+                post.assert_not_called()
+        self.assertEqual(self.loaded, [])
+        with patch.object(lab, "_post", side_effect=self.positive):
+            result = self.run_actor(response_json_mode=False, thinking="disabled")
+        self.assertTrue(result["quality"]["hard_pass"])
+        self.assertIs(result["response_json_mode"], False)
+
+    def test_feedback_does_not_waive_final_artifact_or_claim_contract(self):
+        steps = [self.read(1), self.patch_from_read(2, "still-wrong\n"),
+                 self.validate_and_status(3), self.final(4)]
+        with patch.object(lab, "_post", side_effect=self.scripted(steps)):
+            result = self.run_actor()
+        self.assertEqual(result["status"], "completed")
+        self.assertFalse(result["quality"]["hard_pass"])
+        self.assertIn("contract-failed:target.txt:ValueError", result["quality"]["failures"])
+        self.assertIn("final-validation-claim-invalid", result["quality"]["failures"])
+
+    def test_prior_successful_validate_and_status_cannot_cover_a_later_edit(self):
+        def final_later_edit(payload):
+            return completion(4, [call("late-edit", "repo_patch", {"operations": [
+                {"path": "target.txt", "old_sha256": sha(b"fixed\n"), "new_text": "fixed"}]})])
+        steps = [self.read(1), self.patch_from_read(2, "fixed\n"), self.validate_and_status(3),
+                 final_later_edit, self.final(5, validation="failed")]
+        with patch.object(lab, "_post", side_effect=self.scripted(steps)):
+            result = self.run_actor()
+        self.assertFalse(result["quality"]["hard_pass"])
+        self.assertIn("required-current-real-tool-evidence-missing", result["quality"]["failures"])
+
+    def test_final_transport_receipt_binds_real_response_original_args_and_state(self):
+        original = ' {"summary":"公开终态", "validation":"passed", "helper_gap":"project_tool unavailable in bounded broker"} \n'
+        report_call = call("terminal-original", "repo_finish", FINAL)
+        report_call["function"]["arguments"] = original
+        result = self.execute(self.ready() + [completion(4, [report_call])])
+        self.assertTrue(result["quality"]["hard_pass"], result["quality"])
+        self.assertEqual(result["final_text"], original)
+        self.assertEqual(result["tool_attempts"], 5)
+        self.assertEqual(len(result["tool_events"]), 4)
+        self.assertEqual(len(result["api_tool_trace"]), 4)
+        self.assertNotIn("repo_finish", {item["tool"] for item in result["tool_events"]})
+        path = self.artifacts / "report-receipt.json"
+        report = json.loads(path.read_bytes())
+        self.assertEqual(sha(path.read_bytes()), result["final_report_receipt_sha256"])
+        self.assertEqual(report, result["final_report"])
+        self.assertEqual(report["arguments_raw"], original)
+        self.assertEqual(report["arguments_utf8_sha256"], sha(original.encode("utf-8")))
+        self.assertEqual(report["arguments_sha256"], sha(canonical(json.loads(original))))
+        self.assertEqual(report["state_sha256"], result["final_state_sha256"])
+        self.assertEqual(report["response_artifact_sha256"], sha((self.artifacts / "requests/04.response.json").read_bytes()))
+        self.assertEqual(report["request_receipt_sha256"], sha((self.artifacts / "requests/04.receipt.json").read_bytes()))
+        self.assertEqual(report["api_response_id"], "mock-response-4")
+        self.assertEqual(report["last_broker_chain_sha256"], result["api_tool_trace"][-1]["chain_sha256"])
+        self.assertFalse(report["grading_performed_here"])
+        self.assertEqual(result["usage"]["total_tokens"], 60)
+        self.assertEqual(len(self.after), 4)
+        self.assertTrue(all(item["dispatched"] for item in self.after))
+        self.assertFalse(list(self.artifacts.rglob("*.pending.json")))
+
+    def test_plain_json_fenced_json_and_textual_tool_mimic_never_become_reports(self):
+        texts = [json.dumps(FINAL), "```json\n" + json.dumps(FINAL) + "\n```",
+                 json.dumps({"tool_calls": [call("fake", "repo_finish", FINAL)]}), "Finished successfully."]
+        for index, text in enumerate(texts):
+            with self.subTest(kind=index):
+                self.artifacts = self.base / ("text-final-" + str(index))
+                self.before, self.after = [], []
+                with patch.object(lab, "_post", return_value=(200, {}, canonical(completion(1, content=text)))) as post:
+                    result = self.run_actor()
+                self.assertEqual(post.call_count, 1)
+                self.assertFalse(result["quality"]["hard_pass"])
+                self.assertEqual(result["status"], "tool-contract-failed")
+                self.assertIsNone(result["final_report"])
+                self.assertFalse((self.artifacts / "report-receipt.json").exists())
+                self.assertEqual(result["final_text"], "")
+
+    def test_premature_schema_valid_finish_does_not_fabricate_real_tools_or_edit(self):
+        result = self.execute([self.final(1)])
+        self.assertEqual(result["status"], "completed")
+        self.assertFalse(result["quality"]["hard_pass"])
+        self.assertEqual(result["tool_events"], [])
+        self.assertEqual(result["api_tool_trace"], [])
+        self.assertEqual(result["tool_attempts"], 1)
+        self.assertIsNotNone(result["final_report"])
+        self.assertIn("no-actual-repository-edit-by-this-actor", result["quality"]["failures"])
+        self.assertIn("required-current-real-tool-evidence-missing", result["quality"]["failures"])
+
+    def test_mixed_finish_batch_is_rejected_before_any_repository_operation(self):
+        patch_call = call("mixed-write", "repo_patch", {"operations": [{"path": "target.txt",
+            "old_sha256": sha(b"old\n"), "new_text": "fixed\n"}]})
+        for index, calls in enumerate(([self.final(1)["choices"][0]["message"]["tool_calls"][0], patch_call],
+                                       [patch_call, self.final(1)["choices"][0]["message"]["tool_calls"][0]])):
+            self.artifacts = self.base / ("mixed-" + str(index)); self.before, self.after = [], []
+            result = self.execute([completion(1, calls)])
+            self.assertFalse(result["quality"]["hard_pass"])
+            self.assertEqual(result["tool_events"], [])
+            self.assertEqual((self.workspace / "target.txt").read_bytes(), b"old\n")
+            self.assertIsNone(result["final_report"])
+            self.assertIn("api-finish-rejected:mixed-batch", result["quality"]["failures"])
+
+    def test_native_finish_requires_function_unique_id_schema_and_tool_finish_reason(self):
+        mutations = [lambda c: c.update(type="text"), lambda c: c.update(id=""),
+                     lambda c: c.update(id="  "), lambda c: c.update(id="read-1"),
+                     lambda c: c["function"].update(arguments=json.dumps(dict(FINAL, extra=True))),
+                     lambda c: c["function"].update(arguments=json.dumps(dict(FINAL, validation=True))),
+                     lambda c: c["function"].update(arguments="```json\n" + json.dumps(FINAL) + "\n```"),
+                     lambda c: c["function"].update(arguments='{"summary":"x","summary":"y","validation":"passed","helper_gap":"project_tool unavailable in bounded broker"}'),
+                     lambda c: c["function"].update(arguments='{"summary":NaN,"validation":"passed","helper_gap":"none"}')]
+        for index, mutate in enumerate(mutations):
+            with self.subTest(mutation=index):
+                (self.workspace / "target.txt").write_bytes(b"old\n")
+                self.artifacts = self.base / ("invalid-finish-" + str(index)); self.before, self.after = [], []
+                response = self.final(4); mutate(response["choices"][0]["message"]["tool_calls"][0])
+                result = self.execute(self.ready() + [response])
+                self.assertFalse(result["quality"]["hard_pass"])
+                self.assertIsNone(result["final_report"])
+                self.assertEqual((self.workspace / "target.txt").read_bytes(), b"fixed\n")
+        (self.workspace / "target.txt").write_bytes(b"old\n")
+        self.artifacts = self.base / "wrong-reason"; self.before, self.after = [], []
+        response = self.final(4); response["choices"][0]["finish_reason"] = "stop"
+        result = self.execute(self.ready() + [response])
+        self.assertFalse(result["quality"]["hard_pass"])
+        self.assertIsNone(result["final_report"])
+
+    def test_native_finish_cannot_stand_in_for_missing_initial_contract_read(self):
+        read_target_only = completion(1, [call("read-target", "repo_read", {"paths": ["target.txt"]})])
+        result = self.execute([read_target_only, self.patch_from_read(2, "fixed\n"), self.validate_and_status(3), self.final(4)])
+        self.assertFalse(result["quality"]["hard_pass"])
+        self.assertTrue(any("contract.json" in failure for failure in result["quality"]["failures"]))
+
+    def test_finish_cannot_change_the_original_helper_gap_enum(self):
+        result = self.execute(self.ready() + [self.final(4, helper_gap="none")])
+        self.assertFalse(result["quality"]["hard_pass"])
+        self.assertIsNone(result["final_report"])
+
+    def test_finish_schema_valid_but_wrong_validation_claim_still_fails_original_grader(self):
+        result = self.execute(self.ready() + [self.final(4, validation="failed")])
+        self.assertFalse(result["quality"]["hard_pass"])
+        self.assertIsNotNone(result["final_report"])
+        self.assertIn("final-validation-claim-invalid", result["quality"]["failures"])
+
+    def test_finish_cannot_hide_protected_drift(self):
+        def changed(payload):
+            (self.workspace / "contract.json").write_bytes(b'{"external":true}\n')
+            return self.final(4)
+        result = self.execute(self.ready() + [changed])
+        self.assertFalse(result["quality"]["hard_pass"])
+        self.assertFalse(result["quality"]["scope_ok"])
+        self.assertIn("protected-file-changed:contract.json", result["quality"]["failures"])
+
+    def test_finish_is_the_thirty_second_admitted_tool_and_never_the_thirty_third(self):
+        for maximum, statuses in ((32, 28), (33, 29)):
+            (self.workspace / "target.txt").write_bytes(b"old\n")
+            self.artifacts = self.base / ("tool-count-" + str(maximum)); self.before, self.after = [], []
+            many = completion(3, [call("validate-ready", "repo_validate", {})]
+                              + [call("status-" + str(i), "repo_status", {}) for i in range(statuses)])
+            result = self.execute([self.read(1), self.patch_from_read(2, "fixed\n"), many, self.final(4)])
+            self.assertEqual(result["tool_attempts"], 32)
+            self.assertEqual(result["quality"]["hard_pass"], maximum == 32)
+            self.assertEqual(len(result["tool_events"]), maximum - 1 if maximum == 32 else 32)
+            if maximum == 33:
+                self.assertIsNone(result["final_report"])
+
+    def test_missing_usage_on_finish_remains_unknown_and_known_cost_is_preserved(self):
+        response = self.final(4); del response["usage"]
+        result = self.execute(self.ready() + [response])
+        self.assertTrue(result["unknown_usage"])
+        self.assertIsNone(result["usage"])
+        self.assertEqual(result["known_usage"]["total_tokens"], 45)
+        self.assertIsNone(result["final_report"])
+        self.assertIsNone(self.after[-1]["usage"])
+        self.assertTrue(self.after[-1]["unknown"])
+        self.assertTrue((self.artifacts / "requests/04.pending.json").exists())
+        self.assertFalse(result["quality"]["hard_pass"])
+        with self.assertRaises(lab.ActorFence):
+            self.run_actor()
+
+    def test_finish_consumption_is_accounted_like_every_other_request_without_polishing(self):
+        charges = []
+        original_account = self.account
+        def account(metadata):
+            original_account(metadata)
+            usage = metadata["usage"]
+            # Conservative registered all-miss estimate, not an invoice.
+            charges.append((Decimal(usage["input_tokens"]) * Decimal(".30")
+                            + Decimal(usage["output_tokens"]) * Decimal("1.20")) / 1_000_000)
+        self.account = account
+        result = self.execute(self.ready() + [self.final(4)])
+        self.assertTrue(result["quality"]["hard_pass"])
+        self.assertEqual(sum(charges), Decimal(".000036"))
+        self.assertEqual(len(charges), result["requests"])
+        self.assertEqual(result["requests"], 4)
+        self.assertEqual(self.after[-1]["request_id"], result["final_report"]["request_id"])
+        self.assertEqual(self.after[-1]["api_response_id"], result["final_report"]["api_response_id"])
+
+    def test_duplicate_api_response_on_finish_keeps_both_reported_charges(self):
+        response = self.final(4); response["id"] = "mock-response-3"
+        result = self.execute(self.ready() + [response])
+        self.assertTrue(result["unknown_usage"])
+        self.assertEqual(result["known_usage"]["total_tokens"], 60)
+        self.assertIsNone(result["final_report"])
+
+    def test_report_persistence_failure_keeps_usage_and_unknown_fence(self):
+        real_write = lab._write_new
+        def failing_write(path, value, secret=""):
+            if Path(path).name == "report-receipt.json":
+                raise OSError("synthetic report evidence disk failure")
+            return real_write(path, value, secret)
+        with patch.object(lab, "_write_new", side_effect=failing_write):
+            result = self.execute(self.ready() + [self.final(4)])
+        self.assertTrue(result["unknown_usage"])
+        self.assertEqual(result["known_usage"]["total_tokens"], 60)
+        self.assertTrue((self.artifacts / "actor.pending.json").exists())
+        self.assertFalse(result["quality"]["hard_pass"])
+
+    def test_escaped_secret_finish_never_reaches_report_receipt_or_broker(self):
+        escaped = "".join("\\u%04x" % ord(char) for char in SECRET)
+        response = self.final(1)
+        response["choices"][0]["message"]["tool_calls"][0]["function"]["arguments"] = (
+            '{"summary":"' + escaped + '","validation":"failed","helper_gap":"none"}')
+        result = self.execute([response])
+        self.assertFalse(result["quality"]["hard_pass"])
+        self.assertEqual(result["tool_events"], [])
+        self.assertIsNone(result["final_report"])
+        for path in self.artifacts.rglob("*"):
+            if path.is_file():
+                self.assertNotIn(SECRET.encode(), path.read_bytes())
+                self.assertNotIn(escaped.encode(), path.read_bytes())
+
+    def test_input_byte_cap_refuses_before_reservation_key_or_http(self):
+        with patch.object(lab, "_post") as post:
+            result = lab.run_actor("deepseek", "mock-requested-model", self.task, self.workspace,
+                self.artifacts, self.git, "x" * 131073, self.key, response_json_mode=False, thinking="disabled",
+                before_request=self.reserve, after_request=self.account)
+        self.assertEqual(result["status"], "input-byte-cap-not-invoked")
+        self.assertEqual(self.loaded, [])
+        self.assertEqual(self.before, [])
+        post.assert_not_called()
+        self.assertFalse(result["quality"]["hard_pass"])
+
+    def test_state_change_after_report_and_grading_is_never_a_stale_pass(self):
+        real_quality = lab._api_quality
+        def changed(*args):
+            result = real_quality(*args)
+            (self.workspace / "target.txt").write_bytes(b"later-edit\n")
+            return result
+        with patch.object(lab, "_api_quality", side_effect=changed):
+            result = self.execute(self.ready() + [self.final(4)])
+        self.assertFalse(result["quality"]["hard_pass"])
+        self.assertEqual(result["quality"]["task_success"], 0)
+        self.assertIn("api-finish-rejected:state-changed-after-report", result["quality"]["failures"])
+
+    def test_usage_normalization_rejects_invalid_counts_and_preserves_cached_subset(self):
+        raw = {"prompt_tokens": 10, "completion_tokens": 5, "total_tokens": 15,
+               "prompt_tokens_details": {"cached_tokens": 2}, "completion_tokens_details": {"reasoning_tokens": 1}}
+        usage = lab._usage(raw)
+        self.assertEqual((usage["input_tokens"], usage["output_tokens"], usage["total_tokens"], usage["cached_tokens"]), (10, 5, 15, 2))
+        self.assertEqual(lab._totals([usage, usage])["total_tokens"], 30)
+        invalid = [dict(raw, total_tokens=14), dict(raw, prompt_tokens=True), dict(raw, completion_tokens=-1),
+                   dict(raw, prompt_tokens_details={"cached_tokens": 11}),
+                   dict(raw, completion_tokens_details={"reasoning_tokens": 6}),
+                   dict(raw, prompt_cache_hit_tokens=3), dict(raw, prompt_tokens_details=[2])]
+        for record in invalid:
+            with self.subTest(record=record):
+                self.assertIsNone(lab._usage(record))
+        self.assertIsNone(lab._totals([usage, dict(usage, cached_tokens=None)])["cached_tokens"])
+        self.assertEqual(lab._totals([usage, dict(usage, cached_tokens=None)])["total_tokens"], 30)
+
+
+if __name__ == "__main__":
+    unittest.main()
