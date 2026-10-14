@@ -1,10 +1,10 @@
 # 通用项目治理 | Universal Project Governance
 
-## 当前版本与开发进度 | Version status
+## 当前版本
 
-当前候选版本 / Current release candidate: **3.0.0-rc.19 — Project Fact Recovery and Measured Execution Cost**。已整合按需项目事实恢复与原生离线反思学习，并完成默认分支合并与本轮本地主机安装验收。独立 token／耗时净收益仍未证实。
+开发候选：**3.0.0-rc.20**。治理流程增加按模块读取、相关文档更新和保留结构的最小完整改动约束。工程验证、真实任务成本与正式资格分别验收；本候选尚未完成端到端效果验证和本地主机安装。
 
-发布状态 / Release: **候选，非 Stable**。RC19 已通过 [PR #20](https://github.com/ouroboros965018276-collab/universal-project-governance/pull/20) 合并到默认分支，[PR #21](https://github.com/ouroboros965018276-collab/universal-project-governance/pull/21) 记录了本轮本地主机的[安装验收](audits/rc19-installation.audit.json)。RC19 的[耗时诊断](docs/rc19-latency-diagnosis.md)区分单次长尾与可复现的本地开销；发布与安装通过不代表真实模型端到端净收益已成立。版本以 [VERSION.md](universal-project-governance/VERSION.md) 为准，当前状态见 [PROJECT_STATE.md](PROJECT_STATE.md)。
+已合并并有安装记录的基线是 RC19，见[安装审计](audits/rc19-installation.audit.json)。使用入口见下文；维护入口见 [MODULE_MAP.md](MODULE_MAP.md)，候选状态见 [PROJECT_STATE.md](PROJECT_STATE.md)。
 
 ### RC18 历史实测（保留原始范围）
 

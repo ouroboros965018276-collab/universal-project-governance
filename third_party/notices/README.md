@@ -20,3 +20,5 @@ copy or load that package's routing, tools, scripts or case database.
 UPG intentionally keeps file fixity separate from empirical validity, preserves
 original evidence and unknown intent, and never grants a finding validated
 status merely because an evidence file exists.
+
+`focused-governance.json` records selectively adapted Caveman and Ponytail instructions, pinned revisions, file identities and exclusions. Their notices in `governance-src/notices/` also ship in the generated LICENSE. No upstream runtime or hooks are installed.

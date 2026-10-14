@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.0.0-rc.20
+
+- 按任务索引读取相关章节与消费者；仅更新受影响的当前文档。
+- 选择性吸收 Caveman 的语义保真表达与 Ponytail 的复用、完整最小改动约束，保留结构和验证。
+- 新候选独立验收；不继承 RC19 的效果或安装结论。
+
 ## 3.0.0-rc.19 — 2026-10-13 — candidate
 
 - Separates RC18 historical tail latency from reproduced preparation costs; retains the original paired outcome.

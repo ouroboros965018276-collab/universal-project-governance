@@ -1,8 +1,23 @@
 # Module Map
 
-Current candidate: **3.0.0-rc.19 — Latency Accounting and Bounded Real Tools**.
+Current candidate: **3.0.0-rc.20 — Focused Governance**.
 
 This is the single current-tree map. Git history, `CHANGELOG.md`, and dated audit records retain prior states; generated output and validation artifacts are not alternate sources of policy truth.
+
+## 任务导航
+
+先遵守适用约束，再搜索下列入口；按相关表行和章节展开，索引不作为事实证据。
+
+| 本次任务 | 首读入口 | 必要检查 |
+|---|---|---|
+| 治理表达、文档冗余 | `governance-src/templates/SKILL.template.md`；模型 `TRUTH_CURRENT` | 编译、完整性、真实文档任务 |
+| 结构改动、过度简化 | 模型 `STRUCTURAL_INTEGRATION`；目标模块及消费者 | 受影响契约和回归 |
+| 中断恢复、证据失效 | `governance-src/runtime-scripts/project_facts.py`；`state_tool.py` | `tests/test_project_recovery.py` |
+| 项目绑定、完成记录 | `governance-src/runtime-scripts/project_tool.py` | `tests/test_compiled_runtime.py` |
+| 离线学习与搜索 | `evolution/` 对应模块；`docs/offline-evolution.md` 相关章节 | 相应 `tests/test_evolution_*`；等预算实证 |
+| 发布、资格或安装 | `PUBLISHING.md`；`PROJECT_STATE.md` 当前状态 | 版本、冻结身份及安装证据 |
+
+## 模块职责
 
 | Module / concept | Function and reason it exists | Canonical source | Edit / regeneration rule | Change impact |
 |---|---|---|---|---|

@@ -93,7 +93,11 @@ def compile_runtime(repo: Path, output: Path):
         "then regenerate the runtime and rerun the complete release gates. The local manifest is tamper-evident, "
         "not an authorization boundary; VCS/CI/release digests remain external trust anchors.\n"
     )
-    shutil.copyfile(repo / "LICENSE", output / "LICENSE")
+    license_text = (repo / "LICENSE").read_text(encoding="utf-8")
+    for name in ("caveman-LICENSE.txt", "caveman-LICENSE-MIT.txt", "caveman-NOTICE.txt", "ponytail-LICENSE.txt"):
+        license_text += "\n\n--- Selectively adapted instructions: %s ---\n\n" % name
+        license_text += (src / "notices" / name).read_text(encoding="utf-8")
+    write_text(output / "LICENSE", license_text)
 
     for name in RUNTIME_SCHEMA_NAMES:
         dst = output / "schemas" / name
