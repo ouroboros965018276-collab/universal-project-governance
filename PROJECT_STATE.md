@@ -10,15 +10,13 @@ Current candidate: **3.0.0-rc.20 — Task Context and Complete Change Discipline
 
 来源、选用与排除、触发和验收映射由 [upstream-sources.json](third_party/upstream-sources.json) 维护；[鸣谢](THIRD_PARTY_NOTICES.md)保留五个上游及适用许可。三个新增来源的规则组只在预注册对照中消融，不撤销原有正确性、安全、真实性、必需验证或交接约束。
 
-此前的[原生轮次](audits/rc20-native-context.audit.json)、[API v1](audits/rc20-api-tools-v1.audit.json)、[API v2 开发轮次](audits/rc20-api-tools-v2-development.audit.json)及[整模块 AST 前瞻轮次](audits/rc20-prospective-api-v1.audit.json)各自保留失败、混杂与实际费用，不作为独立改善证据。AST 检查误拒等价程序促成有限行为契约；[微型探测](audits/rc20-api-terminal-probe.audit.json)只支持原生工具互操作。旧记录不续跑、重算或合并统计。
+历史[原生轮次](audits/rc20-native-context.audit.json)、[API v1](audits/rc20-api-tools-v1.audit.json)、[API v2](audits/rc20-api-tools-v2-development.audit.json)、[AST 轮次](audits/rc20-prospective-api-v1.audit.json)、[语义前瞻](audits/rc20-semantic-api-v1.audit.json)、[开发 v3](audits/rc20-tools-v3-development.audit.json)、[推理开发](audits/rc20-thinking-development-v1.audit.json)与[上下文开发 v1](audits/rc20-contract-context-development-v1.audit.json)的失败、混杂和费用保持原记录；不续跑、重评或合并。评分代理现按[有限行为契约](docs/rc20-behavior-contracts.md)检查固定探针、接口、调用关系和保护字节。解释器、API 适配器及实验脚本只在仓库中使用，不随 Skill 安装；这些任务没有执行应用代码。
 
-评分代理现已接入[有限行为契约](docs/rc20-behavior-contracts.md)，按固定探针、接口、调用关系和保护字节验收；公开支持的子语言，保留历史 AST 检查。[前瞻协议](audits/rc20-semantic-api-v1.preregistration.json)与[预调用身份](audits/rc20-semantic-api-v1.preflight.json)在调用前发布。[终态审计](audits/rc20-semantic-api-v1.audit.json)确认：38 个执行结果、2,656,915 个已知报告 token、18 个严格通过；一笔 DeepSeek 请求用量未知触发全轮停止，六条交接链未到达。原始核账与工具证据 PASS，主要成本 BLOCKED、净收益 FAIL；未知费用保留。独立事实复核覆盖全部 18 份结束报告，限制一处无证据的错误原因归因；复核不能改变机械失败或授予发布。
+公开文本任务现明确空值、类型转换、前缀与大小写语义，各角色投影经独立复核；原 Python 程序、行为探针和通过条件未变，公开契约及其绑定哈希更新。修正后九项工程门禁通过，769 项测试中 767 项通过、2 项平台跳过；候选核心仍为 6,433 字节。这些检查不证明任务收益。
 
-当前候选核心说明为 6,433 字节；工具入口提供相同的公开路径清单、有界诊断及安全网络阶段记录，分开旧 JSON 与新原生工具结束协议，并移除交接中的无关必读路径，保留保护字节检查。[开发轮次 v3](audits/rc20-tools-v3-development.audit.json)已结束：16 个实际 actor，独立严格通过 6 个，137 次 HTTP、1,492,346 个已报告 token、410.047 秒，无未知用量；两个源端失败，接收者未调用。核账通过不改变任务质量失败，也不证明净收益。
+最新[上下文开发 v2](audits/rc20-public-contract-context-development-v2.audit.json)已结束并独立核账：6 个实际执行结果均通过机械源端契约；代码与 HANDOFF 事实有界支持，5 份报告有界支持、1 份报告含被否决的工作区状态声明。27 个请求均保留响应，329,520 个已知报告 token，轮次执行墙时 352.969 秒，无本轮待核用量；审阅窗口与未知研究 token 另记，旧轮未知费用保持不变。
 
-上述输出结构与反馈缺口已修正；[显式推理开发轮](audits/rc20-thinking-development-v1.audit.json)仍未通过：2 个执行结果、0 个严格通过，241,092 个已知报告 token；一笔 MiMo 请求用量未知触发停止，文档及接收者未调用。独立审计器漏列结束工具的原始失败与单独请求绑定补充检查均保留，不改变任务失败或未知费用。
-
-最新[同任务上下文开发对照](audits/rc20-contract-context-development-v1.audit.json)已关闭：4 个实际执行结果、0 个严格通过，564,658 个已知报告 token；一笔 MiMo 请求用量未知，两格对照未调用。独立核账通过，4 份持久化的核心完成声明被事实复核否决；项目整体仍 partial、consumer 待接手的边界声明有依据。公开任务规格只简写空值规则，未完整定义返回类型、大小写、前缀参与和非空值转换；不能据此把所有失败归因于模型，也不能改写旧评分。未来任务现已公开完整文本语义，各角色投影独立复核通过；原 Python 程序、行为探针和通过条件保持不变，公开契约及其绑定哈希随之更新。修正后九项工程门禁通过，769 项测试中 767 项通过、2 项平台跳过；这些检查不证明任务收益。下一步是新冻结开发对照。评分器和 provider helper 仅在仓库实验中使用，不增加 Skill 交付文件或安装依赖。默认分支和本地安装仍为 RC19；开发通过后仍须新冻结任务的独立对照。
+本轮 RC20 在 DeepSeek 上的 token／耗时高于两组对照，在 MiMo 上较低。每格仅一次、顺序未随机，不能推断净收益。下一步检查初始读取选择，并补齐代码和文档的双向跨模型计划交接；尚未验证真实崩溃恢复。默认分支和本地安装仍为 RC19，RC20 合并、安装及 Stable 均未获本轮证据支持。
 
 ## 最近一次重要发布：RC19
 
