@@ -1,0 +1,429 @@
+{
+  "attention_instruction": "Keep the response concise and avoid unnecessary engineering.",
+  "baseline_revision": "bd4a4d5c1c6fb9fca829e410729879d1b01f05b9",
+  "budget": {
+    "model_calls": 84,
+    "tokens": 10000000,
+    "wall_seconds": 7200
+  },
+  "capabilities_sha256": "262bc8bba68a96818980c51aadea011d1c1d924470330e874710f3a17b2aff49",
+  "catalog_sha256": "f97faae221ceff4c4585bab0a231c75191fad43f1dab74450c8d6fc621959ae9",
+  "compiled_sha256": "92456df35586590cbb353501b18b77e44a6b618c435b74fd257065d22f748586",
+  "conditions": {
+    "attention": {
+      "candidate_sha256": "44e7d9fdf648e35d834e3835ea8e06a734a5aed50eb3e701c2f86c2717e17a7d",
+      "guidance_ids": [],
+      "plan_text_sha256": {
+        "rc20-independent-chinese-documentation-1": "ea869838a66ac1a376dfec859cb2ac97268f58808c5c314a3306cffee286b94a",
+        "rc20-independent-evidence-fidelity-6": "ea869838a66ac1a376dfec859cb2ac97268f58808c5c314a3306cffee286b94a",
+        "rc20-independent-interrupted-handoff-recovery-7": "2f3d9ffc1a8b5ed79af2b804f8cd30a870f8cbef16b2433fcc7c017e1a91cef2",
+        "rc20-independent-public-api-consumers-3": "799944e43977260b785e53e272788eca6d28008d78a2ae08bb495079afae9111",
+        "rc20-independent-simplification-preserves-safety-5": "799944e43977260b785e53e272788eca6d28008d78a2ae08bb495079afae9111",
+        "rc20-independent-single-feature-navigation-2": "01c956f3fb7c01fa95b11d477cefbaf90604d8eee6b275cdaabf9a650f68401d",
+        "rc20-independent-stale-map-source-conflict-4": "5ca89d9b56528e6eda6ded0b624dd09fcc2c9efeae3f8798d062ddae559b3796"
+      },
+      "runtime_file_sha256": {
+        "INTEGRITY.md": "01e1e3eb772940fe8259b0cb125cd7712858c6f50d4f2fdcada420aa73d29ab5",
+        "LICENSE": "50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a",
+        "SKILL.md": "6204675e555304a07a35af46038883ce285caec0a0fbe8b4ff8d98cde00d2ee4",
+        "VERSION.md": "1033f9c40e480f722ef32d922874d18953a6063d911ebacf36df156b7a0c7be1",
+        "integrity/manifest.json": "7b9ee6d6b2c2d7600de854ecd4ec74363491ab5694b8c06f4ade8cdde81e2e5b",
+        "policy-index.json": "3d451c8b4c9268f40032ed239158bd2741bb6426f710e5cdfbc5f0bc98146033",
+        "schemas/audit.schema.json": "a5e15c26eff86e3c4e2e174fb121ef22981628307f09cf18d09a589e738ea889",
+        "schemas/execution.schema.json": "d2a7cddc9d98c8101294df302259ba18217c27b9e7c8fee43d96c82ff6bde1d7",
+        "schemas/feedback.schema.json": "22da61a114a1e89ee641ac25e90e23d6231003351df15918d4265f9900091954",
+        "schemas/field-report.schema.json": "fdba5018f63287fe87e2bf57eb0080f1935c13408a181025502973cbfa1cfd40",
+        "schemas/governance-plan.schema.json": "adb033dedda5f25f5a41ee95c2fca1cddfb474739173ab9b5712ddcd3b9bff67",
+        "schemas/handoff.schema.json": "994769e2a35b4d2189c509b8c5fce6ba76e4941fa4cadaa51f8f02f48b338a97",
+        "schemas/task-context.schema.json": "acc323f7d86f8dad5d8694e7fcf566dad6987d077877fbe6dbc819029936ad38",
+        "scripts/plan_governance.py": "cfe243ec183c8d1846f31bd794195e85595dda3708319d7acbb4c8b6a12e48ca",
+        "scripts/project_facts.py": "f355e0fa241a1032c94d4959b610b86c2d0ad48b2c62bbfed1ded65bfa4bd9ee",
+        "scripts/project_tool.py": "960355b2763c5ca3e4a150051e24ff035cb73d06ce37818a87adc90385e03412",
+        "scripts/state_tool.py": "193cb9657c32dedb253727e93a13bcb6f39306331fc8a90d1319e337f5b088a0",
+        "scripts/validate_integrity.py": "cf09558e67b4488db88c5ce9836e9f1cf1c8bae97d6e1444bb9d2d80409157c0"
+      },
+      "runtime_sha256": "2c173faf9c86237f24245adc28f05150b9998aabde3bdc0686653ed672c43db6",
+      "source_sha256": "985b9094164a3973d529023b6795f91207920056824ce00d9c741c0a80b97801"
+    },
+    "full_rc20": {
+      "candidate_sha256": "95d6520f5c5a039ff586915ebd4a314715012e32c5e94cbd30fa0a46e55c6d57",
+      "guidance_ids": [
+        "decision_relevance",
+        "complete_change",
+        "evidence_fidelity",
+        "task_scoped_reading"
+      ],
+      "plan_text_sha256": {
+        "rc20-independent-chinese-documentation-1": "527b50a71c909c4e5472d4e85b9530bbee624c450882531288287315dc2f707e",
+        "rc20-independent-evidence-fidelity-6": "527b50a71c909c4e5472d4e85b9530bbee624c450882531288287315dc2f707e",
+        "rc20-independent-interrupted-handoff-recovery-7": "6af5745d66c798858633031d7d3325ec2b5aeb73308614e4c78ae9020d200f8e",
+        "rc20-independent-public-api-consumers-3": "d597c86d14490032e49916b840b6fb793c9e5d0c2008e2f4b670e487ae090883",
+        "rc20-independent-simplification-preserves-safety-5": "d597c86d14490032e49916b840b6fb793c9e5d0c2008e2f4b670e487ae090883",
+        "rc20-independent-single-feature-navigation-2": "5aca7ce1ec60f40ca97078823700702f3c018413374c63108bea4ff755010822",
+        "rc20-independent-stale-map-source-conflict-4": "5cfdf61f3cb33bedd081734a6a8ff90b3a0c28b88a9083045b62fb3a34a78d84"
+      },
+      "runtime_file_sha256": {
+        "INTEGRITY.md": "01e1e3eb772940fe8259b0cb125cd7712858c6f50d4f2fdcada420aa73d29ab5",
+        "LICENSE": "50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a",
+        "SKILL.md": "d124a1abdd8b137bc17dfd54327126d8b98ee0499691b2a074f9e27e574bd1e2",
+        "VERSION.md": "ade8b56830f54d2546793cedfc813b7b89753e4b46853e459de504d1230b1de2",
+        "integrity/manifest.json": "b4deec3f59b67fb878d4d02e58e0185538cedcc4c8575e67a287c0c9c107b74d",
+        "policy-index.json": "790647e5234eb854878c973dac3c9dee905b99c6bc7da1f555dc07aed9274b64",
+        "schemas/audit.schema.json": "a5e15c26eff86e3c4e2e174fb121ef22981628307f09cf18d09a589e738ea889",
+        "schemas/execution.schema.json": "d2a7cddc9d98c8101294df302259ba18217c27b9e7c8fee43d96c82ff6bde1d7",
+        "schemas/feedback.schema.json": "22da61a114a1e89ee641ac25e90e23d6231003351df15918d4265f9900091954",
+        "schemas/field-report.schema.json": "fdba5018f63287fe87e2bf57eb0080f1935c13408a181025502973cbfa1cfd40",
+        "schemas/governance-plan.schema.json": "adb033dedda5f25f5a41ee95c2fca1cddfb474739173ab9b5712ddcd3b9bff67",
+        "schemas/handoff.schema.json": "994769e2a35b4d2189c509b8c5fce6ba76e4941fa4cadaa51f8f02f48b338a97",
+        "schemas/task-context.schema.json": "acc323f7d86f8dad5d8694e7fcf566dad6987d077877fbe6dbc819029936ad38",
+        "scripts/plan_governance.py": "cfe243ec183c8d1846f31bd794195e85595dda3708319d7acbb4c8b6a12e48ca",
+        "scripts/project_facts.py": "f355e0fa241a1032c94d4959b610b86c2d0ad48b2c62bbfed1ded65bfa4bd9ee",
+        "scripts/project_tool.py": "960355b2763c5ca3e4a150051e24ff035cb73d06ce37818a87adc90385e03412",
+        "scripts/state_tool.py": "193cb9657c32dedb253727e93a13bcb6f39306331fc8a90d1319e337f5b088a0",
+        "scripts/validate_integrity.py": "cf09558e67b4488db88c5ce9836e9f1cf1c8bae97d6e1444bb9d2d80409157c0"
+      },
+      "runtime_sha256": "cc9883060b988543e89940f05c7cd97c72c28175c083aab18a6269f06396ebdc",
+      "source_sha256": "139d4072bec6df5550501578c954e018f4673fcd06f17e876709c31207892fb4"
+    },
+    "minus_complete_change": {
+      "candidate_sha256": "b378c0548f897063563a6d6ddd58a5479fcb0d2045b7e41717a36e24f4cd9b12",
+      "guidance_ids": [
+        "decision_relevance",
+        "evidence_fidelity",
+        "task_scoped_reading"
+      ],
+      "plan_text_sha256": {
+        "rc20-independent-chinese-documentation-1": "527b50a71c909c4e5472d4e85b9530bbee624c450882531288287315dc2f707e",
+        "rc20-independent-evidence-fidelity-6": "527b50a71c909c4e5472d4e85b9530bbee624c450882531288287315dc2f707e",
+        "rc20-independent-interrupted-handoff-recovery-7": "457eb41dfe2661452782f44e8fe4e6f3179931151ad10dc2e5f322151e2e1dd4",
+        "rc20-independent-public-api-consumers-3": "49c843eb23700e99b39e8e18c2459abdfe972b4710a7feec051084d9249d5f25",
+        "rc20-independent-simplification-preserves-safety-5": "49c843eb23700e99b39e8e18c2459abdfe972b4710a7feec051084d9249d5f25",
+        "rc20-independent-single-feature-navigation-2": "5aca7ce1ec60f40ca97078823700702f3c018413374c63108bea4ff755010822",
+        "rc20-independent-stale-map-source-conflict-4": "8faa07b92ada5ba5ad448eb1b2823d8b639d7ab48b830f5f2dd4de97881545ce"
+      },
+      "runtime_file_sha256": {
+        "INTEGRITY.md": "01e1e3eb772940fe8259b0cb125cd7712858c6f50d4f2fdcada420aa73d29ab5",
+        "LICENSE": "50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a",
+        "SKILL.md": "0f56571cb1b5ab879ca04612d5d841cf3ccb4f90f12fe3cfeae27bd006d5ea28",
+        "VERSION.md": "ade8b56830f54d2546793cedfc813b7b89753e4b46853e459de504d1230b1de2",
+        "integrity/manifest.json": "ddfa36b44d11948f579c3027789f70b7226ffe82a3014093e6441866b1181b65",
+        "policy-index.json": "5ec6f7d134de1f4f4efa73aad7497f9900f0008851c9faedfd53f58513dd5baf",
+        "schemas/audit.schema.json": "a5e15c26eff86e3c4e2e174fb121ef22981628307f09cf18d09a589e738ea889",
+        "schemas/execution.schema.json": "d2a7cddc9d98c8101294df302259ba18217c27b9e7c8fee43d96c82ff6bde1d7",
+        "schemas/feedback.schema.json": "22da61a114a1e89ee641ac25e90e23d6231003351df15918d4265f9900091954",
+        "schemas/field-report.schema.json": "fdba5018f63287fe87e2bf57eb0080f1935c13408a181025502973cbfa1cfd40",
+        "schemas/governance-plan.schema.json": "adb033dedda5f25f5a41ee95c2fca1cddfb474739173ab9b5712ddcd3b9bff67",
+        "schemas/handoff.schema.json": "994769e2a35b4d2189c509b8c5fce6ba76e4941fa4cadaa51f8f02f48b338a97",
+        "schemas/task-context.schema.json": "acc323f7d86f8dad5d8694e7fcf566dad6987d077877fbe6dbc819029936ad38",
+        "scripts/plan_governance.py": "cfe243ec183c8d1846f31bd794195e85595dda3708319d7acbb4c8b6a12e48ca",
+        "scripts/project_facts.py": "f355e0fa241a1032c94d4959b610b86c2d0ad48b2c62bbfed1ded65bfa4bd9ee",
+        "scripts/project_tool.py": "960355b2763c5ca3e4a150051e24ff035cb73d06ce37818a87adc90385e03412",
+        "scripts/state_tool.py": "193cb9657c32dedb253727e93a13bcb6f39306331fc8a90d1319e337f5b088a0",
+        "scripts/validate_integrity.py": "cf09558e67b4488db88c5ce9836e9f1cf1c8bae97d6e1444bb9d2d80409157c0"
+      },
+      "runtime_sha256": "f13131b033b347f682eae1b149d6dd7601680234c993f3c119335298f33007a4",
+      "source_sha256": "cc87bdebb8e8fedf1aef935ff64fa24df200782741a8391b6dea5c5274b226ea"
+    },
+    "minus_decision_relevance": {
+      "candidate_sha256": "cdd0e691e02fcd80b7ee4e2c4258c6bcf71f8519f3e09a26a9b449ee6fd567cf",
+      "guidance_ids": [
+        "complete_change",
+        "evidence_fidelity",
+        "task_scoped_reading"
+      ],
+      "plan_text_sha256": {
+        "rc20-independent-chinese-documentation-1": "ce136e261cd80633489ecd2d2ebc259fdf1cab574bd52fa95b86211ffa7e9c3e",
+        "rc20-independent-evidence-fidelity-6": "ce136e261cd80633489ecd2d2ebc259fdf1cab574bd52fa95b86211ffa7e9c3e",
+        "rc20-independent-interrupted-handoff-recovery-7": "ca63fbccf28e1be5e00abba640248a65a36b2173b5ca95d7d5d612c0be372f02",
+        "rc20-independent-public-api-consumers-3": "4c66794d59a2cdf7a7593507f60cbbd68b4ffdd371afe1ff4eb6fc3c6dfe9020",
+        "rc20-independent-simplification-preserves-safety-5": "4c66794d59a2cdf7a7593507f60cbbd68b4ffdd371afe1ff4eb6fc3c6dfe9020",
+        "rc20-independent-single-feature-navigation-2": "ff3ff39b732171c38b9e649f03136ad2b1ada0d85849118b6d1e94aa5a5e6deb",
+        "rc20-independent-stale-map-source-conflict-4": "fc8ca36f3fda59193ef3fea2b96aadf725dbc256acc6d469de740894caf7d6e9"
+      },
+      "runtime_file_sha256": {
+        "INTEGRITY.md": "01e1e3eb772940fe8259b0cb125cd7712858c6f50d4f2fdcada420aa73d29ab5",
+        "LICENSE": "50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a",
+        "SKILL.md": "38e3254fc8d2edb1992cdc47991cf200c81f546ef693f195c7f6095505044128",
+        "VERSION.md": "ade8b56830f54d2546793cedfc813b7b89753e4b46853e459de504d1230b1de2",
+        "integrity/manifest.json": "b688b031cf61a63acbb1db999a15b7da8e443db611cfdd1f505e631cdc8db856",
+        "policy-index.json": "565a48374968315c0d0d81ac531d53b628f07d005329fee7a14c2a9e771749f5",
+        "schemas/audit.schema.json": "a5e15c26eff86e3c4e2e174fb121ef22981628307f09cf18d09a589e738ea889",
+        "schemas/execution.schema.json": "d2a7cddc9d98c8101294df302259ba18217c27b9e7c8fee43d96c82ff6bde1d7",
+        "schemas/feedback.schema.json": "22da61a114a1e89ee641ac25e90e23d6231003351df15918d4265f9900091954",
+        "schemas/field-report.schema.json": "fdba5018f63287fe87e2bf57eb0080f1935c13408a181025502973cbfa1cfd40",
+        "schemas/governance-plan.schema.json": "adb033dedda5f25f5a41ee95c2fca1cddfb474739173ab9b5712ddcd3b9bff67",
+        "schemas/handoff.schema.json": "994769e2a35b4d2189c509b8c5fce6ba76e4941fa4cadaa51f8f02f48b338a97",
+        "schemas/task-context.schema.json": "acc323f7d86f8dad5d8694e7fcf566dad6987d077877fbe6dbc819029936ad38",
+        "scripts/plan_governance.py": "cfe243ec183c8d1846f31bd794195e85595dda3708319d7acbb4c8b6a12e48ca",
+        "scripts/project_facts.py": "f355e0fa241a1032c94d4959b610b86c2d0ad48b2c62bbfed1ded65bfa4bd9ee",
+        "scripts/project_tool.py": "960355b2763c5ca3e4a150051e24ff035cb73d06ce37818a87adc90385e03412",
+        "scripts/state_tool.py": "193cb9657c32dedb253727e93a13bcb6f39306331fc8a90d1319e337f5b088a0",
+        "scripts/validate_integrity.py": "cf09558e67b4488db88c5ce9836e9f1cf1c8bae97d6e1444bb9d2d80409157c0"
+      },
+      "runtime_sha256": "8c1612aa7bee10bd66d09371c6b398113d3c71a595d6d7eabbb8a0941d1ca9e8",
+      "source_sha256": "06f38397cc312055daa7489063c2ed55c87aa5c799d18262e2c93a95f78715e1"
+    },
+    "minus_evidence_fidelity": {
+      "candidate_sha256": "8fbae496b401d0a1ef43ed53d43e2ace1f2458ed213314bf666e65951f2d8e87",
+      "guidance_ids": [
+        "decision_relevance",
+        "complete_change",
+        "task_scoped_reading"
+      ],
+      "plan_text_sha256": {
+        "rc20-independent-chinese-documentation-1": "846d725ea771638a5f00f65f6dadcc9ac943da4f0f2621ccec07ec14bb0c1b69",
+        "rc20-independent-evidence-fidelity-6": "846d725ea771638a5f00f65f6dadcc9ac943da4f0f2621ccec07ec14bb0c1b69",
+        "rc20-independent-interrupted-handoff-recovery-7": "aa61c274c17d9b216defe2a2d6960be218672c57ba4e8a9d43932edb230b7655",
+        "rc20-independent-public-api-consumers-3": "0e19fe9682d51297523f50e8e01d1953012f3c0d8bf71ac20c00e8624bf8ef4c",
+        "rc20-independent-simplification-preserves-safety-5": "0e19fe9682d51297523f50e8e01d1953012f3c0d8bf71ac20c00e8624bf8ef4c",
+        "rc20-independent-single-feature-navigation-2": "facd7d68426d3774f909488ab998e5818bade8259ffe1678b8c4d53e31f84581",
+        "rc20-independent-stale-map-source-conflict-4": "407686f9522a22e43eef917769843274ce4e3e3c92793ebbc4f194d413a702d5"
+      },
+      "runtime_file_sha256": {
+        "INTEGRITY.md": "01e1e3eb772940fe8259b0cb125cd7712858c6f50d4f2fdcada420aa73d29ab5",
+        "LICENSE": "50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a",
+        "SKILL.md": "038be5ac861edf4b070cf9baf2e1ad9efdbeffbae55b782a457e18699501af50",
+        "VERSION.md": "ade8b56830f54d2546793cedfc813b7b89753e4b46853e459de504d1230b1de2",
+        "integrity/manifest.json": "82c4221754d3355c959bd4bf3ea706f07a30db50265be3f04d1fbd9118c4f1dc",
+        "policy-index.json": "c4585c0c0d8715c39f43fdee7997197db48f6bbabebb7c91728c760baa6787f6",
+        "schemas/audit.schema.json": "a5e15c26eff86e3c4e2e174fb121ef22981628307f09cf18d09a589e738ea889",
+        "schemas/execution.schema.json": "d2a7cddc9d98c8101294df302259ba18217c27b9e7c8fee43d96c82ff6bde1d7",
+        "schemas/feedback.schema.json": "22da61a114a1e89ee641ac25e90e23d6231003351df15918d4265f9900091954",
+        "schemas/field-report.schema.json": "fdba5018f63287fe87e2bf57eb0080f1935c13408a181025502973cbfa1cfd40",
+        "schemas/governance-plan.schema.json": "adb033dedda5f25f5a41ee95c2fca1cddfb474739173ab9b5712ddcd3b9bff67",
+        "schemas/handoff.schema.json": "994769e2a35b4d2189c509b8c5fce6ba76e4941fa4cadaa51f8f02f48b338a97",
+        "schemas/task-context.schema.json": "acc323f7d86f8dad5d8694e7fcf566dad6987d077877fbe6dbc819029936ad38",
+        "scripts/plan_governance.py": "cfe243ec183c8d1846f31bd794195e85595dda3708319d7acbb4c8b6a12e48ca",
+        "scripts/project_facts.py": "f355e0fa241a1032c94d4959b610b86c2d0ad48b2c62bbfed1ded65bfa4bd9ee",
+        "scripts/project_tool.py": "960355b2763c5ca3e4a150051e24ff035cb73d06ce37818a87adc90385e03412",
+        "scripts/state_tool.py": "193cb9657c32dedb253727e93a13bcb6f39306331fc8a90d1319e337f5b088a0",
+        "scripts/validate_integrity.py": "cf09558e67b4488db88c5ce9836e9f1cf1c8bae97d6e1444bb9d2d80409157c0"
+      },
+      "runtime_sha256": "f4f082a7dabb31852adfe275c41436e4189efb5811e7730eea13e7e9f6dddbde",
+      "source_sha256": "40ec03a75792f4a0a82f45a368f3fe4e34b0c2567e1850245692e0f9813ddae7"
+    },
+    "rc19": {
+      "candidate_sha256": "44e7d9fdf648e35d834e3835ea8e06a734a5aed50eb3e701c2f86c2717e17a7d",
+      "guidance_ids": [],
+      "plan_text_sha256": {
+        "rc20-independent-chinese-documentation-1": "ea869838a66ac1a376dfec859cb2ac97268f58808c5c314a3306cffee286b94a",
+        "rc20-independent-evidence-fidelity-6": "ea869838a66ac1a376dfec859cb2ac97268f58808c5c314a3306cffee286b94a",
+        "rc20-independent-interrupted-handoff-recovery-7": "2f3d9ffc1a8b5ed79af2b804f8cd30a870f8cbef16b2433fcc7c017e1a91cef2",
+        "rc20-independent-public-api-consumers-3": "799944e43977260b785e53e272788eca6d28008d78a2ae08bb495079afae9111",
+        "rc20-independent-simplification-preserves-safety-5": "799944e43977260b785e53e272788eca6d28008d78a2ae08bb495079afae9111",
+        "rc20-independent-single-feature-navigation-2": "01c956f3fb7c01fa95b11d477cefbaf90604d8eee6b275cdaabf9a650f68401d",
+        "rc20-independent-stale-map-source-conflict-4": "5ca89d9b56528e6eda6ded0b624dd09fcc2c9efeae3f8798d062ddae559b3796"
+      },
+      "runtime_file_sha256": {
+        "INTEGRITY.md": "01e1e3eb772940fe8259b0cb125cd7712858c6f50d4f2fdcada420aa73d29ab5",
+        "LICENSE": "50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a",
+        "SKILL.md": "6204675e555304a07a35af46038883ce285caec0a0fbe8b4ff8d98cde00d2ee4",
+        "VERSION.md": "1033f9c40e480f722ef32d922874d18953a6063d911ebacf36df156b7a0c7be1",
+        "integrity/manifest.json": "7b9ee6d6b2c2d7600de854ecd4ec74363491ab5694b8c06f4ade8cdde81e2e5b",
+        "policy-index.json": "3d451c8b4c9268f40032ed239158bd2741bb6426f710e5cdfbc5f0bc98146033",
+        "schemas/audit.schema.json": "a5e15c26eff86e3c4e2e174fb121ef22981628307f09cf18d09a589e738ea889",
+        "schemas/execution.schema.json": "d2a7cddc9d98c8101294df302259ba18217c27b9e7c8fee43d96c82ff6bde1d7",
+        "schemas/feedback.schema.json": "22da61a114a1e89ee641ac25e90e23d6231003351df15918d4265f9900091954",
+        "schemas/field-report.schema.json": "fdba5018f63287fe87e2bf57eb0080f1935c13408a181025502973cbfa1cfd40",
+        "schemas/governance-plan.schema.json": "adb033dedda5f25f5a41ee95c2fca1cddfb474739173ab9b5712ddcd3b9bff67",
+        "schemas/handoff.schema.json": "994769e2a35b4d2189c509b8c5fce6ba76e4941fa4cadaa51f8f02f48b338a97",
+        "schemas/task-context.schema.json": "acc323f7d86f8dad5d8694e7fcf566dad6987d077877fbe6dbc819029936ad38",
+        "scripts/plan_governance.py": "cfe243ec183c8d1846f31bd794195e85595dda3708319d7acbb4c8b6a12e48ca",
+        "scripts/project_facts.py": "f355e0fa241a1032c94d4959b610b86c2d0ad48b2c62bbfed1ded65bfa4bd9ee",
+        "scripts/project_tool.py": "960355b2763c5ca3e4a150051e24ff035cb73d06ce37818a87adc90385e03412",
+        "scripts/state_tool.py": "193cb9657c32dedb253727e93a13bcb6f39306331fc8a90d1319e337f5b088a0",
+        "scripts/validate_integrity.py": "cf09558e67b4488db88c5ce9836e9f1cf1c8bae97d6e1444bb9d2d80409157c0"
+      },
+      "runtime_sha256": "2c173faf9c86237f24245adc28f05150b9998aabde3bdc0686653ed672c43db6",
+      "source_sha256": "985b9094164a3973d529023b6795f91207920056824ce00d9c741c0a80b97801"
+    }
+  },
+  "configs_sha256": "620c7636401f291fd5fc6c82945b63d9ac0cbe1a9c12aec20405430cc9610295",
+  "driver_sha256": "3352d5f186d1c2370986a79ca3bc0c0cb9829422e9a378dee9bb51a01c9c05f1",
+  "git_files_map_sha256": "3695621e7161ad118388a1a46086961fd851f2a38606c287b0ba453b65ce8ce1",
+  "models": [
+    "gpt-6.1-sol",
+    "gpt-6-luna"
+  ],
+  "optimizer_candidate": false,
+  "order_sha256": "b93c6c0a598f7d9a2e7a651ce8948380b7f433d962578565743a27e6ebfe199d",
+  "protocol_id": "upg-rc20-context-independent-v1",
+  "provenance_sha256": {
+    "docs/upstream-rule-map.md": "49a22cff007607caa6f20b49df0eb94db9cc34c63fdf3cb658fcf46b42932bef",
+    "third_party/notices/README.md": "518a290ec5bc1aa8c1b774cdf78bc5042a4acdc2b228388235dc165679ebe9e7",
+    "third_party/upstream-sources.json": "f9dc36d5f71ee48337b400207293d667a8fce98a0b6a13717bfeecfeb63437b9"
+  },
+  "schema_version": 1,
+  "scope": {
+    "acceptance": "all 84 tasks strictly pass, then full improves tokens/wall against both RC19 and attention",
+    "bootstrap": "paired shared task-family blocks across requested models",
+    "cost": "reported completed-turn usage; cached input already part of input, no double count; provider internal retries unknown",
+    "formal_qualification": "UNASSESSED",
+    "independent_scope": "seven sealed instances from seven known task families; templates known",
+    "order": "seed20014 adjacent six-arm Williams rotation; 14 blocks are approximately balanced",
+    "population_noninferiority": "UNASSESSED",
+    "provider_families": 1,
+    "single_round_no_replay_no_append_no_selection": true,
+    "wall_stop": "7200 seconds is a soft post-call stop; each call has a 180-second timeout and may overshoot the remaining round threshold",
+    "zero_failure_bound": "positive illustrative one-sided 95% binomial bound; family/model dependence limits inference"
+  },
+  "sealed_files_sha256": {
+    "READY.json": "05d011bb711bd85f9459f750a85dceccdea4e779d76dc18cd93e2009ed7ee495",
+    "generate.py": "a0cb2e421e3be0ed74b0e209d7bb6c36670709b403646b0c12909da108349b59",
+    "registration.json": "5767d5d377f19d9b5b904f22a88ead0a69c2adc20a878cdd13a6027e89c1f8a9",
+    "tasks.private.json": "5bca5bd51136adf53c69dd21ae007cb1d51a2e824316b0f9507154c2f80f259c"
+  },
+  "seed": 20014,
+  "source_preparation": {
+    "capability_seconds": 0.9613871999899857,
+    "compile_seconds": 2.9679652000195347,
+    "measurement_end": "before public/private freeze publication; no model invocation",
+    "model_calls": 0,
+    "plan_seconds": 5.272286799969152,
+    "snapshot_seconds": 14.253341900010128,
+    "total_seconds": 23.57363900000928
+  },
+  "source_revision": "a0eba6adb557b6046f9e2dad1a22f0c0de8f4237",
+  "stage": "independent",
+  "task_ids": [
+    "rc20-independent-chinese-documentation-1",
+    "rc20-independent-evidence-fidelity-6",
+    "rc20-independent-interrupted-handoff-recovery-7",
+    "rc20-independent-public-api-consumers-3",
+    "rc20-independent-simplification-preserves-safety-5",
+    "rc20-independent-single-feature-navigation-2",
+    "rc20-independent-stale-map-source-conflict-4"
+  ],
+  "task_manifest_sha256": "f12c5bec7d2bc7b2d8213c3d81f0a9243aa5312f95103a9f49ae8e8d6ba8ba76",
+  "task_metadata": {
+    "rc20-independent-chinese-documentation-1": {
+      "context": {
+        "domains": [
+          "docs"
+        ],
+        "explicit_audit": false,
+        "field_test_reporting": false,
+        "operation": "docs",
+        "profiles": [],
+        "risk": {},
+        "signals": [],
+        "unfinished": false
+      },
+      "family": "chinese-documentation"
+    },
+    "rc20-independent-evidence-fidelity-6": {
+      "context": {
+        "domains": [
+          "docs"
+        ],
+        "explicit_audit": false,
+        "field_test_reporting": false,
+        "operation": "docs",
+        "profiles": [],
+        "risk": {},
+        "signals": [],
+        "unfinished": false
+      },
+      "family": "evidence-fidelity"
+    },
+    "rc20-independent-interrupted-handoff-recovery-7": {
+      "context": {
+        "domains": [
+          "code",
+          "docs"
+        ],
+        "explicit_audit": false,
+        "field_test_reporting": false,
+        "operation": "refactor",
+        "profiles": [],
+        "risk": {
+          "handoff": 1,
+          "unknowns": 1
+        },
+        "signals": [
+          "handoff",
+          "interrupted",
+          "recovery"
+        ],
+        "unfinished": true
+      },
+      "family": "interrupted-handoff-recovery"
+    },
+    "rc20-independent-public-api-consumers-3": {
+      "context": {
+        "domains": [
+          "code",
+          "api"
+        ],
+        "explicit_audit": false,
+        "field_test_reporting": false,
+        "operation": "refactor",
+        "profiles": [],
+        "risk": {
+          "external_consumers": 1
+        },
+        "signals": [
+          "contract_change"
+        ],
+        "unfinished": false
+      },
+      "family": "public-api-consumers"
+    },
+    "rc20-independent-simplification-preserves-safety-5": {
+      "context": {
+        "domains": [
+          "code",
+          "config"
+        ],
+        "explicit_audit": false,
+        "field_test_reporting": false,
+        "operation": "refactor",
+        "profiles": [],
+        "risk": {
+          "security": 1
+        },
+        "signals": [],
+        "unfinished": false
+      },
+      "family": "simplification-preserves-safety"
+    },
+    "rc20-independent-single-feature-navigation-2": {
+      "context": {
+        "domains": [
+          "code"
+        ],
+        "explicit_audit": false,
+        "field_test_reporting": false,
+        "operation": "edit",
+        "profiles": [],
+        "risk": {
+          "scope": 1
+        },
+        "signals": [],
+        "unfinished": false
+      },
+      "family": "single-feature-navigation"
+    },
+    "rc20-independent-stale-map-source-conflict-4": {
+      "context": {
+        "domains": [
+          "code",
+          "docs"
+        ],
+        "explicit_audit": false,
+        "field_test_reporting": false,
+        "operation": "refactor",
+        "profiles": [],
+        "risk": {
+          "unknowns": 1
+        },
+        "signals": [
+          "stale-evidence",
+          "contradiction"
+        ],
+        "unfinished": false
+      },
+      "family": "stale-map-source-conflict"
+    }
+  }
+}

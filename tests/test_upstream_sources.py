@@ -43,7 +43,11 @@ def safe_relative(value):
 
 def local_file(value):
     path = ROOT / safe_relative(value)
-    require(path.resolve().is_relative_to(ROOT.resolve()) and path.is_file(), "missing local reference: " + value)
+    try:
+        path.resolve().relative_to(ROOT.resolve())
+    except ValueError:
+        raise ValueError("local reference escapes repository: " + value)
+    require(path.is_file(), "missing local reference: " + value)
     return path
 
 
