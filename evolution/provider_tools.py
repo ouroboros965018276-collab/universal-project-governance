@@ -28,7 +28,7 @@ from evolution.tool_broker import RepoBroker, TOOLS, canonical, normalize, sha, 
 from evolution.tool_broker import SEMANTIC_DIAGNOSTIC_CODES, SEMANTIC_DIAGNOSTIC_LIMIT
 from evolution.tool_codex import FINAL_SCHEMA
 
-ADAPTER = "official-chat-api-bounded-repo-broker-v4"
+ADAPTER = "official-chat-api-bounded-repo-broker-v5"
 ENDPOINTS = {"deepseek": ("api.deepseek.com", "/chat/completions"),
              "mimo": ("api.xiaomimimo.com", "/v1/chat/completions")}
 MAX_RESPONSE_BYTES = 2097152
@@ -36,6 +36,11 @@ MAX_TOOLS = 32
 OUTPUT_CAP = 4096
 MAX_INPUT_BYTES = 131072
 FINISH_TOOL = "repo_finish"
+THINKING_PROFILE = "thinking-enabled-8192-v1"
+THINKING_PROFILE_SETTINGS = {
+    "deepseek": {"model": "deepseek-flash", "thinking": "enabled", "output_cap": 8192, "reasoning_effort": "low"},
+    "mimo": {"model": "mimo-v2.6-pro", "thinking": "enabled", "output_cap": 8192, "reasoning_effort": None},
+}
 TRANSPORT_PHASES = frozenset({"preparation", "worker-before-request", "payload-serialize", "connection-create",
     "connect", "http-request", "response-headers", "response-body", "connection-close", "response-decode",
     "response-persist", "response-envelope", "complete", "deadline-wait", "unobserved"})
@@ -330,7 +335,11 @@ def _recoverable_tool_feedback(tool, arguments, result, event, task):
             if not isinstance(failure, str) or not failure.startswith("contract-failed:"):
                 return False
             path, separator, error_name = failure[len("contract-failed:"):].rpartition(":")
-            error_type = getattr(builtins, error_name, None)
+            # A malformed registered JSON artifact is an ordinary validation
+            # failure. Its fixed stdlib class is not exported by builtins.
+            error_type = (json.JSONDecodeError if error_name == "JSONDecodeError"
+                          and any(check["path"] == path and check["kind"] in {"json", "file_hash_manifest"}
+                                  for check in task["checks"]) else getattr(builtins, error_name, None))
             if (not separator or path not in remaining or not isinstance(error_type, type)
                     or not issubclass(error_type, (OSError, ValueError, SyntaxError, RecursionError, MemoryError))):
                 return False
@@ -347,13 +356,15 @@ def _recoverable_tool_feedback(tool, arguments, result, event, task):
 
 def run_actor(provider, model, task, root, artifact_dir, git_binary, system_context, key_loader,
               max_requests=12, timeout_seconds=180, *, response_json_mode, thinking,
-              before_request=None, after_request=None):
+              before_request=None, after_request=None, profile_id=None):
     """Run once on existing disk state; new actor => fresh artifact directory.
 
     before_request(metadata) reserves the outer budget before dispatch and may
     raise to refuse. after_request(metadata) receives usage/unknown and the raw
     receipt hash once per dispatch. Callbacks never receive credentials.
-    The existing profile keywords are mandatory and fixed to False/disabled.
+    Without profile_id, the existing mandatory False/disabled pair and 4096
+    output cap are unchanged. The explicit reviewed thinking profile binds
+    model, mode and cap together; it is never selected as a fallback.
     repo_finish is a terminal API report, never a broker/MCP operation. Only
     its strict native arguments reach the unchanged artifact quality grader.
     requests counts bounded transport slots; per-request receipts separately
@@ -367,8 +378,17 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
         raise ValueError("timeout_seconds must be in (0,180]")
     if not isinstance(system_context, str) or not callable(key_loader):
         raise ValueError("system_context and key_loader are required")
-    if response_json_mode is not False or thinking != "disabled":
-        raise ValueError("v4 requires explicit response_json_mode=False and thinking=disabled")
+    settings = None
+    if profile_id is None:
+        if response_json_mode is not False or thinking != "disabled":
+            raise ValueError("compatibility requires explicit response_json_mode=False and thinking=disabled")
+        output_cap = OUTPUT_CAP
+    else:
+        if (profile_id != THINKING_PROFILE or response_json_mode is not False
+                or thinking != "enabled" or model != THINKING_PROFILE_SETTINGS[provider]["model"]):
+            raise ValueError("explicit thinking profile/provider/model/mode mismatch")
+        settings = copy.deepcopy(THINKING_PROFILE_SETTINGS[provider])
+        output_cap = settings["output_cap"]
     task = copy.deepcopy(validate_task(task))
     root, artifacts = Path(root).resolve(), Path(artifact_dir).resolve()
     if artifacts == root or root in artifacts.parents:
@@ -404,7 +424,9 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                  "received_state_sha256": sha(canonical(received)), "system_context_sha256": sha(system_context.encode("utf-8")),
                  "thinking": thinking, "response_json_mode": response_json_mode,
                  "max_requests": max_requests, "max_tools": MAX_TOOLS,
-                 "output_cap": OUTPUT_CAP, "timeout_seconds": timeout_seconds, "application_execution": False}
+                 "output_cap": output_cap, "timeout_seconds": timeout_seconds, "application_execution": False}
+        if settings is not None:
+            entry.update(profile_id=profile_id, reasoning_effort_requested=settings["reasoning_effort"])
         actor_pending = artifacts / "actor.pending.json"
         broker = RepoBroker(root, task, git_binary, audit_file=artifacts / "broker.jsonl", max_calls=MAX_TOOLS,
                             deadline=time.time() + max(0, deadline - time.perf_counter()))
@@ -436,7 +458,9 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                 break
             payload = {"model": model, "messages": messages, "tools": tools, "tool_choice": "auto", "stream": False,
                        "thinking": {"type": thinking},
-                       "max_tokens" if provider == "deepseek" else "max_completion_tokens": OUTPUT_CAP}
+                       "max_tokens" if provider == "deepseek" else "max_completion_tokens": output_cap}
+            if settings is not None and settings["reasoning_effort"] is not None:
+                payload["reasoning_effort"] = settings["reasoning_effort"]
             if response_json_mode:
                 payload["response_format"] = {"type": "json_object"}
             if len(canonical(payload)) > MAX_INPUT_BYTES:
@@ -445,9 +469,16 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
             request_id = uuid.uuid4().hex
             metadata = {"request_id": request_id, "request_index": index, "provider": provider, "model_requested": model,
                         "input_utf8_bytes": len(canonical(payload)), "request_payload_sha256": sha(canonical(payload)),
-                        "output_cap": OUTPUT_CAP, "input_task_sha256": input_identity, "adapter": ADAPTER}
+                        "output_cap": output_cap, "input_task_sha256": input_identity, "adapter": ADAPTER}
+            if settings is not None:
+                metadata.update(profile_id=profile_id, thinking=thinking, reasoning_effort_requested=settings["reasoning_effort"])
             try:
                 reservation = before_request(copy.deepcopy(metadata)) if before_request else None
+                if isinstance(reservation, dict) and "reservation_receipt_sha256" in reservation:
+                    reservation_sha = reservation["reservation_receipt_sha256"]
+                    if not isinstance(reservation_sha, str) or not re.fullmatch(r"[0-9a-f]{64}", reservation_sha):
+                        raise ValueError("invalid immutable reservation receipt identity")
+                    metadata["reservation_receipt_sha256"] = reservation_sha
             except BaseException as error:
                 status = "outer-budget-refused"
                 refusal_reason = _exception_class(error)
@@ -502,8 +533,8 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                 usage = _usage(raw.get("usage")) if isinstance(raw, dict) else None
                 if usage is not None:
                     receipts.append(usage)
-                    if usage["output_tokens"] > OUTPUT_CAP:
-                        overrun["output_tokens"] = {"actual": usage["output_tokens"], "requested_cap": OUTPUT_CAP}
+                    if usage["output_tokens"] > output_cap:
+                        overrun["output_tokens"] = {"actual": usage["output_tokens"], "requested_cap": output_cap}
                     if usage["input_tokens"] > metadata["input_utf8_bytes"]:
                         overrun["input_tokens"] = {"actual": usage["input_tokens"], "reserved_byte_bound": metadata["input_utf8_bytes"]}
                 transport["phase"] = "response-envelope"
@@ -522,6 +553,13 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                         or message.get("content") is not None and not isinstance(message["content"], str)
                         or message.get("tool_calls") is not None and not isinstance(message["tool_calls"], list)):
                     raise ResponseUnknown("invalid-assistant-envelope")
+                if settings is not None:
+                    reasoning = message.get("reasoning_content")
+                    if (reasoning is not None and not isinstance(reasoning, str)
+                            or _redact(reasoning, key) != reasoning):
+                        # Never replay an edited reasoning value or expose a
+                        # returned credential. Usage/response evidence remains.
+                        raise ResponseUnknown("unreplayable-reasoning-content")
                 transport["phase"] = "complete"
             except BaseException as error:
                 request_error = _exception_class(error)

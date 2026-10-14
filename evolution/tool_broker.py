@@ -11,6 +11,7 @@ import hashlib
 import json
 import math
 import os
+import posixpath
 from pathlib import Path, PurePosixPath
 import stat
 import subprocess
@@ -21,6 +22,11 @@ try:
 except ImportError:  # General runtime/JSON/AST imports remain Python 3.8+.
     tomllib = None
 import uuid
+from urllib.parse import unquote, urlsplit
+
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from tools.validate_navigation import _headings, _links
 
 MAX_FILE_BYTES = 65536
 MAX_TOTAL_BYTES = 1048576
@@ -37,6 +43,15 @@ SEMANTIC_DIAGNOSTIC_CODES = (
     "required-call-not-in-result", "missing-import-export", "forbidden-symbol-present",
     "protected-file-mismatch", "unsupported-method", "syntax-error",
     "unsupported-language", "resource-limit", "behavior-contract-failed",
+    "forbidden-name", "forbidden-attribute", "duplicate-or-forbidden-symbol",
+    "function-annotations-or-decorators", "unsupported-signature",
+    "unsupported-import", "unregistered-import", "unsupported-module-statement",
+    "unregistered-call", "import-cycle", "unsupported-assignment",
+    "reserved-name-assignment", "unsupported-raise", "unsupported-function-statement",
+    "dictionary-unpack", "forbidden-call", "unsupported-call", "unsupported-keyword",
+    "unsupported-expression", "unsupported-operation-error", "unbound-or-nonvalue-name",
+    "unsupported-modulo", "unsupported-identity", "duplicate-keyword",
+    "non-json-key", "non-json-value",
 )
 
 
@@ -137,6 +152,50 @@ def normalize(kind, text):
     raise ValueError("unknown fixed-suite check kind")
 
 
+def _document_expected(expected, names):
+    if (not isinstance(expected, dict) or set(expected) != {"required_links"}
+            or not isinstance(expected["required_links"], list) or not expected["required_links"]
+            or any(not isinstance(name, str) for name in expected["required_links"])
+            or len(set(expected["required_links"])) != len(expected["required_links"])
+            or not set(expected["required_links"]) <= set(names)):
+        raise ValueError("document assertions require distinct registered links")
+    for name in expected["required_links"]:
+        relative(name)
+
+
+def assert_document(text, expected, files, path):
+    """Finite prose/link assertions, never a factual or instruction-safety grade.
+
+    The existing navigation parser ignores example code/comments. No filesystem,
+    Markdown execution or network is used; all local targets are registered bytes.
+    """
+    if not isinstance(files, dict) or any(not isinstance(name, str) or not isinstance(value, str) for name, value in files.items()):
+        raise ValueError("document assertions require registered UTF-8 text")
+    _document_expected(expected, files)
+    relative(path)
+    if path not in files or files[path] != text or not isinstance(text, str) or not normalize("text", text).strip():
+        raise ValueError("document must be nonempty bounded UTF-8")
+    found = set()
+    for unused, destination in _links(text):
+        target = urlsplit(destination)
+        if target.scheme in {"http", "https", "mailto"}:
+            continue  # External links are not fetched or claimed valid.
+        name = unquote(target.path)
+        if (target.scheme or target.netloc or target.query or name.startswith("/")
+                or "\\" in name or ":" in name or any(ord(char) < 32 for char in name)):
+            raise ValueError("unsafe or unverifiable local document link")
+        resolved = posixpath.normpath(posixpath.join(posixpath.dirname(path), name)) if name else path
+        relative(resolved)
+        if resolved not in files:
+            raise ValueError("document link is not a registered file")
+        if target.fragment and (not resolved.lower().endswith(".md")
+                or unquote(target.fragment) not in _headings(files[resolved])):
+            raise ValueError("document anchor is unverified")
+        found.add(resolved)
+    if not set(expected["required_links"]) <= found:
+        raise ValueError("required document links missing")
+
+
 def validate_task(task):
     if not isinstance(task, dict):
         raise ValueError("task must be an object")
@@ -192,6 +251,8 @@ def validate_task(task):
             if not isinstance(expected, str):
                 raise ValueError("text/AST expected value must be source text")
             normalize(check["kind"], expected)
+        elif check["kind"] == "document_assertions":
+            _document_expected(expected, names)
         elif check["kind"] == "file_hash_manifest":
             if (not isinstance(expected, dict) or set(expected) != {"sources", "claims"}
                     or not isinstance(expected["sources"], list) or not expected["sources"]
@@ -316,6 +377,11 @@ class RepoBroker:
                     failures.append("protected-file-changed:" + name)
             for check in self.task["checks"]:
                 try:
+                    if check["kind"] == "document_assertions":
+                        sources = {name: self.path(name).read_bytes().decode("utf-8") for name in files}
+                        assert_document(sources[check["path"]], check["expected"], sources, check["path"])
+                        passed += 1
+                        continue
                     if check["kind"] == "python_behavior":
                         if behavior_ok is None:
                             from evolution.semantic_contract import validate_behavior

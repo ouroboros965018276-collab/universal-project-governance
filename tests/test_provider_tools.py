@@ -93,7 +93,7 @@ class _ProviderFixture:
     def run_actor(self, **kwargs):
         kwargs.setdefault("response_json_mode", False)
         kwargs.setdefault("thinking", "disabled")
-        return lab.run_actor(kwargs.pop("provider", "deepseek"), "mock-requested-model", self.task,
+        return lab.run_actor(kwargs.pop("provider", "deepseek"), kwargs.pop("model", "mock-requested-model"), self.task,
                              self.workspace, self.artifacts, self.git, kwargs.pop("system_context", "公开合成条件"), self.key,
                              before_request=self.reserve, after_request=self.account, **kwargs)
 
@@ -575,7 +575,7 @@ class ProviderToolsTests(_ProviderFixture, unittest.TestCase):
         self.assertEqual(self.loaded, [])
 
     def test_native_finish_profile_pair_is_frozen_and_alternatives_send_nothing(self):
-        # V3 deliberately freezes the compatibility-selected pair, no new flags.
+        # An enabled mode still needs the separately selected explicit profile.
         for json_mode, thinking in ((True, "disabled"), (False, "enabled"), (True, "enabled")):
             with self.subTest(json_mode=json_mode, thinking=thinking):
                 with patch.object(lab, "_post") as post, self.assertRaises(ValueError):
@@ -1017,6 +1017,147 @@ class ProviderToolsTests(_ProviderFixture, unittest.TestCase):
         self.assertFalse(lab._recoverable_tool_feedback("repo_validate", {}, missing, event, self.task))
         self.assertFalse(lab._recoverable_tool_feedback("repo_validate", {}, dict(valid, failures=["protected-file-changed:contract.json"]), event, self.task))
         self.assertFalse(lab._recoverable_tool_feedback("repo_validate", {}, valid, {"state_sha256": None}, self.task))
+
+
+@unittest.skipUnless(SUPPORTED, "repository API helper tests require Python 3.10+")
+class ThinkingProfileTests(_ProviderFixture, unittest.TestCase):
+    def enabled(self, provider="deepseek", **kwargs):
+        return self.run_actor(provider=provider, model=lab.THINKING_PROFILE_SETTINGS[provider]["model"],
+                              profile_id=lab.THINKING_PROFILE, thinking="enabled", **kwargs)
+
+    def test_enabled_profile_preserves_exact_reasoning_and_provider_specific_payload(self):
+        for provider in ("deepseek", "mimo"):
+            (self.workspace / "target.txt").write_bytes(b"old\n")
+            self.artifacts, self.before, self.after = self.base / provider, [], []
+            steps = self.ready() + [self.final(4)]
+            observed = []
+            def post(actual_provider, payload, key, timeout):
+                index = len(self.before)
+                self.assertEqual(actual_provider, provider)
+                self.assertEqual(payload["thinking"], {"type": "enabled"})
+                self.assertEqual(payload["max_tokens" if provider == "deepseek" else "max_completion_tokens"], 8192)
+                if provider == "deepseek":
+                    self.assertEqual(payload["reasoning_effort"], "low")
+                else:
+                    self.assertNotIn("reasoning_effort", payload)
+                self.assertEqual([m["reasoning_content"] for m in payload["messages"] if m["role"] == "assistant"], observed)
+                if index == 1:
+                    self.assertEqual(observed, [])  # Fresh actor has no predecessor conversation.
+                step = steps[index - 1]
+                response = step(payload) if callable(step) else step
+                reasoning = "opaque synthetic Ω field " + str(index)
+                response["choices"][0]["message"]["reasoning_content"] = reasoning
+                observed.append(reasoning)
+                return 200, {}, canonical(response)
+            with patch.object(lab, "_post", side_effect=post):
+                result = self.enabled(provider)
+            self.assertTrue(result["quality"]["hard_pass"], result["quality"])
+            self.assertEqual((result["profile_id"], result["output_cap"]), (lab.THINKING_PROFILE, 8192))
+            self.assertTrue(all(row["output_cap"] == 8192 and row["profile_id"] == lab.THINKING_PROFILE for row in self.before + self.after))
+            self.assertNotIn("opaque synthetic", json.dumps(result))
+
+    def test_profile_mismatch_is_rejected_before_artifacts_reservation_or_credentials(self):
+        for changes in ({"profile_id": "unknown"}, {"thinking": "disabled"},
+                        {"response_json_mode": True}, {"model": "another-model"}):
+            args = {"model": "deepseek-flash", "profile_id": lab.THINKING_PROFILE,
+                    "thinking": "enabled", "response_json_mode": False}
+            args.update(changes)
+            with patch.object(lab, "_post") as post, self.assertRaises(ValueError):
+                self.run_actor(**args)
+            post.assert_not_called()
+        self.assertEqual((self.loaded, self.before, self.after), ([], [], []))
+        self.assertFalse(self.artifacts.exists())
+
+    def test_replayed_reasoning_input_cap_stops_before_next_reservation(self):
+        def response(provider, payload, key, timeout):
+            raw = self.read(len(self.before))
+            raw["choices"][0]["message"]["reasoning_content"] = "Ω" * 25000
+            return 200, {}, canonical(raw)
+        with patch.object(lab, "_post", side_effect=response) as post:
+            result = self.enabled()
+        self.assertEqual((post.call_count, len(self.before), len(self.after)), (3, 3, 3))
+        self.assertEqual(result["status"], "input-byte-cap-not-invoked")
+        self.assertEqual(result["known_usage"]["total_tokens"], 45)
+        self.assertFalse(result["unknown_usage"])
+
+    def test_unreplayable_reasoning_stops_with_usage_and_never_leaks_or_retries(self):
+        for index, reasoning in enumerate((["invalid type"], SECRET, "Bearer opaque-token")):
+            self.artifacts, self.before, self.after = self.base / ("unreplayable-" + str(index)), [], []
+            response = self.read(1)
+            response["choices"][0]["message"]["reasoning_content"] = reasoning
+            with patch.object(lab, "_post", return_value=(200, {}, canonical(response))) as post:
+                result = self.enabled()
+            self.assertEqual(post.call_count, 1)
+            self.assertTrue(result["unknown_usage"])
+            self.assertEqual(result["known_usage"]["total_tokens"], 15)
+            self.assertTrue((self.artifacts / "requests/01.pending.json").exists())
+            self.assertEqual(result["tool_events"], [])
+            for path in self.artifacts.rglob("*"):
+                if path.is_file():
+                    self.assertNotIn(SECRET.encode(), path.read_bytes())
+
+    def test_enabled_completion_cap_is_8192_and_reasoning_subset_is_not_double_counted(self):
+        for output, overrun in ((6000, False), (8193, True)):
+            self.artifacts, self.before, self.after = self.base / ("usage-" + str(output)), [], []
+            response = self.read(1)
+            response["usage"].update(completion_tokens=output, total_tokens=10 + output,
+                                     completion_tokens_details={"reasoning_tokens": output - 1})
+            with patch.object(lab, "_post", return_value=(200, {}, canonical(response))) as post:
+                result = self.enabled(max_requests=1)
+            self.assertEqual(post.call_count, 1)
+            self.assertEqual(result["known_usage"]["total_tokens"], 10 + output)
+            self.assertEqual(result["known_usage"]["reasoning_tokens"], output - 1)
+            self.assertEqual(result["status"], "unexpected-overrun-blocked" if overrun else "request-budget-exhausted")
+            self.assertEqual(self.after[0]["unexpected_overrun"].get("output_tokens") is not None, overrun)
+            self.assertEqual(len(result["tool_events"]), 0 if overrun else 1)
+
+    def test_immutable_reservation_identity_is_bound_into_pending_and_outcome(self):
+        original = self.reserve
+        def reserve(metadata):
+            return dict(original(metadata), reservation_receipt_sha256="c" * 64)
+        self.reserve = reserve
+        def post(provider, payload, key, timeout):
+            pending = json.loads((self.artifacts / "requests/01.pending.json").read_bytes())
+            self.assertEqual(pending["reservation_receipt_sha256"], "c" * 64)
+            self.assertEqual(pending["reservation"]["reservation_receipt_sha256"], "c" * 64)
+            return 200, {}, canonical(self.final(1))
+        with patch.object(lab, "_post", side_effect=post):
+            self.enabled(max_requests=1)
+        self.assertEqual(self.after[0]["reservation_receipt_sha256"], "c" * 64)
+        self.assertEqual(json.loads((self.artifacts / "requests/01.receipt.json").read_bytes())["reservation_receipt_sha256"], "c" * 64)
+
+    def test_enabled_owner_interrupt_retains_original_reservation_and_never_retries(self):
+        with patch.object(lab, "_bounded_post", side_effect=KeyboardInterrupt) as post:
+            result = self.enabled()
+        self.assertEqual(post.call_count, 1)
+        self.assertEqual(self.before[0]["output_cap"], 8192)
+        self.assertEqual(self.after[0]["error_type"], "KeyboardInterrupt")
+        self.assertTrue(result["unknown_usage"])
+        self.assertTrue((self.artifacts / "requests/01.pending.json").exists())
+
+    def test_registered_json_decode_failure_is_ordinary_feedback_then_actual_repair_passes(self):
+        self.task["checks"].append({"path": "contract.json", "kind": "json", "expected": {"fixed": True}})
+        self.task["writable_files"].append("contract.json")
+        self.task["initial_files"]["contract.json"] = "{"
+        (self.workspace / "contract.json").write_bytes(b"{")
+        def repair(payload):
+            self.assertIn("contract-failed:contract.json:JSONDecodeError", self.feedback(payload)["failures"])
+            return completion(3, [call("repair", "repo_patch", {"operations": [
+                {"path": "target.txt", "old_sha256": sha(b"old\n"), "new_text": "fixed\n"},
+                {"path": "contract.json", "old_sha256": sha(b"{"), "new_text": '{"fixed":true}\n'}]})])
+        result = self.execute([self.read(1), completion(2, [call("bad-json", "repo_validate", {})]),
+                               repair, self.validate_and_status(4), self.final(5)])
+        self.assertTrue(result["quality"]["hard_pass"], result["quality"])
+        bad = result["tool_events"][1]["result"]
+        forged = dict(bad, failures=["contract-failed:target.txt:JSONDecodeError", "contract-failed:contract.json:ValueError"])
+        self.assertFalse(lab._recoverable_tool_feedback("repo_validate", {}, forged,
+                                                       {"state_sha256": "known"}, self.task))
+
+    def test_noop_patch_stays_terminal_and_does_not_use_json_recovery(self):
+        steps = [self.read(1), self.patch_from_read(2, "old\n")]
+        result = self.execute(steps)
+        self.assertEqual(result["status"], "tool-contract-failed")
+        self.assertEqual(result["tool_events"][-1]["result"]["error"], "ValueError: patch must make a nonempty bounded change")
 
 
 if __name__ == "__main__":

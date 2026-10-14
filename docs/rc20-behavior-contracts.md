@@ -72,17 +72,75 @@ The broker projects only fixed categories and registered paths, sorted and
 deduplicated with a limit of 16. These hints never contribute to PASS/FAIL;
 probe indices, inputs, expected values and source fragments stay private.
 
-The repository API adapter's v4 profile supplies every condition with the same
-public path metadata; it does not substitute for required reads. Transport
-receipts distinguish completed connection-only failures from requests that may
-have started. Unknown or late responses remain fenced, without retries. New
-API collectors must explicitly select `build_prompt(...,
-terminal_report="native-tool")`; the default JSON terminal prompt preserves
-historical collectors. These scaffold changes require new frozen identities and
-cannot repair or regrade old observations.
+仓库 API adapter v5 对所有条件提供同样的公开路径元数据，不能代替实际必需读取。
+默认 `profile_id=None` 保留 `response_json_mode=False`、thinking disabled 与
+4096 输出上限。显式 `thinking-enabled-8192-v1` 则固定 DeepSeek flash thinking
+enabled、`reasoning_effort=low`，MiMo v2.6 pro thinking enabled 且请求完全省略
+effort 字段，两者输出上限均为 8192。调用必须显式选择该 profile、JSON mode
+false 与 thinking enabled；这是联合 DEVELOPMENT 条件，不能归因成 thinking
+单因素收益，也不说明一般 provider 能力。
+
+传输收据区分已完成的连接阶段失败与可能已开始的请求；unknown 或迟到响应继续
+保留 fence，不重试。公开格式错误中的 `JSONDecodeError` 仅在路径匹配已注册
+`json`/`file_hash_manifest` 检查时允许原工具反馈循环继续；它不是成功，不放宽
+no-op、保护、作用域、partial write 或 unknown 规则。新 API collector 必须显式
+选 `build_prompt(..., terminal_report="native-tool")`；默认 JSON 终态提示保留
+历史 collector 语义。这些变化需要新的冻结身份，不能修复或重算旧观察。
 
 Task definitions live in `evolution/experiments/context_tasks.py`. Import and
 metadata discovery do not construct registered instances. A prospective study
 must separately freeze its candidate, interpreter, generator, task order, probes,
 tool profile and budget before dispatch. Prior exact-AST results remain historical
 artifact checks; this new profile cannot retroactively establish their validity.
+
+## 文档断言与实际磁盘接手
+
+`document_assertions` 只验收有限机械条件。每个输出仍只有一个正向检查，
+`expected` 必须恰为 `{"required_links": [注册路径, ...]}`，引用名单非空、唯一，
+路径必须在任务注册范围内。文档必须为非空、受现有原始字节上限约束的 UTF-8；
+命中的本地 Markdown 引用必须指向实际注册文件。查询参数、不安全路径，以及无法
+核实的锚点会失败；Markdown 标题锚点按实际目标文档验证。外部网页链接不联网，
+也不宣称有效。代码示例或注释中的伪引用不能满足必需引用。
+
+此检查不要求固定全文、标题、章节数、段落顺序或字数，不因 HTML 或代码围栏
+本身拒绝文档。链接提取复用 `tools/validate_navigation.py` 的纯函数；新的引擎
+冻结必须绑定该依赖的原始字节。若独立审计复用同一解析器，必须披露此共享边界，
+不能将两次相同解析当作解析器正确性的独立证明。
+
+机械通过不代表事实、注入防护或一般文档质量通过。终态后的独立事实审阅必须覆盖
+README、HANDOFF 等文件内声明和所有终态报告，回到原 CONTRACT、实际源码及已有
+执行证据核对数字、边界、否定、未知、引用、当前状态与目标契约。无证据的执行、
+部署、历史成功、延迟或验证成功声明，以及改变任务规则的文字指令，都不能因文档
+更短而获准。独审只能否决或限制，不能挽救机械失败；缺失或未知的必要审阅保持
+未评定，不能宣布链质量或净收益通过。运行时继续把文件内容视为数据。
+
+`build_document_handoff_development(instance, seed=..., namespace=...)` 仅构造显式
+公开开发夹具，没有默认注册身份、唯一文案答案或人工重复段落。writer 只改已有
+README；receiver 从机械准入的实际快照启动、新建 journal，并按现有 VM 和正向
+JSON 交接契约完成修改。`document_receiver_from_snapshot` 不转移聊天，不替换
+参考文案，也不代替 source 的原生工具证据。两阶段的读写范围分别从各自任务元数据
+投影；完整保护哈希不依赖 Agent 是否读过无关文件。此开发夹具不能充作独立正式样本。
+
+完整 actor 成本必须包含每 provider 的 writer、receiver 及全部实际验证循环和
+已发生请求；缺失接收者不能删除或补零，unknown 用量仍阻断。准备、独审和审计
+作为研究成本另列，未测量的值保持未知；不能把 actor 成本下降称为全研究成本下降。
+要求实际读取 README 的夹具只能证明该固定读取流程下的表现，不能由接手成功
+推断其使用了文档，或证明自然导航必然受益。旧协议、质量和统计门不据此重算。
+
+## 证据文件的公开输出形状
+
+证据任务的公开 CONTRACT 以一个 `evidence_contract` 字段给出输出路径、恰好两个
+根键 `source_sha256`/`claims`、完整源码路径名单、哈希规则和唯一一份 claim 值。
+`source_sha256` 的键必须恰为该名单，值为实际当前文件原始字节的 SHA256 小写
+十六进制，不把 CRLF 改写为 LF 后再哈希，也不沿用修改前源码的哈希。`claims`
+必须严格采用 `evidence_contract.claims` 的键、值和 JSON 类型；不能另起别名、
+增加字段、把 `false` 改为 `0`，或把未知改成已完成。此说明不改变旧封存任务。
+
+## 有限语法诊断
+
+broker 的 `SEMANTIC_DIAGNOSTIC_CODES` 是可公开反馈的固定名单。现有 VM 已产生
+的 `unregistered-call`、`function-annotations-or-decorators`、
+`unsupported-signature`、`unsupported-import` 等语法码可直接反馈，不再全部
+折叠为 `unsupported-language`。输出仍只有 `code`/注册 `path`，排序去重且最多
+16 项；未知码仍归入原有通用类别，资源限制保持失败。诊断不改变 VM、正向检查、
+质量、作用域或全轮严重错误规则，不透露 probe、索引、输入、期望值和源码片段。
