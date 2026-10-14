@@ -1197,5 +1197,212 @@ class ThinkingProfileTests(_ProviderFixture, unittest.TestCase):
         self.assertEqual(result["tool_events"][-1]["result"]["error"], "ValueError: patch must make a nonempty bounded change")
 
 
+@unittest.skipUnless(SUPPORTED, "repository API helper tests require Python 3.10+")
+class FlashThinkingProfileTests(_ProviderFixture, unittest.TestCase):
+    def enabled(self, provider="deepseek", **kwargs):
+        model = lab.FLASH_THINKING_PROFILE_SETTINGS[provider]["model"]
+        return self.run_actor(provider=provider, model=model, profile_id=lab.FLASH_THINKING_PROFILE,
+                              thinking="enabled", **kwargs)
+
+    def test_explicit_configuration_and_currency_prices_are_independent_copies(self):
+        flash = lab.profile_configuration(lab.FLASH_THINKING_PROFILE)
+        pro = lab.profile_configuration(lab.THINKING_PROFILE)
+        self.assertEqual(flash["providers"]["mimo"], {"model": "mimo-v2.6-flash", "thinking": "enabled",
+            "output_cap": 8192, "reasoning_effort": None})
+        self.assertEqual(flash["providers"]["deepseek"], pro["providers"]["deepseek"])
+        self.assertEqual(flash["prices"]["mimo"], {
+            "CNY": {"input_hit": ".02", "input_miss": "1", "output": "2"},
+            "USD": {"input_hit": ".0028", "input_miss": ".14", "output": ".28"}})
+        self.assertIn("peak-rate estimate", flash["price_evidence"]["basis"])
+        self.assertEqual(flash["price_evidence"]["mimo_flash"], "https://mimo.mi.com/models/en-US/mimo-v2.6-flash")
+        self.assertEqual(pro["prices"]["mimo"]["CNY"], {"input_hit": ".025", "input_miss": "3", "output": "6"})
+        flash["providers"]["mimo"]["model"] = "mutated"
+        flash["prices"]["mimo"]["CNY"]["output"] = "0"
+        fresh = lab.profile_configuration(lab.FLASH_THINKING_PROFILE)
+        self.assertEqual(fresh["providers"]["mimo"]["model"], "mimo-v2.6-flash")
+        self.assertEqual(fresh["prices"]["mimo"]["CNY"]["output"], "2")
+        self.assertEqual(lab.THINKING_PROFILE_SETTINGS["mimo"]["model"], "mimo-v2.6-pro")
+        for invalid in (None, [], "unknown"):
+            with self.assertRaises(ValueError):
+                lab.profile_configuration(invalid)
+
+    def test_new_profile_exact_payload_and_opaque_reasoning_for_both_providers(self):
+        for provider in ("deepseek", "mimo"):
+            (self.workspace / "target.txt").write_bytes(b"old\n")
+            self.artifacts, self.before, self.after = self.base / ("flash-" + provider), [], []
+            steps, observed = self.ready() + [self.final(4)], []
+            def post(actual, payload, key, timeout):
+                index = len(self.before)
+                self.assertEqual(actual, provider)
+                expected = {"model", "messages", "tools", "tool_choice", "stream", "thinking",
+                    "max_tokens" if provider == "deepseek" else "max_completion_tokens"}
+                if provider == "deepseek":
+                    expected.add("reasoning_effort")
+                    self.assertEqual(payload["reasoning_effort"], "low")
+                self.assertEqual(set(payload), expected)
+                self.assertEqual(payload["model"], lab.FLASH_THINKING_PROFILE_SETTINGS[provider]["model"])
+                self.assertEqual(payload["thinking"], {"type": "enabled"})
+                self.assertEqual(payload["max_tokens" if provider == "deepseek" else "max_completion_tokens"], 8192)
+                self.assertEqual([m["reasoning_content"] for m in payload["messages"] if m["role"] == "assistant"], observed)
+                step = steps[index - 1]
+                response = step(payload) if callable(step) else step
+                opaque = "opaque Ω Flash field " + str(index)
+                response["choices"][0]["message"]["reasoning_content"] = opaque
+                observed.append(opaque)
+                return 200, {}, canonical(response)
+            with patch.object(lab, "_post", side_effect=post):
+                result = self.enabled(provider)
+            self.assertTrue(result["quality"]["hard_pass"], result["quality"])
+            identity = sha(canonical(lab.profile_configuration(lab.FLASH_THINKING_PROFILE)))
+            self.assertEqual(result["profile_configuration_sha256"], identity)
+            self.assertTrue(all(item["profile_configuration_sha256"] == identity for item in self.before + self.after))
+            self.assertTrue(all("deadline_telemetry" in item for item in self.after))
+            self.assertNotIn("opaque Ω Flash", json.dumps(result, ensure_ascii=False))
+
+    def test_existing_profiles_keep_wire_fields_and_outcome_metadata_shape(self):
+        common = {"request_id", "request_index", "provider", "model_requested", "input_utf8_bytes",
+                  "request_payload_sha256", "output_cap", "input_task_sha256", "adapter"}
+        outcome = {"dispatched", "not_invoked", "transport", "usage", "unknown", "unexpected_overrun",
+                   "response_sha256", "model_reported", "api_response_id", "elapsed_seconds", "error_type", "receipt_sha256"}
+        observed_messages, observed_tools = None, None
+        for provider in ("deepseek", "mimo"):
+            for profile in (None, lab.THINKING_PROFILE):
+                self.artifacts, self.before, self.after = self.base / (provider + "-" + str(profile)), [], []
+                settings = lab.THINKING_PROFILE_SETTINGS[provider] if profile else None
+                model = settings["model"] if settings else "mock-requested-model"
+                captured = []
+                def post(actual, payload, key, timeout):
+                    captured.append(payload)
+                    return 200, {}, canonical(self.read(1))
+                with patch.object(lab, "_bounded_post", side_effect=post):
+                    result = self.run_actor(provider=provider, model=model, profile_id=profile,
+                        thinking="enabled" if profile else "disabled", max_requests=1)
+                wire = captured[0]
+                expected = {"model", "messages", "tools", "tool_choice", "stream", "thinking",
+                            "max_tokens" if provider == "deepseek" else "max_completion_tokens"}
+                if profile and provider == "deepseek":
+                    expected.add("reasoning_effort")
+                    self.assertEqual(wire["reasoning_effort"], "low")
+                self.assertEqual(set(wire), expected)
+                self.assertEqual((wire["model"], wire["thinking"], wire["tool_choice"], wire["stream"]),
+                    (model, {"type": "enabled" if profile else "disabled"}, "auto", False))
+                self.assertEqual(wire["max_tokens" if provider == "deepseek" else "max_completion_tokens"], 8192 if profile else 4096)
+                if observed_messages is None:
+                    observed_messages, observed_tools = wire["messages"], wire["tools"]
+                self.assertEqual(wire["messages"], observed_messages)
+                self.assertEqual(wire["tools"], observed_tools)
+                fields = common | ({"profile_id", "thinking", "reasoning_effort_requested"} if profile else set())
+                self.assertEqual(set(self.before[0]), fields)
+                self.assertEqual(set(self.after[0]), fields | outcome)
+                self.assertNotIn("profile_configuration_sha256", result)
+                self.assertNotIn("deadline_telemetry_schema", result)
+
+    def test_precise_wait_argument_and_actor_clock_are_persisted_without_extra_payload(self):
+        current = [100.0]
+        original = self.reserve
+        def reserve(metadata):
+            current[0] += 2
+            return original(metadata)
+        self.reserve = reserve
+        steps = self.ready() + [self.final(4)]
+        actual_timeouts = []
+        def post(provider, payload, key, timeout):
+            index = len(self.before)
+            actual_timeouts.append(timeout)
+            current[0] += 3
+            step = steps[index - 1]
+            return 200, {}, canonical(step(payload) if callable(step) else step)
+        with patch.object(lab.time, "perf_counter", side_effect=lambda: current[0]), patch.object(lab, "_bounded_post", side_effect=post):
+            result = self.enabled()
+        self.assertTrue(result["quality"]["hard_pass"], result["quality"])
+        self.assertEqual(actual_timeouts, [178, 173, 168, 163])
+        for index, item in enumerate(self.after, 1):
+            timing = item["deadline_telemetry"]
+            self.assertEqual(timing, {"schema_version": lab.DEADLINE_TELEMETRY_SCHEMA, "actor_timeout_seconds": 180,
+                "actor_elapsed_before_bounded_post_seconds": 5 * index - 3,
+                "bounded_post_timeout_seconds": actual_timeouts[index - 1],
+                "actor_elapsed_after_bounded_post_seconds": 5 * index})
+            receipt = json.loads((self.artifacts / ("requests/%02d.receipt.json" % index)).read_bytes())
+            self.assertEqual(receipt["deadline_telemetry"], timing)
+            pending = json.loads((self.artifacts / ("requests/%02d.response.json" % index)).read_bytes())
+            self.assertNotIn("deadline_telemetry", pending["response"])
+
+    def test_timeout_and_owner_interrupt_record_wait_budget_and_never_retry(self):
+        for mode in ("timeout", "interrupt"):
+            self.artifacts, self.before, self.after = self.base / mode, [], []
+            current = [100.0]
+            original = _ProviderFixture.reserve.__get__(self)
+            def reserve(metadata):
+                current[0] += 7
+                return original(metadata)
+            self.reserve = reserve
+            def fail(provider, payload, key, timeout):
+                self.assertEqual(timeout, 173)
+                current[0] += 173 if mode == "timeout" else 5
+                if mode == "interrupt":
+                    raise KeyboardInterrupt
+                raise lab.TransportFailure({"phase": "deadline-wait", "exception_class": None,
+                    "connection_attempted": None, "http_dispatch": "unknown"})
+            with patch.object(lab.time, "perf_counter", side_effect=lambda: current[0]), patch.object(lab, "_bounded_post", side_effect=fail) as post:
+                result = self.enabled()
+            self.assertEqual(post.call_count, 1)
+            self.assertTrue(result["unknown_usage"])
+            self.assertIsNone(result["usage"])
+            self.assertIsNone(result["known_usage"]["total_tokens"])
+            timing = self.after[0]["deadline_telemetry"]
+            self.assertEqual(timing["bounded_post_timeout_seconds"], 173)
+            self.assertEqual(timing["actor_elapsed_before_bounded_post_seconds"], 7)
+            self.assertEqual(timing["actor_elapsed_after_bounded_post_seconds"], 180 if mode == "timeout" else 12)
+            self.assertTrue((self.artifacts / "requests/01.pending.json").exists())
+            self.assertEqual(self.after[0]["transport"]["phase"], "deadline-wait" if mode == "timeout" else "unobserved")
+            self.assertFalse((self.artifacts / "requests/02.pending.json").exists())
+
+    def test_empty_or_missing_usage_is_unknown_without_zero_cost_or_tool_execution(self):
+        for index, missing in enumerate(("absent", None, {})):
+            self.artifacts, self.before, self.after = self.base / ("no-usage-" + str(index)), [], []
+            response = self.read(1)
+            if missing == "absent":
+                del response["usage"]
+            else:
+                response["usage"] = missing
+            with patch.object(lab, "_bounded_post", return_value=(200, {}, canonical(response))) as post:
+                result = self.enabled("mimo")
+            self.assertEqual(post.call_count, 1)
+            self.assertTrue(result["unknown_usage"])
+            self.assertIsNone(result["known_usage"]["total_tokens"])
+            self.assertIsNone(self.after[0]["usage"])
+            self.assertEqual(result["tool_events"], [])
+            self.assertTrue((self.artifacts / "requests/01.pending.json").exists())
+            self.assertIn("deadline_telemetry", self.after[0])
+
+    def test_flash_mismatch_is_precredential_and_never_falls_back_to_pro(self):
+        base = {"provider": "mimo", "model": "mimo-v2.6-flash", "profile_id": lab.FLASH_THINKING_PROFILE,
+                "thinking": "enabled", "response_json_mode": False}
+        for change in ({"model": "mimo-v2.6-pro"}, {"thinking": "disabled"}, {"response_json_mode": True}, {"profile_id": "unknown"}):
+            with patch.object(lab, "_bounded_post") as post, self.assertRaises(ValueError):
+                self.run_actor(**dict(base, **change))
+            post.assert_not_called()
+        self.assertEqual((self.loaded, self.before, self.after), ([], [], []))
+        self.assertFalse(self.artifacts.exists())
+
+    def test_flash_input_cap_and_reported_overrun_keep_original_safety_limits(self):
+        with patch.object(lab, "_bounded_post") as post:
+            result = self.enabled(system_context="x" * lab.MAX_INPUT_BYTES)
+        post.assert_not_called()
+        self.assertEqual(result["status"], "input-byte-cap-not-invoked")
+        self.assertEqual((self.loaded, self.before, self.after), ([], [], []))
+        self.artifacts = self.base / "overrun"
+        response = self.read(1)
+        response["usage"].update(completion_tokens=8193, total_tokens=8203,
+            completion_tokens_details={"reasoning_tokens": 8192})
+        with patch.object(lab, "_bounded_post", return_value=(200, {}, canonical(response))) as post:
+            result = self.enabled()
+        self.assertEqual(post.call_count, 1)
+        self.assertEqual(result["status"], "unexpected-overrun-blocked")
+        self.assertEqual(result["known_usage"]["total_tokens"], 8203)
+        self.assertEqual(result["tool_events"], [])
+        self.assertIn("deadline_telemetry", self.after[0])
+
+
 if __name__ == "__main__":
     unittest.main()

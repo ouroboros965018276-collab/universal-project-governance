@@ -104,6 +104,24 @@ effort 字段，两者输出上限均为 8192。调用必须显式选择该 prof
 false 与 thinking enabled；这是联合 DEVELOPMENT 条件，不能归因成 thinking
 单因素收益，也不说明一般 provider 能力。
 
+另一个必须显式选择的 `thinking-enabled-flash-8192-v1` 保持 DeepSeek 配置相同，
+将 MiMo 固定为 `mimo-v2.6-flash` thinking enabled、effort 字段省略、8192 输出
+上限；无自动切换或重试。`profile_configuration(profile_id)` 返回独立配置及每百万
+token 估值：Flash MiMo CNY hit/miss/output 为 .02/1/2，或 USD .0028/.14/.28；
+原 Pro 为 CNY .025/3/6，或 USD .0036/.435/.87。报价来自[官方价格页](https://mimo.mi.com/docs/price)，
+Flash 也绑定[精确模型页](https://mimo.mi.com/models/en-US/mimo-v2.6-flash)。DeepSeek
+使用 USD .006/.30/1.20 的 peak 保守估值，不实现时区调价或账单上限。
+币种是替代口径，不能相加；接口不记账、不加载凭据。新 ledger 必须单独绑定新
+profile/configuration hash，不修改或重用旧账作为 Flash 账。默认 disabled4096 和
+原 Pro8192 请求、收据字段保持原样。
+
+仅新 Flash profile 的请求收据增加 `deadline_telemetry`：同一单调时钟采样的
+actor elapsed、实际传给 `_bounded_post` 的等待参数及返回/异常后的 actor elapsed；
+它不是底层 socket timeout、服务端延迟或已发送证明。调用配置 hash 绑定到 pending
+及 outcome，遥测在 outcome/回调持久化；硬杀在 outcome 前发生时不能补造遥测。
+这些字段不在旧轮收据中。180 秒仍是单 actor 总预算，延长预算不代表降低耗时。
+没有新增未证实的 reasoning budget/effort 参数，完整 opaque reasoning 回传不变。
+
 传输收据区分已完成的连接阶段失败与可能已开始的请求；unknown 或迟到响应继续
 保留 fence，不重试。公开格式错误中的 `JSONDecodeError` 仅在路径匹配已注册
 `json`/`file_hash_manifest` 检查时允许原工具反馈循环继续；它不是成功，不放宽

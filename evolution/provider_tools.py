@@ -41,9 +41,37 @@ THINKING_PROFILE_SETTINGS = {
     "deepseek": {"model": "deepseek-flash", "thinking": "enabled", "output_cap": 8192, "reasoning_effort": "low"},
     "mimo": {"model": "mimo-v2.6-pro", "thinking": "enabled", "output_cap": 8192, "reasoning_effort": None},
 }
+FLASH_THINKING_PROFILE = "thinking-enabled-flash-8192-v1"
+FLASH_THINKING_PROFILE_SETTINGS = {
+    "deepseek": {"model": "deepseek-flash", "thinking": "enabled", "output_cap": 8192, "reasoning_effort": "low"},
+    "mimo": {"model": "mimo-v2.6-flash", "thinking": "enabled", "output_cap": 8192, "reasoning_effort": None},
+}
+DEADLINE_TELEMETRY_SCHEMA = "bounded-post-wait-v1"
 TRANSPORT_PHASES = frozenset({"preparation", "worker-before-request", "payload-serialize", "connection-create",
     "connect", "http-request", "response-headers", "response-body", "connection-close", "response-decode",
     "response-persist", "response-envelope", "complete", "deadline-wait", "unobserved"})
+
+
+def profile_configuration(profile_id):
+    """Explicit model/mode/rates for a caller's new frozen ledger, not billing.
+
+    Rates are per million tokens; MiMo currencies are alternatives, never
+    summed or converted. No ledger or transport selection happens here.
+    """
+    if type(profile_id) is not str or profile_id not in {THINKING_PROFILE, FLASH_THINKING_PROFILE}:
+        raise ValueError("unknown explicit provider profile")
+    flash = profile_id == FLASH_THINKING_PROFILE
+    return {"profile_id": profile_id,
+        "providers": copy.deepcopy(FLASH_THINKING_PROFILE_SETTINGS if flash else THINKING_PROFILE_SETTINGS),
+        "prices": {"deepseek": {"USD": {"input_hit": ".006", "input_miss": ".30", "output": "1.20"}},
+            "mimo": ({"CNY": {"input_hit": ".02", "input_miss": "1", "output": "2"},
+                       "USD": {"input_hit": ".0028", "input_miss": ".14", "output": ".28"}} if flash else
+                      {"CNY": {"input_hit": ".025", "input_miss": "3", "output": "6"},
+                       "USD": {"input_hit": ".0036", "input_miss": ".435", "output": ".87"}})},
+        "price_evidence": {"deepseek": "https://api-docs.deepseek.com/quick_start/pricing/",
+            "mimo": "https://mimo.mi.com/docs/price",
+            **({"mimo_flash": "https://mimo.mi.com/models/en-US/mimo-v2.6-flash"} if flash else {}),
+            "basis": "DeepSeek peak-rate estimate (off-peak rates are half; no time-based rate selection here); MiMo reviewed realtime rates per million tokens. Estimates, not invoices or provider billing caps. MiMo currency alternatives are not summed."}}
 
 
 class ActorFence(RuntimeError):
@@ -370,8 +398,10 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
     raise to refuse. after_request(metadata) receives usage/unknown and the raw
     receipt hash once per dispatch. Callbacks never receive credentials.
     Without profile_id, the existing mandatory False/disabled pair and 4096
-    output cap are unchanged. The explicit reviewed thinking profile binds
+    output cap are unchanged. Explicit reviewed thinking profiles bind
     model, mode and cap together; it is never selected as a fallback.
+    Only the new Flash profile records the exact _bounded_post timeout argument
+    and actor clock samples. These are not socket timeouts or service latency.
     repo_finish is a terminal API report, never a broker/MCP operation. Only
     its strict native arguments reach the unchanged artifact quality grader.
     requests counts bounded transport slots; per-request receipts separately
@@ -385,16 +415,16 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
         raise ValueError("timeout_seconds must be in (0,180]")
     if not isinstance(system_context, str) or not callable(key_loader):
         raise ValueError("system_context and key_loader are required")
-    settings = None
+    settings, configuration = None, None
     if profile_id is None:
         if response_json_mode is not False or thinking != "disabled":
             raise ValueError("compatibility requires explicit response_json_mode=False and thinking=disabled")
         output_cap = OUTPUT_CAP
     else:
-        if (profile_id != THINKING_PROFILE or response_json_mode is not False
-                or thinking != "enabled" or model != THINKING_PROFILE_SETTINGS[provider]["model"]):
+        configuration = profile_configuration(profile_id)
+        settings = configuration["providers"][provider]
+        if (response_json_mode is not False or thinking != "enabled" or model != settings["model"]):
             raise ValueError("explicit thinking profile/provider/model/mode mismatch")
-        settings = copy.deepcopy(THINKING_PROFILE_SETTINGS[provider])
         output_cap = settings["output_cap"]
     task = copy.deepcopy(validate_task(task))
     root, artifacts = Path(root).resolve(), Path(artifact_dir).resolve()
@@ -434,6 +464,9 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                  "output_cap": output_cap, "timeout_seconds": timeout_seconds, "application_execution": False}
         if settings is not None:
             entry.update(profile_id=profile_id, reasoning_effort_requested=settings["reasoning_effort"])
+        if profile_id == FLASH_THINKING_PROFILE:
+            entry.update(profile_configuration_sha256=sha(canonical(configuration)),
+                         deadline_telemetry_schema=DEADLINE_TELEMETRY_SCHEMA)
         actor_pending = artifacts / "actor.pending.json"
         broker = RepoBroker(root, task, git_binary, audit_file=artifacts / "broker.jsonl", max_calls=MAX_TOOLS,
                             deadline=time.time() + max(0, deadline - time.perf_counter()))
@@ -479,6 +512,8 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                         "output_cap": output_cap, "input_task_sha256": input_identity, "adapter": ADAPTER}
             if settings is not None:
                 metadata.update(profile_id=profile_id, thinking=thinking, reasoning_effort_requested=settings["reasoning_effort"])
+            if profile_id == FLASH_THINKING_PROFILE:
+                metadata["profile_configuration_sha256"] = entry["profile_configuration_sha256"]
             try:
                 reservation = before_request(copy.deepcopy(metadata)) if before_request else None
                 if isinstance(reservation, dict) and "reservation_receipt_sha256" in reservation:
@@ -522,8 +557,21 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
             request_count += 1
             response_sha, usage, raw, request_error, overrun = None, None, None, None, {}
             transport, not_invoked = _transport("unobserved"), False
+            deadline_telemetry = None
             try:
-                code, headers, body = _bounded_post(provider, payload, key, deadline - time.perf_counter())
+                if profile_id == FLASH_THINKING_PROFILE:
+                    sampled = time.perf_counter()
+                    passed_timeout = deadline - sampled
+                    deadline_telemetry = {"schema_version": DEADLINE_TELEMETRY_SCHEMA,
+                        "actor_timeout_seconds": timeout_seconds,
+                        "actor_elapsed_before_bounded_post_seconds": sampled - started,
+                        "bounded_post_timeout_seconds": passed_timeout}
+                    try:
+                        code, headers, body = _bounded_post(provider, payload, key, passed_timeout)
+                    finally:
+                        deadline_telemetry["actor_elapsed_after_bounded_post_seconds"] = time.perf_counter() - started
+                else:
+                    code, headers, body = _bounded_post(provider, payload, key, deadline - time.perf_counter())
                 transport = _transport("response-decode", connection_attempted=True, http_dispatch="response_received")
                 decode_failure = None
                 try:
@@ -581,6 +629,8 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                            model_reported=raw.get("model") if isinstance(raw, dict) else None,
                            api_response_id=raw.get("id") if isinstance(raw, dict) else None,
                            elapsed_seconds=time.perf_counter() - request_started, error_type=request_error)
+            if deadline_telemetry is not None:
+                outcome["deadline_telemetry"] = deadline_telemetry
             outcome_sha = _write_new(artifacts / "requests" / ("%02d.receipt.json" % index), outcome, key)
             if after_request:
                 try:
