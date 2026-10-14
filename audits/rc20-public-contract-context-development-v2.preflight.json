@@ -1,0 +1,190 @@
+{
+  "schema_version": 1,
+  "study_id": "upg-rc20-public-contract-context-development-v2",
+  "registered_at_utc": "2026-10-14T19:11:35.579382+00:00",
+  "protocol_sha256": "df7166c77506b13b0b39864b5c9c9d585666ec5ff4beeb8725c7da5744ed77c1",
+  "candidate_source_commit": "324a168a413a135e1d0695b06c47815229ed7b90",
+  "current_documentation_commit": "324a168a413a135e1d0695b06c47815229ed7b90",
+  "scope": "DEVELOPMENT matched context diagnosis only; known-family source task, no receiver. No independent efficacy, Stable, bootstrap, causal thinking effect or old-data regrade. Fresh DEVELOPMENT after public text specification clarification; prior runs stay separate.",
+  "seed": 90142,
+  "namespace": "rc20_public_contract_context_development_v2",
+  "providers": {
+    "deepseek": "deepseek-flash",
+    "mimo": "mimo-v2.6-pro"
+  },
+  "profile": {
+    "output_cap": 8192,
+    "profile_id": "thinking-enabled-8192-v1",
+    "response_json_mode": false,
+    "terminal_report": "native-tool",
+    "thinking": "enabled"
+  },
+  "provider_profiles": {
+    "deepseek": {
+      "model": "deepseek-flash",
+      "output_cap": 8192,
+      "reasoning_effort": "low",
+      "thinking": "enabled"
+    },
+    "mimo": {
+      "model": "mimo-v2.6-pro",
+      "output_cap": 8192,
+      "reasoning_effort": null,
+      "thinking": "enabled"
+    }
+  },
+  "caps": {
+    "actors": 6,
+    "deepseek_USD": "2",
+    "known_reported_tokens_soft": 1000000,
+    "mimo_CNY": "12",
+    "mimo_USD": "2",
+    "ordinary_strict_failures": null,
+    "request_slots": 72,
+    "round_seconds_soft": 1200
+  },
+  "actor_caps": {
+    "input_utf8_bytes": 131072,
+    "output": 8192,
+    "requests": 12,
+    "seconds": 180,
+    "tools": 32
+  },
+  "order": [
+    [
+      "deepseek",
+      "rc19"
+    ],
+    [
+      "deepseek",
+      "attention"
+    ],
+    [
+      "deepseek",
+      "full"
+    ],
+    [
+      "mimo",
+      "full"
+    ],
+    [
+      "mimo",
+      "rc19"
+    ],
+    [
+      "mimo",
+      "attention"
+    ]
+  ],
+  "order_scope": "Prior-data-informed DEVELOPMENT order; provider-grouped, nonrandomized and order-confounded. No causal or independent model/context efficacy comparison.",
+  "failure_stop": "Known ordinary mechanical strict FAIL is retained and collection continues through all six cells. Any unknown, actual unsafe/unverified state, source drift or budget stop ends the round; no retries/resume.",
+  "planned_actor_max": 6,
+  "all_six_actor_task_sha256": [
+    "2a9928933058559846483e4e04e976d4a9b1d1675ded60933468a9573e8808b7",
+    "2a9928933058559846483e4e04e976d4a9b1d1675ded60933468a9573e8808b7",
+    "2a9928933058559846483e4e04e976d4a9b1d1675ded60933468a9573e8808b7",
+    "2a9928933058559846483e4e04e976d4a9b1d1675ded60933468a9573e8808b7",
+    "2a9928933058559846483e4e04e976d4a9b1d1675ded60933468a9573e8808b7",
+    "2a9928933058559846483e4e04e976d4a9b1d1675ded60933468a9573e8808b7"
+  ],
+  "same_task_all_cells": true,
+  "arms": {
+    "rc19": "Accepted RC19 Skill plus its own planner output",
+    "attention": "Identical RC19 context plus fixed ordinary instruction",
+    "full": "Current RC20 Skill plus its own planner output"
+  },
+  "attention_instruction": "Keep the response concise and avoid unnecessary engineering.",
+  "baseline_revision": "bd4a4d5c1c6fb9fca829e410729879d1b01f05b9",
+  "baseline_file_count": 18,
+  "baseline_git_map_sha256": "2c173faf9c86237f24245adc28f05150b9998aabde3bdc0686653ed672c43db6",
+  "baseline_git_proof_sha256": "4a6a01e763d52bdbf766a6e73ae3ee8f7fd4925884b744a7c51e5adebb6505a1",
+  "independent_precall_planner_receipt_sha256": "a188ca2bfd569a2d83cd2421f91be72c64a2c03e5b9cba076675ae200a7be7ab",
+  "planner_identity_boundary": "Independent root CLI re-execution of each exact package confirmed output bytes and parsed plans; same planner implementation is shared, not independently reimplemented. Raw wrapper checks frozen identity without importing planner.",
+  "source_map_sha256": "c363bc6ad18b95e7bcf9bbf4a9fd766925a254f7b9eda856fb1d17131fd2a8f1",
+  "source_file_count": 119,
+  "archived_source_and_external_audit_map_sha256": "14002499549f5029d95388381713ecd9aa3e7889c95520fb255078c70fb80df7",
+  "archived_source_and_external_audit_count": 200,
+  "execution_and_review_sha256": {
+    "eval-workspaces/rc20-public-contract-context-development-v2.py": "74c7ca8f1805349ca889c8003fe75f0cec981f4fef5e648172a601f090c64a42",
+    "eval-workspaces/rc20-public-contract-context-development-v2-tests.py": "4309caa612d9649e85110a0cfd0dc61ed878ce612d3f56083e1da7aa3b7c1fcc",
+    "eval-workspaces/rc20-public-contract-context-development-independent-audit-v2.py": "c308a0e31cf246c47a6063c2e540fd0c99a09f15e3fc62993d5640011fb3c45b",
+    "eval-workspaces/rc20-public-contract-context-development-independent-audit-v2-tests.py": "13673e1ac19d4c6fd3f817b47a33e8925e2fbbafccaa43197fc63f484baa0fe4",
+    "eval-workspaces/rc20-tools-thinking-development-independent-audit-v2.py": "8ef8ac21d749bf7622a55e8bc2ecf1db88b47269f848fe4746f48934ce1be7b4",
+    "eval-workspaces/rc20-tools-thinking-development-independent-audit-v2-tests.py": "b226500634487fb066a161a01a336034fb97b068138ae86cd358e273fa778e18",
+    "eval-workspaces/rc20-semantic-api-independent-audit.py": "01e19f0c85475bdee68beac826ff4c8de7da7e4a46c7a6a07e828acd6c6dd87a",
+    "eval-workspaces/rc20-public-contract-context-development-v2-manual-packets.py": "aef08a9af242b15ddc50ac27d241e196fd1fabab7d02578e2a69e0276a5b98ce",
+    "eval-workspaces/rc20-public-contract-context-development-v2-manual-packets-tests.py": "abf623088871e68419bdccd25d4418fa7131999bc8ea53e4221d7978c0cbdffe",
+    "eval-workspaces/rc20-public-contract-context-development-v2-manual-packets.rubric.json": "e676c99ddcbd5e24c26ffe80c314822446db530c1ba948350223f5e81b57dedf",
+    "eval-workspaces/rc20-public-contract-context-development-v2-manual-packets.freeze-v2.json": "8b42d2dbf18b38880a390022f45ac443ae8ce1adfb75cfed019089362304c3b4",
+    "eval-workspaces/rc20-public-contract-context-development-v2-diff.json": "343760e68ed425124c36c5bf960092fbaa1f04374b97399630a2cc99aecb4801",
+    "eval-workspaces/rc20-public-contract-context-independent-e2e-v1.py": "fbf50cef063c532caf1156fe82b3f36f82f094cb61532ef14e2b49f9bf601752",
+    "eval-workspaces/rc20-public-contract-manual-independent-challenges.py": "525b71fad7ef4cd9299cee7ca5e650b5fe722aacb0e0f677284fcf15b95c1abb",
+    "eval-workspaces/rc20-public-contract-context-independent-review-v1/review.json": "35488dd26129d08d82bd7e1e4243c304e6b8466d799a1cc8a2bbe8e6e2f3815c",
+    "eval-workspaces/rc20-public-contract-manual-independent-review-v1/review.json": "011b72ac4fd3f664e0a97fed7dac7127f8300520af9c81c1e87728a822489e7e",
+    "eval-workspaces/rc20-public-text-independent-final-review/review.json": "29f69d5cf72ad59ef804769bfbca97e710957e57904f1bf5f662f9f8261c62cb",
+    "eval-workspaces/rc20-public-text-contract-review/independent-public-roles-review.json": "507c7632d86da1b338e43a5a17d9ad3da6875ccbdddba8892d3004de37bf8d82",
+    "eval-workspaces/rc20-public-contract-engineering-check-v1.py": "ed23ac423779d553a2eef2947314a1d8d8b6cc3a99e234432d081a550a877b01",
+    "eval-workspaces/rc20-public-contract-engineering-check-v1/result.json": "c38bc18734c8b6d32cebba58adc4a09fd4c5fe2c6c42c7326e03619c7d5cbcf5",
+    "eval-workspaces/rc20-public-contract-engineering-check-v1/10.log": "9b7a335be393f0fcf6b6ae9add7d0d0ab82545d1da2fee628c5664388210c2ab",
+    "eval-workspaces/rc20-contract-context-baseline-git-proof.json": "1e689a473aee60417cd48663940d7ba62a3a05ed5618a9b22df9bbdb2ef52e98",
+    "eval-workspaces/rc20-public-contract-context-development-v2.baseline-git-proof.json": "4a6a01e763d52bdbf766a6e73ae3ee8f7fd4925884b744a7c51e5adebb6505a1",
+    "eval-workspaces/rc20-public-contract-context-development-v2.planner-preflight.json": "a188ca2bfd569a2d83cd2421f91be72c64a2c03e5b9cba076675ae200a7be7ab",
+    "docs/rc20-behavior-contracts.md": "3b46c400ca2e80a59db1e06bfec1a3df1c80e74a7cb6bfa283f8f761a7b9ce2c",
+    "tests/test_context_task_definitions.py": "71302a334026c9226f25e844fb8fc3ecd09516dacc11ddc0354b221add4077bf"
+  },
+  "context_identity": {
+    "attention": {
+      "plan_sha256": "2f3d9ffc1a8b5ed79af2b804f8cd30a870f8cbef16b2433fcc7c017e1a91cef2",
+      "planner_origin": "frozen-baseline-package",
+      "planner_sha256": "cfe243ec183c8d1846f31bd794195e85595dda3708319d7acbb4c8b6a12e48ca",
+      "skill_sha256": "6204675e555304a07a35af46038883ce285caec0a0fbe8b4ff8d98cde00d2ee4",
+      "system_sha256": "80905a6f8e2ec78c760117c922c6d99a4ef013298a998fd074e714bce6bffc6b"
+    },
+    "full": {
+      "plan_sha256": "2f397dc9234b02b371af56252c6945cb8d70842388bfe8ef3e926361dddf1fb2",
+      "planner_origin": "current-candidate-package",
+      "planner_sha256": "8a6a9d07037d5e3da1cf15c2a311f34ff35a85c66cd40640fd3a454fe3fc3d50",
+      "skill_sha256": "9387e5f2eb3c9184651c49c3ee91c7449115c4d01822be4d941e4929d80a3097",
+      "system_sha256": "7527d7d49c0ea7ed3ba2b79755c8875e3e77ea6551e64aae5ae9f9c735a2712b"
+    },
+    "rc19": {
+      "plan_sha256": "2f3d9ffc1a8b5ed79af2b804f8cd30a870f8cbef16b2433fcc7c017e1a91cef2",
+      "planner_origin": "frozen-baseline-package",
+      "planner_sha256": "cfe243ec183c8d1846f31bd794195e85595dda3708319d7acbb4c8b6a12e48ca",
+      "skill_sha256": "6204675e555304a07a35af46038883ce285caec0a0fbe8b4ff8d98cde00d2ee4",
+      "system_sha256": "66030177bf4fb70e29650301c94c54ff67edd13c958296c9cea628eb28c5488a"
+    }
+  },
+  "validation": {
+    "collector_independent_tests_passed": 13,
+    "wrapper_independent_tests_passed": 22,
+    "manual_extractor_independent_tests_passed": 35,
+    "manual_independent_challenges_passed": 3,
+    "real_collector_to_wrapper_e2e_assertions": 1168,
+    "canonical_gates_passed": 9,
+    "canonical_tests_passed": 767,
+    "canonical_platform_skips": 2,
+    "canonical_exact_source_ci_status": "PENDING_NOT_YET_CLAIMED",
+    "qualification_freeze_check": "PASS_UNCHANGED_1049a944",
+    "canonical_sources_unchanged_during_checks": true
+  },
+  "manual_factual_review": {
+    "review_seconds": null,
+    "review_tokens": null,
+    "rule": "Only veto or limit; never rescue mechanical FAIL, missing cells or unknown request costs. Metadata blindness is limited, not double blind.",
+    "scope": "Check actual final source-stage HANDOFF and report claims against recorded native reads/patches/current validation/status. Completing the registered source task does not complete the consumer or whole project. Distinguish finite static validation from application execution. Preserve numbers, negation, explicit unknowns, protected consumer and actual partial state; veto false completed/validated/executed/deployed/performance claims.",
+    "status": "UNASSESSED",
+    "timing": "Terminal only; all invoked actors including strict FAIL and all native finish attempts/absences."
+  },
+  "metrics": "Descriptive per-cell success, actual read bytes, tools, repeated validation/patches, reported input/output/cache/reasoning subsets, actor wall and all known/unknown charges. Missing cells are not zero, unknown cannot be ranked as savings. No efficacy CI or release inference.",
+  "application_execution": false,
+  "replay_resume_append": false,
+  "new_paid_calls_at_registration": 0,
+  "net_benefit": "NOT_ESTABLISHED",
+  "formal_qualification": "UNASSESSED",
+  "locked_holdout": "NOT_RUN",
+  "main_and_installed_skill": "RC19",
+  "historical_root_baseline_proof_sha256": "1e689a473aee60417cd48663940d7ba62a3a05ed5618a9b22df9bbdb2ef52e98",
+  "intervention_boundary": "Fresh known-family DEVELOPMENT fixture, public specification clarified; not a paired causal contrast with older exposed tasks. Same VM/probes/PASS semantics, models, caps, common tools and context arms. No old regrade.",
+  "research_cost": "Preparation, development and review kept separate; unmeasured tokens/time remain unknown. No total-cost/net-benefit claim."
+}
