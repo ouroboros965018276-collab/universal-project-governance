@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "name": "universal-project-governance",
-  "version": "3.0.0-rc.19",
+  "version": "3.0.0-rc.20",
   "architecture": "compiled-governance",
   "principles": [
     "ONE_SEMANTIC_RULE_ONE_CANONICAL_DEFINITION",
@@ -198,7 +198,7 @@
         "automation",
         "design"
       ],
-      "closure": "Synchronize existing canonical project documentation/state with what is true now; do not append a second independently editable truth.",
+      "closure": "同步已有规范文档的当前事实，仅更新影响使用、维护或决策的章节及失效索引。用户偏好直接执行，不将过程复述或未采用方案堆入 README；必要理由与历史使用已有决策/变更记录，避免平行真相。",
       "evidence": [
         "canonical source-of-truth review"
       ],
@@ -451,7 +451,7 @@
         "design",
         "governance"
       ],
-      "closure": "For non-trivial work, identify the smallest responsible canonical layer, integrate the requested change there, remove superseded patch/shim/duplicate paths when safe, and stop at the task boundary. Structural integration never authorizes unrelated redesign, API/contract change, architectural migration, or opportunistic refactoring.",
+      "closure": "追踪任务涉及的调用者、配置、导出及测试，优先复用项目既有实现，在最小负责层完成完整改动并安全清理被替代路径。保持模块边界、接口、校验、错误处理、安全及无障碍；不得为减少行数或 diff 合并职责、删除未知消费者、缩减需求或扩大重构范围。",
       "evidence": [
         "smallest responsible canonical layer identified",
         "task boundary and excluded unrelated surfaces identified",

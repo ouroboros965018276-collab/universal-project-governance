@@ -4,7 +4,7 @@ description: Govern maintained-project changes across project types and hosts wi
 license: Apache-2.0
 compatibility: Core needs no runtime. Optional deterministic planner/state/integrity helpers use Python 3.8+.
 metadata:
-  version: "3.0.0-rc.19"
+  version: "3.0.0-rc.20"
   standard: "agentskills.io"
   maturity: "release-candidate"
   architecture: "compiled-governance"
@@ -36,7 +36,7 @@ Legacy adoption: in place, no restructuring/migration. Artifacts are evidence; f
 
 Low-risk local corrections: hot path/proportional evidence, no architecture work. Non-trivial: STRUCTURAL_INTEGRATION; remove in-scope superseded shims/branches/compatibility paths/detached fixes. No unrelated redesign/API/contract change/migration/refactor.
 
-Bound context; batch known source/consumer/contract/evidence/state reads and related edits. Derive records, including dependent after-state checksums, from verified actual-byte edit receipts and still-current unchanged-content reads; do not reread solely to obtain an already verified current checksum. Re-read for missing/stale evidence, failed checks, later edits or required project inspection. Run required checks on final scoped state; batch independent checks/applicable status. Reuse only with matching source/tool/context identities and validated cached bytes. Finish with successful required checks, applicable verified receipts and evidence for acceptance/all governance obligations; preserve task quality.
+先读适用的项目约束；按现有模块索引、标题或符号定位任务相关章节、源文件及消费者，证据缺口再扩大范围。索引仅作导航，过期或缺失时搜索实际项目；局部修改不默认通读架构、历史或整个 README。Batch known source/consumer/contract/evidence/state reads and related edits. Derive records, including dependent after-state checksums, from verified actual-byte edit receipts and still-current unchanged-content reads; do not reread solely to obtain an already verified current checksum. Re-read for missing/stale evidence, failed checks, later edits or required project inspection. Run required checks on final scoped state; batch independent checks/applicable status. Reuse only with matching source/tool/context identities and validated cached bytes. Finish with successful required checks, applicable verified receipts and evidence for acceptance/all governance obligations; preserve task quality.
 
 Helpers: verified Python 3.8+; Windows: resolve `py -3` or its executable, never assume `python3`. Substitute below. Typed context: `python scripts/plan_governance.py --project-root <root> --context <context.json>`.
 
@@ -74,6 +74,10 @@ Complete only with applicable behavior/cleanup/truth/evidence/continuity/integri
 
 Uninstall project UPG state before the Skill via repository CLI; fallback: `scripts/project_tool.py remove <root> --yes`, then host Skills CLI removal.
 
-Respect project truth/specialized Skills; reuse canonical structures, no filename-driven parallel documents.
+尊重项目约定和专项能力。先追踪受影响的调用者、配置、导出和测试，再复用现有实现，其次适配标准库、平台或已安装依赖。以最小完整改动完成任务；行数和 diff 大小不是目标。保留模块边界、接口、校验、错误处理、安全和无障碍；不得为精简合并职责、删除未知消费者或削弱验收。
+
+对话先给结果和必要依据，用用户指定语言及完整语义；保留否定、条件、数值、路径和代码。文档只更新影响读者使用、维护或决策的当前事实；用户偏好直接执行，不把执行说明、过程复述、未采用方案写入 README。必要决策理由留在已有决策记录，历史留在已有变更记录。局部改动只更新相关章节和失效索引；架构图表达边界和关系，模块索引链接规范源和检查入口，不复制实现正文。缺少索引且反复定位确有成本时补最小索引，不另建报告体系。
+
+交付前检查新增文字是否改变读者的行动或理解；删去重复和无关内容。保留必要示例、契约、风险与未知项；不使用固定字数、洞穴人口吻或一句话限制。
 
 Bound context: one canonical definition per semantic rule; complexity in compiler.

@@ -1,0 +1,26 @@
+{
+  "candidate": "3.0.0-rc.20",
+  "base_revision": "bd4a4d5c1c6fb9fca829e410729879d1b01f05b9",
+  "engineering": {
+    "repository_validation": "pass",
+    "security_audit": "pass",
+    "unittest_discover_exit_code": 0,
+    "forward_check": "3 independent action-plan simulations; no filesystem tasks executed"
+  },
+  "fixes_during_validation": [
+    "Compiler notices moved inside canonical source for isolated candidate compilation.",
+    "Test temporary directory moved outside repository to prevent relocation self-copy."
+  ],
+  "behavioral_fingerprint": "sha256:81c38f7ed246f5e942c524d6b32b2bd57ac1b7ce11ec42971f9edaa5e1ce35cb",
+  "limits": [
+    "Real-task token/time savings unverified.",
+    "Formal qualification unassessed.",
+    "Local device offline; no user-host installation.",
+    "Skill grew from 8303 to 9653 UTF-8 bytes; not a token-savings result."
+  ],
+  "next_evaluation": [
+    "RC19 vs RC20 paired real workspace tasks: Chinese README update, local feature change, missing/stale index, dynamic consumers, service simplification and interrupted recovery.",
+    "Match model, budget and task; meter full task plus handoff input/output/cache/tool/retry costs and quality.",
+    "Compare adapted-expression removal and adapted-minimal-change removal under equal budgets; keep original four-operator qualification requirements."
+  ]
+}

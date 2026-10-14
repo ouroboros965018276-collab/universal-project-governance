@@ -1,6 +1,10 @@
 # Project State
 
-Current candidate: **3.0.0-rc.19 — Project Fact Recovery and Measured Execution Cost**.
+当前开发候选：**3.0.0-rc.20**。
+
+本候选整合精简表达、文档相关性、按模块读取和保留结构的最小完整改动。上游固定来源见 `third_party/notices/focused-governance.json`。编译、完整性、仓库与安全检查通过；全量回归进程退出 0，三项独立行动方案试读符合约束（未执行真实工作区任务）。见 `audits/rc20-focused-governance.audit.json`。真实工具任务、模块贡献、端到端 token/时间收益与正式资格尚未验证。RC19 的既有结果只支持其原身份。本地主机本轮离线，未安装本候选。
+
+以下保留 RC19 的合并、安装及测量记录。
 
 ## Owner-authorized RC19 integration
 

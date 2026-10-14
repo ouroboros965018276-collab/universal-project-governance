@@ -1,6 +1,6 @@
 # Publishing and Test-Freeze Gates
 
-Current candidate: **3.0.0-rc.19 — Project Fact Recovery and Measured Execution Cost**
+Current candidate: **3.0.0-rc.20 — Project Fact Recovery and Measured Execution Cost**
 
 RC19 starts from merged RC18 `29cf112b4629d6b90504b079e95a5370c206a4cb`.
 Its [latency investigation](docs/rc19-latency-diagnosis.md) separates historical

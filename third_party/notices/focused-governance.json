@@ -1,0 +1,85 @@
+{
+  "mode": "selective adapted instructions; no upstream runtime dependency",
+  "targets": [
+    "governance-src/templates/SKILL.template.md",
+    "governance-src/model/governance-model.json"
+  ],
+  "sources": [
+    {
+      "repository": "JuliusBrussee/caveman",
+      "commit": "d262ab3882952a59312ff3537cd86d894523c5ab",
+      "files": [
+        {
+          "path": "skills/caveman/SKILL.md",
+          "blob_sha": "9a94044529e5ee1576361c891b4a271504518e6f",
+          "url": "https://github.com/JuliusBrussee/caveman/blob/d262ab3882952a59312ff3537cd86d894523c5ab/skills/caveman/SKILL.md"
+        },
+        {
+          "path": "LICENSE",
+          "blob_sha": "d645695673349e3947e8e5ae42332d0ac3164cd7",
+          "url": "https://github.com/JuliusBrussee/caveman/blob/d262ab3882952a59312ff3537cd86d894523c5ab/LICENSE"
+        },
+        {
+          "path": "LICENSE-MIT",
+          "blob_sha": "d8c0ee8a752aeb14ee42044c3238e191f7571ac6",
+          "url": "https://github.com/JuliusBrussee/caveman/blob/d262ab3882952a59312ff3537cd86d894523c5ab/LICENSE-MIT"
+        },
+        {
+          "path": "NOTICE",
+          "blob_sha": "5b6c03199300662964c1c27906d9bdff47349e26",
+          "url": "https://github.com/JuliusBrussee/caveman/blob/d262ab3882952a59312ff3537cd86d894523c5ab/NOTICE"
+        }
+      ],
+      "adopted": [
+        "结果优先",
+        "语义与技术内容保真",
+        "尊重用户语言"
+      ],
+      "excluded": [
+        "全局模式和 hooks",
+        "洞穴人口吻",
+        "固定字数",
+        "文档聊天化"
+      ]
+    },
+    {
+      "repository": "DietrichGebert/ponytail",
+      "commit": "2961b52fc1fe6a5a87c7a959a79512e5c2f3ffe5",
+      "files": [
+        {
+          "path": "skills/ponytail/SKILL.md",
+          "blob_sha": "b76922f76ec6f4db532203c55d710b749fa1f6af",
+          "url": "https://github.com/DietrichGebert/ponytail/blob/2961b52fc1fe6a5a87c7a959a79512e5c2f3ffe5/skills/ponytail/SKILL.md"
+        },
+        {
+          "path": "LICENSE",
+          "blob_sha": "715d483338cea4365f0d91a27799cf61226d6bcf",
+          "url": "https://github.com/DietrichGebert/ponytail/blob/2961b52fc1fe6a5a87c7a959a79512e5c2f3ffe5/LICENSE"
+        }
+      ],
+      "adopted": [
+        "追踪消费者",
+        "复用实现",
+        "最小完整改动",
+        "保留结构和验证"
+      ],
+      "excluded": [
+        "最短 diff 优先",
+        "一行优先",
+        "默认删除",
+        "强制尾注",
+        "ultra 模式"
+      ]
+    }
+  ],
+  "evidence": "Engineering and forward checks do not establish real-task savings.",
+  "validation_scope": {
+    "forward_checks": [
+      "README 中文化",
+      "退款边界及未知插件消费者",
+      "四服务职责与重复格式化"
+    ],
+    "kind": "independent agent action-plan simulation; no repository task execution",
+    "real_task_token_time_benefit": "unverified"
+  }
+}
