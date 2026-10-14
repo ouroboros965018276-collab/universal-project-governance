@@ -48,6 +48,20 @@ PUBLIC_LANGUAGE = {
     "limits": dict(DEFAULT_LIMITS),
     "measurement": "Only the predeclared structural contracts and private boundary/error/challenge probes are measured; this is not an all-Python equivalence proof.",
 }
+TEXT_NORMALIZATION = {
+    "schema_version": 1,
+    "input_domain": {"values": ["null", "bool", "bounded-int", "string", "list", "string-keyed-dict"],
+        "bounds": "language.limits", "floats": "unsupported by the bounded language",
+        "measurement": "The existing finite probes are unchanged; this is not an all-input equivalence proof."},
+    "null": {"return_type": "str", "return_value": "UNKNOWN", "prefix_applied": False,
+             "before_non_null_operations": True},
+    "non_null": {"conversion": "Python str(value)", "trim": "str.strip()",
+                 "empty_after_trim": {"raises": "ValueError"}},
+    "case_methods": {"default": "casefold", "shout": "upper"},
+    # Fixed public literals, independent of seed-derived private challenges and
+    # the private-probe loop. They explain the specification, not the test set.
+    "example_inputs": [None, "", " \t ", "  Public Sample  ", 42],
+}
 
 
 def sha(text):
@@ -81,13 +95,65 @@ def _source(name, body, *, constants=None, suffix="value"):
     return prefix + "\ndef %s(%s):\n" % (name, suffix) + "".join("    " + line + "\n" for line in body)
 
 
-def _known_text(value):
+def _text_value(value, *, prefix="", case_method=None):
     if value is None:
-        return "UNKNOWN"
+        return TEXT_NORMALIZATION["null"]["return_value"]
     text = str(value).strip()
     if not text:
         raise ValueError("empty")
-    return text.casefold()
+    method = case_method or TEXT_NORMALIZATION["case_methods"]["default"]
+    return prefix + getattr(text, method)()
+
+
+def _known_text(value):
+    return _text_value(value)
+
+
+def _text_body(*, prefix=False, shout=False):
+    """Render the existing reference bytes from the shared text specification."""
+    methods = TEXT_NORMALIZATION["case_methods"]
+    body = ["if value is None:", "    return %r" % TEXT_NORMALIZATION["null"]["return_value"],
+            "text = str(value).strip()", "if not text:", "    raise ValueError('empty')"]
+    if shout:
+        body += ["if shout:", "    return PREFIX + text.%s()" % methods["shout"]]
+    body.append("return %stext.%s()" % ("PREFIX + " if prefix else "", methods["default"]))
+    return body
+
+
+def _public_text_contract(family):
+    public = {key: copy.deepcopy(TEXT_NORMALIZATION[key])
+              for key in ("schema_version", "input_domain", "null", "non_null")}
+    methods = TEXT_NORMALIZATION["case_methods"]
+    if family == "public-api-consumers":
+        public["output_modes"] = [
+            {"when": {"shout": False}, "case_method": methods["default"], "prefix": None},
+            {"when": {"shout": True}, "case_method": methods["shout"], "prefix": "PREFIX"}]
+        public["forwarding"] = "consumer/driver loud forwards unchanged to core shout; exact keyword-only defaults are in exports"
+    else:
+        public["output_modes"] = [{"when": "all non-null inputs", "case_method": methods["default"],
+                                   "prefix": "PREFIX" if family == "interrupted-handoff-recovery" else None}]
+    public["precedence"] = "null returns the exact string sentinel before conversion, trimming, case conversion, prefix or keyword-mode handling"
+    return public
+
+
+def _public_text_examples(family, constants):
+    examples = []
+    inputs = [(value, {}) for value in TEXT_NORMALIZATION["example_inputs"]]
+    if family == "public-api-consumers":
+        inputs += [(None, {"shout": True}), (TEXT_NORMALIZATION["example_inputs"][3], {"shout": True})]
+    for value, kwargs in inputs:
+        shout = kwargs.get("shout", False)
+        prefix = constants.get("PREFIX", "") if family == "interrupted-handoff-recovery" or shout else ""
+        method = TEXT_NORMALIZATION["case_methods"]["shout" if shout else "default"]
+        item = {"value": copy.deepcopy(value)}
+        if kwargs:
+            item["kwargs"] = kwargs
+        try:
+            item["return"] = _text_value(value, prefix=prefix, case_method=method)
+        except ValueError:
+            item["raises"] = "ValueError"
+        examples.append(item)
+    return examples
 
 
 def build_case(family, instance, *, seed, namespace):
@@ -118,16 +184,16 @@ def build_case(family, instance, *, seed, namespace):
     summary = ""
 
     if family == "chinese-documentation":
-        body = ["if value is None:", "    return 'UNKNOWN'", "text = str(value).strip()",
-                "if not text:", "    raise ValueError('empty')", "return text.casefold()"]
+        body = _text_body()
         broken = ["return str(value)"]
         values, oracle = [None, "", "  ", " Demo ", "ZH_NEGATIVE", *labels, 0, 17], _known_text
         summary = "按公开 documentation_contract 的固定文字与比较规则更新中文说明，并修正文档所述规范化函数；保留必要否定、数字和未知。"
         doc = ("# 当前契约\n\n只读取受影响实现、契约与消费者即可完成。\n"
-               "输入 None 必须返回 UNKNOWN；不得把未知历史改写为已验证事实。\n"
-               "非 None 输入先转字符串、去首尾空白，再 casefold；空白文本必须抛 ValueError。\n"
+               "输入 None 必须返回 %s；不得把未知历史改写为已验证事实。\n"
+               "非 None 输入先转字符串、去首尾空白，再 %s；空白文本必须抛 ValueError。\n"
                "最多 12 次 HTTP、32 次工具尝试只是当前任务说明中的数字；不得改成已执行次数。\n"
-               "应用测试未运行，延迟未知；不得删除本句以制造完成证据。\n")
+               "应用测试未运行，延迟未知；不得删除本句以制造完成证据。\n" % (
+                   TEXT_NORMALIZATION["null"]["return_value"], TEXT_NORMALIZATION["case_methods"]["default"]))
         extra_exact.append({"path": readme, "kind": "text", "expected": doc})
         general["documentation_contract"] = {"path": readme, "expected_text": doc,
             "comparison": {"kind": "text", "encoding": "utf-8", "newlines": "universal-to-LF",
@@ -149,12 +215,11 @@ def build_case(family, instance, *, seed, namespace):
     elif family == "public-api-consumers":
         constants = {"PREFIX": "view/" + nonce + "/"}
         kwonly, kwdefaults = ("shout",), {"shout": False}
-        body = ["if value is None:", "    return 'UNKNOWN'", "text = str(value).strip()",
-                "if not text:", "    raise ValueError('empty')", "if shout:", "    return PREFIX + text.upper()", "return text.casefold()"]
+        body = _text_body(shout=True)
         broken = ["return str(value).strip().casefold()"]
         values, oracle = [None, "", " Demo ", *labels, 7], _known_text
         summary = "公共接口增加关键字参数 shout；更新消费者和驱动的 loud 参数转发，默认值与 False 两路都必须可用。"
-        general["rule"] = "core keyword-only shout=False; consumer and driver keyword-only loud=True forward the value to core; True prepends PREFIX to upper text, False casefolds; None UNKNOWN and empty raises ValueError"
+        general["rule"] = "Use text_normalization for exact null/coercion/empty/case/prefix behavior; exports and required_routes define keyword-only defaults and forwarding."
     elif family == "stale-map-source-conflict":
         constants = {"FACTOR": rate, "OFFSET": offset}
         forbidden = ["old_transform_" + nonce]
@@ -201,8 +266,7 @@ def build_case(family, instance, *, seed, namespace):
         general["rule"] = "None/negative raises ValueError; otherwise value * RATE; evidence source hashes reflect actual current bytes and claims remain unknown/unexecuted"
     else:
         constants = {"PREFIX": "resumed/" + nonce + "/"}
-        body = ["if value is None:", "    return 'UNKNOWN'", "text = str(value).strip()",
-                "if not text:", "    raise ValueError('empty')", "return PREFIX + text.casefold()"]
+        body = _text_body(prefix=True)
         broken = ["raise ValueError('unfinished')"]
         def oracle(value):
             normalized = _known_text(value)
@@ -213,7 +277,7 @@ def build_case(family, instance, *, seed, namespace):
                  "unfinished": [], "unknowns": ["Application tests have not been executed.", "Previous actor intent beyond disk records is unknown."]}
         extra_exact.append({"path": stem + "_HANDOFF.json", "kind": "json", "expected": final})
         general["handoff_contract"] = final
-        general["rule"] = "None UNKNOWN; strip + casefold nonempty text and prepend PREFIX; empty raises ValueError; recover from project-local state only"
+        general["rule"] = "Use text_normalization for exact null/coercion/empty/case/prefix behavior; recover from project-local state only."
 
     core_spec = signature(kwonly=kwonly, kwdefaults=kwdefaults)
     correct_core = _source(fn, body, constants=constants, suffix="value, *, shout=False" if kwonly else "value")
@@ -244,12 +308,15 @@ def build_case(family, instance, *, seed, namespace):
         unrelated: "NOISE = %r\n\ndef unrelated_%s(value):\n    return NOISE\n" % ("preserve/" + nonce, nonce)}
     general.update({"constants": constants, "required_negative_or_unknown": ["unknown does not imply observed success", "unexecuted remains unexecuted"],
                     "public_examples": []})
-    private_probes, public_examples = [], []
+    text_family = family in {"chinese-documentation", "public-api-consumers", "interrupted-handoff-recovery"}
+    private_probes, public_examples = [], _public_text_examples(family, constants) if text_family else []
+    if text_family:
+        general["text_normalization"] = _public_text_contract(family)
     for value in values:
         try:
             expected = oracle(value)
             private_probes.append(probe(core, fn, value, result=expected))
-            if len(public_examples) < 2 and value is not None:
+            if not text_family and len(public_examples) < 2 and value is not None:
                 public_examples.append({"value": value, "return": expected})
         except ValueError:
             private_probes.append(probe(core, fn, value, raises="ValueError"))
@@ -261,11 +328,12 @@ def build_case(family, instance, *, seed, namespace):
                 continue
             if family == "public-api-consumers":
                 for loud in (False, True):
-                    expected = constants["PREFIX"] + str(value).strip().upper() if loud else oracle(value)
+                    expected = _text_value(value, prefix=constants["PREFIX"], case_method=TEXT_NORMALIZATION["case_methods"]["shout"]) if loud else oracle(value)
                     private_probes.append(probe(core, fn, value, result=expected, kwargs={"shout": loud}))
                     private_probes.append(probe(consumer, render, value, result=expected, kwargs={"loud": loud}))
                     private_probes.append(probe(driver, run, value, result=expected, kwargs={"loud": loud}))
-                private_probes.append(probe(driver, run, value, result=constants["PREFIX"] + str(value).strip().upper()))
+                private_probes.append(probe(driver, run, value, result=_text_value(value, prefix=constants["PREFIX"],
+                    case_method=TEXT_NORMALIZATION["case_methods"]["shout"])))
             else:
                 private_probes.extend([probe(consumer, render, value, result=expected), probe(driver, run, value, result=expected)])
     general["public_examples"] = public_examples
@@ -372,8 +440,15 @@ def mutant_files(case, kind):
         function.body = []
         for item in case["public_examples"]:
             expression = ast.parse(repr(item["value"]), mode="eval").body
-            expected = ast.parse(repr(item["return"]), mode="eval").body
-            function.body.append(ast.If(test=ast.Compare(left=ast.Name(id="value", ctx=ast.Load()), ops=[ast.Eq()], comparators=[expression]), body=[ast.Return(value=expected)], orelse=[]))
+            action = (ast.Raise(exc=ast.Call(func=ast.Name(id=item["raises"], ctx=ast.Load()), args=[], keywords=[]))
+                      if "raises" in item else ast.Return(value=ast.parse(repr(item["return"]), mode="eval").body))
+            condition = ast.Compare(left=ast.Name(id="value", ctx=ast.Load()), ops=[ast.Eq()], comparators=[expression])
+            keyword_values = {arg.arg: ast.literal_eval(default) for arg, default in zip(function.args.kwonlyargs, function.args.kw_defaults)}
+            keyword_values.update(item.get("kwargs", {}))
+            if keyword_values:
+                condition = ast.BoolOp(op=ast.And(), values=[condition] + [ast.Compare(left=ast.Name(id=name, ctx=ast.Load()),
+                    ops=[ast.Eq()], comparators=[ast.Constant(value)]) for name, value in keyword_values.items()])
+            function.body.append(ast.If(test=condition, body=[action], orelse=[]))
         function.body.append(ast.Return(value=ast.Constant(None)))
     elif kind in {"bypass-canonical-consumer", "call-and-discard-canonical"}:
         target = ast.parse(files[consumer])

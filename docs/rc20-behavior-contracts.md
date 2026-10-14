@@ -32,6 +32,30 @@ The supported subset must be public before an evaluation starts:
   an unreached function/branch. Unsupported operations and resource limits never
   produce `PASS`.
 
+Text-normalization task families additionally publish one structured
+`text_normalization` block in their project `CONTRACT.json`. It names the bounded
+input domain, the exact **string** sentinel `UNKNOWN`, conversion and empty-text
+behavior, and each existing case/prefix mode. Null returns `UNKNOWN` immediately:
+it receives no prefix, case conversion or keyword-mode transformation. Every
+non-null value uses Python `str(value)`, then `strip()`; empty text raises
+`ValueError`. Chinese documentation uses casefold without a prefix; project
+recovery prefixes non-null casefolded text. The public API uses casefold without
+a prefix for `shout=False`, and prefix plus uppercase for `shout=True`; the
+existing public exports and routes define `loud` defaults and forwarding.
+
+Shared public text metadata defines these semantics. Its null and case values
+feed the reference source/helper and fixed public examples; the existing
+`str`/`strip`/`ValueError` implementation is independently checked against the
+public block. Examples include null, empty/blank text and string coercion and
+are generated independently of the private challenge sampler. Source and
+receiver retain the same text meaning, with writable scope and pending routes
+declared separately by stage.
+Numeric families and document-maintenance tasks derived from numeric safety
+contracts are outside this text-specific change. Existing reference/initial
+Python programs, private behavior probes, interpreter and PASS rules are
+unchanged. This corrects future public specification clarity; it does not regrade
+historical runs or turn finite probes into an all-input equivalence proof.
+
 `DEFAULT_LIMITS` is the exact public limit map. Contracts may only lower it.
 Limits cover module/source/AST/probe counts, steps, call/expression/value depth,
 individual strings/collections/integers, and aggregate value nodes/characters

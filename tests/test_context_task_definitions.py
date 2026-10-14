@@ -5,6 +5,7 @@ is read. Fixture seeds/namespaces differ from proposed fresh study identities.
 """
 from __future__ import annotations
 
+import ast
 import copy
 import json
 from pathlib import Path
@@ -147,6 +148,128 @@ class SemanticTaskFixtures(unittest.TestCase):
             changed = copy.deepcopy(case["correct_files"])
             changed[path] = case["task"]["initial_files"][path]
             self.assertFalse(self.assess(case, changed)["ok"])
+
+    def public_text(self, case):
+        path = next(path for path in case["task"]["initial_files"] if path.endswith("_CONTRACT.json"))
+        return json.loads(case["task"]["initial_files"][path])
+
+    def public_text_expectation(self, public, value, shout=False):
+        """Independent reader: only project-visible data, no private contract."""
+        spec = public["text_normalization"]
+        if value is None:
+            self.assertEqual(spec["null"]["return_type"], "str")
+            self.assertFalse(spec["null"]["prefix_applied"])
+            return spec["null"]["return_value"]
+        self.assertEqual(spec["non_null"]["conversion"], "Python str(value)")
+        self.assertEqual(spec["non_null"]["trim"], "str.strip()")
+        text = str(value).strip()
+        if not text:
+            self.assertEqual(spec["non_null"]["empty_after_trim"], {"raises": "ValueError"})
+            raise ValueError("public blank rule")
+        modes = spec["output_modes"]
+        mode = next(item for item in modes if item["when"] == "all non-null inputs"
+                    or item["when"] == {"shout": shout})
+        prefix = public["constants"][mode["prefix"]] if mode["prefix"] else ""
+        self.assertIn(mode["case_method"], {"casefold", "upper"})
+        return prefix + (text.casefold() if mode["case_method"] == "casefold" else text.upper())
+
+    def public_text_vm_contract(self, public, values):
+        """Construct a VM challenge using only public exports/routes/semantics."""
+        modules = {path: {"required_functions": exports, "constants": public["constants"] if path == public["canonical"] else {}}
+                   for path, exports in public["exports"].items()}
+        for route in public["required_routes"]:
+            module = modules[route["caller_path"]]
+            module.setdefault("required_imports", {})[route["callee"]] = {"path": route["callee_path"], "name": route["callee"]}
+            module.setdefault("required_calls", {})[route["caller"]] = [{"path": route["callee_path"], "function": route["callee"]}]
+        probes = []
+        for path, exports in public["exports"].items():
+            for function, signature in exports.items():
+                keyword = next(iter(signature["kwdefaults"]), None)
+                modes = [None, False, True] if keyword else [None]
+                for mode in modes:
+                    kwargs = {} if mode is None else {keyword: mode}
+                    effective = signature["kwdefaults"].get(keyword, False) if mode is None else mode
+                    for value in values:
+                        try:
+                            expected = {"return": self.public_text_expectation(public, value, effective)}
+                        except ValueError:
+                            expected = {"raises": "ValueError"}
+                        probes.append({"path": path, "function": function, "args": [value], "kwargs": kwargs, "expect": expected})
+        return {"schema_version": 1, "modules": modules, "protected_files": {}, "probes": probes}
+
+    def test_public_text_spec_alone_determines_null_coercion_blank_prefix_and_modes(self):
+        values = [None, "", " \t ", "  Straße  ", 0, False, True, [], {"B": False}]
+        for family in ("chinese-documentation", "public-api-consumers", "interrupted-handoff-recovery"):
+            for instance in (1, 2):
+                case = self.fixture(family, instance)
+                public = self.public_text(case)
+                spec = public["text_normalization"]
+                self.assertEqual(spec["input_domain"]["values"], ["null", "bool", "bounded-int", "string", "list", "string-keyed-dict"])
+                self.assertEqual(spec["null"], {"return_type": "str", "return_value": "UNKNOWN", "prefix_applied": False,
+                    "before_non_null_operations": True})
+                self.assertIn("not an all-input", spec["input_domain"]["measurement"])
+                contract = self.public_text_vm_contract(public, values)
+                self.assertTrue(VM.validate_contract(contract)["ok"])
+                self.assertTrue(VM.validate_behavior(case["correct_files"], contract)["ok"])
+                self.assertTrue(VM.validate_behavior(GEN.equivalent_files(case), contract)["ok"])
+
+    def test_public_literal_examples_are_independent_of_private_sampler_and_match_public_semantics(self):
+        for family in ("chinese-documentation", "public-api-consumers", "interrupted-handoff-recovery"):
+            first = self.public_text(self.fixture(family))
+            other_case = GEN.build_case(family, 2, seed=90404, namespace="public_text_examples_fixture")
+            other = self.public_text(other_case)
+            self.assertEqual([(x["value"], x.get("kwargs", {})) for x in first["public_examples"]],
+                             [(x["value"], x.get("kwargs", {})) for x in other["public_examples"]])
+            self.assertTrue(any(x["value"] is None and type(x.get("return")) is str and x["return"] == "UNKNOWN" for x in first["public_examples"]))
+            self.assertTrue(any(type(x["value"]) is int for x in first["public_examples"]))
+            self.assertTrue(any(x.get("raises") == "ValueError" for x in first["public_examples"]))
+            for item in first["public_examples"]:
+                if "raises" in item:
+                    with self.assertRaises(ValueError):
+                        self.public_text_expectation(first, item["value"], item.get("kwargs", {}).get("shout", False))
+                else:
+                    expected = self.public_text_expectation(first, item["value"], item.get("kwargs", {}).get("shout", False))
+                    self.assertEqual((type(item["return"]), item["return"]), (type(expected), expected))
+
+    def test_wrong_null_type_case_prefix_and_missing_branch_fail_public_only_contract(self):
+        case = self.fixture("interrupted-handoff-recovery")
+        public = self.public_text(case)
+        contract = self.public_text_vm_contract(public, [None])
+        core = case["roles"]["core"]
+        for wrong in (False, "unknown", public["constants"]["PREFIX"] + "UNKNOWN"):
+            tree = ast.parse(case["correct_files"][core])
+            function = next(node for node in tree.body if isinstance(node, ast.FunctionDef))
+            function.body[0].body[0] = ast.Return(value=ast.Constant(wrong))
+            files = dict(case["correct_files"], **{core: ast.unparse(ast.fix_missing_locations(tree)) + "\n"})
+            self.assertFalse(VM.validate_behavior(files, contract)["ok"])
+        tree = ast.parse(case["correct_files"][core])
+        function = next(node for node in tree.body if isinstance(node, ast.FunctionDef))
+        function.body.pop(0)
+        files = dict(case["correct_files"], **{core: ast.unparse(ast.fix_missing_locations(tree)) + "\n"})
+        self.assertFalse(VM.validate_behavior(files, contract)["ok"])
+
+    def test_api_false_true_prefix_branches_and_null_precedence_are_not_interchangeable(self):
+        case = self.fixture("public-api-consumers")
+        public = self.public_text(case)
+        contract = self.public_text_vm_contract(public, [None, "  Straße  "])
+        core = case["roles"]["core"]
+        source = case["correct_files"][core]
+        for wrong in (source.replace("if shout:", "if not shout:"),
+                      source.replace("return 'UNKNOWN'", "return PREFIX + 'UNKNOWN'"),
+                      source.replace("text.upper()", "text.casefold()")):
+            self.assertFalse(VM.validate_behavior(dict(case["correct_files"], **{core: wrong}), contract)["ok"])
+
+    def test_handoff_stages_share_text_spec_without_overwriting_actual_source_bytes(self):
+        pair = GEN.build_handoff_pair(1, seed=90404, namespace="public_text_stage_fixture")
+        source_public = self.public_text(pair["source"])
+        receiver = GEN.receiver_from_snapshot(pair, pair["source"]["correct_files"], VM.validate_behavior)
+        receiver_public = self.public_text(receiver)
+        self.assertEqual(source_public["text_normalization"], receiver_public["text_normalization"])
+        self.assertEqual(receiver["task"]["initial_files"], pair["source"]["correct_files"])
+        self.assertEqual(source_public["stage1_behavior_scope"]["current_stage_required_routes"], [])
+        document = next(check["expected"] for check in self.fixture("chinese-documentation")["task"]["exact_checks"] if check["kind"] == "text")
+        for fact in ("UNKNOWN", "非 None", "不得", "未运行", "未知", "12", "32"):
+            self.assertIn(fact, document)
 
     def test_stale_index_is_corrected_using_existing_source_without_reviving_old_symbol(self):
         case = self.fixture("stale-map-source-conflict")
