@@ -12,7 +12,11 @@ Current candidate: **3.0.0-rc.20 — Task Context and Complete Change Discipline
 
 RC20 原生 CLI 轮次因一次用量未知而中断；API 开发 v1 受执行器反馈处理混杂，v2 虽完成且原始记录核对通过，严格质量与净收益仍 FAIL，含 MiMo 完整版低于两个对照的反转。失败与成本保留在[原生审计](audits/rc20-native-context.audit.json)、[API v1](audits/rc20-api-tools-v1.audit.json)、[API v2 开发审计](audits/rc20-api-tools-v2-development.audit.json)，不作为独立改善证据。
 
-两个官方 API 的[微型原生工具与报告互操作探测](audits/rc20-api-terminal-probe.audit.json)均通过，共 9 次 HTTP、12,519 个报告 token、无未知用量。它只验证脚手架互操作；新候选的跨模型配对效果尚待新任务实测。仓库内 API helper 不随 Skill 安装，不给普通项目新增 provider 或密钥依赖。
+两个官方 API 的[微型原生工具与报告互操作探测](audits/rc20-api-terminal-probe.audit.json)均通过，共 9 次 HTTP、12,519 个报告 token、无未知用量。它只验证脚手架互操作，不验证治理效益。仓库内 API helper 不随 Skill 安装，不给普通项目新增 provider 或密钥依赖。
+
+本次[前瞻 API 轮次](audits/rc20-prospective-api-v1.audit.json)已中止：独立公开合成反例证明，五个 Python 任务族的整模块 AST 相等检查误拒任务允许的等价实现。前缀核账与工具证据 PASS，终态完整性 FAIL、实验有效性与净收益 BLOCKED；原始记录、一次未知请求及其费用预留保留，六条交接链均未到达。旧记录不续跑、重算或作为改善证据。
+
+当前在负责评分的工具代理中接入[有限行为契约](docs/rc20-behavior-contracts.md)，按固定探针、接口、调用关系和保护字节验收；公开支持的子语言，保留历史 AST 检查。新候选须先通过正例、危险反例和工程验证，再冻结新任务实测。评分器仅在仓库实验中使用，不增加 Skill 交付文件；默认分支和本地安装仍为 RC19。
 
 ## 最近一次重要发布：RC19
 
@@ -32,4 +36,4 @@ RC18 修复评分器错误成功判定、压缩指令并记录真实开发对照
 - 当前维护入口：[MODULE_MAP.md](MODULE_MAP.md)；发布检查：[PUBLISHING.md](PUBLISHING.md)。
 - 正式资格：[qualification/README.md](qualification/README.md)，仍 UNASSESSED，locked NOT RUN。现有历史资格失败不重写。
 - 本地中断交接由已有 `.governance/handoff.json` 保存；该私有当前状态不随 Skill 交付，不替代版本化政策或冻结实验。
-- RC20 的新增真实对照只使用新注册任务和同一工具脚手架；不复用 RC19 已暴露结果作为独立证据，不将开发轮改善包装为普遍收益。
+- RC20 的新增真实对照只使用新注册任务和同一工具脚手架；本次中止任务已曝光，不能重作独立留出。RC19 及开发轮结果也不能包装为独立改善或普遍收益。

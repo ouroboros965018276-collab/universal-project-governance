@@ -25,7 +25,7 @@ python tools/validate_navigation.py .
 python -m unittest discover -s tests -v
 ```
 
-CI 还须通过 Linux Python 3.8/3.11/3.13、离线演化 Python 3.10/3.13、Windows Python 3.11/3.13、上游 Agent Skills 校验、本地生命周期安装/卸载、干净 Codex 目标安装、确定性打包，以及晋升后的私有默认分支安装验收。
+CI 还须通过 Linux Python 3.8/3.11/3.13、离线演化 Python 3.10/3.13、Windows Python 3.11/3.13、上游 Agent Skills 校验、本地生命周期安装/卸载、干净 Codex 目标安装、确定性打包，以及晋升后的默认分支安装验收。
 
 ## 正式真实 Agent 锁定门禁
 

@@ -6,6 +6,7 @@
 - Pins and acknowledges Caveman, Ponytail, Academic Humanizer, reverse-skill and SkillOpt with explicit adaptation/exclusion and acceptance mapping; no external persona or toolchain is automatically installed.
 - Routes maintenance through the existing module map and bounded link/anchor validation, with progressive expansion and stale-state recovery rather than whole-document loading.
 - Keeps current usage/state concise and links frozen historical evidence; no model-effectiveness or Stable claim follows from tests or document shortening.
+- Adds repository-only finite Python behavior contracts for new tool studies after public equivalent-program counterexamples exposed whole-module AST false negatives; preserves the aborted round and unchanged historical AST semantics. Supported syntax, bounds and finite-probe limits are explicit.
 
 
 ## 3.0.0-rc.19 — 2026-10-13 — candidate

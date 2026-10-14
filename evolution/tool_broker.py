@@ -125,6 +125,21 @@ def validate_task(task):
         total += len(text.encode("utf-8"))
     if total > MAX_TOTAL_BYTES:
         raise ValueError("initial repository exceeds size limit")
+    behavior_checks = [check for check in checks
+                       if isinstance(check, dict) and check.get("kind") == "python_behavior"]
+    if behavior_checks:
+        if sys.version_info < (3, 10):
+            raise ValueError("Python behavior tool profile requires Python 3.10+")
+        from evolution.semantic_contract import validate_contract
+        contract = task.get("behavior_contract")
+        _bounded(contract)
+        if len(canonical(contract)) > MAX_TOTAL_BYTES or not validate_contract(contract)["ok"]:
+            raise ValueError("invalid bounded Python behavior contract")
+        contract_paths = set(contract["modules"]) | set(contract.get("protected_files", {}))
+        if not contract_paths <= names:
+            raise ValueError("behavior contract paths must be registered")
+    elif "behavior_contract" in task:
+        raise ValueError("behavior contract requires Python behavior checks")
     checked = set()
     for check in checks:
         if not isinstance(check, dict) or set(check) != {"path", "kind", "expected"}:
@@ -133,7 +148,10 @@ def validate_task(task):
             raise ValueError("each checked path must be distinct and writable")
         checked.add(check["path"])
         expected = check["expected"]
-        if check["kind"] in {"text", "python_ast"}:
+        if check["kind"] == "python_behavior":
+            if expected is not None or check["path"] not in task["behavior_contract"]["modules"]:
+                raise ValueError("Python behavior checks reference one task contract with null expected")
+        elif check["kind"] in {"text", "python_ast"}:
             if not isinstance(expected, str):
                 raise ValueError("text/AST expected value must be source text")
             normalize(check["kind"], expected)
@@ -253,11 +271,24 @@ class RepoBroker:
         failures, passed = [], 0
         try:
             files = self.snapshot()
+            behavior_ok = None
             for name, original in self.task["initial_files"].items():
                 if name not in self.task["writable_files"] and files[name] != sha(original.encode("utf-8")):
                     failures.append("protected-file-changed:" + name)
             for check in self.task["checks"]:
                 try:
+                    if check["kind"] == "python_behavior":
+                        if behavior_ok is None:
+                            from evolution.semantic_contract import validate_behavior
+                            # Preserve raw UTF-8/CRLF for protected-file hashes.
+                            sources = {name: self.path(name).read_bytes().decode("utf-8") for name in files}
+                            behavior_ok = validate_behavior(sources, self.task["behavior_contract"])["ok"]
+                        if not behavior_ok:
+                            # Keep ordinary model feedback fixed and probe-free;
+                            # the native API adapter already accepts this type.
+                            raise ValueError("Python behavior contract failed")
+                        passed += 1
+                        continue
                     value = normalize(check["kind"], self.path(check["path"]).read_text(encoding="utf-8"))
                     expected = (normalize(check["kind"], check["expected"])
                                 if check["kind"] in {"text", "python_ast"} else check["expected"])
