@@ -1,0 +1,177 @@
+{
+  "schema_version": 1,
+  "study_id": "upg-rc20-contract-context-development-v1",
+  "registered_at_utc": "2026-10-14T18:31:35.601269+00:00",
+  "protocol_sha256": "63b0fe49b450295f5b2c19a77fe4a898571aa8aea5f867e0be3d9561c6fccd2a",
+  "candidate_source_commit": "85838b9bcd248e0a39e8fc74bc250a43806456c6",
+  "current_documentation_commit": "22b74146d40a0aae3405220ea6e542b858142993",
+  "scope": "DEVELOPMENT matched context diagnosis only; known-family source task, no receiver. No independent efficacy, Stable, bootstrap, causal thinking effect or old-data regrade.",
+  "seed": 90141,
+  "namespace": "rc20_contract_context_development_v1",
+  "providers": {
+    "deepseek": "deepseek-flash",
+    "mimo": "mimo-v2.6-pro"
+  },
+  "profile": {
+    "output_cap": 8192,
+    "profile_id": "thinking-enabled-8192-v1",
+    "response_json_mode": false,
+    "terminal_report": "native-tool",
+    "thinking": "enabled"
+  },
+  "provider_profiles": {
+    "deepseek": {
+      "model": "deepseek-flash",
+      "output_cap": 8192,
+      "reasoning_effort": "low",
+      "thinking": "enabled"
+    },
+    "mimo": {
+      "model": "mimo-v2.6-pro",
+      "output_cap": 8192,
+      "reasoning_effort": null,
+      "thinking": "enabled"
+    }
+  },
+  "caps": {
+    "actors": 6,
+    "deepseek_USD": "2",
+    "known_reported_tokens_soft": 1000000,
+    "mimo_CNY": "12",
+    "mimo_USD": "2",
+    "ordinary_strict_failures": null,
+    "request_slots": 72,
+    "round_seconds_soft": 1200
+  },
+  "actor_caps": {
+    "input_utf8_bytes": 131072,
+    "output": 8192,
+    "requests": 12,
+    "seconds": 180,
+    "tools": 32
+  },
+  "order": [
+    [
+      "deepseek",
+      "rc19"
+    ],
+    [
+      "deepseek",
+      "attention"
+    ],
+    [
+      "deepseek",
+      "full"
+    ],
+    [
+      "mimo",
+      "full"
+    ],
+    [
+      "mimo",
+      "rc19"
+    ],
+    [
+      "mimo",
+      "attention"
+    ]
+  ],
+  "order_scope": "Prior-data-informed DEVELOPMENT order; provider-grouped, nonrandomized and order-confounded. No causal or independent model/context efficacy comparison.",
+  "failure_stop": "Known ordinary mechanical strict FAIL is retained and collection continues through all six cells. Any unknown, actual unsafe/unverified state, source drift or budget stop ends the round; no retries/resume.",
+  "planned_actor_max": 6,
+  "all_six_actor_task_sha256": [
+    "5feb5f5005dd6bd5e9a201a48bedaffbe11ef7119801bd8d88fa898fc25047b1",
+    "5feb5f5005dd6bd5e9a201a48bedaffbe11ef7119801bd8d88fa898fc25047b1",
+    "5feb5f5005dd6bd5e9a201a48bedaffbe11ef7119801bd8d88fa898fc25047b1",
+    "5feb5f5005dd6bd5e9a201a48bedaffbe11ef7119801bd8d88fa898fc25047b1",
+    "5feb5f5005dd6bd5e9a201a48bedaffbe11ef7119801bd8d88fa898fc25047b1",
+    "5feb5f5005dd6bd5e9a201a48bedaffbe11ef7119801bd8d88fa898fc25047b1"
+  ],
+  "same_task_all_cells": true,
+  "arms": {
+    "rc19": "Accepted RC19 Skill plus its own planner output",
+    "attention": "Identical RC19 context plus fixed ordinary instruction",
+    "full": "Current RC20 Skill plus its own planner output"
+  },
+  "attention_instruction": "Keep the response concise and avoid unnecessary engineering.",
+  "baseline_revision": "bd4a4d5c1c6fb9fca829e410729879d1b01f05b9",
+  "baseline_file_count": 18,
+  "baseline_git_map_sha256": "2c173faf9c86237f24245adc28f05150b9998aabde3bdc0686653ed672c43db6",
+  "baseline_git_proof_sha256": "1e689a473aee60417cd48663940d7ba62a3a05ed5618a9b22df9bbdb2ef52e98",
+  "independent_precall_planner_receipt_sha256": "1cadf795847e9bcc67d76e5d12ff4ba0683671db410c1008b6dabe432016b950",
+  "planner_identity_boundary": "Independent root CLI re-execution of each exact package confirmed output bytes and parsed plans; same planner implementation is shared, not independently reimplemented. Raw wrapper checks frozen identity without importing planner.",
+  "source_map_sha256": "2dd0009f3c4cd6341bc355c9b5b6239451471505c722fa97d916726d62a4c13c",
+  "source_file_count": 118,
+  "archived_source_and_external_audit_map_sha256": "8f9d05b232c23408be9172a57e7d55bc642d60933a39d2cd8da3afb0c13ce008",
+  "archived_source_and_external_audit_count": 130,
+  "execution_and_review_sha256": {
+    "eval-workspaces/rc20-contract-context-development-v1.py": "2fc26c6489055de33adbc528b03ec97cdbbf2aac71769a6676825a81af5f40fe",
+    "eval-workspaces/rc20-contract-context-development-v1-tests.py": "5afd20eb7b21adeb01f18025cfb42e981051ca0be071fd969994ccbf1be52bda",
+    "eval-workspaces/rc20-contract-context-development-independent-audit.py": "a5aa798f816fd47267c204ae8ebe675c57c163c19a43f8a40004917cdcf69d09",
+    "eval-workspaces/rc20-contract-context-development-independent-audit-tests.py": "16d53ce00f209d90920aa66cb137b6aead2de82e9c67a0d090f71db2045f2824",
+    "eval-workspaces/rc20-tools-thinking-development-independent-audit-v2.py": "8ef8ac21d749bf7622a55e8bc2ecf1db88b47269f848fe4746f48934ce1be7b4",
+    "eval-workspaces/rc20-tools-thinking-development-independent-audit-v2-tests.py": "b226500634487fb066a161a01a336034fb97b068138ae86cd358e273fa778e18",
+    "eval-workspaces/rc20-semantic-api-independent-audit.py": "01e19f0c85475bdee68beac826ff4c8de7da7e4a46c7a6a07e828acd6c6dd87a",
+    "eval-workspaces/rc20-contract-context-combined-independent-review.json": "f604e4fe56e42a18deb3c3c46ba76565c6fdc4376e898e91d66fb6a7786e2aec",
+    "eval-workspaces/rc20-contract-context-collector-independent-review.json": "04178070bffe8a8bc8c73759316e6422033b1f4c6be32a0c98ced0536e2c09bd",
+    "eval-workspaces/rc20-thinking-raw-auditor-v2-independent-review.json": "ce6a096b1714f3da15102e99f3e724668ccf748df3f9edb01b8ee2a32cda0ce4",
+    "eval-workspaces/rc20-contract-context-independent-audit-freeze-v1/freeze.json": "bc5d77c47c43b34f9a17acdef5880ef4c47b6475cd29b1ca61e182301fac9e70",
+    "eval-workspaces/rc20-contract-context-baseline-git-proof.json": "1e689a473aee60417cd48663940d7ba62a3a05ed5618a9b22df9bbdb2ef52e98",
+    "eval-workspaces/rc20-contract-context-development-v1.planner-preflight.json": "1cadf795847e9bcc67d76e5d12ff4ba0683671db410c1008b6dabe432016b950"
+  },
+  "context_identity": {
+    "attention": {
+      "skill_sha256": "6204675e555304a07a35af46038883ce285caec0a0fbe8b4ff8d98cde00d2ee4",
+      "plan_sha256": "2f3d9ffc1a8b5ed79af2b804f8cd30a870f8cbef16b2433fcc7c017e1a91cef2",
+      "system_sha256": "80905a6f8e2ec78c760117c922c6d99a4ef013298a998fd074e714bce6bffc6b",
+      "planner_sha256": "cfe243ec183c8d1846f31bd794195e85595dda3708319d7acbb4c8b6a12e48ca",
+      "planner_origin": "frozen-baseline-package"
+    },
+    "full": {
+      "skill_sha256": "9387e5f2eb3c9184651c49c3ee91c7449115c4d01822be4d941e4929d80a3097",
+      "plan_sha256": "2f397dc9234b02b371af56252c6945cb8d70842388bfe8ef3e926361dddf1fb2",
+      "system_sha256": "7527d7d49c0ea7ed3ba2b79755c8875e3e77ea6551e64aae5ae9f9c735a2712b",
+      "planner_sha256": "8a6a9d07037d5e3da1cf15c2a311f34ff35a85c66cd40640fd3a454fe3fc3d50",
+      "planner_origin": "current-candidate-package"
+    },
+    "rc19": {
+      "skill_sha256": "6204675e555304a07a35af46038883ce285caec0a0fbe8b4ff8d98cde00d2ee4",
+      "plan_sha256": "2f3d9ffc1a8b5ed79af2b804f8cd30a870f8cbef16b2433fcc7c017e1a91cef2",
+      "system_sha256": "66030177bf4fb70e29650301c94c54ff67edd13c958296c9cea628eb28c5488a",
+      "planner_sha256": "cfe243ec183c8d1846f31bd794195e85595dda3708319d7acbb4c8b6a12e48ca",
+      "planner_origin": "frozen-baseline-package"
+    }
+  },
+  "validation": {
+    "collector_author_synthetic_passed": 12,
+    "collector_independent_synthetic_passed": 12,
+    "collector_independent_challenges_passed": 3,
+    "wrapper_author_synthetic_passed": 21,
+    "wrapper_independent_synthetic_passed": 21,
+    "real_collector_to_wrapper_synthetic_e2e_passed": 1,
+    "e2e_independent_assertions": 1167,
+    "v2_parser_independent_tests_passed": 31,
+    "v2_parser_independent_challenges_passed": 4,
+    "canonical_gates_passed": 9,
+    "canonical_tests_passed": 762,
+    "canonical_platform_skips": 2,
+    "canonical_exact_source_ci_run": 38608508816,
+    "canonical_ci_jobs_passed": 11
+  },
+  "manual_factual_review": {
+    "status": "UNASSESSED",
+    "timing": "Terminal only; all invoked actors including strict FAIL and all native finish attempts/absences.",
+    "scope": "Check actual final source-stage HANDOFF and report claims against recorded native reads/patches/current validation/status. Completing the registered source task does not complete the consumer or whole project. Distinguish finite static validation from application execution. Preserve numbers, negation, explicit unknowns, protected consumer and actual partial state; veto false completed/validated/executed/deployed/performance claims.",
+    "rule": "Only veto or limit; never rescue mechanical FAIL, missing cells or unknown request costs. Metadata blindness is limited, not double blind.",
+    "review_tokens": null,
+    "review_seconds": null
+  },
+  "metrics": "Descriptive per-cell success, actual read bytes, tools, repeated validation/patches, reported input/output/cache/reasoning subsets, actor wall and all known/unknown charges. Missing cells are not zero, unknown cannot be ranked as savings. No efficacy CI or release inference.",
+  "application_execution": false,
+  "replay_resume_append": false,
+  "new_paid_calls_at_registration": 0,
+  "net_benefit": "NOT_ESTABLISHED",
+  "formal_qualification": "UNASSESSED",
+  "locked_holdout": "NOT_RUN",
+  "main_and_installed_skill": "RC19"
+}
