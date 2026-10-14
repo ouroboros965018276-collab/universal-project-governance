@@ -1198,11 +1198,257 @@ class ThinkingProfileTests(_ProviderFixture, unittest.TestCase):
 
 
 @unittest.skipUnless(SUPPORTED, "repository API helper tests require Python 3.10+")
+class OptInExecutionTests(_ProviderFixture, unittest.TestCase):
+    def enabled(self, **kwargs):
+        from evolution.isolated_python import EXECUTION_BACKEND
+        kwargs.setdefault('execution_backend', EXECUTION_BACKEND)
+        return self.run_actor(model='deepseek-flash', thinking='enabled', profile_id=lab.FLASH_THINKING_PROFILE, **kwargs)
+
+    def capture(self, *, rows=None, mode=None, first_rows=None):
+        from tests.test_isolated_python import FakeDocker
+        fakes = []
+        def call(argv, deadline):
+            if argv[1:3] == ['image', 'inspect']:
+                fakes.append(FakeDocker(first_rows if not fakes and first_rows is not None else rows, mode))
+                if mode == 'known-image-failure':
+                    return fakes[-1].response(stderr=b'image not available in synthetic fixture', code=1)
+            return fakes[-1](argv, deadline)
+        return call, fakes
+
+    def core_read(self, index):
+        return completion(index, [call('read-' + str(index), 'repo_read', {'paths': ['core.py', 'contract.json']})])
+
+    def core_patch(self, index, previous, text):
+        return completion(index, [call('patch-' + str(index), 'repo_patch', {'operations': [
+            {'path': 'core.py', 'old_sha256': sha(previous.encode()), 'new_text': text}]})])
+
+    def test_backend_selection_rejects_wrong_mode_or_profile_before_artifacts_key_or_http(self):
+        from evolution.isolated_python import EXECUTION_BACKEND
+        for backend, profile in ((False, lab.FLASH_THINKING_PROFILE), ('unknown', lab.FLASH_THINKING_PROFILE),
+                (EXECUTION_BACKEND, None), (EXECUTION_BACKEND, lab.THINKING_PROFILE)):
+            with self.subTest(backend=backend, profile=profile), self.assertRaises(ValueError):
+                self.run_actor(model='deepseek-flash', thinking='enabled' if profile else 'disabled',
+                    profile_id=profile, execution_backend=backend)
+            self.assertFalse(self.artifacts.exists()); self.assertFalse(self.loaded)
+            self.assertFalse(self.before); self.assertFalse(self.after)
+
+    def test_document_only_native_flow_is_not_applicable_without_any_container_call(self):
+        from evolution import isolated_python as isolated
+        steps = self.ready() + [self.final(4)]
+        with patch.object(lab, '_bounded_post', side_effect=self.scripted(steps)), \
+                patch.object(isolated, '_capture', side_effect=AssertionError('no Python checks; no Docker')):
+            result = self.enabled()
+        self.assertTrue(result['quality']['hard_pass'], result['quality'])
+        self.assertTrue(result['application_execution'])
+        self.assertIn('not whole-application', result['application_execution_scope'])
+        self.assertEqual(result['quality']['evidence_execution_backend'], isolated.EXECUTION_BACKEND)
+        self.assertEqual(result['quality']['validation']['execution']['status'], 'NOT_APPLICABLE')
+        self.assertFalse(result['execution_state_unknown']); self.assertFalse(result['execution_infrastructure_failed'])
+        self.assertFalse(result['unknown_usage']); self.assertEqual(result['usage']['total_tokens'], 60)
+        self.assertTrue(all(row['execution_backend'] == isolated.EXECUTION_BACKEND for row in self.before + self.after))
+        self.assertEqual(list((self.artifacts / 'execution').iterdir()), [])
+
+    def test_native_flow_and_final_quality_use_real_vm_bridge_and_host_assertions(self):
+        from evolution import isolated_python as isolated
+        self.semantic_task()
+        old = self.task['initial_files']['core.py']; correct = 'def transform(value):\n    return value * 2\n'
+        steps = [self.core_read(1), self.core_patch(2, old, correct), self.validate_and_status(3), self.final(4)]
+        capture, fakes = self.capture(rows=[{'kind': 'return', 'value': 10}])
+        payloads = []
+        scripted = self.scripted(steps)
+        def post(*args):
+            payloads.append(json.loads(json.dumps(args[1])))
+            return scripted(*args)
+        with patch.object(lab, '_bounded_post', side_effect=post), patch.object(isolated, '_capture', side_effect=capture):
+            result = self.enabled()
+        self.assertTrue(result['quality']['hard_pass'], result['quality'])
+        self.assertEqual(len(fakes), 2)  # Explicit repo_validate and independent final quality, same live backend.
+        self.assertTrue(all(sum(argv[1] == 'create' for argv in fake.calls) == 1 for fake in fakes))
+        self.assertEqual(result['quality']['validation']['execution']['status'], 'EXECUTED')
+        self.assertFalse(result['execution_state_unknown']); self.assertFalse(result['execution_infrastructure_failed'])
+        self.assertTrue(result['final_report_receipt_sha256'])
+        tool = next(t['function'] for t in payloads[0]['tools'] if t['function']['name'] == 'repo_validate')
+        self.assertIn('isolated CPython', tool['description'])
+        self.assertEqual(len(payloads[0]['tools']), 6)
+        for event in result['tool_events']:
+            if event['tool'] == 'repo_validate':
+                summary = event['result']['execution']
+                self.assertEqual(set(summary), isolated.EXECUTION_SUMMARY_FIELDS)
+                path = self.artifacts / 'execution' / summary['receipt_ref']
+                self.assertEqual(sha(path.read_bytes()), summary['receipt_sha256'])
+                self.assertFalse(set(summary) & {'results', 'expect', 'probes', 'args', 'kwargs'})
+        serialized = json.dumps(payloads)
+        self.assertNotIn('"invocations"', serialized); self.assertNotIn('"expect"', serialized)
+
+    def test_vm_fail_is_recoverable_without_execution_then_real_repair_passes(self):
+        from evolution import isolated_python as isolated
+        self.semantic_task(); old = self.task['initial_files']['core.py']
+        steps = [self.core_read(1), completion(2, [call('initial-validate', 'repo_validate', {})]),
+            self.core_patch(3, old, 'def transform(value):\n    return value * 2\n'),
+            self.validate_and_status(4), self.final(5)]
+        capture, fakes = self.capture(rows=[{'kind': 'return', 'value': 10}])
+        with patch.object(lab, '_bounded_post', side_effect=self.scripted(steps)), patch.object(isolated, '_capture', side_effect=capture):
+            result = self.enabled()
+        self.assertTrue(result['quality']['hard_pass'], result['quality'])
+        self.assertEqual(result['tool_events'][1]['result']['execution']['status'], 'NOT_RUN_VM_FAILED')
+        self.assertIsNone(result['tool_events'][1]['result']['execution']['receipt_ref'])
+        self.assertEqual(len(fakes), 2)
+        self.assertEqual(result['usage']['total_tokens'], 75)
+
+    def test_native_finish_cannot_bypass_final_real_backend_host_assertions(self):
+        from evolution import isolated_python as isolated
+        self.semantic_task(); old = self.task['initial_files']['core.py']
+        steps = [self.core_read(1), self.core_patch(2, old, 'def transform(value):\n    return value * 2\n'),
+            self.validate_and_status(3), self.final(4)]
+        capture, fakes = self.capture(rows=[{'kind': 'return', 'value': 9}], first_rows=[{'kind': 'return', 'value': 10}])
+        with patch.object(lab, '_bounded_post', side_effect=self.scripted(steps)), patch.object(isolated, '_capture', side_effect=capture):
+            result = self.enabled()
+        self.assertTrue(result['final_report_receipt_sha256'])
+        self.assertTrue(result['tool_events'][2]['result']['ok'])
+        self.assertFalse(result['quality']['hard_pass'])
+        self.assertFalse(result['quality']['validation']['ok'])
+        self.assertEqual(result['quality']['validation']['execution']['status'], 'EXECUTED')
+        self.assertEqual(len(fakes), 2)
+        self.assertFalse(result['unknown_usage']); self.assertEqual(result['usage']['total_tokens'], 60)
+        self.assertFalse(result['execution_state_unknown']); self.assertFalse(result['execution_infrastructure_failed'])
+
+    def test_completed_host_mismatch_can_be_repaired_without_waiving_final_contract(self):
+        from evolution import isolated_python as isolated
+        self.semantic_task(); old = self.task['initial_files']['core.py']
+        correct = 'def transform(value):\n    return value * 2\n'
+        steps = [self.core_read(1), self.core_patch(2, old, correct),
+            completion(3, [call('first-validation', 'repo_validate', {})]), self.core_read(4),
+            self.core_patch(5, correct, 'def transform(value):\n    return value + value\n'),
+            self.validate_and_status(6), self.final(7)]
+        capture, fakes = self.capture(rows=[{'kind': 'return', 'value': 10}], first_rows=[{'kind': 'return', 'value': 9}])
+        with patch.object(lab, '_bounded_post', side_effect=self.scripted(steps)), patch.object(isolated, '_capture', side_effect=capture):
+            result = self.enabled()
+        self.assertTrue(result['quality']['hard_pass'], result['quality'])
+        failed = result['tool_events'][2]['result']
+        self.assertFalse(failed['ok']); self.assertEqual(failed['execution']['status'], 'EXECUTED')
+        self.assertTrue(failed['execution']['container_removed']); self.assertFalse(failed['execution']['unknown'])
+        self.assertEqual(failed['diagnostics'], [{'code': 'behavior-contract-failed', 'path': 'core.py'}])
+        self.assertEqual(len(fakes), 3)
+
+    def test_infrastructure_unknown_stops_without_http_or_container_retry_and_preserves_known_api_cost(self):
+        from evolution import isolated_python as isolated
+        for mode in ('timeout', 'cleanup-unknown', 'known-image-failure'):
+            with self.subTest(mode=mode):
+                self.artifacts, self.before, self.after = self.base / ('infra-' + mode), [], []
+                (self.workspace / 'target.txt').write_bytes(b'old\n')
+                self.semantic_task(); old = self.task['initial_files']['core.py']
+                steps = [self.core_read(1), self.core_patch(2, old, 'def transform(value):\n    return value * 2\n'),
+                    self.validate_and_status(3)]
+                capture, fakes = self.capture(rows=[{'kind': 'return', 'value': 10}], mode=mode)
+                with patch.object(lab, '_bounded_post', side_effect=self.scripted(steps)) as post, \
+                        patch.object(isolated, '_capture', side_effect=capture):
+                    result = self.enabled()
+                self.assertEqual(post.call_count, 3); self.assertEqual(len(fakes), 1)
+                self.assertTrue(result['execution_infrastructure_failed'])
+                self.assertEqual(result['execution_state_unknown'], mode != 'known-image-failure', result['quality']['validation']['execution'])
+                self.assertFalse(result['unknown_usage']); self.assertEqual(result['usage']['total_tokens'], 45)
+                self.assertEqual(result['known_usage']['total_tokens'], 45)
+                self.assertTrue(all(row['unknown'] is False for row in self.after))
+                self.assertFalse(result['quality']['hard_pass']); self.assertIsNone(result['final_report'])
+
+    def test_execution_summary_rejects_extra_private_fields_bad_cleanup_or_wrong_snapshot(self):
+        from evolution import isolated_python as isolated
+        self.semantic_task()
+        (self.workspace / 'core.py').write_text('def transform(value):\n    return value * 2\n', encoding='utf-8')
+        broker = tool_broker.RepoBroker(self.workspace, self.task, self.git,
+            execution_backend=isolated.EXECUTION_BACKEND, execution_artifacts=self.base / 'isolated-summary', deadline=lab.time.time() + 30)
+        capture, _ = self.capture(rows=[{'kind': 'return', 'value': 10}])
+        with patch.object(isolated, '_capture', side_effect=capture):
+            result = broker.call('repo_validate', {})
+        state = broker.events[-1]['state_sha256']
+        self.assertIsNotNone(lab._execution_evidence(result, self.task, state))
+        for change in ({'private_probes': [5]}, {'container_removed': False}, {'received_snapshot_sha256': '0' * 64},
+                {'unknown': 0}, {'receipt_ref': '../private.json'}, {'platform': 'other'}, {'status': []}):
+            altered = json.loads(json.dumps(result)); altered['execution'].update(change)
+            self.assertIsNone(lab._execution_evidence(altered, self.task, state), change)
+
+    def test_unknown_api_call_does_not_start_container_during_failure_grading(self):
+        from evolution import isolated_python as isolated
+        self.semantic_task(); old = self.task['initial_files']['core.py']
+        steps = [self.core_read(1), self.core_patch(2, old, 'def transform(value):\n    return value * 2\n')]
+        scripted = self.scripted(steps)
+        def post(*args):
+            if len(self.before) <= 2:
+                return scripted(*args)
+            raise lab.TransportFailure({'phase': 'deadline-wait', 'exception_class': None,
+                'connection_attempted': None, 'http_dispatch': 'unknown'})
+        with patch.object(lab, '_bounded_post', side_effect=post) as calls, \
+                patch.object(isolated, '_capture', side_effect=AssertionError('no container after API uncertainty')) as capture:
+            result = self.enabled()
+        self.assertEqual(calls.call_count, 3); capture.assert_not_called()
+        self.assertTrue(result['unknown_usage']); self.assertIsNone(result['usage'])
+        self.assertEqual(result['known_usage']['total_tokens'], 30)
+        self.assertFalse(result['quality']['hard_pass']); self.assertIsNone(result['quality']['validation'])
+        self.assertEqual(result['quality']['final_execution_not_run_reason'], 'api-response-or-usage-uncertain')
+        self.assertTrue((self.artifacts / 'requests/03.pending.json').exists())
+
+    def test_unrecorded_patch_receipt_stops_before_new_validation_or_http_and_keeps_known_usage(self):
+        from evolution import isolated_python as isolated
+        self.semantic_task(); old = self.task['initial_files']['core.py']
+        correct = 'def transform(value):\n    return value * 2\n'
+        steps = [self.core_read(1), self.core_patch(2, old, correct)]
+        write = lab._write_new
+        def failing_receipt(path, *args, **kwargs):
+            if Path(path).parent.name == 'tool-receipts' and Path(path).name == '02.json':
+                raise OSError('synthetic tool receipt failure')
+            return write(path, *args, **kwargs)
+        with patch.object(lab, '_bounded_post', side_effect=self.scripted(steps)) as post, \
+                patch.object(lab, '_write_new', side_effect=failing_receipt), \
+                patch.object(isolated, '_capture', side_effect=AssertionError('no new validation after unrecorded write')) as capture:
+            result = self.enabled()
+        self.assertEqual(post.call_count, 2); capture.assert_not_called()
+        self.assertEqual((self.workspace / 'core.py').read_text(encoding='utf-8'), correct)
+        self.assertTrue(result['execution_state_unknown']); self.assertFalse(result['quality']['hard_pass'])
+        self.assertIsNone(result['quality']['validation'])
+        self.assertEqual(result['quality']['final_execution_not_run_reason'], 'execution-state-uncertain')
+        self.assertFalse(result['unknown_usage']); self.assertEqual(result['usage']['total_tokens'], 30)
+        self.assertTrue(all(row['unknown'] is False for row in self.after))
+        self.assertFalse(any(event['tool'] == 'repo_validate' for event in result['tool_events']))
+
+
+@unittest.skipUnless(SUPPORTED, "repository API helper tests require Python 3.10+")
 class FlashThinkingProfileTests(_ProviderFixture, unittest.TestCase):
     def enabled(self, provider="deepseek", **kwargs):
         model = lab.FLASH_THINKING_PROFILE_SETTINGS[provider]["model"]
         return self.run_actor(provider=provider, model=model, profile_id=lab.FLASH_THINKING_PROFILE,
                               thinking="enabled", **kwargs)
+
+    def test_none_backend_keeps_all24_pre_backend_request_payload_digests_and_result_fields(self):
+        # Public fixture payloads captured before the opt-in backend change.
+        # No ignored workspace, archived source or old implementation is loaded.
+        expected = {
+            ('deepseek', None): ['b6dd8419cb1419933c6acdb32a381335aed6bf64da4231219eea6c7f03c75ea8', 'c3d4f9ac774042d27b962a8c49f1871fa10ff28a7c78e5102c69584e0978e1de', '947701122b9a77deddd9d2b018c68dc638c1d1763eb66130959a0226cf8bb58f', '8cee1c094042c6a1580624d0c518b8d96d6a1879d693c7ef87fe2d50f34e4aa4'],
+            ('deepseek', lab.THINKING_PROFILE): ['ae10aac09f252ce81a7a951c10f3fef9e3d43e3b5c9f4da772bdda34fb0038c7', '23c11987baacb3935c2fa1c0342758515dbf73ec5a12e6790775b8ace3d2c5c5', '801c4aed5e48fc6fc6537ff19bce19b3ea5221c8958d86a3d759e09157544e97', 'f5bbe2882c842595b0021470d9854b5e9234b3bd7e53454e0c3c73a56b1511d5'],
+            ('mimo', None): ['2815534d970c7a6cc6b5f4de3daa4e952ca8daae7413bb9c3cfba3e624491049', '9e082724248a861477138259f8fdfb93dde4ced9c7133987d1a6e2f50d58aabe', '132d842e33904c7d86e449d22caa35c5d4ca4106a2b47e08a7b940d4aec012b2', '3e73fe1292bf56bbf591a64b9888c67dfbe857baa6e8c16bf2ff5e049bc2a0f6'],
+            ('mimo', lab.THINKING_PROFILE): ['cb796da1dcab5cfdaad20298e4a468e8c52d8374770f866ac5b14ca2b012fa30', '6600a41f57c3559a4da10bda0926704c31d106366800b6b121555c613a4cf472', '3daad4ac19982f58de63e2b811b3e695323a611508f1fce1b535b35cddf3d805', '356226eac5a53ab9e21ad0ffc183197e7d6d8c1c90745c43d09c95b2d633d6ed'],
+            ('mimo', lab.FLASH_THINKING_PROFILE): ['46f130c59f2f9326d46000e9c5e0ef6388e0b580f5ab2808e9b535260d1aceae', '1f7d5705481c899011b8f245fb9df19a4912c7df92bcd07cf1a711433ca0894f', '2121629c7d87661fac75c5e5e00b509ae9d04ec138cd277defc2a7ca520d25bc', '8ed9dc9a208f4f31d5b8699d8552aa14d1bcd561f98aaaab5a2b57b64d97b3bf']}
+        expected[('deepseek', lab.FLASH_THINKING_PROFILE)] = expected[('deepseek', lab.THINKING_PROFILE)]
+        for (provider, profile), hashes in expected.items():
+            with self.subTest(provider=provider, profile=profile):
+                self.artifacts, self.before, self.after = self.base / (provider + '-' + str(profile)), [], []
+                (self.workspace / 'target.txt').write_bytes(b'old\n')
+                settings = lab.profile_configuration(profile)['providers'][provider] if profile else None
+                steps, captured = self.ready() + [self.final(4)], []
+                def post(actual, payload, key, timeout):
+                    captured.append(sha(canonical(payload)))
+                    step = steps[len(self.before) - 1]
+                    return 200, {}, canonical(step(payload) if callable(step) else step)
+                with patch.object(lab, '_bounded_post', side_effect=post):
+                    result = self.run_actor(provider=provider, model=settings['model'] if settings else 'mock-requested-model',
+                        thinking='enabled' if profile else 'disabled', profile_id=profile, execution_backend=None)
+                self.assertEqual(captured, hashes)
+                self.assertTrue(result['quality']['hard_pass'])
+                self.assertFalse(result['application_execution'])
+                for item in [result, result['quality']] + self.before + self.after:
+                    self.assertNotIn('execution_backend', item)
+                    self.assertNotIn('execution_state_unknown', item)
+                    self.assertNotIn('execution_infrastructure_failed', item)
+                    self.assertNotIn('evidence_execution_backend', item)
 
     def test_explicit_configuration_and_currency_prices_are_independent_copies(self):
         flash = lab.profile_configuration(lab.FLASH_THINKING_PROFILE)

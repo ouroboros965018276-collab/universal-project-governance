@@ -1,4 +1,4 @@
-"""Bounded repository MCP tools; submitted source is parsed, never executed.
+"""Bounded repository MCP tools; application execution is explicit opt-in.
 
 This is a development tool profile, not an OS/container isolation claim. The
 official CLI retains its existing authentication; none is passed to Git or
@@ -305,7 +305,8 @@ def git_command(binary, root, *arguments):
 
 
 class RepoBroker:
-    def __init__(self, root, task, git_binary, *, audit_file=None, max_calls=32, deadline=None):
+    def __init__(self, root, task, git_binary, *, audit_file=None, max_calls=32, deadline=None,
+                 execution_backend=None, execution_artifacts=None):
         self.root = Path(root).absolute()
         self.task = validate_task(task)
         self.git_binary = Path(git_binary)
@@ -318,6 +319,19 @@ class RepoBroker:
         if self.audit_file and self.audit_file.exists():
             raise ValueError("broker audit already exists; no second tool process")
         self.snapshot()
+        self.execution_backend = execution_backend
+        self.execution_artifacts = None
+        self._execution_validation_count = 0
+        if execution_backend is not None:
+            from evolution.isolated_python import EXECUTION_BACKEND, reserve_execution_artifacts
+            if execution_backend != EXECUTION_BACKEND or not isinstance(execution_backend, str):
+                raise ValueError("unknown execution backend")
+            if any(check["kind"] == "python_behavior" for check in self.task["checks"]) and any(
+                    "/" in name for name in set(self.task["initial_files"]) | set(self.task["writable_files"])):
+                raise ValueError("finite CPython backend requires registered flat files")
+            self.execution_artifacts = reserve_execution_artifacts(self.root, execution_artifacts, deadline)
+        elif execution_artifacts is not None:
+            raise ValueError("execution artifacts require an explicit backend")
 
     def path(self, name):
         parts = relative(name)
@@ -366,15 +380,26 @@ class RepoBroker:
         return dict(sorted(result.items()))
 
     def validate(self):
+        if self.execution_backend is not None and self.terminal_result is not None:
+            return self.terminal_result
         failures, passed = [], 0
         diagnostics = []
         has_behavior = any(check["kind"] == "python_behavior" for check in self.task["checks"])
+        execution = None
+        if self.execution_backend is not None:
+            from evolution.isolated_python import execution_summary, validate_with_execution
+            execution_started = time.monotonic()
+            execution = execution_summary(None)
+            self._execution_validation_count += 1
         try:
             files = self.snapshot()
+            if execution is not None:
+                execution["received_snapshot_sha256"] = sha(canonical(files))
             behavior_ok = None
             for name, original in self.task["initial_files"].items():
                 if name not in self.task["writable_files"] and files[name] != sha(original.encode("utf-8")):
                     failures.append("protected-file-changed:" + name)
+            protected_changed = bool(failures)
             for check in self.task["checks"]:
                 try:
                     if check["kind"] == "document_assertions":
@@ -387,7 +412,15 @@ class RepoBroker:
                             from evolution.semantic_contract import validate_behavior
                             # Preserve raw UTF-8/CRLF for protected-file hashes.
                             sources = {name: self.path(name).read_bytes().decode("utf-8") for name in files}
-                            behavior = validate_behavior(sources, self.task["behavior_contract"])
+                            if execution is None:
+                                behavior = validate_behavior(sources, self.task["behavior_contract"])
+                            elif (protected_changed or {name: sha(text.encode("utf-8")) for name, text in sources.items()} != files):
+                                execution.update(status="INFRASTRUCTURE_FAILED", unknown=True)
+                                behavior = {"ok": False, "failures": [{"code": "behavior-contract-failed"}]}
+                            else:
+                                directory = self.execution_artifacts / ("validation-%03d" % self._execution_validation_count)
+                                behavior, execution = validate_with_execution(
+                                    sources, self.task["behavior_contract"], directory, self.deadline - time.time())
                             behavior_ok = behavior["ok"]
                             if not behavior_ok:
                                 diagnostics = _behavior_diagnostics(behavior, self.task)
@@ -416,6 +449,19 @@ class RepoBroker:
                   "checks_passed": passed, "checks_total": len(self.task["checks"]), "failures": failures}
         if has_behavior:
             result["diagnostics"] = diagnostics
+        if execution is not None:
+            from evolution.isolated_python import EXECUTION_SUITE
+            try:
+                if execution["received_snapshot_sha256"] != sha(canonical(self.snapshot())):
+                    raise ValueError("validation snapshot changed")
+            except (OSError, ValueError, UnicodeError):
+                execution.update(status="INFRASTRUCTURE_FAILED", unknown=True)
+                result.update(ok=False, checks_passed=0)
+                result["failures"].append("scope-invalid:validation-snapshot-changed")
+            result.update(suite=EXECUTION_SUITE, execution=execution)
+            execution["observed_wall_seconds"] = time.monotonic() - execution_started
+            if execution["status"] == "INFRASTRUCTURE_FAILED" or execution["unknown"]:
+                self.terminal_result = result
         return result
 
     def read_evidence_failures(self, events):
@@ -582,7 +628,15 @@ class RepoBroker:
         return result
 
 
-def tool_definitions():
+def tool_definitions(*, execution_backend=None):
+    validate_description = "Run the frozen static contract suite. Parses data/AST; never executes application code."
+    if execution_backend is not None:
+        from evolution.isolated_python import EXECUTION_BACKEND
+        if execution_backend != EXECUTION_BACKEND or not isinstance(execution_backend, str):
+            raise ValueError("unknown execution backend")
+        validate_description = ("Run the registered finite contracts: full VM structural/dependency checks, then "
+                                "fixed isolated CPython calls and host exact-type comparisons. "
+                                "This does not execute arbitrary commands or validate a complete application.")
     def definition(name, description, properties, required):
         return {"name": name, "description": description,
                 "annotations": {"readOnlyHint": name != "repo_patch",
@@ -599,7 +653,7 @@ def tool_definitions():
                        "path": {"type": "string"}, "old_sha256": {"type": ["string", "null"]},
                        "new_text": {"type": "string"}}, "required": ["path", "old_sha256", "new_text"],
                        "additionalProperties": False}}}, ["operations"]),
-        definition("repo_validate", "Run the frozen static contract suite. Parses data/AST; never executes application code.", {}, []),
+        definition("repo_validate", validate_description, {}, []),
         definition("repo_status", "Run the fixed Git porcelain status command in this repository.", {}, []),
     ]
 
@@ -607,7 +661,8 @@ def tool_definitions():
 def serve(spec_file):
     spec = json.loads(Path(spec_file).read_text(encoding="utf-8"))
     broker = RepoBroker(spec["workspace"], spec["task"], spec["git_binary"],
-                        audit_file=spec["audit_file"], max_calls=spec["max_tool_calls"], deadline=spec["deadline"])
+                        audit_file=spec["audit_file"], max_calls=spec["max_tool_calls"], deadline=spec["deadline"],
+                        execution_backend=spec.get("execution_backend"), execution_artifacts=spec.get("execution_artifacts"))
     while True:
         raw = sys.stdin.buffer.readline(MAX_TOTAL_BYTES + 1)
         if not raw:
@@ -625,7 +680,7 @@ def serve(spec_file):
         elif method == "ping":
             response["result"] = {}
         elif method == "tools/list":
-            response["result"] = {"tools": tool_definitions()}
+            response["result"] = {"tools": tool_definitions(execution_backend=broker.execution_backend)}
         elif method == "tools/call":
             params = request.get("params", {})
             result = broker.call(params.get("name"), params.get("arguments", {}))

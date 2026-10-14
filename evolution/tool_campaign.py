@@ -1,7 +1,8 @@
 """Frozen matched real-tool collection with honest cost and coverage limits.
 
-The bounded broker inspects and edits artifacts; it never executes application
-code. Multiple requested OpenAI models are not multiple provider families.
+The default broker inspects and edits artifacts without application execution.
+Finite CPython execution requires explicit selection. Multiple requested OpenAI
+models are not multiple provider families.
 Collection can establish scoped paired benefit, never formal qualification.
 """
 from __future__ import annotations
@@ -23,7 +24,7 @@ BOOTSTRAP_SEED = 19012
 BOOTSTRAP_REPETITIONS = 4000
 
 
-def build_prompt(skill, plan, task_prompt, *, terminal_report="json"):
+def build_prompt(skill, plan, task_prompt, *, terminal_report="json", execution_backend=None):
     """Preserve exact context; explicitly select the terminal transport.
 
     The default retains the legacy CLI prompt bytes. Native API callers must
@@ -47,6 +48,15 @@ def build_prompt(skill, plan, task_prompt, *, terminal_report="json"):
               "project_tool and persistent governance state are unavailable in this broker; follow the supplied governance plan and disclose the helper gap. "
               "Do not probe unregistered/hidden paths. "
               "The broker cannot execute application code. ")
+    if execution_backend is not None:
+        from .isolated_python import EXECUTION_BACKEND
+        if execution_backend != EXECUTION_BACKEND or not isinstance(execution_backend, str):
+            raise ValueError("unknown execution backend")
+        common = common.replace("The broker cannot execute application code. ",
+                                "repo_validate retains the complete finite VM structural/dependency contract and "
+                                "executes only its admitted registered Python calls in isolated CPython, with "
+                                "host exact-type expected-value checks. It cannot run arbitrary commands or "
+                                "validate a complete application. ")
     if terminal_report == "native-tool":
         common += ("Finish by calling repo_finish alone as the sole tool call in that response, with summary (string), "
                    "validation ('passed' or 'failed'), and helper_gap ('project_tool unavailable in bounded broker'). "

@@ -295,9 +295,73 @@ def _totals(receipts):
             for name in ("input_tokens", "output_tokens", "total_tokens", "cached_tokens", "reasoning_tokens")}
 
 
-def _api_quality(broker, before, final_text, native_trace, extra_failures):
+def _execution_evidence(result, task, state_sha):
+    """Only the opt-in broker's fixed public summary, never raw probe values."""
+    import math
+    from evolution.isolated_python import EXECUTION_BACKEND, EXECUTION_SUITE, EXECUTION_SUMMARY_FIELDS, IMAGE, PLATFORM
+    if not isinstance(result, dict) or result.get("suite") != EXECUTION_SUITE:
+        return None
+    behavior = any(check["kind"] == "python_behavior" for check in task["checks"])
+    if (set(result) != {"ok", "suite", "checks_passed", "checks_total", "failures", "execution"} | ({"diagnostics"} if behavior else set())
+            or type(result.get("ok")) is not bool or type(result.get("checks_total")) is not int
+            or result["checks_total"] != len(task["checks"]) or type(result.get("checks_passed")) is not int
+            or not 0 <= result["checks_passed"] <= result["checks_total"] or not isinstance(result.get("failures"), list)
+            or len(result["failures"]) != result["checks_total"] - result["checks_passed"]
+            or result["ok"] != (not result["failures"])
+            or behavior and result["ok"] and result["diagnostics"] != []):
+        return None
+    value = result.get("execution")
+    if not isinstance(value, dict) or set(value) != set(EXECUTION_SUMMARY_FIELDS) or value.get("backend") != EXECUTION_BACKEND:
+        return None
+    probes = len(task.get("behavior_contract", {}).get("probes", [])) if behavior else 0
+    if (type(value.get("status")) is not str
+            or value.get("status") not in {"NOT_APPLICABLE", "NOT_RUN_VM_FAILED", "EXECUTED", "INFRASTRUCTURE_FAILED"}
+            or type(value.get("unknown")) is not bool or type(value.get("probe_count")) is not int
+            or value["probe_count"] != probes
+            or type(value.get("observed_wall_seconds")) not in (int, float)
+            or not math.isfinite(value["observed_wall_seconds"]) or value["observed_wall_seconds"] < 0
+            or value.get("image_reference") != IMAGE or value.get("platform") != PLATFORM):
+        return None
+    def digest(item):
+        return isinstance(item, str) and re.fullmatch(r"[0-9a-f]{64}", item) is not None
+    def relative(item):
+        return (isinstance(item, str) and 0 < len(item) <= 1024 and "\\" not in item and ":" not in item
+            and re.fullmatch(r"[A-Za-z0-9_./-]+", item) is not None
+            and all(part not in {"", ".", ".."} for part in item.split("/")))
+    nullable = ("runner_sha256", "input_sha256", "output_sha256", "receipt_ref", "receipt_sha256", "container_removed")
+    if value["status"] in {"NOT_APPLICABLE", "NOT_RUN_VM_FAILED"}:
+        if (value["unknown"] is not False or value["received_snapshot_sha256"] != state_sha
+                or not digest(state_sha) or any(value[key] is not None for key in nullable)
+                or (value["status"] == "NOT_APPLICABLE") != (not behavior)):
+            return None
+    elif value["status"] == "EXECUTED":
+        if (not behavior or value["unknown"] is not False or value["container_removed"] is not True
+                or value["received_snapshot_sha256"] != state_sha or not digest(state_sha)
+                or any(not digest(value[key]) for key in ("runner_sha256", "input_sha256", "output_sha256", "receipt_sha256"))
+                or not relative(value["receipt_ref"])):
+            return None
+    else:
+        if (any(value[key] is not None and not digest(value[key]) for key in (
+                "received_snapshot_sha256", "runner_sha256", "input_sha256", "output_sha256", "receipt_sha256"))
+                or value["receipt_ref"] is not None and not relative(value["receipt_ref"])
+                or value["container_removed"] is not None and type(value["container_removed"]) is not bool):
+            return None
+    # Infrastructure summaries are not a recoverable negative result. Keep the
+    # typed status so the caller can stop even when transport is known not sent.
+    return value
+
+
+def _api_quality(broker, before, final_text, native_trace, extra_failures, execution_backend=None, failed_execution=None):
     """Same artifact contract as CLI; native API evidence has its own chain."""
-    validation = broker.validate()
+    # A failed/unknown execution is already a real result from this broker.
+    # Re-entering validation here would implicitly retry that container call.
+    validation = broker.validate() if failed_execution is None else failed_execution
+    if failed_execution is not None and (not isinstance(validation, dict)
+            or not isinstance(validation.get("failures"), list) or type(validation.get("ok")) is not bool
+            or any(not isinstance(item, str) for item in validation["failures"])):
+        return {"hard_pass": False, "task_success": 0, "required_tools_ok": False, "scope_ok": False,
+            "failures": list(extra_failures) + ["api-tool-rejected:unverifiable-execution-result"],
+            "validation": validation, "evidence_adapter": ADAPTER, "evidence_execution_backend": execution_backend}
     failures = list(validation["failures"]) + broker.read_evidence_failures(broker.events) + list(extra_failures)
     current = sha(canonical(broker.snapshot()))
     success = {event["tool"] for event in broker.events if event["result"].get("ok") is True}
@@ -326,12 +390,15 @@ def _api_quality(broker, before, final_text, native_trace, extra_failures):
             raise ValueError("final contract")
     except (ValueError, TypeError, KeyError):
         failures.append("final-validation-claim-invalid")
-    return {"hard_pass": not failures, "task_success": int(not failures), "required_tools_ok": tools_ok,
+    result = {"hard_pass": not failures, "task_success": int(not failures), "required_tools_ok": tools_ok,
             "scope_ok": not any(reason.startswith(("scope-invalid", "protected-file-changed", "api-tool-rejected")) for reason in failures),
             "failures": failures, "validation": validation, "evidence_adapter": ADAPTER}
+    if execution_backend is not None:
+        result["evidence_execution_backend"] = execution_backend
+    return result
 
 
-def _recoverable_tool_feedback(tool, arguments, result, event, task):
+def _recoverable_tool_feedback(tool, arguments, result, event, task, execution_backend=None):
     """Recognize only the broker's two bounded, non-terminal negative results.
 
     This classifies existing evidence; it does not evaluate artifacts, change
@@ -343,8 +410,17 @@ def _recoverable_tool_feedback(tool, arguments, result, event, task):
     if tool == "repo_validate" and arguments == {}:
         behavior = any(check["kind"] == "python_behavior" for check in task["checks"])
         fields = {"ok", "suite", "checks_passed", "checks_total", "failures"} | ({"diagnostics"} if behavior else set())
+        suite = "registered-static-contracts-v1"
+        if execution_backend is not None:
+            from evolution.isolated_python import EXECUTION_BACKEND, EXECUTION_SUITE
+            execution = _execution_evidence(result, task, event["state_sha256"])
+            if (execution_backend != EXECUTION_BACKEND or execution is None
+                    or execution["status"] == "INFRASTRUCTURE_FAILED"):
+                return False
+            fields.add("execution")
+            suite = EXECUTION_SUITE
         if (set(result) != fields
-                or result["suite"] != "registered-static-contracts-v1"
+                or result["suite"] != suite
                 or type(result["checks_total"]) is not int or result["checks_total"] != len(task["checks"])
                 or type(result["checks_passed"]) is not int
                 or not 0 <= result["checks_passed"] < result["checks_total"]
@@ -391,7 +467,7 @@ def _recoverable_tool_feedback(tool, arguments, result, event, task):
 
 def run_actor(provider, model, task, root, artifact_dir, git_binary, system_context, key_loader,
               max_requests=12, timeout_seconds=180, *, response_json_mode, thinking,
-              before_request=None, after_request=None, profile_id=None):
+              before_request=None, after_request=None, profile_id=None, execution_backend=None):
     """Run once on existing disk state; new actor => fresh artifact directory.
 
     before_request(metadata) reserves the outer budget before dispatch and may
@@ -402,6 +478,9 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
     model, mode and cap together; it is never selected as a fallback.
     Only the new Flash profile records the exact _bounded_post timeout argument
     and actor clock samples. These are not socket timeouts or service latency.
+    Its explicit execution_backend may opt into registered finite CPython
+    probes after the VM gate. Execution uncertainty/infra failure is reported
+    separately and never turns known API usage into unknown billing.
     repo_finish is a terminal API report, never a broker/MCP operation. Only
     its strict native arguments reach the unchanged artifact quality grader.
     requests counts bounded transport slots; per-request receipts separately
@@ -415,6 +494,10 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
         raise ValueError("timeout_seconds must be in (0,180]")
     if not isinstance(system_context, str) or not callable(key_loader):
         raise ValueError("system_context and key_loader are required")
+    if execution_backend is not None:
+        from evolution.isolated_python import EXECUTION_BACKEND
+        if type(execution_backend) is not str or execution_backend != EXECUTION_BACKEND or profile_id != FLASH_THINKING_PROFILE:
+            raise ValueError("finite CPython execution requires its explicit backend and Flash profile")
     settings, configuration = None, None
     if profile_id is None:
         if response_json_mode is not False or thinking != "disabled":
@@ -467,10 +550,16 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
         if profile_id == FLASH_THINKING_PROFILE:
             entry.update(profile_configuration_sha256=sha(canonical(configuration)),
                          deadline_telemetry_schema=DEADLINE_TELEMETRY_SCHEMA)
+        if execution_backend is not None:
+            entry.update(execution_backend=execution_backend, application_execution=True,
+                application_execution_scope="Only registered finite Python behavior probes after the unchanged VM gate; not whole-application tests, deployment or arbitrary commands. Document-only stages do not execute Python.")
         actor_pending = artifacts / "actor.pending.json"
+        backend_options = ({"execution_backend": execution_backend, "execution_artifacts": artifacts / "execution"}
+            if execution_backend is not None else {})
         broker = RepoBroker(root, task, git_binary, audit_file=artifacts / "broker.jsonl", max_calls=MAX_TOOLS,
-                            deadline=time.time() + max(0, deadline - time.perf_counter()))
-        definitions = {item["name"]: item for item in tool_definitions()}
+                            deadline=time.time() + max(0, deadline - time.perf_counter()), **backend_options)
+        definitions = {item["name"]: item for item in (tool_definitions(execution_backend=execution_backend)
+            if execution_backend is not None else tool_definitions())}
         definitions[FINISH_TOOL] = {"name": FINISH_TOOL,
             "description": "Submit the final typed report after all required repository work, current validation and status. Call alone once; this does not perform or waive any repository operation.",
             "inputSchema": copy.deepcopy(FINAL_SCHEMA)}
@@ -484,6 +573,9 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                        "matching its schema, after all required reads, edits, current validation and status. "
                        "repo_finish only submits a report; it does not perform those operations. "
                        "Do not finish with plain text, fenced JSON or a textual imitation of a tool call.")
+        if execution_backend is not None:
+            instruction = instruction.replace("Application execution and project_tool are unavailable.",
+                "repo_validate uses the unchanged finite VM gate followed by isolated CPython calls for registered behavior probes only; host assertions and confirmed cleanup are required. Document-only stages execute no Python. Whole-application tests, deployment, arbitrary commands and project_tool are unavailable.")
         manifest = {"initial_paths": sorted(task["initial_files"]),
                     "required_read_paths": sorted(task.get("required_read_paths", [])), "writable_files": sorted(task["writable_files"])}
         messages = [{"role": "system", "content": system_context + "\n\n" + instruction},
@@ -491,6 +583,7 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
         receipts, native_trace, reported_models, seen_calls, failures, seen_responses = [], [], [], set(), [], set()
         status, final_text, unknown, request_count, refusal_reason = "request-budget-exhausted", "", False, 0, None
         tool_attempts, final_report, final_report_sha = 0, None, None
+        failed_execution, execution_state_unknown, execution_infrastructure_failed = None, False, False
         for index in range(1, max_requests + 1):
             remaining = deadline - time.perf_counter()
             if remaining <= 0:
@@ -514,6 +607,8 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                 metadata.update(profile_id=profile_id, thinking=thinking, reasoning_effort_requested=settings["reasoning_effort"])
             if profile_id == FLASH_THINKING_PROFILE:
                 metadata["profile_configuration_sha256"] = entry["profile_configuration_sha256"]
+            if execution_backend is not None:
+                metadata["execution_backend"] = execution_backend
             try:
                 reservation = before_request(copy.deepcopy(metadata)) if before_request else None
                 if isinstance(reservation, dict) and "reservation_receipt_sha256" in reservation:
@@ -715,23 +810,40 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                     trace["chain_sha256"] = sha(canonical(trace))
                     native_trace.append(trace)
                     _write_new(artifacts / "tool-receipts" / ("%02d.json" % event["sequence"]), trace, key)
-                    if result.get("ok") is not True and not _recoverable_tool_feedback(name, args, result, event, task):
+                    if execution_backend is not None and name == "repo_validate":
+                        execution = _execution_evidence(result, task, event["state_sha256"])
+                        if execution is None or execution["status"] == "INFRASTRUCTURE_FAILED":
+                            failures.append("api-tool-rejected:unverified-execution")
+                            failed_execution = result
+                            execution_state_unknown = execution is None or execution["unknown"] is True
+                            execution_infrastructure_failed = True
+                            status = "execution-state-unknown-blocked" if execution_state_unknown else "execution-infrastructure-blocked"
+                            break
+                    if result.get("ok") is not True and not _recoverable_tool_feedback(name, args, result, event, task, execution_backend):
                         failures.append("api-tool-rejected:broker-denied")
                         if result.get("write_state") == "partial-or-unverified":
-                            unknown, status = True, "unknown-tool-write-blocked"
+                            if execution_backend is None:
+                                unknown = True
+                            else:
+                                execution_state_unknown = True
+                            status = "unknown-tool-write-blocked"
                         else:
                             status = "tool-contract-failed"
                         break
                     messages.append({"role": "tool", "tool_call_id": call_id, "content": canonical(result).decode("utf-8")})
                 except OSError:
-                    unknown, status = True, "unknown-tool-write-or-receipt-blocked"
+                    if execution_backend is None:
+                        unknown = True
+                    else:
+                        execution_state_unknown = True
+                    status = "unknown-tool-write-or-receipt-blocked"
                     failures.append("api-tool-rejected:unrecorded-io")
                     break
                 except (ValueError, TypeError, KeyError):
                     failures.append("api-tool-rejected:invalid-or-unrecorded-call")
                     status = "tool-contract-failed"
                     break
-            if status in {"tool-contract-failed", "completed"} or unknown:
+            if status in {"tool-contract-failed", "completed"} or unknown or execution_state_unknown or execution_infrastructure_failed:
                 break
         if unknown:
             failures.append("unknown-api-response-or-usage")
@@ -740,15 +852,40 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
         try:
             if final_report is not None and final_report["state_sha256"] != sha(canonical(broker.snapshot())):
                 failures.append("api-finish-rejected:state-changed-after-report")
-            quality = _api_quality(broker, received, final_text, native_trace, failures)
+            if execution_backend is not None and failed_execution is None and (
+                    unknown or execution_state_unknown or execution_infrastructure_failed):
+                # Uncertain API/write/receipt state is a hard stop, not
+                # permission to start a container while grading failure.
+                reason = ("api-response-or-usage-uncertain" if unknown else
+                    "execution-state-uncertain" if execution_state_unknown else "execution-infrastructure-failed")
+                quality = {"hard_pass": False, "task_success": 0, "required_tools_ok": False, "scope_ok": False,
+                    "failures": list(failures) + ["final-execution-not-run:" + reason], "validation": None,
+                    "evidence_adapter": ADAPTER, "evidence_execution_backend": execution_backend,
+                    "final_execution_not_run_reason": reason}
+            else:
+                quality = _api_quality(broker, received, final_text, native_trace, failures, execution_backend, failed_execution)
+            if execution_backend is not None and not unknown and quality["validation"] is not None:
+                execution = _execution_evidence(quality["validation"], task, sha(canonical(broker.snapshot())))
+                if execution is None or execution["status"] == "INFRASTRUCTURE_FAILED":
+                    execution_state_unknown = execution is None or execution["unknown"] is True
+                    execution_infrastructure_failed = True
+                    status = "execution-state-unknown-blocked" if execution_state_unknown else "execution-infrastructure-blocked"
+                    quality["failures"].append("api-tool-rejected:unverified-final-execution")
+                    quality.update(hard_pass=False, task_success=0)
             final_snapshot = broker.snapshot()
             if final_report is not None and final_report["state_sha256"] != sha(canonical(final_snapshot)):
                 quality["failures"].append("api-finish-rejected:state-changed-after-report")
                 quality.update(hard_pass=False, task_success=0)
         except (OSError, ValueError, UnicodeError):
-            unknown, status, final_snapshot = True, "unknown-workspace-state-blocked", None
+            if execution_backend is None:
+                unknown = True
+            else:
+                execution_state_unknown, execution_infrastructure_failed = True, True
+            status, final_snapshot = "unknown-workspace-state-blocked", None
             quality = {"hard_pass": False, "task_success": 0, "required_tools_ok": False, "scope_ok": False,
                        "failures": failures + ["scope-invalid:unverifiable-final-disk-state"], "evidence_adapter": ADAPTER}
+            if execution_backend is not None:
+                quality["evidence_execution_backend"] = execution_backend
         result = dict(entry, status=status, quality=quality, requests=request_count, usage=None if unknown else _totals(receipts),
                       known_usage=_totals(receipts), unknown_usage=unknown, model_ids_reported=reported_models,
                       wall_seconds=time.perf_counter() - started, tool_events=broker.events, api_tool_trace=native_trace,
@@ -759,6 +896,9 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                                                      "api_response_ids": [item["api_response_id"] for item in native_trace],
                                                      "finish_response_id": final_report["api_response_id"] if final_report else None,
                                                      "finish_report_sha256": final_report_sha})
+        if execution_backend is not None:
+            result.update(execution_state_unknown=execution_state_unknown,
+                          execution_infrastructure_failed=execution_infrastructure_failed)
         result = _redact(result, key)
         receipt_sha = _write_new(artifacts / "actor.result.json", result, key)
         result["receipt"]["result_file_sha256"] = receipt_sha
