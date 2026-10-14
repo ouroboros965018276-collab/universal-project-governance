@@ -73,7 +73,7 @@
       "policy_ids": [
         "EVIDENCE_AFFECTED"
       ],
-      "statement": "Locate task modules/symbols/document anchors via indexes or bounded search. Indexes route reads, never prove complete dependencies. Trace implementation/contracts/consumers/tests; widen for stale/conflicting indexes, dynamic dependencies or coverage gaps. Use existing fact recovery for interrupted/stale/contradictory state. Read budgets never prove completion."
+      "statement": "Select relevant initial reads from task paths and module/symbol/document anchors using indexes or bounded search. Defer clearly unrelated material; trace implementations/contracts/consumers/tests and expand for new or dynamic dependencies, stale/conflicting indexes or verification gaps. Recover interrupted/stale/contradictory state from project evidence. Indexes and read budgets never prove complete coverage."
     }
   ],
   "risk_model": {

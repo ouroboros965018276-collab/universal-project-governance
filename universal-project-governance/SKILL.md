@@ -29,11 +29,11 @@ Before the first edit, resolve this installed Skill and run `scripts/project_too
 
 **evidence_fidelity** — Make concrete, evidence-matched claims. Preserve technical identifiers, numbers, references, negation and unknowns when rewriting/shortening.
 
-**task_scoped_reading** — Locate task modules/symbols/document anchors via indexes or bounded search. Indexes route reads, never prove complete dependencies. Trace implementation/contracts/consumers/tests; widen for stale/conflicting indexes, dynamic dependencies or coverage gaps. Use existing fact recovery for interrupted/stale/contradictory state. Read budgets never prove completion.
+**task_scoped_reading** — Select relevant initial reads from task paths and module/symbol/document anchors using indexes or bounded search. Defer clearly unrelated material; trace implementations/contracts/consumers/tests and expand for new or dynamic dependencies, stale/conflicting indexes or verification gaps. Recover interrupted/stale/contradictory state from project evidence. Indexes and read budgets never prove complete coverage.
 
 Keep this Skill loaded; a plan is not standalone. With verified Python 3.8+, run `scripts/plan_governance.py --project-root <root> --context <context.json>` for context/binding/report health and task obligations. Windows: resolve `py -3` or its executable, never assume `python3`. Follow mode, scope guard, closures, evidence, report and handoff. Without helpers, resolve `policy-index.json` operations/domains/signals, dependencies and risk/report rules. Unknown optional profiles retain universal rules. Assess observable risk, not confidence.
 
-Batch known reads/edits and independent checks. Reuse verified actual-byte receipts or still-current reads for after-state hashes; reread for stale/missing evidence, later edits, failed checks or required inspection. Cached bytes require matching source/tool/context identities.
+Batch known relevant reads/edits and independent checks. Reuse verified actual-byte receipts or still-current reads for after-state hashes; reread for stale/missing evidence, later edits, failed checks or required inspection. Cached bytes require matching source/tool/context identities.
 
 ## State when needed
 

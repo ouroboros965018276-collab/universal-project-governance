@@ -20,7 +20,7 @@ Before the first edit, resolve this installed Skill and run `scripts/project_too
 
 Keep this Skill loaded; a plan is not standalone. With verified Python 3.8+, run `scripts/plan_governance.py --project-root <root> --context <context.json>` for context/binding/report health and task obligations. Windows: resolve `py -3` or its executable, never assume `python3`. Follow mode, scope guard, closures, evidence, report and handoff. Without helpers, resolve `policy-index.json` operations/domains/signals, dependencies and risk/report rules. Unknown optional profiles retain universal rules. Assess observable risk, not confidence.
 
-Batch known reads/edits and independent checks. Reuse verified actual-byte receipts or still-current reads for after-state hashes; reread for stale/missing evidence, later edits, failed checks or required inspection. Cached bytes require matching source/tool/context identities.
+Batch known relevant reads/edits and independent checks. Reuse verified actual-byte receipts or still-current reads for after-state hashes; reread for stale/missing evidence, later edits, failed checks or required inspection. Cached bytes require matching source/tool/context identities.
 
 ## State when needed
 

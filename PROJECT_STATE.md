@@ -12,11 +12,13 @@ Current candidate: **3.0.0-rc.20 — Task Context and Complete Change Discipline
 
 历史[原生轮次](audits/rc20-native-context.audit.json)、[API v1](audits/rc20-api-tools-v1.audit.json)、[API v2](audits/rc20-api-tools-v2-development.audit.json)、[AST 轮次](audits/rc20-prospective-api-v1.audit.json)、[语义前瞻](audits/rc20-semantic-api-v1.audit.json)、[开发 v3](audits/rc20-tools-v3-development.audit.json)、[推理开发](audits/rc20-thinking-development-v1.audit.json)与[上下文开发 v1](audits/rc20-contract-context-development-v1.audit.json)的失败、混杂和费用保持原记录；不续跑、重评或合并。评分代理现按[有限行为契约](docs/rc20-behavior-contracts.md)检查固定探针、接口、调用关系和保护字节。解释器、API 适配器及实验脚本只在仓库中使用，不随 Skill 安装；这些任务没有执行应用代码。
 
-公开文本任务现明确空值、类型转换、前缀与大小写语义，各角色投影经独立复核；原 Python 程序、行为探针和通过条件未变，公开契约及其绑定哈希更新。修正后九项工程门禁通过，769 项测试中 767 项通过、2 项平台跳过；候选核心仍为 6,433 字节。这些检查不证明任务收益。
+公开文本任务现明确空值、类型转换、前缀与大小写语义，各角色投影经独立复核；原 Python 程序、行为探针和通过条件未变，公开契约及其绑定哈希更新。下述上下文开发 v2 使用该次冻结的 6,433 字节核心；后续候选变化不重写其身份或结果。
+
+当前候选将已有按需读取指引明确为：从任务路径与模块／符号／文档锚点选择初始读取，推迟明确无关的材料；遇到依赖、索引冲突或验证缺口时扩大范围。未增加硬读取上限或新规则组。生成核心为 6,492 字节（`7022d8e6…`），当前资格身份为 `ef3bbf0c…`；旧身份保留在原实验快照。独立语义复核与九项工程门禁通过，769 项测试中 767 项通过、2 项平台跳过，检查前后源码一致（完整记录 `7cb12356…`）。这些检查不证明任务收益。
 
 最新[上下文开发 v2](audits/rc20-public-contract-context-development-v2.audit.json)已结束并独立核账：6 个实际执行结果均通过机械源端契约；代码与 HANDOFF 事实有界支持，5 份报告有界支持、1 份报告含被否决的工作区状态声明。27 个请求均保留响应，329,520 个已知报告 token，轮次执行墙时 352.969 秒，无本轮待核用量；审阅窗口与未知研究 token 另记，旧轮未知费用保持不变。
 
-本轮 RC20 在 DeepSeek 上的 token／耗时高于两组对照，在 MiMo 上较低。每格仅一次、顺序未随机，不能推断净收益。下一步检查初始读取选择，并补齐代码和文档的双向跨模型计划交接；尚未验证真实崩溃恢复。默认分支和本地安装仍为 RC19，RC20 合并、安装及 Stable 均未获本轮证据支持。
+本轮 RC20 在 DeepSeek 上的 token／耗时高于两组对照，在 MiMo 上较低。每格仅一次、顺序未随机，不能推断净收益。当前选读候选尚未实测；下一步验证代码和文档的双向跨模型计划交接，再做新的配对对照。尚未执行应用代码或验证真实崩溃恢复。默认分支和本地安装仍为 RC19，RC20 合并、安装及 Stable 均未获本轮证据支持。
 
 ## 最近一次重要发布：RC19
 
