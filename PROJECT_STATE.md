@@ -6,11 +6,11 @@
 
 RC20 将表达相关性、完整改动、事实保真和按需读取纳入[规范源](governance-src/model/governance-model.json)。生成核心 **6,737 字节**，保持四组指引、16 项政策、8 项 Hot Path、3 项默认规则及 18 个交付文件。规范身份 `0049006f…`、资格身份 `f78112d7…`。五个上游的版本、许可、适配与排除由[来源清单](third_party/upstream-sources.json)维护，见[鸣谢](THIRD_PARTY_NOTICES.md)。
 
-最新工程提交 `aee5e90d5d194c93e50847fb94f4eb448cb32e48` 的 [11 项 CI](https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/38804695139) 全部通过。Linux Python 3.11 完整测试为 **1,064 通过、2 跳过**。此前本地单元入口在 900 秒内未完成，首次 CI 也因新测试 fixture 的初始化隔离缺口失败；原结果保留，后续仅修正测试生命周期。[工程审计](audits/rc20-cli-known-failure-engineering.audit.json)是当时的冻结快照，CI 待确认文字不代表当前状态。
+既有提交 `42bd463e0d6471edd01534c6a527ac46299639d7` 的 [11 项 CI](https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/38810139587) 全部通过；最近完整测试为 **1,064 通过、2 跳过**。[安全扫描优化](audits/rc20-security-scan-pruning.audit.json)另有 8 项通过、1 项宿主跳过，实际仓库扫描入口约 4.86 秒，尚待自身提交的 CI；不得混用验证身份。此前本地完整测试超时和首轮 CI fixture 失败保留在[工程审计](audits/rc20-cli-known-failure-engineering.audit.json)，其 CI 待确认文字是历史快照。
 
 [新的公开 API 校准](audits/rc20-managed-api-public-calibration-v4.audit.json)首次原始独审 **RAW_PASS**：6 次已记录请求、**10,309 个报告 token**，197 个原始文件和 94 项源码前后相同。MiMo 的公开修复通过注册测试与包导入；DeepSeek 短探针未完成任务，保持未完成判定。本轮未触发迟到结算分支，不能据此声称该分支已被真实验证，也不能作为模型效率比较或 UPG 净收益证据。
 
-[新后端对照](audits/rc20-fixed-backend-controls-v4.audit.json)因 Windows 进程审计参数表示不匹配而在首次执行尝试停止，首次原始审计 FAIL；正在以新身份修正入口。原生 CLI 的新校准、全新任务的公平配对、跨 Agent 接手、来源消融和独立未暴露验证仍待完成。各轮禁止续跑、重审或修补原证据。
+[后端 v5](audits/rc20-fixed-backend-controls-v5.audit.json)完成三族固定对照：3 个参考解通过 40 个测试 ID；26 个负例返回检查失败，其中 **6 个触及输出限制，不能算作目标语义缺陷的有效检出**。首次独审和独立字节保全已完成。[v4 首次失败](audits/rc20-fixed-backend-controls-v4.audit.json)仍保留。原生 CLI v7 已关闭，首次独审在收据重建阶段 FAIL；源码诊断发现规范化配置与构造器输入不兼容，尚未重新取得合格校准。新六类任务正在修正独立源码审阅指出的评测缺陷。公平配对、跨 Agent 接手、来源消融和独立未暴露验证仍待完成；各轮禁止续跑、重审或修补原证据。
 
 现有开发证据不支持晋升：已曝光 [v6](audits/rc20-paired-real-python-development-v6.audit.json) 的完整组质量为 **5/8**，两组对照各 **7/8**；较低成本包含提前失败，净收益 FAIL。[v11](audits/rc20-stdlib-project-development-v11.audit.json) 留有一次用量未知，首次原始独审 FAIL。[原生 CLI v6](audits/rc20-native-cli-public-calibration-v6.audit.json) 的首次失败同样保留。其他历史数字、成本、VETO 和源码身份只在各自 [audits/](audits/) 中查阅，不绑定当前候选。
 
