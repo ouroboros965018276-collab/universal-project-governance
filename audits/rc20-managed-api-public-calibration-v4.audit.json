@@ -1,0 +1,85 @@
+{
+  "release": "3.0.0-rc.20",
+  "observed_at_utc": "2026-10-15T21:25:41.548871+00:00",
+  "default_branch_and_local_install": "RC19 unchanged",
+  "net_benefit": "NOT_ESTABLISHED",
+  "formal_qualification": "UNASSESSED",
+  "locked_trial": "NOT_RUN",
+  "schema": "rc20-public-managed-api-calibration-audit-v1",
+  "status": "RAW_PASS_PUBLIC_CALIBRATION_ONLY",
+  "source": {
+    "public_commit": "cd60465f3177f141d0118f0ea0d4e997c9e133b2",
+    "runtime_API_sha256": "6a2f3ddb2b606069640c550dbca6ecfa396245dc1f9a792693982ec216d49637",
+    "protocol_sha256": "66397938ad9cf6915492480853413d1ff20f870653e7a324390f8769c031a048",
+    "independent_source_closure_sha256": "c470e3cc4577ea0397aebcc1e0af582278b550dd806a6c449683bd7df9ba7352"
+  },
+  "actual_owner": {
+    "closed": true,
+    "process_exit_code": 0,
+    "external_wall_seconds_before_receipt": 29.281000000002678,
+    "terminal_sha256": "126fb6466ed78c656e80628be6c14427a17080f2187213ee7bd0ac5ce8ffc0a9",
+    "CLOSED_sha256": "b0d13c248ec96144b0397525f0c31702ab2173d603a094819ea31037764af080"
+  },
+  "first_audit": {
+    "process_exit_code": 0,
+    "status": "RAW_PASS",
+    "report_sha256": "b83ca477cf2bd50df0df372a55fbd01d82cccb48bf0d777982b0ddde6ef2a948",
+    "raw_files": 197,
+    "source_files": 94,
+    "raw_exact": true,
+    "source_exact": true,
+    "seal_confirmed": true,
+    "failure_tails_present": false,
+    "external_audit_seconds": 1.75
+  },
+  "usage": {
+    "accounting_complete": true,
+    "known_reported_tokens": 10309,
+    "raw_integrity": true,
+    "request_slots": 6
+  },
+  "actors": [
+    {
+      "actor_id": "public-ds-probe",
+      "current_checks_passed": null,
+      "current_checks_total": 2,
+      "current_validation": "NOT_RUN",
+      "independent_task_pass": false,
+      "raw_integrity": true,
+      "scope": "registered positive unittest IDs plus package imports only; not efficacy",
+      "settled_unfinished": false
+    },
+    {
+      "actor_id": "public-mimo-repair",
+      "current_checks_passed": 2,
+      "current_checks_total": 2,
+      "current_validation": "EXECUTED",
+      "independent_task_pass": true,
+      "raw_integrity": true,
+      "scope": "registered positive unittest IDs plus package imports only; not efficacy",
+      "settled_unfinished": false
+    }
+  ],
+  "requested_models": {
+    "public-ds-probe": "deepseek-v4-pro",
+    "public-mimo-repair": "mimo-v2.6-flash"
+  },
+  "limits": [
+    "Fixed public transport/accounting calibration, not a randomized provider or UPG effectiveness comparison.",
+    "DeepSeek short3s actor task remains false and NOT_RUN; MiMo passes registered unittest and package-import checks only.",
+    "settled_unfinished is false for both actors: actual late-response accounting tail was NOT exercised by this sample.",
+    "Completed native usage is not a provider invoice or proof of every provider-internal attempt; monetary totals and research/manual/all-in cost remain unknown.",
+    "All old unknown-usage requests and frozen first failures remain; this new known ledger never releases their fences."
+  ],
+  "preservation": {
+    "zip_sha256": "ddb2e5214ddd9bc08feaa45a80a656b6fa7aab2457e551b1026a46a7c920e600",
+    "entries": 386,
+    "regular_files": 323,
+    "directories": 63,
+    "manifest_sha256": "6f76f87af2157e33b72bb7115040487f79a0ce8e728b06bca3287414199ace55",
+    "independent_byte_check_sha256": "0065b120ce278ed2e31bf2aee8b4629eeae0583db791d533475eae449c3e5c81",
+    "first_preservation_preparation_failure": "Original source/binary single-link preparation failed on Git.exe nlink2 before payload/ZIP; original failure retained. Corrected inventory only permits existing binary hardlinks; no binary enters ZIP and archived raw/source rules remain strict.",
+    "first_independent_byte_entry_failure": "Initial checker expected binary rows rather than the path-to-SHA object. Original TypeError retained; one corrected byte-only entry passed, without semantic reassessment."
+  },
+  "replay_or_reaudit": false
+}
