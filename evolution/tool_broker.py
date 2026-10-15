@@ -305,10 +305,14 @@ def git_command(binary, root, *arguments):
 
 
 class RepoBroker:
+    @staticmethod
+    def _validate_task(task):
+        return validate_task(task)
+
     def __init__(self, root, task, git_binary, *, audit_file=None, max_calls=32, deadline=None,
                  execution_backend=None, execution_artifacts=None):
         self.root = Path(root).absolute()
-        self.task = validate_task(task)
+        self.task = self._validate_task(task)
         self.git_binary = Path(git_binary)
         self.audit_file = Path(audit_file) if audit_file else None
         self.max_calls, self.deadline = max_calls, deadline

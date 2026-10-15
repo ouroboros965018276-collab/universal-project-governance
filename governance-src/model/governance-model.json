@@ -66,7 +66,7 @@
       "policy_ids": [
         "EVIDENCE_AFFECTED"
       ],
-      "statement": "Make concrete, evidence-matched claims. Preserve technical identifiers, numbers, references, negation and unknowns when rewriting/shortening."
+      "statement": "Check claims against current code, contracts and validation. Preserve identifiers, input domains, numbers, references, negation and unknowns when rewriting/shortening; never present omitted facts or unverified completion as established."
     },
     {
       "id": "task_scoped_reading",

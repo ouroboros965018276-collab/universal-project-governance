@@ -1,0 +1,102 @@
+{
+  "schema_version": 1,
+  "observed_at_utc": "2026-10-15T10:38:08.873389+00:00",
+  "status": "ENGINEERING_PASS_NOT_EMPIRICAL_QUALIFICATION",
+  "version": "3.0.0-rc.20",
+  "identity": {
+    "observed_at_utc": "2026-10-15T10:38:08.873389+00:00",
+    "model_sha256": "d2d1d071fec2e0130811c64e5179de314c2a92c87c196d2a51ff433ebebb3bd0",
+    "source_sha256": "0049006fc61f4cbc4c028a63e1667044a2856339916fc1c623b5bfd4a7915561",
+    "skill_bytes": 6737,
+    "skill_sha256": "b97a3b100d407a78f372f0c9f01b3fea8afc4d2f5901f47624e4aac3ec5a2f74",
+    "runtime_files": 18,
+    "runtime_map_sha256": "8965a883554321ec1883e625f0636e63b9f537f1779e61ede14ec8c2be2c7fcc",
+    "qualification_fingerprint": "sha256:f78112d7a757424c557731c36ea4249844a1ef03a8c458ff940e234c307e5664",
+    "freeze_file_sha256": "4486bd20a0724d7f3ec987b02442ff90b7c16f242517de388fb2baf566c928f0",
+    "guidance_groups": 4,
+    "hot_path": 8,
+    "evidence_fidelity_change": "Replace existing statement with current-code/contract/validation cross-check and explicit input-domain/fact preservation; +95 Skill bytes, no policy/risk/workflow closure change. V6 old results not rebound."
+  },
+  "implementation_sha256": {
+    "evolution/provider_tools.py": "02250f4ed616374c62a87570438f83056d7f678589f804cd2beb866a86a22a97",
+    "evolution/tool_broker.py": "c05288fd45042415035b45c8c393a79ac4a099222b5234be002e67c6aee2203a",
+    "evolution/engineering_broker.py": "329fe3b18e301761923e234425d92e9645c923f5f667da23e919836b8babf478",
+    "evolution/project_executor.py": "fe1934c2f241cbd535f72d78168046165871ca7be63fbc5e6851243011b6998b",
+    "tests/test_engineering_provider.py": "9df6b9d0d740f8cb048b185077cf65bfb0195e4d7243ed7fcbb86960f721ce47",
+    "tests/test_engineering_broker.py": "8e27220ced015aa11bb951d93babc5c3ea0d10a8d2438a95ed30dd75217c1973",
+    "tests/test_project_executor.py": "aa36fb4d91d1310d36a46399b5b2fa27ca4c74e50b9377b400cae20bedbf86b5"
+  },
+  "scope": "Distinct opt-in registered stdlib Python project backend, closed broker profile and same API loop; package/core claim refinement. Default wire/finite VM remain. Not model efficacy.",
+  "engineering": {
+    "gates_passed": 9,
+    "unit_tests_discovered": 889,
+    "unit_tests_passed": 887,
+    "unit_tests_skipped": 2,
+    "unit_process_seconds": 146.17590200000268,
+    "sources_before_after_exact": 198,
+    "log_sha256": {
+      "eval-workspaces/rc20-project-profile-engineering-v1/01.log": "e56cb455cbf44f486010a866d303bf9e7409b70f021f504a6d20c77cd3d06534",
+      "eval-workspaces/rc20-project-profile-engineering-v1/02.log": "7597053ba940286b057c48961cbfac02eeb1a12805b7ab202f7ce8047e81ef3a",
+      "eval-workspaces/rc20-project-profile-engineering-v1/03.log": "ec5801c4bec168955effa9548529b64eccd5b0c56dd996c034aeba8b1e59ccc7",
+      "eval-workspaces/rc20-project-profile-engineering-v1/04.log": "3720d7be5cd5e5f9bf410803e170be864182ff9309bd2b7c5a834ad2bd0a71a3",
+      "eval-workspaces/rc20-project-profile-engineering-v1/05.log": "a4c1a328317c28ea58b77dc3b4abced03bacb734744005bc9ff534458e4c449f",
+      "eval-workspaces/rc20-project-profile-engineering-v1/06.log": "95e91dcd5ba00a18d9328866a2da00fcacd935eb3e178f565f1ff76948958e05",
+      "eval-workspaces/rc20-project-profile-engineering-v1/07.log": "2339bf5734b8f6b029e227d36604222ea62f86b35bd998767e6a70c473f40486",
+      "eval-workspaces/rc20-project-profile-engineering-v1/08.log": "20dc2c27178aef4e2c63c0148086c141969c23596242628d1ca10c7864eb3db1",
+      "eval-workspaces/rc20-project-profile-engineering-v1/09.log": "d8c15df2ed7140823f000f78cbc532b76a0129fd2635fb60e159d7c633fa234c",
+      "eval-workspaces/rc20-project-profile-engineering-v1/10.log": "b7519fa0d9c6638e78085803a2c980912fa61698ac389291b8e2a41e410c102f"
+    }
+  },
+  "independent_static": {
+    "receipt_sha256": "ab7d7ec73301cd9638b41c97868ffb4a8a7588936b8c92c08cdcfa926b53379d",
+    "status": "NO_REMAINING_MUST_FIX",
+    "limits": "Static review only, no test/Docker/model execution."
+  },
+  "public_human_backend": {
+    "protocol_sha256": "42d38951d7972dee8e0277a907b66d1af312ae603a44f8456b5dea1ffc15590d",
+    "registered_cases": 4,
+    "actual_container_executions": 3,
+    "pure_admission_rejections": 1,
+    "reference_checks_passed": 3,
+    "reference_unittest_ids_passed": 4,
+    "reference_includes": "Package imports, real unittest, CLI stdout/stderr and input/output files.",
+    "known_mutants_rejected": [
+      "constant return",
+      "zero tests",
+      "deleted export (pure admission)"
+    ],
+    "container_and_scratch_cleanup_confirmed": true,
+    "unknown_observed": 0,
+    "first_independent_audit": "PASS_70_CHECKS",
+    "raw_inputs_before_after_exact": 136,
+    "model_inference_dispatches": 0,
+    "v1_pre_actual_failure_retained": true
+  },
+  "invariants": [
+    "New project profile requires fixed Pro/Flash model profile, official endpoints and durable reservation/account receipts before key load.",
+    "One schema correction only after durably recorded whole-batch non-execution; scope, partial-write, raw/cleanup unknown stop and retain pending.",
+    "Existing files require current read/verified write; final current-snapshot raw receipts are re-read without execution.",
+    "Unittest IDs/counts and skip/expected-failure/fake-PASS checks are bounded engineering checks, not defense against malicious same-process/same-UID Python.",
+    "No old result replay/rescore; old finite-language failures and pending charges remain."
+  ],
+  "evidence_refs": {
+    "eval-workspaces/rc20-engineering-source-adoption-v1/prepared.json": "46b9d59d3515cb1d175d4331220442e8584a0dcf35ac242838c709e78709af66",
+    "eval-workspaces/rc20-engineering-source-adoption-v1/applied.json": "5dcf78214e10bc277d6c6649bfc35e09a71fbfeef13e0a2c16afb1b2a0137fee",
+    "eval-workspaces/rc20-engineering-source-adoption-v1/generated.json": "bae3d3761327082379b8c82f68da4b9300b39aad1aaa60fb80d1df8385f81943",
+    "eval-workspaces/rc20-engineering-source-adoption-v1/preparation-notes.json": "9599756767443c8901bc9234de78fe470e0c99439a22dd235ff157f43c9f2b1d",
+    "eval-workspaces/rc20-engineering-static-review-20261015T102142Z-9fdde693/review.receipt.json": "ab7d7ec73301cd9638b41c97868ffb4a8a7588936b8c92c08cdcfa926b53379d",
+    "eval-workspaces/rc20-engineering-composed-pure-v1/result.json": "9cd025b36f4990ae6a2240e1bde927852736918835ba28516bfd5c74023c597f",
+    "eval-workspaces/rc20-project-profile-engineering-v1/result.json": "0d69abebcca2bdc7c6989af9b6bb0475324b3beb14abe1fe4c1bc8037829c74f",
+    "eval-workspaces/rc20-project-backend-public-smoke-v2/protocol.public.json": "42d38951d7972dee8e0277a907b66d1af312ae603a44f8456b5dea1ffc15590d",
+    "eval-workspaces/rc20-project-backend-public-smoke-v2/terminal.json": "1dbbbe20a273b3e5b5bf98ced9ed3731dada6ca4b81bd45dc773301fc50c3472",
+    "eval-workspaces/rc20-project-backend-public-smoke-v1/preparation-failure.json": "b86a9121be889b8f27ac8336fdb75b2c9795f4758fceaf9d6edf958d0d4c5b80",
+    "eval-workspaces/rc20-project-smoke-independent-audit-20261015T1027Z-f19c1467b8314a41a59a32a1c140eabd/first-audit.json": "f9579307443c08f0b220e2b3ff79897069f16de4352d5597a909aa9225384bc4",
+    "eval-workspaces/rc20-engineering-api-candidate-13c80f7b007d4a8ba124edb13fc0d6ef/package-tests/manifest.json": "5d404255cc6b04bb5f12436155cb48f49983cc9a1effcad518b08d4dc1cebd60"
+  },
+  "model_token_time_net_benefit": "NOT_ESTABLISHED_FOR_THIS_IDENTITY",
+  "independent_efficacy": "NOT_ESTABLISHED",
+  "formal_qualification": "UNASSESSED",
+  "locked_holdout": "NOT_RUN",
+  "default_branch_and_installed_skill": "3.0.0-rc.19",
+  "release_gate": "BLOCKED_PENDING_QUALITY_CONSTRAINED_NET_BENEFIT_AND_INDEPENDENT_VALIDATION"
+}

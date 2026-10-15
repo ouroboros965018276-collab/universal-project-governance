@@ -3,12 +3,15 @@
 No credential environment/configuration/CLI interface exists. Callers inject a
 key loader and per-request budget callbacks. This file never imports a vault.
 Only API-native evidence is emitted; it is not a Codex CLI/MCP event adapter.
+The explicit stdlib project profile is resolved from one sealed internal
+broker module; its current-receipt quality hook never implicitly executes tests.
 """
 from __future__ import annotations
 
 import builtins
 import copy
 import http.client
+import importlib
 import json
 import os
 from pathlib import Path
@@ -29,6 +32,10 @@ from evolution.tool_broker import SEMANTIC_DIAGNOSTIC_CODES, SEMANTIC_DIAGNOSTIC
 from evolution.tool_codex import FINAL_SCHEMA
 
 ADAPTER = "official-chat-api-bounded-repo-broker-v5"
+ENGINEERING_PROFILE = "stdlib-python-project-v1"
+ENGINEERING_BACKEND = "docker-cpython-project-v1"
+ENGINEERING_ADAPTER = "official-chat-api-registered-project-v1"
+ENGINEERING_SCHEMA_CORRECTIONS = 1
 ENDPOINTS = {"deepseek": ("api.deepseek.com", "/chat/completions"),
              "mimo": ("api.xiaomimimo.com", "/v1/chat/completions")}
 MAX_RESPONSE_BYTES = 2097152
@@ -547,9 +554,54 @@ def _model_tool_content(tool, arguments, result, event, task, execution_backend,
     return canonical(view).decode("utf-8")
 
 
+def _engineering_batch(calls, definitions, seen_calls, key, task):
+    """Pure prevalidation: no broker calls, disk writes, callbacks or replay.
+
+    Only argument JSON/schema failures receive bounded correction feedback.
+    Envelope, unknown tool, credential, duplicate identity and scope failures
+    are never converted into a schema correction authorization.
+    """
+    parsed, rejected, identifiers = [], [], set()
+    for item in calls:
+        if (not isinstance(item, dict) or set(item) != {"id", "type", "function"}
+                or item.get("type") != "function" or not isinstance(item.get("id"), str)
+                or not item["id"].strip() or item["id"] in seen_calls or item["id"] in identifiers
+                or not isinstance(item.get("function"), dict)
+                or set(item["function"]) != {"name", "arguments"}):
+            raise ValueError("engineering tool envelope")
+        name, arguments = item["function"]["name"], item["function"]["arguments"]
+        if name not in definitions or not isinstance(arguments, str) or key in arguments:
+            raise ValueError("engineering tool or credential")
+        identifiers.add(item["id"])
+        try:
+            args = normalize("json", arguments)
+        except (ValueError, TypeError, UnicodeError, RecursionError):
+            args = None
+            rejected.append(item["id"])
+        else:
+            if key in canonical(args).decode("utf-8"):
+                raise ValueError("engineering credential in decoded arguments")
+            # A schema error must not conceal a later protected/outside path.
+            # These are pure membership checks; no broker operation is run.
+            if isinstance(args, dict) and name == "repo_read" and isinstance(args.get("paths"), list):
+                registered = set(task["initial_files"]) | set(task["writable_files"])
+                if any(isinstance(path, str) and path not in registered for path in args["paths"]):
+                    raise ValueError("engineering read scope denied")
+            if isinstance(args, dict) and name == "repo_patch" and isinstance(args.get("operations"), list):
+                if any(isinstance(operation, dict) and isinstance(operation.get("path"), str)
+                        and operation["path"] not in task["writable_files"] for operation in args["operations"]):
+                    raise ValueError("engineering write scope denied")
+            if not _schema(args, definitions[name]["inputSchema"]):
+                rejected.append(item["id"])
+        parsed.append({"call_id": item["id"], "tool": name,
+                       "arguments_utf8_sha256": sha(arguments.encode("utf-8"))})
+    return parsed, rejected
+
+
 def run_actor(provider, model, task, root, artifact_dir, git_binary, system_context, key_loader,
               max_requests=12, timeout_seconds=180, *, response_json_mode, thinking,
-              before_request=None, after_request=None, profile_id=None, execution_backend=None, connect_retry_policy=None, tool_feedback_policy=None):
+              before_request=None, after_request=None, profile_id=None, execution_backend=None, connect_retry_policy=None, tool_feedback_policy=None,
+              broker_profile_id=None):
     """Run once on existing disk state; new actor => fresh artifact directory.
 
     before_request(metadata) reserves the outer budget before dispatch and may
@@ -569,6 +621,12 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
     record connection attempts and HTTP non-dispatch/uncertainty. Only the
     explicit disabled Flash or Pro/Flash profile may enable one proven connect-only retry,
     acknowledged by the outer ledger, within the original slot/wall budgets.
+    broker_profile_id=stdlib-python-project-v1 selects a distinct engineering
+    identity, fixed Pro/Flash model profile, explicit project execution backend
+    and mandatory durable-budget callback contract. It permits one argument-
+    schema correction after a durably recorded whole-batch non-execution;
+    scope/envelope refusals, unknown writes/execution or missing receipts stop.
+    The default and finite-VM profiles do not use that correction policy.
     """
     if provider not in ENDPOINTS or not isinstance(model, str) or not model.strip():
         raise ValueError("allowlisted provider and explicit model are required")
@@ -578,6 +636,19 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
         raise ValueError("timeout_seconds must be in (0,180]")
     if not isinstance(system_context, str) or not callable(key_loader):
         raise ValueError("system_context and key_loader are required")
+    engineering = None
+    adapter_identity = ADAPTER
+    if broker_profile_id is not None:
+        if (type(broker_profile_id) is not str or broker_profile_id != ENGINEERING_PROFILE
+                or execution_backend != ENGINEERING_BACKEND
+                or profile_id != DEEPSEEK_PRO_FLASH_DISABLED_PROFILE
+                or not callable(before_request) or not callable(after_request)
+                or tool_feedback_policy is not None):
+            raise ValueError("engineering requires its fixed profile/backend, durable callbacks and no VM language feedback")
+        engineering = importlib.import_module("evolution.engineering_broker")
+        if engineering.PROFILE_ID != ENGINEERING_PROFILE or engineering.BACKEND_ID != ENGINEERING_BACKEND:
+            raise ValueError("engineering module identity mismatch")
+        adapter_identity = ENGINEERING_ADAPTER
     if tool_feedback_policy is not None and (type(tool_feedback_policy) is not str
             or tool_feedback_policy != PUBLIC_LANGUAGE_FEEDBACK_POLICY
             or execution_backend != "docker-cpython-finite-v1"):
@@ -586,7 +657,7 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
             or profile_id not in (FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE)
             or not callable(before_request) or not callable(after_request)):
         raise ValueError("connect retry requires explicit disabled profile and durable budget callbacks")
-    if execution_backend is not None:
+    if execution_backend is not None and engineering is None:
         from evolution.isolated_python import EXECUTION_BACKEND
         if type(execution_backend) is not str or execution_backend != EXECUTION_BACKEND or profile_id not in {FLASH_THINKING_PROFILE, FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE}:
             raise ValueError("finite CPython execution requires its explicit backend and supported profile")
@@ -601,14 +672,15 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
         if (response_json_mode is not False or thinking != settings["thinking"] or model != settings["model"]):
             raise ValueError("explicit thinking profile/provider/model/mode mismatch")
         output_cap = settings["output_cap"]
-    task = copy.deepcopy(validate_task(task))
+    task = copy.deepcopy(engineering.validate_task(task) if engineering else validate_task(task))
     root, artifacts = Path(root).resolve(), Path(artifact_dir).resolve()
     if artifacts == root or root in artifacts.parents:
         raise ValueError("artifacts must be outside the registered repository")
     artifacts.mkdir(parents=True, exist_ok=True)
     lock = artifacts / "actor.lock"
     try:
-        _write_new(lock, {"adapter": ADAPTER, "provider": provider})
+        _write_new(lock, dict({"adapter": adapter_identity, "provider": provider},
+            **({"broker_profile_id": broker_profile_id, "execution_backend": execution_backend} if engineering else {})))
     except FileExistsError:
         raise ActorFence("existing actor lock; no replay") from None
     key = ""
@@ -620,7 +692,8 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
         input_identity = sha(canonical(task))
         # The caller must explicitly derive a stage-two task from received disk.
         # The actor never blesses drift by changing its input task.
-        preliminary = RepoBroker(root, task, git_binary, max_calls=MAX_TOOLS)
+        preliminary = (engineering.create_broker(root, task, git_binary, max_calls=MAX_TOOLS,
+            execution_artifacts=None) if engineering else RepoBroker(root, task, git_binary, max_calls=MAX_TOOLS))
         received = preliminary.snapshot()
         expected_received = {name: sha(text.encode("utf-8")) for name, text in task["initial_files"].items()}
         if received != expected_received:
@@ -631,7 +704,7 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
             observed_text[name] = text
             if text != task["initial_files"][name]:
                 raise ValueError("workspace differs from exact input task; no dispatch")
-        entry = {"adapter": ADAPTER, "provider": provider, "model_requested": model, "task_id": task["id"],
+        entry = {"adapter": adapter_identity, "provider": provider, "model_requested": model, "task_id": task["id"],
                  "input_task_sha256": input_identity, "effective_task_sha256": sha(canonical(task)),
                  "received_state_sha256": sha(canonical(received)), "system_context_sha256": sha(system_context.encode("utf-8")),
                  "thinking": thinking, "response_json_mode": response_json_mode,
@@ -645,6 +718,10 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
         if execution_backend is not None:
             entry.update(execution_backend=execution_backend, application_execution=True,
                 application_execution_scope="Only registered finite Python behavior probes after the unchanged VM gate; not whole-application tests, deployment or arbitrary commands. Document-only stages do not execute Python.")
+        if engineering:
+            entry.update(broker_profile_id=broker_profile_id,
+                application_execution_scope="Registered multi-module stdlib Python project commands in the explicit isolated backend; no arbitrary shell, dependency installation, deployment or project_tool lifecycle.",
+                schema_correction_limit=ENGINEERING_SCHEMA_CORRECTIONS)
         if tool_feedback_policy is not None:
             entry["tool_feedback_policy"] = tool_feedback_policy
         if profile_id in {FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE}:
@@ -652,10 +729,12 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
         actor_pending = artifacts / "actor.pending.json"
         backend_options = ({"execution_backend": execution_backend, "execution_artifacts": artifacts / "execution"}
             if execution_backend is not None else {})
-        broker = RepoBroker(root, task, git_binary, audit_file=artifacts / "broker.jsonl", max_calls=MAX_TOOLS,
-                            deadline=time.time() + max(0, deadline - time.perf_counter()), **backend_options)
-        definitions = {item["name"]: item for item in (tool_definitions(execution_backend=execution_backend)
-            if execution_backend is not None else tool_definitions())}
+        broker = (engineering.create_broker(root, task, git_binary, audit_file=artifacts / "broker.jsonl", max_calls=MAX_TOOLS,
+                    deadline=time.time() + max(0, deadline-time.perf_counter()), execution_artifacts=artifacts/"execution")
+            if engineering else RepoBroker(root, task, git_binary, audit_file=artifacts / "broker.jsonl", max_calls=MAX_TOOLS,
+                            deadline=time.time() + max(0, deadline - time.perf_counter()), **backend_options))
+        definitions = {item["name"]: item for item in (engineering.tool_definitions() if engineering else
+            tool_definitions(execution_backend=execution_backend) if execution_backend is not None else tool_definitions())}
         definitions[FINISH_TOOL] = {"name": FINISH_TOOL,
             "description": "Submit the final typed report after all required repository work, current validation and status. Call alone once; this does not perform or waive any repository operation.",
             "inputSchema": copy.deepcopy(FINAL_SCHEMA)}
@@ -669,7 +748,9 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                        "matching its schema, after all required reads, edits, current validation and status. "
                        "repo_finish only submits a report; it does not perform those operations. "
                        "Do not finish with plain text, fenced JSON or a textual imitation of a tool call.")
-        if execution_backend is not None:
+        if engineering:
+            instruction = engineering.public_instruction()
+        elif execution_backend is not None:
             instruction = instruction.replace("Application execution and project_tool are unavailable.",
                 "repo_validate uses the unchanged finite VM gate followed by isolated CPython calls for registered behavior probes only; host assertions and confirmed cleanup are required. Document-only stages execute no Python. Whole-application tests, deployment, arbitrary commands and project_tool are unavailable.")
         manifest = {"initial_paths": sorted(task["initial_files"]),
@@ -681,6 +762,7 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
         tool_attempts, final_report, final_report_sha = 0, None, None
         failed_execution, execution_state_unknown, execution_infrastructure_failed = None, False, False
         connect_retries, next_retry_parent = 0, None
+        schema_rejections, schema_rejection_receipts = 0, []
         for index in range(1, max_requests + 1):
             remaining = deadline - time.perf_counter()
             if remaining <= 0:
@@ -699,7 +781,9 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
             request_id = uuid.uuid4().hex
             metadata = {"request_id": request_id, "request_index": index, "provider": provider, "model_requested": model,
                         "input_utf8_bytes": len(canonical(payload)), "request_payload_sha256": sha(canonical(payload)),
-                        "output_cap": output_cap, "input_task_sha256": input_identity, "adapter": ADAPTER}
+                        "output_cap": output_cap, "input_task_sha256": input_identity, "adapter": adapter_identity}
+            if engineering:
+                metadata["broker_profile_id"] = broker_profile_id
             if settings is not None:
                 metadata.update(profile_id=profile_id, thinking=thinking, reasoning_effort_requested=settings["reasoning_effort"])
             if profile_id in {FLASH_THINKING_PROFILE, FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE}:
@@ -713,6 +797,10 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                 next_retry_parent = None
             try:
                 reservation = before_request(copy.deepcopy(metadata)) if before_request else None
+                if engineering and (not isinstance(reservation, dict)
+                        or not isinstance(reservation.get("reservation_receipt_sha256"), str)
+                        or not re.fullmatch(r"[0-9a-f]{64}", reservation["reservation_receipt_sha256"])):
+                    raise ValueError("engineering requires immutable durable reservation receipt")
                 if isinstance(reservation, dict) and "reservation_receipt_sha256" in reservation:
                     reservation_sha = reservation["reservation_receipt_sha256"]
                     if not isinstance(reservation_sha, str) or not re.fullmatch(r"[0-9a-f]{64}", reservation_sha):
@@ -777,9 +865,12 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                     decode_failure = _transport("response-decode", error, True, "response_received")
                     raw = {"unparsed_response": body.decode("utf-8", errors="replace")}
                 transport["phase"] = "response-persist"
-                response_sha = _write_new(artifacts / "requests" / ("%02d.response.json" % index),
-                                          {"http_status": code, "body_sha256": sha(body), "body_bytes": len(body), "response": raw,
-                                           "request_id_header": next((value for name, value in headers.items() if name.casefold() in {"x-request-id", "request-id"}), None)}, key)
+                response_record = {"http_status": code, "body_sha256": sha(body), "body_bytes": len(body), "response": raw,
+                    "request_id_header": next((value for name, value in headers.items() if name.casefold() in {"x-request-id", "request-id"}), None)}
+                if engineering:
+                    response_record.update(adapter=adapter_identity, broker_profile_id=broker_profile_id,
+                        execution_backend=execution_backend, request_id=request_id)
+                response_sha = _write_new(artifacts / "requests" / ("%02d.response.json" % index), response_record, key)
                 if decode_failure is not None:
                     raise TransportFailure(decode_failure)
                 usage = _usage(raw.get("usage")) if isinstance(raw, dict) else None
@@ -878,6 +969,42 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                 failures.append("api-tool-rejected:finish-reason")
                 status = "tool-contract-failed"
                 break
+            if engineering:
+                try:
+                    batch, rejected = _engineering_batch(calls, definitions, seen_calls, key, task)
+                    if rejected:
+                        schema_rejections += 1
+                        state = sha(canonical(broker.snapshot()))
+                        rejection = dict(metadata, status="NOT_EXECUTED_SCHEMA_REJECTED", batch_executed=False,
+                            state_sha256=state, calls=batch, rejected_call_ids=rejected,
+                            response_artifact_sha256=response_sha, request_receipt_sha256=outcome_sha,
+                            schema_rejection_sequence=schema_rejections,
+                            correction_permitted=schema_rejections <= ENGINEERING_SCHEMA_CORRECTIONS)
+                        receipt_sha = _write_new(artifacts / "schema-rejections" / ("%02d.json" % index), rejection, key)
+                        schema_rejection_receipts.append({"request_index": index, "sha256": receipt_sha})
+                        seen_calls.update(item["call_id"] for item in batch)
+                        if schema_rejections > ENGINEERING_SCHEMA_CORRECTIONS:
+                            failures.append("api-tool-rejected:schema-correction-budget")
+                            status = "tool-contract-failed"
+                            break
+                        for item in batch:
+                            content = {"ok": False, "status": "NOT_EXECUTED_SCHEMA_REJECTED",
+                                "batch_executed": False, "rejected": item["call_id"] in rejected,
+                                "correction_permitted": True, "use_new_call_ids": True,
+                                "remaining_schema_corrections": ENGINEERING_SCHEMA_CORRECTIONS-schema_rejections,
+                                "inputSchema": definitions[item["tool"]]["inputSchema"]}
+                            messages.append({"role": "tool", "tool_call_id": item["call_id"],
+                                             "content": canonical(content).decode("utf-8")})
+                        continue
+                except OSError:
+                    execution_state_unknown, execution_infrastructure_failed = True, True
+                    failures.append("api-tool-rejected:unrecorded-schema-rejection")
+                    status = "execution-state-unknown-blocked"
+                    break
+                except (ValueError, TypeError, KeyError):
+                    failures.append("api-tool-rejected:invalid-engineering-batch")
+                    status = "tool-contract-failed"
+                    break
             for call in calls:
                 try:
                     function = call["function"]
@@ -897,7 +1024,7 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                         if not call_id.strip() or _redact(arguments, key) != arguments or _redact(args, key) != args:
                             raise ValueError("terminal report identity or redaction would change original arguments")
                         state_sha = sha(canonical(broker.snapshot()))
-                        report = {"adapter": ADAPTER, "kind": "api-native-terminal-report-v1",
+                        report = {"adapter": adapter_identity, "kind": "api-native-terminal-report-v1",
                             "api_response_id": raw["id"], "api_model": raw["model"], "request_id": request_id,
                             "request_index": index, "tool_call_id": call_id, "tool": FINISH_TOOL,
                             "response_artifact_sha256": response_sha, "request_receipt_sha256": outcome_sha,
@@ -906,6 +1033,8 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                             "state_sha256": state_sha, "broker_event_count": len(broker.events),
                             "last_broker_chain_sha256": native_trace[-1]["chain_sha256"] if native_trace else None,
                             "api_tool_attempt_sequence": tool_attempts, "grading_performed_here": False}
+                        if engineering:
+                            report.update(broker_profile_id=broker_profile_id, execution_backend=execution_backend)
                         final_report_sha = _write_new(artifacts / "report-receipt.json", report, key)
                         final_report, final_text, status = report, arguments, "completed"
                         break
@@ -918,18 +1047,38 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                              "response_artifact_sha256": response_sha,
                              "previous_chain_sha256": native_trace[-1]["chain_sha256"] if native_trace else None}
                     trace["chain_sha256"] = sha(canonical(trace))
+                    if engineering:
+                        trace.update(adapter=adapter_identity, broker_profile_id=broker_profile_id,
+                                     execution_backend=execution_backend)
+                        trace["chain_sha256"] = sha(canonical({k:v for k,v in trace.items() if k != "chain_sha256"}))
                     native_trace.append(trace)
                     _write_new(artifacts / "tool-receipts" / ("%02d.json" % event["sequence"]), trace, key)
+                    if engineering:
+                        try:
+                            current = sha(canonical(broker.snapshot()))
+                        except (OSError, ValueError, UnicodeError):
+                            current = None
+                        if current is None or event.get("state_sha256") != current:
+                            failures.append("api-tool-rejected:unverified-current-event-state")
+                            execution_state_unknown, execution_infrastructure_failed = True, True
+                            status = "execution-state-unknown-blocked"
+                            break
+                    known_engineering_failure = False
                     if execution_backend is not None and name == "repo_validate":
-                        execution = _execution_evidence(result, task, event["state_sha256"])
-                        if execution is None or execution["status"] == "INFRASTRUCTURE_FAILED":
+                        execution = (engineering.validate_execution_result(result, task, event["state_sha256"])
+                            if engineering else _execution_evidence(result, task, event["state_sha256"]))
+                        invalid_execution = (not isinstance(execution, dict) or execution.get("status") != "EXECUTED"
+                            or execution.get("unknown") is not False) if engineering else (execution is None or execution["status"] == "INFRASTRUCTURE_FAILED")
+                        if invalid_execution:
                             failures.append("api-tool-rejected:unverified-execution")
                             failed_execution = result
-                            execution_state_unknown = execution is None or execution["unknown"] is True
+                            execution_state_unknown = (not isinstance(execution, dict) or execution.get("unknown") is not False) if engineering else (execution is None or execution["unknown"] is True)
                             execution_infrastructure_failed = True
                             status = "execution-state-unknown-blocked" if execution_state_unknown else "execution-infrastructure-blocked"
                             break
-                    if result.get("ok") is not True and not _recoverable_tool_feedback(name, args, result, event, task, execution_backend):
+                        known_engineering_failure = engineering is not None and result.get("ok") is False
+                    if result.get("ok") is not True and not (known_engineering_failure if engineering else
+                            _recoverable_tool_feedback(name, args, result, event, task, execution_backend)):
                         failures.append("api-tool-rejected:broker-denied")
                         if result.get("write_state") == "partial-or-unverified":
                             if execution_backend is None:
@@ -940,7 +1089,7 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                         else:
                             status = "tool-contract-failed"
                         break
-                    messages.append({"role": "tool", "tool_call_id": call_id, "content": _model_tool_content(name, args, result, event, task, execution_backend, tool_feedback_policy)})
+                    messages.append({"role": "tool", "tool_call_id": call_id, "content": canonical(result).decode("utf-8") if engineering else _model_tool_content(name, args, result, event, task, execution_backend, tool_feedback_policy)})
                 except OSError:
                     if execution_backend is None:
                         unknown = True
@@ -962,7 +1111,7 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
         try:
             if final_report is not None and final_report["state_sha256"] != sha(canonical(broker.snapshot())):
                 failures.append("api-finish-rejected:state-changed-after-report")
-            if execution_backend is not None and failed_execution is None and (
+            if execution_backend is not None and (engineering or failed_execution is None) and (
                     unknown or execution_state_unknown or execution_infrastructure_failed):
                 # Uncertain API/write/receipt state is a hard stop, not
                 # permission to start a container while grading failure.
@@ -970,14 +1119,30 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                     "execution-state-uncertain" if execution_state_unknown else "execution-infrastructure-failed")
                 quality = {"hard_pass": False, "task_success": 0, "required_tools_ok": False, "scope_ok": False,
                     "failures": list(failures) + ["final-execution-not-run:" + reason], "validation": None,
-                    "evidence_adapter": ADAPTER, "evidence_execution_backend": execution_backend,
+                    "evidence_adapter": adapter_identity, "evidence_execution_backend": execution_backend,
                     "final_execution_not_run_reason": reason}
             else:
-                quality = _api_quality(broker, received, final_text, native_trace, failures, execution_backend, failed_execution)
-            if execution_backend is not None and not unknown and quality["validation"] is not None:
-                execution = _execution_evidence(quality["validation"], task, sha(canonical(broker.snapshot())))
-                if execution is None or execution["status"] == "INFRASTRUCTURE_FAILED":
-                    execution_state_unknown = execution is None or execution["unknown"] is True
+                quality = (engineering.quality_from_current_receipts(broker, received, final_text, native_trace, failures)
+                    if engineering else _api_quality(broker, received, final_text, native_trace, failures, execution_backend, failed_execution))
+            if engineering:
+                # The pure final grader may discover missing/tampered raw
+                # execution receipts. Promote its typed fence without another
+                # validation/executor call or changing known API accounting.
+                final_receipt_unknown = quality.get("execution_state_unknown") is True
+                final_receipt_infrastructure_failed = quality.get("execution_infrastructure_failed") is True
+                execution_state_unknown = execution_state_unknown or final_receipt_unknown
+                execution_infrastructure_failed = execution_infrastructure_failed or final_receipt_infrastructure_failed
+                if final_receipt_unknown or final_receipt_infrastructure_failed:
+                    status = "execution-state-unknown-blocked" if execution_state_unknown else "execution-infrastructure-blocked"
+                    quality.update(hard_pass=False, task_success=0, required_tools_ok=False)
+            if execution_backend is not None and not unknown and quality["validation"] is not None and not (
+                    engineering and (execution_state_unknown or execution_infrastructure_failed)):
+                execution = (engineering.validate_execution_result(quality["validation"], task, sha(canonical(broker.snapshot())))
+                    if engineering else _execution_evidence(quality["validation"], task, sha(canonical(broker.snapshot()))))
+                invalid_execution = (not isinstance(execution, dict) or execution.get("status") != "EXECUTED"
+                    or execution.get("unknown") is not False) if engineering else (execution is None or execution["status"] == "INFRASTRUCTURE_FAILED")
+                if invalid_execution:
+                    execution_state_unknown = (not isinstance(execution, dict) or execution.get("unknown") is not False) if engineering else (execution is None or execution["unknown"] is True)
                     execution_infrastructure_failed = True
                     status = "execution-state-unknown-blocked" if execution_state_unknown else "execution-infrastructure-blocked"
                     quality["failures"].append("api-tool-rejected:unverified-final-execution")
@@ -993,7 +1158,7 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                 execution_state_unknown, execution_infrastructure_failed = True, True
             status, final_snapshot = "unknown-workspace-state-blocked", None
             quality = {"hard_pass": False, "task_success": 0, "required_tools_ok": False, "scope_ok": False,
-                       "failures": failures + ["scope-invalid:unverifiable-final-disk-state"], "evidence_adapter": ADAPTER}
+                       "failures": failures + ["scope-invalid:unverifiable-final-disk-state"], "evidence_adapter": adapter_identity}
             if execution_backend is not None:
                 quality["evidence_execution_backend"] = execution_backend
         result = dict(entry, status=status, quality=quality, requests=request_count, usage=None if unknown else _totals(receipts),
@@ -1002,17 +1167,23 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                       tool_attempts=tool_attempts, final_report=final_report, final_report_receipt_sha256=final_report_sha,
                       final_state_snapshot=final_snapshot, final_state_sha256=sha(canonical(final_snapshot)) if final_snapshot is not None else None,
                       refusal_reason=refusal_reason,
-                      final_text=final_text, receipt={"artifact_directory": str(artifacts), "adapter": ADAPTER,
+                      final_text=final_text, receipt={"artifact_directory": str(artifacts), "adapter": adapter_identity,
                                                      "api_response_ids": [item["api_response_id"] for item in native_trace],
                                                      "finish_response_id": final_report["api_response_id"] if final_report else None,
                                                      "finish_report_sha256": final_report_sha})
+        if engineering:
+            result.update(broker_profile_id=broker_profile_id, schema_rejections=schema_rejections,
+                          schema_rejection_receipts=schema_rejection_receipts)
+            result["receipt"].update(broker_profile_id=broker_profile_id, execution_backend=execution_backend)
+            result["quality"].update(evidence_adapter=adapter_identity,
+                evidence_broker_profile_id=broker_profile_id, evidence_execution_backend=execution_backend)
         if execution_backend is not None:
             result.update(execution_state_unknown=execution_state_unknown,
                           execution_infrastructure_failed=execution_infrastructure_failed)
         result = _redact(result, key)
         receipt_sha = _write_new(artifacts / "actor.result.json", result, key)
         result["receipt"]["result_file_sha256"] = receipt_sha
-        if not unknown and actor_pending.exists():
+        if not unknown and not (engineering and (execution_state_unknown or execution_infrastructure_failed)) and actor_pending.exists():
             actor_pending.unlink()
         return result
     finally:

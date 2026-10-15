@@ -27,7 +27,7 @@ Before the first edit, resolve this installed Skill and run `scripts/project_too
 
 **complete_change** — Keep contracts/safety/error handling; resolve affected consumers/tests and obsolete paths. Change edge/error returns/exceptions only as required by the authorized goal. Minimize needless work, not diff size. Priority: user intent; correctness/safety/truth; contracts/structure; maintainability/readability; cost.
 
-**evidence_fidelity** — Make concrete, evidence-matched claims. Preserve technical identifiers, numbers, references, negation and unknowns when rewriting/shortening.
+**evidence_fidelity** — Check claims against current code, contracts and validation. Preserve identifiers, input domains, numbers, references, negation and unknowns when rewriting/shortening; never present omitted facts or unverified completion as established.
 
 **task_scoped_reading** — Honor required reads; select relevant paths/anchors via indexes or bounded search before batching. Listings/links alone are not read obligations. Trace implementations/contracts/consumers/tests; expand for dependencies, failures, stale/conflicting evidence or coverage gaps. Defer unrelated material. Recover interrupted/stale/contradictory state from project evidence. Indexes/labels/read budgets never prove coverage; unknowns stay unknown.
 
