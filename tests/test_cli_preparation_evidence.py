@@ -231,6 +231,7 @@ class PreparationEvidenceTests(unittest.TestCase):
         self.assertEqual((self.git_calls, self.model_calls), (1, 1))
         self.assertFalse((self.directory() / 'preparation').exists())
 
+    @unittest.skipUnless(legacy.SUPPORTED, 'repository engine requires Python3.10+')
     def test_completed_cache_binds_new_preparation_raw_and_retains_known_usage_on_drift(self):
         fixture = legacy.CliProjectCandidateTests('test_whole_mock_cli_turn_preserves_tombstones_cost_receipt_and_cache_without_reexecution')
         fixture.setUp()
