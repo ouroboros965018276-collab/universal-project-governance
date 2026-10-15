@@ -1,0 +1,230 @@
+{
+  "study_id": "upg-rc20-stdlib-project-development-v11",
+  "status": "REGISTERED_DEVELOPMENT_NOT_EFFICACY",
+  "registered_at": "2026-10-15T16:26:19.104570+00:00",
+  "protocol_sha256": "e1416bb7cfdf522b95afe4c36a07d58d1e1dd4eab264fb71912812a4fd573aa6",
+  "source_closure_sha256": "8eec3d1542afb06f9ac53c462da323fdc07741258a7bb145c74e0edf796d6c62",
+  "source_files": 154,
+  "prepared_receipt_sha256": "88276ae8f7365f762540bdb56fd5ce0a178716a569952628ec2ec7edf2fb6b7a",
+  "maintained_source_commit": "d5f38ed29d0e47337b9f412ae1f3ffd56b05985c",
+  "bindings": {
+    "adapter_source_sha256": "bba3a34620a8061bcafd2b27d6db57f88ace64541502ecee1132c4ba59f7c8b4",
+    "aggregate_sha256": "0049006fc61f4cbc4c028a63e1667044a2856339916fc1c623b5bfd4a7915561",
+    "auditor_source_sha256": "5e00b298ab2822576a71bc62251fcb49851d1ef30d4c0d5f82a1071cc2fb86f4",
+    "base_broker_source_sha256": "217015a2943fba2647232cb487708bcd386fe847e0d01c96a6eceb57fdeec508",
+    "broker_source_sha256": "0d5a593970941fb3483581c2f3e38d8b87589b46d89814a327c91cfad72e6cf8",
+    "collector_source_sha256": "778c650fa128caaeb1fde7752abc950cbfa8a519217d339ccde2d6156a5c23d5",
+    "controlled_stop_policy": "confirmed-first-patch-tail-local-stop-v1",
+    "executor_source_sha256": "530e587a9c3c9ddea17a39d7f889bd2097240a18a62d4751628cbb5f07540e69",
+    "factory_artifact_sha256": "94fddb06bf6a15f2b66fa7c6a9f81518b9802296317bca416531ecd130d0030f",
+    "factory_source_sha256": "fe2c1f3949b9f25a5310691cb07f7fb867f58ca9c5b728e2958906be3acb3fd1",
+    "git_commit": "d5f38ed29d0e47337b9f412ae1f3ffd56b05985c",
+    "host_identity_sha256": "e3a2fa7162ed1054180179f0d00f2e7f4e251f44c990064d6311b366b7c69357",
+    "ledger_source_sha256": "eaf8fae04d3423ac89b63a2adccb7cf60cc404ee24ccef20f0f36a01f18acd51",
+    "manual_helper_sha256": "6a3cf854f9862e31b4356c2501d22ef786f77c86235c7b2f967d941cbe7ea7e2",
+    "manual_rubric_sha256": "916a64dbb7107831009639cf1a6146e8a52a44e18664e819531b4bb1aa4d1b85",
+    "model_sha256": "d2d1d071fec2e0130811c64e5179de314c2a92c87c196d2a51ff433ebebb3bd0",
+    "qualification_id": "sha256:f78112d7a757424c557731c36ea4249844a1ef03a8c458ff940e234c307e5664",
+    "runtime_map_sha256": "8965a883554321ec1883e625f0636e63b9f537f1779e61ede14ec8c2be2c7fcc",
+    "skill_sha256": "b97a3b100d407a78f372f0c9f01b3fea8afc4d2f5901f47624e4aac3ec5a2f74",
+    "source_closure_sha256": "8eec3d1542afb06f9ac53c462da323fdc07741258a7bb145c74e0edf796d6c62"
+  },
+  "arms": [
+    "rc19",
+    "attention",
+    "full"
+  ],
+  "providers": [
+    "deepseek",
+    "mimo"
+  ],
+  "counts": {
+    "actor_roles": 66,
+    "cases": 9,
+    "known_tool_cutpoint_cases": 1,
+    "planned_handoff_cases": 1,
+    "single_cases": 7,
+    "theoretical_request_slots": 792,
+    "workflows": 54
+  },
+  "actor_caps": {
+    "output_tokens": 8192,
+    "requests": 12,
+    "seconds": 180,
+    "tools": 32
+  },
+  "chain_caps": {
+    "dual": {
+      "requests": 24,
+      "seconds": 480,
+      "tools": 64
+    },
+    "single": {
+      "requests": 12,
+      "seconds": 240,
+      "tools": 32
+    }
+  },
+  "round_caps": {
+    "actors": 66,
+    "deepseek_USD": "20",
+    "known_reported_tokens_soft": 8000000,
+    "mimo_CNY": "20",
+    "mimo_USD": "3",
+    "ordinary_failure_stop_limit": null,
+    "request_slots": 1000,
+    "round_seconds_soft": 14400
+  },
+  "profile_configuration_sha256": "db21a61c86bb3398f9b9568cdb290482407115dfc1ac0be3c21b8fb62ac8ced6",
+  "connect_retry_policy": "confirmed-pre-http-connect-once-v1",
+  "tool_feedback_policy": null,
+  "project_tool_available": false,
+  "scope": "Same exposed nine-case public DEVELOPMENT population; all prior v8/v9/v10 exposures retained. No fresh holdout, continuation or closed-round regrade.",
+  "engineering_reference": "audits/rc20-provider-index-engineering.audit.json",
+  "engineering_evidence": {
+    "gates": 9,
+    "discovered": 943,
+    "passed": 941,
+    "skipped": 2,
+    "source_files": 226,
+    "exact_ci_run": 38764515975,
+    "ci_jobs": 11,
+    "ci_conclusion": "success"
+  },
+  "preparation": {
+    "directory": "eval-workspaces/rc20-v11-registration-v2",
+    "actual_calls": 0,
+    "new_planner_processes": 0,
+    "retained_historical_planner_processes": 22,
+    "changes": "New API accepts exact optional ordinal index without changing arguments/raw messages or default profiles; independent auditor matches envelope. Factory dependency pin follows this API identity with all function ASTs unchanged. Confirmed pre-HTTP connect retry at most once per actor, separate durable reservation inside original caps, no HTTP/unknown retry. Manual helper accepts absent zero-event journal only under bound first RAW_PASS proof. Same quality/rubric/analysis, runtime36/context33/factory preserved.",
+    "source_evidence": [
+      {
+        "ref": "eval-workspaces/rc20-v10-independent-review-20261015-59ed1b/first-findings.receipt.json",
+        "sha256": "964bb54125cf035ffd515324566f799b58c0dfc070bc41e7c0abc8a41ee95b60"
+      },
+      {
+        "ref": "eval-workspaces/rc20-v10-independent-review-20261015-59ed1b/window-orphan-reproduction.json",
+        "sha256": "6f59f9edac397970122ee6da1f1aae163dd0ca0885483f666292191a8fe49d0f"
+      },
+      {
+        "ref": "eval-workspaces/rc20-v10-independent-closure-v2-20261015-4d0c2cb6/closure.receipt.json",
+        "sha256": "5a1d0ed8abd09a22815d3cd6b2e882c9b9ecbd975ca43208dd639b0eee250e19"
+      },
+      {
+        "ref": "eval-workspaces/rc20-v10-orphan-closure-v2-20261015T143554Z-90e32c37ce57424db8380169a1e8dbae/red-orphan-v2-01.receipt.json",
+        "sha256": "78d0933899f1e5f90865525b40ba7fa9b67306ec8c8790e9bf31ee4f6fc09c76"
+      },
+      {
+        "ref": "eval-workspaces/rc20-v10-orphan-closure-v2-20261015T143554Z-90e32c37ce57424db8380169a1e8dbae/green-orphan-v2-02.receipt.json",
+        "sha256": "ea585e3c2633d6483451b7c2b8a992e10000884a3a3b82334aceebe16ac9ba2b"
+      },
+      {
+        "ref": "eval-workspaces/rc20-v10-orphan-closure-v2-20261015T143554Z-90e32c37ce57424db8380169a1e8dbae/green-legacy-v2-03.receipt.json",
+        "sha256": "b899f9e5ec1ef8713926b4db8824461427778bc605d5c3f63ff221dcdf463e96"
+      },
+      {
+        "ref": "eval-workspaces/rc20-v10-ledger-refusal-producer-v2-20261015T140933Z-cb63f2dac74b451f82608e74c951ba4e/test-evidence.json",
+        "sha256": "f4e080a5fbce4edff11219d4948f5b80d757d021a5e5bd2f46869fdcc99bcb0d"
+      },
+      {
+        "ref": "eval-workspaces/rc20-cutpoint-receiver-boundary-20261015T142017Z-845b6f6457c147d08c9b88b8997b8c2f/source-bound-test-evidence.json",
+        "sha256": "3a6eb0a71697f27c1fc72976b9fed97c0c7f55a93152f837c368c9e4187d8f29"
+      },
+      {
+        "ref": "eval-workspaces/rc20-cutpoint-receiver-boundary-20261015T142017Z-845b6f6457c147d08c9b88b8997b8c2f/function-ast-diff.json",
+        "sha256": "f709ad1b003d377180f6c0b461e7800c6ffe48a567d68e87835d531420877641"
+      },
+      {
+        "ref": "eval-workspaces/rc20-runtime-failure-engineering-v1/result.json",
+        "sha256": "2d32ea1098b51ea27d2d524b23391cf0a0df2af567afb91b11f26e03d71c5b7e"
+      },
+      {
+        "ref": "audits/rc20-runtime-failure-engineering.audit.json",
+        "sha256": "787faa4f43ce5f4328e48feeb6a50680b051a899c8eb5e9af20c6e6a5e68acb0"
+      },
+      {
+        "ref": "eval-workspaces/rc20-v9-source-preparation-v1/ci.json",
+        "sha256": "8639c14b27e2d272d4d66fb95b259b80d821b710b77720ab5f47d588ff787688"
+      },
+      {
+        "ref": "eval-workspaces/rc20-v9-closed-publication-v1/ci.json",
+        "sha256": "b37df4e710dc8556363e50604496218cd0deb4149a28a65887a0c6a1ca816cd2"
+      },
+      {
+        "ref": "audits/rc20-provider-index-engineering.audit.json",
+        "sha256": "495b421273edf84ec6e888ef77cc157a2aaacc1ac15b8b50842767060a108dae"
+      },
+      {
+        "ref": "eval-workspaces/rc20-provider-index-engineering-v1/result.json",
+        "sha256": "23e97c333ae6eb097c23774fc2578a9460e6e20452e5400b08cbe3e08d362e1b"
+      },
+      {
+        "ref": "eval-workspaces/rc20-provider-index-publication-v1/ci.json",
+        "sha256": "04370491030d7988f1631e2b488f8f79c28f476a5eeef5dc363bbc87aa33e179"
+      },
+      {
+        "ref": "eval-workspaces/rc20-c11-binding-independent-review-20261015T155903Z-655679496c2149a993b6ee2022dd1d2e/first-findings.receipt.json",
+        "sha256": "1ec3495e19fb2c51dd1ac6b1588e555aea64bcbe06f2dc209a2a9ed5d2a41c2a"
+      },
+      {
+        "ref": "eval-workspaces/rc20-c11-safeconnect-independent-review-20261015T153712Z-09ec0214807d4d64aac9ca13725a5534/first-findings.receipt.json",
+        "sha256": "2756f36d92db05de16191f9e41911dbb93db488d0b26ed7d0a7e3379f49bd78d"
+      },
+      {
+        "ref": "eval-workspaces/rc20-c11-helper-independent-root-review-v1/first-review.receipt.json",
+        "sha256": "4412e4bb86ad1849b18ae511e33c1bb6eebbabc03038ba0d8314402cc0269f3e"
+      },
+      {
+        "ref": "eval-workspaces/rc20-c11-manual-helper-v3-20261015T152157Z-4304172ea68c4d708040e0b6937112cf/candidate-manifest-v1.json",
+        "sha256": "1b3cd8b2afb02c9b3ed9c7f9867ef6202b9359a0e6aca009cea2c1cbe41724c7"
+      },
+      {
+        "ref": "eval-workspaces/rc20-v10-preservation-independent-check-71d771844ab146c585aa241e9061d621/preservation.receipt.json",
+        "sha256": "fdd2167f98777b119d5809488d5101229d89a52cd9e5e0d7efce0825c92d88c6"
+      },
+      {
+        "ref": "eval-workspaces/rc20-c11-safeconnect-index-revision-20261015-3c90605b/v10-source-context-reuse.json",
+        "sha256": "d66e0dca91258d3dc1f1180b7f9d0cd1142832e36e9e068844d1b09b768491dc"
+      },
+      {
+        "ref": "eval-workspaces/rc20-c11-factory-pin-independent-review-20261015T162413Z-10c8d9b2628f4793acbda6bf41c5a73a/first-findings.receipt.json",
+        "sha256": "e8ece03ca53585a875e085375a234ac43cb07f7b133e7d899e9819975478d1bf"
+      },
+      {
+        "ref": "eval-workspaces/rc20-c11-factory-pin-revision-v3-20261016-67d71d42/real-source-admission.receipt.json",
+        "sha256": "bbebb3f6ab44aeb596d5edffca3a506c4884ea0577c477ceb78ad915cccc7159"
+      },
+      {
+        "ref": "eval-workspaces/rc20-c11-factory-pin-revision-v3-20261016-67d71d42/actor66-signature.receipt.json",
+        "sha256": "90704cce5eb5408ba4402d94a0fa4f5ebd2dadad618db8b90645410e8f78b3d8"
+      },
+      {
+        "ref": "eval-workspaces/rc20-v11-registration-v1/first-failure-observation.json",
+        "sha256": "89d91e1bf201371fe4d1315576e9225126a0829bd31c1e6438daf6b2e8585e6d"
+      }
+    ],
+    "ci_receipt": {
+      "ref": "eval-workspaces/rc20-provider-index-publication-v1/ci.json",
+      "sha256": "04370491030d7988f1631e2b488f8f79c28f476a5eeef5dc363bbc87aa33e179"
+    },
+    "cost_scope": "Declared historical preparation and new assembly components measured separately; remaining manual/research/all-in costs unknown."
+  },
+  "before_actual_requirement": {
+    "independent_first_review": "audits/rc20-stdlib-project-development-v11.precall-review.json",
+    "all_registered_sources_exact": true,
+    "collector_source_default_enabled": false,
+    "auditor_actual_authorization": "UNBOUND",
+    "explicit_root_launch_hash": true,
+    "exclusive_new_raw_root": true
+  },
+  "credential_handling": "Existing external DPAPI callback only after durable reserve; official HTTPS, no redirects, no plaintext source/prompt/env/argv/log.",
+  "analysis_registration": {
+    "ref": "eval-workspaces/rc20-v7-analysis-registration.json",
+    "sha256": "0594777378c78c7b46e52b38a5ae692421cf1763aad2f77089420505eec1fc5b",
+    "requirements": "All 18 paired blocks complete; no full quality regression against passing control or severe full VETO; full reported tokens and inclusive workflow wall below both controls. Unknown/incomplete cannot pass."
+  },
+  "manual_review": "Exact helper6a3c/rubric916a. No diagnostic streams or costs/conditions in packets. Fresh blinded initial locks before condition/cost unblinding; controlled-cut source unfinished/ungraded.",
+  "terminal_policy": "One independent actual raw audit after terminal and process exit. No replay/resume/reprepare/regrade/re-audit. Unknown usage/execution/source drift stops and retains fences. Known failure remains failure.",
+  "promotion_allowed": false,
+  "remaining": "Fresh postselection independent engineering tasks, cross-Agent-class handoffs and source ablations with quality/cost acceptance before main merge/local installation; Stable UNASSESSED and locked NOT_RUN."
+}
