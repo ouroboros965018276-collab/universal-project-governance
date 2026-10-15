@@ -36,6 +36,7 @@ ENGINEERING_PROFILE = "stdlib-python-project-v1"
 ENGINEERING_BACKEND = "docker-cpython-project-v1"
 ENGINEERING_ADAPTER = "official-chat-api-registered-project-v1"
 ENGINEERING_SCHEMA_CORRECTIONS = 1
+CONTROLLED_LOCAL_STOP_POLICY = "confirmed-first-patch-tail-local-stop-v1"
 ENDPOINTS = {"deepseek": ("api.deepseek.com", "/chat/completions"),
              "mimo": ("api.xiaomimimo.com", "/v1/chat/completions")}
 MAX_RESPONSE_BYTES = 2097152
@@ -112,6 +113,14 @@ class ResponseUnknown(RuntimeError):
 
 class DeadlineBeforeDispatch(RuntimeError):
     pass
+
+
+class ControlledLocalStopRequested:
+    """An exact guard proposal, never a model tool or generic finalizer."""
+    __slots__ = ("receipt_ref", "receipt_sha256")
+
+    def __init__(self, receipt_ref, receipt_sha256):
+        self.receipt_ref, self.receipt_sha256 = receipt_ref, receipt_sha256
 
 
 _EXCEPTION_TYPES = ((ssl.SSLCertVerificationError, "SSLCertVerificationError"), (ssl.SSLError, "SSLError"),
@@ -598,10 +607,95 @@ def _engineering_batch(calls, definitions, seen_calls, key, task):
     return parsed, rejected
 
 
+def _verify_controlled_local_stop(proposal, metadata, broker, native_trace, last_calls,
+                                artifacts, received, last_outcome_sha, request_count):
+    """Admit one fixed durable first-patch tail, with no command or grader call."""
+    import stat
+    if (type(proposal) is not ControlledLocalStopRequested
+            or proposal.receipt_ref != "control/local-stop-authorization.json"
+            or not isinstance(proposal.receipt_sha256, str)
+            or re.fullmatch(r"[0-9a-f]{64}", proposal.receipt_sha256) is None
+            or not broker.events or len(native_trace) != len(broker.events)
+            or request_count < 1 or metadata["request_index"] != request_count + 1):
+        raise ValueError("unverifiable controlled stop proposal")
+
+    def read_owned(path, maximum):
+        for parent in (path.parent, artifacts):
+            info = parent.lstat()
+            if stat.S_ISLNK(info.st_mode) or getattr(info, "st_file_attributes", 0) & 1024:
+                raise ValueError("controlled stop reparse parent")
+        before = path.lstat()
+        if (not stat.S_ISREG(before.st_mode) or before.st_nlink != 1
+                or getattr(before, "st_file_attributes", 0) & 1024 or before.st_size > maximum):
+            raise ValueError("controlled stop requires owned bounded raw files")
+        raw = path.read_bytes()
+        after = path.lstat()
+        if (len(raw) != before.st_size or (before.st_ino, before.st_size, before.st_mtime_ns)
+                != (after.st_ino, after.st_size, after.st_mtime_ns)):
+            raise ValueError("controlled stop raw file changed")
+        return raw
+
+    current = sha(canonical(broker.snapshot()))
+    event, trace = broker.events[-1], native_trace[-1]
+    if (event.get("tool") != "repo_patch" or event.get("result", {}).get("ok") is not True
+            or event.get("state_sha256") != current or trace.get("state_sha256") != current
+            or trace.get("tool") != "repo_patch" or trace.get("request_index") != request_count
+            or not isinstance(last_calls, list) or not last_calls
+            or last_calls[-1].get("id") != trace.get("tool_call_id")
+            or last_calls[-1].get("function", {}).get("name") != "repo_patch"
+            or sum(e.get("tool") == "repo_patch" and e.get("result", {}).get("ok") is True for e in broker.events) != 1
+            or broker.read_evidence_failures(broker.events)):
+        raise ValueError("controlled stop is not the first successful patch at request tail")
+    if any(name not in broker.task["writable_files"] and broker.snapshot().get(name) != sha(text.encode("utf-8"))
+           for name, text in broker.task["initial_files"].items()):
+        raise ValueError("protected state differs at controlled stop")
+    audit = read_owned(artifacts / "broker.jsonl", MAX_INPUT_BYTES * MAX_TOOLS * 2)
+    if audit != b"".join(canonical(item) + b"\n" for item in broker.events):
+        raise ValueError("controlled stop broker audit differs")
+    previous = None
+    for observed, item in zip(native_trace, broker.events):
+        raw = read_owned(artifacts / "tool-receipts" / ("%02d.json" % item["sequence"]), MAX_INPUT_BYTES)
+        body = {k: v for k, v in observed.items() if k != "chain_sha256"}
+        if (raw != canonical(observed) + b"\n" or observed.get("previous_chain_sha256") != previous
+                or observed.get("chain_sha256") != sha(canonical(body))
+                or observed.get("broker_event_sha256") != sha(canonical(item))
+                or observed.get("broker_sequence") != item.get("sequence") or observed.get("tool") != item.get("tool")
+                or observed.get("state_sha256") != item.get("state_sha256")
+                or observed.get("arguments_sha256") != item.get("arguments_sha256")
+                or observed.get("result_sha256") != item.get("result_sha256")
+                or observed.get("adapter") != ENGINEERING_ADAPTER
+                or observed.get("broker_profile_id") != ENGINEERING_PROFILE
+                or observed.get("execution_backend") != ENGINEERING_BACKEND):
+            raise ValueError("controlled stop native raw chain differs")
+        previous = observed["chain_sha256"]
+    trace_raw = read_owned(artifacts / "tool-receipts" / ("%02d.json" % event["sequence"]), MAX_INPUT_BYTES)
+    request_raw = read_owned(artifacts / "requests" / ("%02d.receipt.json" % request_count), MAX_RESPONSE_BYTES)
+    response_raw = read_owned(artifacts / "requests" / ("%02d.response.json" % request_count), MAX_RESPONSE_BYTES * 2)
+    if sha(request_raw) != last_outcome_sha or sha(response_raw) != trace["response_artifact_sha256"]:
+        raise ValueError("controlled stop API raw receipt differs")
+    expected = {"schema_version": CONTROLLED_LOCAL_STOP_POLICY,
+        "kind": "controlled-local-stop-authorization", "reservation_performed": False,
+        **{k: metadata[k] for k in ("adapter", "provider", "model_requested", "profile_id", "profile_configuration_sha256",
+            "broker_profile_id", "execution_backend", "input_task_sha256", "request_id", "request_index", "request_payload_sha256")},
+        "received_state_sha256": sha(canonical(received)), "state_sha256": current,
+        "last_broker_sequence": event["sequence"], "last_broker_event_sha256": sha(canonical(event)),
+        "broker_audit_sha256": sha(audit), "last_trace_file_sha256": sha(trace_raw),
+        "last_trace_chain_sha256": trace["chain_sha256"], "last_request_receipt_sha256": sha(request_raw),
+        "last_response_artifact_sha256": sha(response_raw), "last_request_index": trace["request_index"],
+        "last_api_response_id": trace["api_response_id"], "last_tool_call_id": trace["tool_call_id"],
+        "successful_patch_ordinal": 1, "source_completion_required": False, "source_graded": False}
+    raw = read_owned(artifacts / proposal.receipt_ref, 16384)
+    if sha(raw) != proposal.receipt_sha256 or raw != canonical(expected) + b"\n":
+        raise ValueError("controlled stop authorization binding differs")
+    return dict(expected, kind="controlled-local-stop-accepted", authorization_receipt_ref=proposal.receipt_ref,
+                authorization_receipt_sha256=proposal.receipt_sha256, next_request_dispatched=False,
+                next_request_reserved=False, api_requests_observed=request_count)
+
+
 def run_actor(provider, model, task, root, artifact_dir, git_binary, system_context, key_loader,
               max_requests=12, timeout_seconds=180, *, response_json_mode, thinking,
               before_request=None, after_request=None, profile_id=None, execution_backend=None, connect_retry_policy=None, tool_feedback_policy=None,
-              broker_profile_id=None):
+              broker_profile_id=None, controlled_local_stop_guard=None):
     """Run once on existing disk state; new actor => fresh artifact directory.
 
     before_request(metadata) reserves the outer budget before dispatch and may
@@ -636,6 +730,9 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
         raise ValueError("timeout_seconds must be in (0,180]")
     if not isinstance(system_context, str) or not callable(key_loader):
         raise ValueError("system_context and key_loader are required")
+    if controlled_local_stop_guard is not None and (broker_profile_id != ENGINEERING_PROFILE
+            or not callable(controlled_local_stop_guard)):
+        raise ValueError("controlled local stop requires the explicit project profile and guard")
     engineering = None
     adapter_identity = ADAPTER
     if broker_profile_id is not None:
@@ -722,6 +819,8 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
             entry.update(broker_profile_id=broker_profile_id,
                 application_execution_scope="Registered multi-module stdlib Python project commands in the explicit isolated backend; no arbitrary shell, dependency installation, deployment or project_tool lifecycle.",
                 schema_correction_limit=ENGINEERING_SCHEMA_CORRECTIONS)
+        if controlled_local_stop_guard is not None:
+            entry["controlled_local_stop_policy"] = CONTROLLED_LOCAL_STOP_POLICY
         if tool_feedback_policy is not None:
             entry["tool_feedback_policy"] = tool_feedback_policy
         if profile_id in {FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE}:
@@ -763,6 +862,7 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
         failed_execution, execution_state_unknown, execution_infrastructure_failed = None, False, False
         connect_retries, next_retry_parent = 0, None
         schema_rejections, schema_rejection_receipts = 0, []
+        controlled_local_stop, last_calls, last_outcome_sha = None, [], None
         for index in range(1, max_requests + 1):
             remaining = deadline - time.perf_counter()
             if remaining <= 0:
@@ -795,6 +895,25 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
             if profile_id in {FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE}:
                 metadata.update(connect_retry_policy=connect_retry_policy, retry_of_request_id=next_retry_parent)
                 next_retry_parent = None
+            if controlled_local_stop_guard is not None:
+                metadata["controlled_local_stop_policy"] = CONTROLLED_LOCAL_STOP_POLICY
+                try:
+                    proposal = controlled_local_stop_guard(copy.deepcopy(metadata))
+                    if proposal is not None:
+                        if (unknown or execution_state_unknown or execution_infrastructure_failed or final_report is not None
+                                or type(proposal) is not ControlledLocalStopRequested):
+                            raise ValueError("controlled local stop is not available")
+                        accepted = _verify_controlled_local_stop(proposal, metadata, broker, native_trace,
+                            last_calls, artifacts, received, last_outcome_sha, request_count)
+                        accepted_sha = _write_new(artifacts / "control/local-stop.accepted.json", accepted, key)
+                        controlled_local_stop = dict(accepted, accepted_receipt_ref="control/local-stop.accepted.json",
+                                                    accepted_receipt_sha256=accepted_sha)
+                        status, refusal_reason = "controlled-local-stop-unfinished", None
+                        break  # No budget callback, credential load, pending request or HTTP for this proposal.
+                except BaseException as error:
+                    failures.append("api-local-stop-rejected:unverified-proposal")
+                    status, refusal_reason = "controlled-local-stop-proposal-refused", _exception_class(error)
+                    break
             try:
                 reservation = before_request(copy.deepcopy(metadata)) if before_request else None
                 if engineering and (not isinstance(reservation, dict)
@@ -920,6 +1039,7 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
             if deadline_telemetry is not None:
                 outcome["deadline_telemetry"] = deadline_telemetry
             outcome_sha = _write_new(artifacts / "requests" / ("%02d.receipt.json" % index), outcome, key)
+            last_outcome_sha = outcome_sha
             retry_authorization = None
             if after_request:
                 try:
@@ -948,6 +1068,7 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                 break
             reported_models.append(raw["model"])
             calls = message.get("tool_calls") or []
+            last_calls = calls
             if not isinstance(calls, list) or len(calls) > MAX_TOOLS - tool_attempts:
                 failures.append("api-tool-rejected:tool-budget-or-shape")
                 status = "tool-contract-failed"
@@ -1111,7 +1232,12 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
         try:
             if final_report is not None and final_report["state_sha256"] != sha(canonical(broker.snapshot())):
                 failures.append("api-finish-rejected:state-changed-after-report")
-            if execution_backend is not None and (engineering or failed_execution is None) and (
+            if controlled_local_stop is not None:
+                quality = {"hard_pass": False, "task_success": None, "assessment": "NOT_GRADED_CONTROLLED_STOP",
+                    "required_tools_ok": None, "scope_ok": None, "failures": list(failures), "validation": None,
+                    "evidence_adapter": adapter_identity, "evidence_execution_backend": execution_backend,
+                    "source_completed": False, "source_graded": False}
+            elif execution_backend is not None and (engineering or failed_execution is None) and (
                     unknown or execution_state_unknown or execution_infrastructure_failed):
                 # Uncertain API/write/receipt state is a hard stop, not
                 # permission to start a container while grading failure.
@@ -1148,6 +1274,11 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                     quality["failures"].append("api-tool-rejected:unverified-final-execution")
                     quality.update(hard_pass=False, task_success=0)
             final_snapshot = broker.snapshot()
+            if controlled_local_stop is not None and controlled_local_stop["state_sha256"] != sha(canonical(final_snapshot)):
+                execution_state_unknown, execution_infrastructure_failed = True, True
+                status = "execution-state-unknown-blocked"
+                quality["failures"].append("scope-invalid:controlled-stop-snapshot-drift")
+                quality.update(hard_pass=False, task_success=None, assessment="CONTROLLED_STOP_INVALIDATED")
             if final_report is not None and final_report["state_sha256"] != sha(canonical(final_snapshot)):
                 quality["failures"].append("api-finish-rejected:state-changed-after-report")
                 quality.update(hard_pass=False, task_success=0)
@@ -1177,13 +1308,17 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
             result["receipt"].update(broker_profile_id=broker_profile_id, execution_backend=execution_backend)
             result["quality"].update(evidence_adapter=adapter_identity,
                 evidence_broker_profile_id=broker_profile_id, evidence_execution_backend=execution_backend)
+        if controlled_local_stop_guard is not None:
+            result["controlled_local_stop"] = controlled_local_stop
+            if controlled_local_stop is not None:
+                result["receipt"]["controlled_local_stop_accepted_sha256"] = controlled_local_stop["accepted_receipt_sha256"]
         if execution_backend is not None:
             result.update(execution_state_unknown=execution_state_unknown,
                           execution_infrastructure_failed=execution_infrastructure_failed)
         result = _redact(result, key)
         receipt_sha = _write_new(artifacts / "actor.result.json", result, key)
         result["receipt"]["result_file_sha256"] = receipt_sha
-        if not unknown and not (engineering and (execution_state_unknown or execution_infrastructure_failed)) and actor_pending.exists():
+        if not unknown and controlled_local_stop is None and not (engineering and (execution_state_unknown or execution_infrastructure_failed)) and actor_pending.exists():
             actor_pending.unlink()
         return result
     finally:

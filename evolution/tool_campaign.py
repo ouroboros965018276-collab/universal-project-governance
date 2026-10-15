@@ -50,13 +50,21 @@ def build_prompt(skill, plan, task_prompt, *, terminal_report="json", execution_
               "The broker cannot execute application code. ")
     if execution_backend is not None:
         from .isolated_python import EXECUTION_BACKEND
-        if execution_backend != EXECUTION_BACKEND or not isinstance(execution_backend, str):
+        from .engineering_broker import BACKEND_ID
+        if not isinstance(execution_backend, str) or execution_backend not in (EXECUTION_BACKEND, BACKEND_ID):
             raise ValueError("unknown execution backend")
-        common = common.replace("The broker cannot execute application code. ",
+        if execution_backend == EXECUTION_BACKEND:
+            common = common.replace("The broker cannot execute application code. ",
                                 "repo_validate retains the complete finite VM structural/dependency contract and "
                                 "executes only its admitted registered Python calls in isolated CPython, with "
                                 "host exact-type expected-value checks. It cannot run arbitrary commands or "
                                 "validate a complete application. ")
+        else:
+            common = common.replace("The broker cannot execute application code. ",
+                "repo_validate executes only the registered stdlib Python project suite in isolated CPython, "
+                "including package imports, unittest, CLI and registered file processing. "
+                "Current snapshot-bound receipts compare registered exit codes, stdout/stderr and output files. "
+                "It cannot run arbitrary commands or establish correctness outside that suite. ")
     if terminal_report == "native-tool":
         common += ("Finish by calling repo_finish alone as the sole tool call in that response, with summary (string), "
                    "validation ('passed' or 'failed'), and helper_gap ('project_tool unavailable in bounded broker'). "

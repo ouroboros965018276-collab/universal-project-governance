@@ -356,6 +356,9 @@ class RepoBroker:
             raise ValueError("path escaped registered repository")
         return current
 
+    def _required_snapshot_paths(self):
+        return set(self.task['initial_files'])
+
     def snapshot(self):
         result, total = {}, 0
         for name in set(self.task["initial_files"]) | set(self.task["writable_files"]):
@@ -379,7 +382,7 @@ class RepoBroker:
                 if stat.S_ISLNK(info.st_mode) or (getattr(info, "st_file_attributes", 0) or 0) & 1024:
                     raise ValueError("unregistered reparse path")
             actual.update((Path(directory) / name).relative_to(self.root).as_posix() for name in filenames)
-        if actual != set(result) or not set(self.task["initial_files"]) <= actual:
+        if actual != set(result) or not self._required_snapshot_paths() <= actual:
             raise ValueError("unregistered, missing, or deleted repository file")
         return dict(sorted(result.items()))
 
