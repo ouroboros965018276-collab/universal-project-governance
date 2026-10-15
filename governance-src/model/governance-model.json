@@ -59,7 +59,7 @@
       "policy_ids": [
         "STRUCTURAL_INTEGRATION"
       ],
-      "statement": "Complete the scoped task at its existing correct responsible layer. Preserve contracts, safety/error handling; resolve affected consumers/tests and obsolete paths. Minimize needless work, not lines/diff/deletion volume. Priority: user intent; correctness/safety/truth; contracts/structure; maintainability/readability; cost."
+      "statement": "Keep contracts/safety/error handling; resolve affected consumers/tests and obsolete paths. Change edge/error returns/exceptions only as required by the authorized goal. Minimize needless work, not diff size. Priority: user intent; correctness/safety/truth; contracts/structure; maintainability/readability; cost."
     },
     {
       "id": "evidence_fidelity",
@@ -73,7 +73,7 @@
       "policy_ids": [
         "EVIDENCE_AFFECTED"
       ],
-      "statement": "Select relevant initial reads from task paths and module/symbol/document anchors using indexes or bounded search. Defer clearly unrelated material; trace implementations/contracts/consumers/tests and expand for new or dynamic dependencies, stale/conflicting indexes or verification gaps. Recover interrupted/stale/contradictory state from project evidence. Indexes and read budgets never prove complete coverage."
+      "statement": "Honor required reads; select relevant paths/anchors via indexes or bounded search before batching. Listings/links alone are not read obligations. Trace implementations/contracts/consumers/tests; expand for dependencies, failures, stale/conflicting evidence or coverage gaps. Defer unrelated material. Recover interrupted/stale/contradictory state from project evidence. Indexes/labels/read budgets never prove coverage; unknowns stay unknown."
     }
   ],
   "risk_model": {

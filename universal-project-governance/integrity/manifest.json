@@ -3,9 +3,9 @@
   "files": {
     "INTEGRITY.md": "3e2404344195b4795ad4cb07944acac5bb1070a9e40c92c4da792abeb6e3774d",
     "LICENSE": "50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a",
-    "SKILL.md": "75492e34d0291afe69494c329012a0b2e9081b32fce18f0ff61f0333cc52b8e7",
+    "SKILL.md": "803f1da41c1d26f285ced51af77deae4c528745e4adb703a5f7219335e01481a",
     "VERSION.md": "ade8b56830f54d2546793cedfc813b7b89753e4b46853e459de504d1230b1de2",
-    "policy-index.json": "026eaca8916920df1fd37e11f4b02f7d342e0c0628a668a180dd78c7293b63e4",
+    "policy-index.json": "12b9680022db13fa13e26a822a230ec0fee96eb42b230583cbf33e4906d778a3",
     "schemas/audit.schema.json": "a5e15c26eff86e3c4e2e174fb121ef22981628307f09cf18d09a589e738ea889",
     "schemas/execution.schema.json": "d2a7cddc9d98c8101294df302259ba18217c27b9e7c8fee43d96c82ff6bde1d7",
     "schemas/feedback.schema.json": "22da61a114a1e89ee641ac25e90e23d6231003351df15918d4265f9900091954",
@@ -21,5 +21,5 @@
   },
   "generated_for_version": "3.0.0-rc.20",
   "schema_version": 1,
-  "source_sha256": "badb891e6f1bf4d6a9a998b300be44971dcb3b151bb6d344f175df14b0244044"
+  "source_sha256": "51bdd1a9c1ae823341a35e4061dfa04a847502575ca28ba041e92feb3d70fb50"
 }

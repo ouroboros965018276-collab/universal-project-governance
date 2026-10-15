@@ -1222,6 +1222,160 @@ class OptInExecutionTests(_ProviderFixture, unittest.TestCase):
         return completion(index, [call('patch-' + str(index), 'repo_patch', {'operations': [
             {'path': 'core.py', 'old_sha256': sha(previous.encode()), 'new_text': text}]})])
 
+    def language_feedback_task(self, public=True):
+        self.semantic_task()
+        source = 'def transform(value):\n    return isinstance(value, int)\n'
+        public_text = canonical({'language': {'version': 'bounded-ast-behavior-v1',
+            'builtins': ['len', 'str', 'int', 'bool', 'abs']}}).decode() if public else '{}\n'
+        self.task['initial_files'].update({'core.py': source, 'contract.json': public_text})
+        self.task['behavior_contract']['protected_files']['contract.json'] = sha(public_text.encode())
+        for name, text in self.task['initial_files'].items():
+            (self.workspace / name).write_bytes(text.encode())
+
+    def test_public_language_hint_native_view_preserves_negative_evidence_and_grade(self):
+        from evolution import isolated_python as isolated
+        self.language_feedback_task()
+        payloads = []
+        scripted = self.scripted([self.core_read(1), completion(2, [call('invalid-call', 'repo_validate', {})]),
+            self.final(3, validation='failed')])
+        def post(*args):
+            payloads.append(json.loads(json.dumps(args[1])))
+            return scripted(*args)
+        with patch.object(lab, '_bounded_post', side_effect=post), \
+                patch.object(isolated, '_capture', side_effect=AssertionError('VM failure cannot execute Docker')):
+            result = self.enabled(tool_feedback_policy=lab.PUBLIC_LANGUAGE_FEEDBACK_POLICY)
+        bad = result['tool_events'][1]['result']
+        view = json.loads(payloads[2]['messages'][-1]['content'])
+        hint = view.pop('public_language_hint')
+        self.assertEqual(view, bad)
+        self.assertEqual(hint['builtins'], ['len', 'str', 'int', 'bool', 'abs'])
+        self.assertIn('does not identify the rejected callee', hint['calls'])
+        self.assertNotIn('isinstance', json.dumps(hint))
+        self.assert_negative_preserved(result, 2, bad)
+        self.assertEqual(bad['execution']['status'], 'NOT_RUN_VM_FAILED')
+        self.assertFalse(result['quality']['hard_pass'])
+        self.assertEqual(result['usage']['total_tokens'], 45)
+        self.assertTrue(all(row['tool_feedback_policy'] == lab.PUBLIC_LANGUAGE_FEEDBACK_POLICY
+            for row in self.before + self.after))
+        entry = json.loads((self.artifacts / 'actor.started.json').read_bytes())
+        self.assertEqual(entry['tool_feedback_policy'], lab.PUBLIC_LANGUAGE_FEEDBACK_POLICY)
+        for path in (self.artifacts / 'requests').glob('*.receipt.json'):
+            self.assertEqual(json.loads(path.read_bytes())['tool_feedback_policy'], lab.PUBLIC_LANGUAGE_FEEDBACK_POLICY)
+
+    def test_public_language_hint_default_keeps_original_tool_message(self):
+        self.language_feedback_task()
+        steps = [self.core_read(1), completion(2, [call('invalid-call', 'repo_validate', {})]), self.final(3, validation='failed')]
+        scripted = self.scripted(steps)
+        contents = []
+        def post(*args):
+            if len(self.before) == 3:
+                contents.append(args[1]['messages'][-1]['content'])
+            return scripted(*args)
+        with patch.object(lab, '_bounded_post', side_effect=post):
+            result = self.enabled()
+        self.assertEqual(contents, [canonical(result['tool_events'][1]['result']).decode()])
+        self.assertNotIn('tool_feedback_policy', result)
+        self.assertTrue(all('tool_feedback_policy' not in row for row in self.before + self.after))
+        self.assertFalse(result['quality']['hard_pass'])
+
+    def test_public_language_hint_absent_public_language_keeps_raw_feedback(self):
+        self.language_feedback_task(public=False)
+        scripted = self.scripted([self.core_read(1), completion(2, [call('invalid-call', 'repo_validate', {})]),
+            self.final(3, validation='failed')])
+        contents = []
+        def post(*args):
+            if len(self.before) == 3:
+                contents.append(args[1]['messages'][-1]['content'])
+            return scripted(*args)
+        with patch.object(lab, '_bounded_post', side_effect=post):
+            result = self.enabled(tool_feedback_policy=lab.PUBLIC_LANGUAGE_FEEDBACK_POLICY)
+        self.assertEqual(contents, [canonical(result['tool_events'][1]['result']).decode()])
+        self.assertFalse(result['quality']['hard_pass'])
+
+    def test_public_language_hint_excludes_unverified_feedback_and_never_reads_probe_values(self):
+        self.language_feedback_task()
+        steps = [self.core_read(1), completion(2, [call('invalid-call', 'repo_validate', {})]), self.final(3, validation='failed')]
+        with patch.object(lab, '_bounded_post', side_effect=self.scripted(steps)):
+            result = self.enabled()
+        event = result['tool_events'][1]
+        bad = event['result']
+        class UnreadableProbe(dict):
+            def __getitem__(self, key):
+                raise AssertionError('private probe read')
+            def __iter__(self):
+                raise AssertionError('private probe iterated')
+        self.task['behavior_contract']['probes'] = [UnreadableProbe()]
+        public = json.loads(self.task['initial_files']['contract.json'])
+        public['language']['hidden_marker'] = 'private-marker-must-not-echo'
+        self.task['initial_files']['contract.json'] = json.dumps(public)
+        rendered = lab._model_tool_content('repo_validate', {}, bad, event, self.task,
+            'docker-cpython-finite-v1', lab.PUBLIC_LANGUAGE_FEEDBACK_POLICY)
+        self.assertIn('public_language_hint', rendered)
+        self.assertNotIn('private-marker', rendered)
+        self.assertNotIn('"expect"', rendered)
+        variants = [dict(bad, write_state='partial-or-unverified'), dict(bad, failures=['protected-file-changed:contract.json']),
+            dict(bad, diagnostics=[{'code': 'unregistered-call', 'path': 'core.py', 'probe': 0}]),
+            dict(bad, diagnostics=[{'code': 'return-mismatch', 'path': 'core.py'}])]
+        unknown = json.loads(json.dumps(bad))
+        unknown['execution']['unknown'] = True
+        variants.append(unknown)
+        for item in variants:
+            self.assertEqual(lab._model_tool_content('repo_validate', {}, item, event, self.task,
+                'docker-cpython-finite-v1', lab.PUBLIC_LANGUAGE_FEEDBACK_POLICY), canonical(item).decode())
+        for public_text in ('{}', '{"language":{},"language":{}}', '{"language":{"version":"future"}}'):
+            self.task['initial_files']['contract.json'] = public_text
+            self.assertEqual(lab._model_tool_content('repo_validate', {}, bad, event, self.task,
+                'docker-cpython-finite-v1', lab.PUBLIC_LANGUAGE_FEEDBACK_POLICY), canonical(bad).decode())
+
+    def test_public_language_hint_invalid_policy_refuses_before_key_artifacts_or_http(self):
+        for value, backend in (('unknown', 'docker-cpython-finite-v1'), ([], 'docker-cpython-finite-v1'),
+                (lab.PUBLIC_LANGUAGE_FEEDBACK_POLICY, None)):
+            with self.subTest(value=value), patch.object(lab, '_bounded_post') as post, self.assertRaises(ValueError):
+                self.enabled(tool_feedback_policy=value, execution_backend=backend)
+            post.assert_not_called()
+            self.assertFalse(self.artifacts.exists())
+            self.assertEqual((self.loaded, self.before, self.after), ([], [], []))
+
+
+    def test_public_language_hint_namespaced_contract_native_roundtrip(self):
+        self.language_feedback_task()
+        public_path = 'upg_synthetic_90409_nonce_CONTRACT.json'
+        text = self.task['initial_files'].pop('contract.json')
+        self.task['initial_files'][public_path] = text
+        self.task['required_read_paths'] = ['core.py', public_path]
+        protected = self.task['behavior_contract']['protected_files']
+        protected[public_path] = protected.pop('contract.json')
+        (self.workspace / 'contract.json').unlink()
+        (self.workspace / public_path).write_bytes(text.encode())
+        scripted = self.scripted([completion(1, [call('namespace-read', 'repo_read', {'paths': ['core.py', public_path]})]),
+            completion(2, [call('invalid-call', 'repo_validate', {})]), self.final(3, validation='failed')])
+        contents = []
+        def post(*args):
+            if len(self.before) == 3:
+                contents.append(args[1]['messages'][-1]['content'])
+            return scripted(*args)
+        with patch.object(lab, '_bounded_post', side_effect=post):
+            result = self.enabled(tool_feedback_policy=lab.PUBLIC_LANGUAGE_FEEDBACK_POLICY)
+        self.assertEqual(len(contents), 1)
+        view = json.loads(contents[0])
+        self.assertIn('public_language_hint', view)
+        self.assertEqual(view.pop('public_language_hint')['builtins'], ['len', 'str', 'int', 'bool', 'abs'])
+        self.assertEqual(view, result['tool_events'][1]['result'])
+        self.assert_negative_preserved(result, 2, view)
+        self.assertFalse(result['quality']['hard_pass'])
+        self.assertEqual(result['usage']['total_tokens'], 45)
+
+    def test_public_language_hint_multiple_contract_candidates_keep_raw(self):
+        self.language_feedback_task()
+        with patch.object(lab, '_bounded_post', side_effect=self.scripted([self.core_read(1),
+                completion(2, [call('invalid-call', 'repo_validate', {})]), self.final(3, validation='failed')])):
+            result = self.enabled()
+        event = result['tool_events'][1]
+        self.task['initial_files']['upg_synthetic_90409_nonce_CONTRACT.json'] = self.task['initial_files']['contract.json']
+        self.assertEqual(lab._model_tool_content('repo_validate', {}, event['result'], event, self.task,
+            'docker-cpython-finite-v1', lab.PUBLIC_LANGUAGE_FEEDBACK_POLICY), canonical(event['result']).decode())
+
+
     def test_backend_selection_rejects_wrong_mode_or_profile_before_artifacts_key_or_http(self):
         from evolution.isolated_python import EXECUTION_BACKEND
         for backend, profile in ((False, lab.FLASH_THINKING_PROFILE), ('unknown', lab.FLASH_THINKING_PROFILE),

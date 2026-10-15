@@ -192,6 +192,8 @@ broker 的 `SEMANTIC_DIAGNOSTIC_CODES` 是可公开反馈的固定名单。现�
 16 项；未知码仍归入原有通用类别，资源限制保持失败。诊断不改变 VM、正向检查、
 质量、作用域或全轮严重错误规则，不透露 probe、索引、输入、期望值和源码片段。
 
+有限 CPython 模式可显式选择 `tool_feedback_policy="public-finite-language-reminder-v1"`。仅在已验证、可继续的 `unregistered-call` 与 `NOT_RUN_VM_FAILED` 结果后，模型工具消息才补充匹配公开语言的 builtin／注册调用提醒；缺失、歧义或不匹配的公开配置保持原消息。默认不启用，原 broker 结果、事件哈希、执行状态和评分不变。新实验须对各组使用同一策略，并独立重建后续请求的实际消息、用量和费用估算。
+
 ## 显式有限 CPython 后端
 
 仓库代理默认行为保持不变。显式选择 `docker-cpython-finite-v1` 时，仍先通过完整

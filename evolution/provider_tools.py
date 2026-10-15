@@ -53,6 +53,7 @@ FLASH_DISABLED_PROFILE_SETTINGS = {
 }
 CONNECT_RETRY_POLICY = "confirmed-pre-http-connect-once-v1"
 CONNECT_RETRY_EXCEPTIONS = frozenset({"TimeoutError", "gaierror", "ConnectionRefusedError", "ConnectionResetError"})
+PUBLIC_LANGUAGE_FEEDBACK_POLICY = "public-finite-language-reminder-v1"
 DEADLINE_TELEMETRY_SCHEMA = "bounded-post-wait-v1"
 TRANSPORT_PHASES = frozenset({"preparation", "worker-before-request", "payload-serialize", "connection-create",
     "connect", "http-request", "response-headers", "response-body", "connection-close", "response-decode",
@@ -502,9 +503,41 @@ def _recoverable_tool_feedback(tool, arguments, result, event, task, execution_b
     return False
 
 
+def _model_tool_content(tool, arguments, result, event, task, execution_backend, policy=None):
+    """Deterministic model view only; original broker evidence stays unchanged.
+
+    The public reminder does not identify the rejected callee or evaluate any
+    probe. Missing/unknown public language or unverified feedback stays raw.
+    """
+    content = canonical(result).decode("utf-8")
+    if (policy != PUBLIC_LANGUAGE_FEEDBACK_POLICY or execution_backend != "docker-cpython-finite-v1"
+            or tool != "repo_validate"
+            or not _recoverable_tool_feedback(tool, arguments, result, event, task, execution_backend)
+            or result["execution"]["status"] != "NOT_RUN_VM_FAILED"
+            or not any(item["code"] == "unregistered-call" for item in result["diagnostics"])):
+        return content
+    paths = [path for path in task["initial_files"] if path.rsplit("/", 1)[-1].lower() == "contract.json"
+             or path.rsplit("/", 1)[-1].lower().endswith("_contract.json")]
+    if len(paths) != 1:
+        return content
+    try:
+        public = normalize("json", task["initial_files"][paths[0]])
+    except (ValueError, TypeError, RecursionError):
+        return content
+    language = public.get("language") if isinstance(public, dict) else None
+    if (not isinstance(language, dict) or language.get("version") != "bounded-ast-behavior-v1"
+            or language.get("builtins") != ["len", "str", "int", "bool", "abs"]):
+        return content
+    view = dict(result)
+    view["public_language_hint"] = {
+        "builtins": ["len", "str", "int", "bool", "abs"],
+        "calls": "Use published builtins or registered pure functions; this reminder does not identify the rejected callee."}
+    return canonical(view).decode("utf-8")
+
+
 def run_actor(provider, model, task, root, artifact_dir, git_binary, system_context, key_loader,
               max_requests=12, timeout_seconds=180, *, response_json_mode, thinking,
-              before_request=None, after_request=None, profile_id=None, execution_backend=None, connect_retry_policy=None):
+              before_request=None, after_request=None, profile_id=None, execution_backend=None, connect_retry_policy=None, tool_feedback_policy=None):
     """Run once on existing disk state; new actor => fresh artifact directory.
 
     before_request(metadata) reserves the outer budget before dispatch and may
@@ -533,6 +566,10 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
         raise ValueError("timeout_seconds must be in (0,180]")
     if not isinstance(system_context, str) or not callable(key_loader):
         raise ValueError("system_context and key_loader are required")
+    if tool_feedback_policy is not None and (type(tool_feedback_policy) is not str
+            or tool_feedback_policy != PUBLIC_LANGUAGE_FEEDBACK_POLICY
+            or execution_backend != "docker-cpython-finite-v1"):
+        raise ValueError("public language feedback requires its explicit policy and finite backend")
     if connect_retry_policy is not None and (type(connect_retry_policy) is not str or connect_retry_policy != CONNECT_RETRY_POLICY
             or profile_id != FLASH_DISABLED_PROFILE or not callable(before_request) or not callable(after_request)):
         raise ValueError("connect retry requires explicit new disabled profile and durable budget callbacks")
@@ -595,6 +632,8 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
         if execution_backend is not None:
             entry.update(execution_backend=execution_backend, application_execution=True,
                 application_execution_scope="Only registered finite Python behavior probes after the unchanged VM gate; not whole-application tests, deployment or arbitrary commands. Document-only stages do not execute Python.")
+        if tool_feedback_policy is not None:
+            entry["tool_feedback_policy"] = tool_feedback_policy
         if profile_id == FLASH_DISABLED_PROFILE:
             entry["connect_retry_policy"] = connect_retry_policy
         actor_pending = artifacts / "actor.pending.json"
@@ -652,6 +691,8 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                 metadata.update(profile_id=profile_id, thinking=thinking, reasoning_effort_requested=settings["reasoning_effort"])
             if profile_id in {FLASH_THINKING_PROFILE, FLASH_DISABLED_PROFILE}:
                 metadata["profile_configuration_sha256"] = entry["profile_configuration_sha256"]
+            if tool_feedback_policy is not None:
+                metadata["tool_feedback_policy"] = tool_feedback_policy
             if execution_backend is not None:
                 metadata["execution_backend"] = execution_backend
             if profile_id == FLASH_DISABLED_PROFILE:
@@ -886,7 +927,7 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                         else:
                             status = "tool-contract-failed"
                         break
-                    messages.append({"role": "tool", "tool_call_id": call_id, "content": canonical(result).decode("utf-8")})
+                    messages.append({"role": "tool", "tool_call_id": call_id, "content": _model_tool_content(name, args, result, event, task, execution_backend, tool_feedback_policy)})
                 except OSError:
                     if execution_backend is None:
                         unknown = True
