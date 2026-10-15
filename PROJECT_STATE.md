@@ -10,9 +10,9 @@ Current candidate: **3.0.0-rc.20 — Task Context and Complete Change Discipline
 
 来源、选用与排除、触发和验收映射由 [upstream-sources.json](third_party/upstream-sources.json) 维护；[鸣谢](THIRD_PARTY_NOTICES.md)保留五个上游及适用许可。三个新增来源的规则组只在预注册对照中消融，不撤销原有正确性、安全、真实性、必需验证或交接约束。
 
-当前候选在 v4 封存后收敛两条既有规则：先选择相关路径再批读；仅按已授权目标改变边缘返回或异常契约。必读、依赖扩读、未知和事实恢复义务保留。生成核心为 **6,642 字节**（`803f1da4…`），规范源身份 `51bdd1a9…`，资格身份 `4cf36631…`。仓库适配器新增显式公开语言提醒，不改变原评分或执行门禁；独立评审发现的命名路径漏测已复现并修正。[本次工程验收](audits/rc20-read-contract-feedback-engineering.audit.json)为 9 项门禁、821 项测试通过及 2 项跳过；这些不证明真实收益；[新开发轮 v5](audits/rc20-paired-real-python-development-v5.preflight.json)已准备，计划 24 个角色；该源码的实测结论尚待本轮执行与独立审阅。
+当前候选在 v4 封存后收敛两条既有规则：先选择相关路径再批读；仅按已授权目标改变边缘返回或异常契约。必读、依赖扩读、未知和事实恢复义务保留。生成核心为 **6,642 字节**（`803f1da4…`），规范源身份 `51bdd1a9…`，资格身份 `4cf36631…`。仓库适配器新增显式公开语言提醒，不改变原评分或执行门禁；独立评审发现的命名路径漏测已复现并修正。[本次工程验收](audits/rc20-read-contract-feedback-engineering.audit.json)为 9 项门禁、821 项测试通过及 2 项跳过；这些不证明真实收益。[开发轮 v5](audits/rc20-paired-real-python-development-v5.audit.json)在 2/24 个角色返回后因 DeepSeek HTTP 503 服务繁忙且无用量而停止：5 次已知请求共 37,867 token，另 1 次未知请求与 pending 保留；22 个角色未调用。首份独审 RAW_INTEGRITY_PASS，事实初审 2 项 UNKNOWN。该轮不完整，不作组间收益比较，不续跑或重评；模型目录可用也不证明推理容量。当前源码的净收益仍未验证。
 
-最新[真实 Python 配对开发轮 v4](audits/rc20-paired-real-python-development-v4.audit.json)已完成：24 个角色全部返回，独立机械检查通过 21 个；140 次请求共 **1,613,204** 个报告 token，最终 pending 为 0。首份独立原始审计 **RAW_INTEGRITY_PASS**，3478 个原始文件与 128 项源文件及副本前后哈希一致。完整组相对 RC19 的角色归属耗时下降 **30.52%**，但 token 增加 **2.60%**；相对简洁指令对照，token 增加 **6.51%**。三组机械检查均为 7/8；完整组事实审阅为 6 项有界支持、1 项 VETO、1 项因审阅准备偏差受限的 UNKNOWN。完整组把“None 返回 False”改成抛异常并写成已完成，不能用执行器限制解释或挽救。
+最近完整结束的[真实 Python 配对开发轮 v4](audits/rc20-paired-real-python-development-v4.audit.json)已完成：24 个角色全部返回，独立机械检查通过 21 个；140 次请求共 **1,613,204** 个报告 token，最终 pending 为 0。首份独立原始审计 **RAW_INTEGRITY_PASS**，3478 个原始文件与 128 项源文件及副本前后哈希一致。完整组相对 RC19 的角色归属耗时下降 **30.52%**，但 token 增加 **2.60%**；相对简洁指令对照，token 增加 **6.51%**。三组机械检查均为 7/8；完整组事实审阅为 6 项有界支持、1 项 VETO、1 项因审阅准备偏差受限的 UNKNOWN。完整组把“None 返回 False”改成抛异常并写成已完成，不能用执行器限制解释或挽救。
 
 本轮保留质量与成本失败，未取得可晋升的净收益；其源码身份与当前候选不同。下一步以新任务、相同预算和独立审计验证当前候选，再补齐独立验证与来源消融。默认分支和本地安装仍为 **RC19**。本轮没有实际触发连接重试，不能宣称该恢复策略已获真实故障验证。
 
