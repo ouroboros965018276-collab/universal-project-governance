@@ -24,7 +24,7 @@ v6 使用前一规范身份 `51bdd1a9…` 和有限 CPython 配置。当前 `004
 
 完整组相对 RC19 的 token 下降 **9.41%**、归属耗时下降 **22.38%**；相对普通指令对照，token 下降 **16.30%**、耗时增加 **14.27%**。完整组有两项机械失败及另一项事实否决：未定义工具参数导致提前拒绝、有限语言/边界行为失败、遗漏事实却声称保留，均不能用低成本抵消。提前失败也降低了观测成本，不能称为完成同等任务的节省。数据仅属两个已曝光任务族的开发诊断，**净收益未通过**；共享/启动耗时另列，发布尾部及研究/人工审核总成本未知。
 
-新[工程开发轮 v7](audits/rc20-stdlib-project-development-v7.audit.json)在首次 API 调用前因缺少必填参数停止，请求为 0。[v8](audits/rc20-stdlib-project-development-v8.audit.json)完成 5 次已知请求、21,185 token、pending 为 0；模型语法错误在容器启动前被归成执行未知。两轮首次原始审计均 FAIL，原记录封存。现已[修正运行时失败边界](audits/rc20-runtime-failure-engineering.audit.json)：九项门禁、931 项回归和六个真实容器用例通过，另两项回归跳过；公开原始证据独审 PASS。错误源码由隔离检查判为可修复的已知失败，返回有界真实诊断；可信注册和未知门槛不变。这是执行器验收，模型质量与净收益仍未证实。
+[工程轮 v7](audits/rc20-stdlib-project-development-v7.audit.json)及[v8](audits/rc20-stdlib-project-development-v8.audit.json)因调用和执行器边界问题中断，原失败审计封存。[执行器修正](audits/rc20-runtime-failure-engineering.audit.json)通过九项门禁、931 项回归及六个真实容器用例，另两项回归跳过，公开原始证据独审 PASS。[v9](audits/rc20-stdlib-project-development-v9.audit.json)随后完成 12 次已知请求、71,151 token、pending 为 0；首个角色耗尽请求却未验证，Git 收据校验接口不匹配又触发全局停止，首次原始审计 FAIL。下一轮将精确对齐实际生产者与校验器；这些工程修正尚不证明模型质量或净收益。
 
 下一步完成工程对照，再以新任务分布、跨 Agent 和来源消融独立验证。默认分支和本地安装仍为 **RC19**。完成调用不证明未来容量或零风险。
 
