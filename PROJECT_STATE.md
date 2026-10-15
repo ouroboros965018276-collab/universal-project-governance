@@ -30,7 +30,7 @@ v6 使用前一规范身份 `51bdd1a9…` 和有限 CPython 配置。当前 `004
 
 [工具 envelope 修正](audits/rc20-provider-index-engineering.audit.json)接纳合法的可选 ordinal index，并保持原始请求和参数；九项门禁、941 项回归通过，另两项跳过。旧轮没有重评，修正尚不证明任务收益。下一轮将固定新适配器、零事件抽取和原预算内的一次确认未发送连接重试；再以新任务分布、跨 Agent 和来源消融独立验证。默认分支和本地安装仍为 **RC19**。完成调用不证明未来容量或零风险。
 
-[v11 开发对照](audits/rc20-stdlib-project-development-v11.preflight-v2.json)已完成新身份的纯准备；157 项源码绑定，保留同一曝光开发集、运行时、上下文、预算与质量标准。首次纯准备的旧依赖哈希失败保留，随后仅重绑校验器依赖。调用前首审发现旧分析禁止连接重试；新登记明确前瞻修订该条，质量、成本和晋升标准保持不变，首登记与首审保留。[修订登记的独立调用前核验](audits/rc20-stdlib-project-development-v11.precall-closure-v2.json)已通过，157 项源码与 231 项固定输入前后相同；[首次冲突发现](audits/rc20-stdlib-project-development-v11.precall-review.json)保留。当前只发布注册记录，尚未发出该轮模型请求。
+[v11](audits/rc20-stdlib-project-development-v11.audit.json)因一次在途请求的 HTTP 状态与用量无法确认而停止：31/66 个角色记录、189 次有报告用量的请求，共 **1,044,521 token**；另一次确认未发送、一次未知请求，pending 为 1。首次原始独审 **FAIL**，4,444 个原始文件和 157 项源码前后相同；人工抽取未运行，分组成本未揭盲，**净收益未建立**。原登记与[修订前首次发现](audits/rc20-stdlib-project-development-v11.precall-review.json)、[调用前闭环](audits/rc20-stdlib-project-development-v11.precall-closure-v2.json)保留。下一步解决任务截止后在途请求的可观测与结算边界，再注册新的公平对照；不续跑或重评本轮。
 
 历史轮次与原失败结论保留在 [audits/](audits/)，不续跑、重评或绑定当前候选。[v5](audits/rc20-paired-real-python-development-v5.audit.json)的 HTTP 503 留有一次用量未知/pending；新轮 pending 为 0 不清除这一围栏。各轮成本、VETO 和源码身份以各自冻结审计为准。
 
