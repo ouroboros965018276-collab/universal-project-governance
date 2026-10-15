@@ -60,7 +60,7 @@ def _relative(path):
     return path
 
 
-def _file_map(files, *, python_only=False, allow_empty=False):
+def _file_map(files, *, python_only=False, allow_empty=False, parse_python=True):
     if type(files) is not dict or not (0 if allow_empty else 1) <= len(files) <= MAX_FILES:
         raise ValueError("bounded UTF8 file map required")
     size, folded = 0, set()
@@ -81,7 +81,8 @@ def _file_map(files, *, python_only=False, allow_empty=False):
         if path.endswith(".py"):
             if any(not IDENT.fullmatch(p) for p in path[:-3].split("/")):
                 raise ValueError("Python module path required")
-            ast.parse(text, filename=path)  # Syntax only; no VM or submitted exec.
+            if parse_python:
+                ast.parse(text, filename=path)  # Registration only; no submitted exec.
         result[path] = raw
     if any(any(other.startswith(path + "/") for other in files) for path in files):
         raise ValueError("file/directory collision")
@@ -94,21 +95,27 @@ def _module(name):
     return name
 
 
-def _module_file(name, files):
+def _module_file(name, files, *, allow_missing=False):
     path = name.replace(".", "/")
     matches = [p for p in (path + ".py", path + "/__init__.py") if p in files]
+    if not matches and allow_missing:
+        # Expected origin only, not an observation or a created source file.
+        # The isolated recipe records the actual missing/import failure.
+        return path + ".py"
     if len(matches) != 1:
         raise ValueError("module must identify one registered file")
     return matches[0]
 
 
-def _prepare(files, contract):
+def _prepare(files, contract, *, runtime_snapshot=False):
     """Pure admission, called only with host-registered task contracts.
 
     Registration authority is the caller's task registry, not a dict flag. A model
     or repo file must never be allowed to replace this contract.
     """
-    source = _file_map(files)
+    if type(runtime_snapshot) is not bool:
+        raise ValueError("explicit runtime snapshot mode required")
+    source = _file_map(files, allow_empty=runtime_snapshot, parse_python=not runtime_snapshot)
     if (type(contract) is not dict or set(contract) != {"schema_version", "contract_id", "trusted_files", "checks"}
             or type(contract["schema_version"]) is not int or contract["schema_version"] != 1
             or type(contract["contract_id"]) is not str or not SAFE_ID.fullmatch(contract["contract_id"])):
@@ -151,11 +158,11 @@ def _prepare(files, contract):
             if type(modules) is not list or not 1 <= len(modules) <= 32 or any(type(x) is not str for x in modules) or len(set(modules)) != len(modules):
                 raise ValueError("bounded exact import modules required")
             for name in modules:
-                _module_file(_module(name), source)
+                _module_file(_module(name), source, allow_missing=runtime_snapshot)
         elif recipe == "module":
             if set(check) != {"id", "recipe", "module", "args", "stdin", "input_files", "expected_exit", "expected_stdout", "expected_stderr", "expected_files"}:
                 raise ValueError("module fixed recipe schema")
-            _module_file(_module(check["module"]), source)
+            _module_file(_module(check["module"]), source, allow_missing=runtime_snapshot)
             if type(check["args"]) is not list or len(check["args"]) > 16 or any(type(a) is not str or len(a) > 256 or "\x00" in a for a in check["args"]):
                 raise ValueError("bounded pre-registered module arguments required")
             for key in ("stdin", "expected_stdout", "expected_stderr"):
@@ -182,7 +189,7 @@ def _prepare(files, contract):
         return not (isinstance(node, ast.Pass) or isinstance(node, ast.Expr)
                     and isinstance(node.value, ast.Constant) and
                     (type(node.value.value) is str or node.value.value is Ellipsis))
-    if not any(any(substantive(node) for node in ast.parse(raw.decode()).body)
+    if not runtime_snapshot and not any(any(substantive(node) for node in ast.parse(raw.decode()).body)
                for p, raw in source.items() if p.endswith(".py")):
         raise ValueError("empty implementation snapshot")
     return {"files_sha256": {p: sha(raw) for p, raw in sorted(source.items())},
@@ -194,7 +201,9 @@ def validate_contract(contract):
     """Validate host task registration without executing or needing a snapshot.
 
     Returns a detached canonical JSON copy. Snapshot-specific module existence,
-    nonempty source and path checks are repeated at execution/receipt admission.
+    nonempty source and syntax checks remain strict here. Runtime candidate
+    syntax/substance is checked by the fixed isolated checker instead; byte,
+    path, trusted-test and contract constraints still precede execution.
     """
     if type(contract) is not dict or type(contract.get("checks")) is not list:
         raise ValueError("registered project contract required")
@@ -219,11 +228,11 @@ def _execution_input(files, contract, bindings, seconds):
         if check["recipe"] == "module":
             checks.append({k: v for k, v in check.items() if not k.startswith("expected_")}
                           | {"expected_file_names": list(check["expected_files"])})
-            source_modules[check["module"]] = _module_file(check["module"], files)
+            source_modules[check["module"]] = _module_file(check["module"], files, allow_missing=True)
         else:
             checks.append(check)
             for name in check.get("modules", []):
-                source_modules[name] = _module_file(name, files)
+                source_modules[name] = _module_file(name, files, allow_missing=True)
             for name in check.get("test_modules", []):
                 test_modules[name] = _module_file(name, contract["trusted_files"])
     return {"schema_version": 1, **bindings,
@@ -235,14 +244,26 @@ def _execution_input(files, contract, bindings, seconds):
 
 # Trusted helper executes exact registered checks. It is never user supplied.
 CHECKER = r'''
-import importlib, json, os, runpy, sys, unittest
+import ast, importlib, importlib.util, json, os, runpy, sys, unittest
 from pathlib import Path
 inp=json.loads(Path('/runner/input.json').read_text())
 check=next(c for c in inp['checks'] if c['id']==sys.argv[1])
 outcome={'recipe':check['recipe'],'completed':False}
 report=Path('/tmp/work')/check['id']/'outcome.json'
 sys.path[:0]=['/trusted','/src']
+def require_implementation():
+    def substantive(node):
+        if isinstance(node,(ast.FunctionDef,ast.AsyncFunctionDef,ast.ClassDef)):
+            return any(substantive(child) for child in node.body)
+        return not (isinstance(node,ast.Pass) or isinstance(node,ast.Expr)
+                    and isinstance(node.value,ast.Constant) and
+                    (type(node.value.value) is str or node.value.value is Ellipsis))
+    trees=[ast.parse((Path('/src')/name).read_text(encoding='utf-8'),filename='/src/'+name)
+           for name in inp['files_sha256'] if name.endswith('.py')]
+    if not any(any(substantive(node) for node in tree.body) for tree in trees):
+        raise RuntimeError('empty implementation snapshot')
 try:
+    require_implementation()
     if check['recipe']=='unittest':
         def test_ids(suite):
             for test in suite:
@@ -277,6 +298,9 @@ try:
             seen[name]=str(path)
         outcome.update(completed=True,modules=seen)
     else:
+        found=importlib.util.find_spec(check['module'])
+        if found is None or found.origin is None or Path(found.origin).resolve()!=Path('/src')/inp['source_module_files'][check['module']]:
+            raise RuntimeError('unregistered module origin')
         sys.argv=[check['module']]+check['args']
         try:
             runpy.run_module(check['module'],run_name='__main__',alter_sys=True)
@@ -566,7 +590,7 @@ def execute_project(files, contract, artifacts, remaining_seconds):
 
     try:
         phase()
-        bindings = _prepare(files, contract)
+        bindings = _prepare(files, contract, runtime_snapshot=True)
         phase()
         snapshot = bindings["files_sha256"]
         result.update(snapshot_sha256=sha(canonical(snapshot)), contract_sha256=bindings["contract_sha256"])
@@ -771,7 +795,7 @@ def _check_rows(files, contract, receipt):
 def validate_receipt(files, contract, receipt):
     """Pure, read-only host scoring; no execution/replay/VM at final scoring."""
     try:
-        bindings = _prepare(files, contract)
+        bindings = _prepare(files, contract, runtime_snapshot=True)
         snapshot = sha(canonical(bindings["files_sha256"]))
         if (type(receipt) is not dict or type(receipt.get("schema_version")) is not int or receipt.get("schema_version") != 1
                 or receipt.get("backend") != EXECUTION_BACKEND or receipt.get("suite") != EXECUTION_SUITE
@@ -795,7 +819,7 @@ def validate_receipt(files, contract, receipt):
                 or receipt.get("output_sha256") != sha(canonical(payload) + b"\n")):
             raise ValueError("input/output receipt SHA binding")
         _command_integrity(receipt)
-        failures = []
+        failures, diagnostics = [], []
         for check, row in zip(contract["checks"], rows):
             outcome = row["outcome"]
             good = (not row["timeout"] and not row["truncated"] and type(outcome) is dict
@@ -813,12 +837,14 @@ def validate_receipt(files, contract, receipt):
                              and outcome["skipped"] == outcome["expected_failures"] == 0
                              and outcome["failures"] == outcome["errors"] == outcome["unexpected_successes"] == 0)
             elif check["recipe"] == "import":
-                expected = {name: "/src/" + _module_file(name, files) for name in check["modules"]}
+                expected = {name: "/src/" + _module_file(name, files, allow_missing=True) for name in check["modules"]}
                 good &= (type(outcome) is dict and set(outcome) == {"recipe", "completed", "modules"}
-                         and outcome.get("modules") == expected and row["exit_code"] == 0)
+                         and outcome.get("modules") == expected and row["exit_code"] == 0
+                         and all(_module_file(name, files, allow_missing=True) in files for name in check["modules"]))
             else:
                 good &= (type(outcome) is dict and set(outcome) == {"recipe", "completed"}
-                         and row["exit_code"] == check["expected_exit"])
+                         and row["exit_code"] == check["expected_exit"]
+                         and _module_file(check["module"], files, allow_missing=True) in files)
                 for key in ("stdout", "stderr"):
                     raw = check["expected_" + key].encode()
                     good &= row[key + "_sha256"] == sha(raw) and row[key + "_bytes"] == len(raw)
@@ -826,8 +852,17 @@ def validate_receipt(files, contract, receipt):
                                                 for name, text in check["expected_files"].items()}
             if not good:
                 failures.append("project-check-failed:" + check["id"])
+                # _check_rows already verified exact hashes, sizes, the combined
+                # 4096-byte cap and credential rejection for these original bytes.
+                diagnostic = {key: row[key] for key in ("id", "recipe", "exit_code", "timeout", "truncated")}
+                diagnostic["completed"] = outcome.get("completed") if type(outcome) is dict else None
+                for key in ("stdout", "stderr"):
+                    diagnostic[key] = base64.b64decode(row[key + "_base64"], validate=True).decode("utf-8", errors="replace")
+                    for suffix in ("_sha256", "_bytes"):
+                        diagnostic[key + suffix] = row[key + suffix]
+                diagnostics.append(diagnostic)
         return {"ok": not failures, "integrity_ok": True, "suite": EXECUTION_SUITE, "checks_passed": len(rows) - len(failures),
-                "checks_total": len(rows), "failures": failures, "diagnostics": []}
+                "checks_total": len(rows), "failures": failures, "diagnostics": diagnostics}
     except (ValueError, TypeError, KeyError, UnicodeError, binascii.Error, SyntaxError, RecursionError):
         return {"ok": False, "integrity_ok": False, "suite": EXECUTION_SUITE, "checks_passed": 0,
                 "checks_total": _check_count(contract),

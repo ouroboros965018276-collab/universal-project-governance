@@ -270,6 +270,8 @@ class EngineeringBroker(RepoBroker):
         result = {'ok': not failures, 'suite': SUITE, 'failures': failures,
                   'checks_total': len(contract['checks']),
                   'checks_passed': checked['checks_passed'] if checked is not None and checked.get('integrity_ok') is True else None,
+                  'diagnostics': copy.deepcopy(checked.get('diagnostics', []))
+                      if execution['status'] == 'EXECUTED' and execution['unknown'] is False else [],
                   'execution': execution}
         if execution['unknown']:
             self.terminal_result = result
@@ -350,6 +352,7 @@ def _verify_stale_project_validation(broker, last):
                 receipt_sha256=execution['receipt_sha256'])
             if (checked.get('integrity_ok') is not True or checked.get('ok') != event['result']['ok']
                     or checked.get('failures') != event['result']['failures']
+                    or checked.get('diagnostics', []) != event['result'].get('diagnostics', [])
                     or received_sha != execution['receipt_sha256']
                     or receipt.get('status') != 'EXECUTED' or receipt.get('unknown') is not False
                     or receipt.get('snapshot_sha256') != state
@@ -399,6 +402,7 @@ def quality_from_current_receipts(broker, before, final_text, native_trace, extr
                     receipt_sha256=execution['receipt_sha256'])
                 if (checked.get('integrity_ok') is not True or checked.get('ok') != validation['ok']
                         or checked.get('failures') != validation['failures']
+                        or checked.get('diagnostics', []) != validation.get('diagnostics', [])
                         or received_sha != execution['receipt_sha256']
                         or receipt.get('status') != 'EXECUTED' or receipt.get('unknown') is not False
                         or receipt.get('snapshot_sha256') != current
