@@ -10,13 +10,13 @@ Current candidate: **3.0.0-rc.20 — Task Context and Complete Change Discipline
 
 来源、选用与排除、触发和验收映射由 [upstream-sources.json](third_party/upstream-sources.json) 维护；[鸣谢](THIRD_PARTY_NOTICES.md)保留五个上游及适用许可。三个新增来源的规则组只在预注册对照中消融，不撤销原有正确性、安全、真实性、必需验证或交接约束。
 
-当前规范源仅收敛两处：交付按需陈述结果、证据和缺口；当前记录遵循**明确声明**的阶段 schema，安全退休旧字段，并保留必要事实与未知。无法表达时披露缺口，不为展示治理另造字段或文件。生成核心为 **6,624 字节**（`75492e34…`），规范源身份 `badb891e…`，新资格身份 `d7888ee6…`；当前版本仍为 RC20 候选。旧身份与旧结果不重绑定，字节减少不等于任务收益。新候选的[工程门禁与完整回归](audits/rc20-stage-schema-engineering.audit.json)通过，真实模型收益仍待新任务检验。
+当前规范源仅收敛两处：交付按需陈述结果、证据和缺口；当前记录遵循**明确声明**的阶段 schema，安全退休旧字段，并保留必要事实与未知。无法表达时披露缺口，不为展示治理另造字段或文件。生成核心为 **6,624 字节**（`75492e34…`），规范源身份 `badb891e…`，新资格身份 `d7888ee6…`；当前版本仍为 RC20 候选。旧身份与旧结果不重绑定，字节减少不等于任务收益。新候选的[工程门禁与完整回归](audits/rc20-stage-schema-engineering.audit.json)通过，当前真实模型轮次已中止且完整独审未通过，净收益未证实。
 
-最新[真实 Python 配对开发轮](audits/rc20-paired-real-python-development-v2.audit.json)已经结束并保全：24 个角色、130 次已知请求、1,580,447 个报告 token，pending 为 0。有限 CPython 探针实际执行，机械检查 23/24；唯一失败是接手者读取后剩余时间不足，下一次请求被本地拒绝。没有观察到余额不足响应。
+最新[真实 Python 配对开发轮 v3](audits/rc20-paired-real-python-development-v3.audit.json)已封存：24 个计划角色中返回 18 个记录，生产侧机械通过 16 个；69 次请求有用量回执，另 1 次在连接阶段超时、明确未发送，报告 token 小计 **786,096**，pending 观察为 0。整个进程耗时 **796.62 秒**；这是不完整轮次的耗时，不能与完整实验直接比较，也不能把未调用的 6 个角色成本当零。未观察到余额不足响应。
 
-该轮 RC20 完整版与 RC19 均机械通过 8/8，但完整版 token 增加 **22.63%**、角色归属墙时增加 **109.95%**；全组事实审阅另保留 5 项 VETO、11 项 UNKNOWN、8 项有界支持。VETO 涉及报告工具归因及一项存在审阅分歧的文档相关性判断，不能把机械通过写成整体成功。该轮是开发诊断，不证明独立净收益、任意应用安全或突然中断恢复。
+首份独立审计为 **RAW_INTEGRITY_FAIL**，完整核账和净收益均未确认。失败来自审计器额外要求源端读取受保护 README；18 份留存任务输入的范围列表与公开读写矩阵逐项一致，源端合同并未要求该读取。只修未来校验器，不重评当前记录。18 份阶段事实审阅另保留 10 项有界支持、7 项 UNKNOWN、1 项报告表述 VETO；这些判断不能覆盖原始审计失败。
 
-下一轮先修正实验规范：明确 JSON 比较方式，并允许接手者更新受影响 README，消除“当前文档必须真实却禁止修改”的冲突。阶段字段返工还受公开比较规则欠说明影响，不能全部归因于 UPG。采用新任务、新身份重新注册；旧严格评分、失败、费用与未知项保持原样。默认分支和本地安装仍为 **RC19**，合并、安装及 Stable 各自受证据门槛约束。
+[上一轮 v2](audits/rc20-paired-real-python-development-v2.audit.json)是旧规范身份的完整开发诊断：1,580,447 个报告 token；完整版相对 RC19 token 增加 22.63%、角色归属墙时增加 109.95%。当前轮明确了 JSON 比较与 README 权限，但仍未证实净收益。下一步仅在新身份中修正读取假设、补足公开事实投影，并验证显式低延迟与发送前连接恢复策略；原轮次不续跑、不重试、不重评。默认分支和本地安装仍为 **RC19**。
 
 仓库专用的 API、解释器与隔离执行适配器不随 Skill 安装。[显式 CPython 工程审计](audits/rc20-cpython-backend-engineering.audit.json)与人工固定样例回归属于工程证据，不能替代模型任务净收益。历史[原生轮次](audits/rc20-native-context.audit.json)、[API v1](audits/rc20-api-tools-v1.audit.json)、[API v2](audits/rc20-api-tools-v2-development.audit.json)、[AST](audits/rc20-prospective-api-v1.audit.json)、[语义](audits/rc20-semantic-api-v1.audit.json)、[开发 v3](audits/rc20-tools-v3-development.audit.json)、[推理](audits/rc20-thinking-development-v1.audit.json)、[上下文 v1](audits/rc20-contract-context-development-v1.audit.json)、[上下文 v2](audits/rc20-public-contract-context-development-v2.audit.json)和[计划接手 v4](audits/rc20-handoff-tools-development-v4.audit.json)保留原证据；不续跑、重评或合并。有限契约的范围见[说明](docs/rc20-behavior-contracts.md)。
 
