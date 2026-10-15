@@ -14,7 +14,7 @@ Current candidate: **3.0.0-rc.20 — Task Context and Complete Change Discipline
 
 最近完整结束的[真实 Python 配对开发轮 v4](audits/rc20-paired-real-python-development-v4.audit.json)已完成：24 个角色全部返回，独立机械检查通过 21 个；140 次请求共 **1,613,204** 个报告 token，最终 pending 为 0。首份独立原始审计 **RAW_INTEGRITY_PASS**，3478 个原始文件与 128 项源文件及副本前后哈希一致。完整组相对 RC19 的角色归属耗时下降 **30.52%**，但 token 增加 **2.60%**；相对简洁指令对照，token 增加 **6.51%**。三组机械检查均为 7/8；完整组事实审阅为 6 项有界支持、1 项 VETO、1 项因审阅准备偏差受限的 UNKNOWN。完整组把“None 返回 False”改成抛异常并写成已完成，不能用执行器限制解释或挽救。
 
-为核验容量替代，仓库新增显式 DeepSeek Pro / MiMo Flash disabled 配置；[工程验收](audits/rc20-pro-profile-engineering.audit.json)通过 9 项门禁、832 项测试及 2 项跳过，原 18 文件运行时未变。该配置尚无真实模型结果，不能据工程通过宣称容量恢复或收益。后续试验须使用新协议并保留 v5 未知费用围栏。
+为核验容量替代，仓库新增显式 DeepSeek Pro / MiMo Flash disabled 配置；[工程验收](audits/rc20-pro-profile-engineering.audit.json)通过 9 项门禁、832 项测试及 2 项跳过，原 18 文件运行时未变。[新开发轮 v6](audits/rc20-paired-real-python-development-v6.preflight.json)已准备，计划 24 个角色；实际结论尚待协议执行与独立审阅。工程通过不证明容量恢复或收益；v5 未知费用围栏继续保留。
 
 本轮保留质量与成本失败，未取得可晋升的净收益；其源码身份与当前候选不同。下一步以新任务、相同预算和独立审计验证当前候选，再补齐独立验证与来源消融。默认分支和本地安装仍为 **RC19**。本轮没有实际触发连接重试，不能宣称该恢复策略已获真实故障验证。
 
