@@ -1,0 +1,1268 @@
+{
+  "actual_collector_call_AST_bound_roles": [
+    {
+      "actor_id": "w001-source",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "a2a986eb7365d44d0092185b403ca5a65623f2078f14059b772ec88f93db54b6",
+      "provider": "mimo",
+      "role": "source",
+      "system_sha256": "408bf2ccafc57cd1a128a5a71cf081cedc4844dc9052296963703442ee11a8e6"
+    },
+    {
+      "actor_id": "w002-source",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "a2a986eb7365d44d0092185b403ca5a65623f2078f14059b772ec88f93db54b6",
+      "provider": "mimo",
+      "role": "source",
+      "system_sha256": "342b70eeedbc69ff3cf77d56686926c00b95d62919fbc1fe86c91a2b8bebb20a"
+    },
+    {
+      "actor_id": "w003-source",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "90e07794c62cd1aa6be9cee5f6223a238e120c438ad68f5742f774cd519580c2",
+      "provider": "deepseek",
+      "role": "source",
+      "system_sha256": "342b70eeedbc69ff3cf77d56686926c00b95d62919fbc1fe86c91a2b8bebb20a"
+    },
+    {
+      "actor_id": "w004-source",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "65a84642605117d33cac3faa24665c9260ee73b33bfb3d5f1d7e242b456cf638",
+      "provider": "deepseek",
+      "role": "source",
+      "system_sha256": "408bf2ccafc57cd1a128a5a71cf081cedc4844dc9052296963703442ee11a8e6"
+    },
+    {
+      "actor_id": "w005-source",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "893786ae048ca129fe2c15b08bb96bcfa328700438b6da07b2274c566573c9b0",
+      "provider": "deepseek",
+      "role": "source",
+      "system_sha256": "00e0ae8fdc6252a0d0a190a56c8d22f6a426b0d8c584b8e69fd400fd5d1703a1"
+    },
+    {
+      "actor_id": "w005-receiver",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "7ba517055035367026e6cbbfb00d639d93a2fd87de020b4cbc4891b5c9cae4a5",
+      "provider": "mimo",
+      "role": "receiver",
+      "system_sha256": "9d2b1df9218d74a88ecc453649a079ad56a803c2afa04206f8c0828dc431093a"
+    },
+    {
+      "actor_id": "w006-source",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "65a84642605117d33cac3faa24665c9260ee73b33bfb3d5f1d7e242b456cf638",
+      "provider": "deepseek",
+      "role": "source",
+      "system_sha256": "00e0ae8fdc6252a0d0a190a56c8d22f6a426b0d8c584b8e69fd400fd5d1703a1"
+    },
+    {
+      "actor_id": "w007-source",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "d81db99ccc9fe3742a6b28060f8dd04d1c0b6c97fe68e5c5edd56a20eeb57353",
+      "provider": "mimo",
+      "role": "source",
+      "system_sha256": "408bf2ccafc57cd1a128a5a71cf081cedc4844dc9052296963703442ee11a8e6"
+    },
+    {
+      "actor_id": "w008-source",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "7dea35f9f67a6655f6897cb4f8ba66c48af4db2b61db41a7d141cd03caa5a712",
+      "provider": "deepseek",
+      "role": "source",
+      "system_sha256": "a53fed681525134caa511adba761ef834e6395f82092b4fa4c29535d7fd4bfc3"
+    },
+    {
+      "actor_id": "w009-source",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "7dea35f9f67a6655f6897cb4f8ba66c48af4db2b61db41a7d141cd03caa5a712",
+      "provider": "mimo",
+      "role": "source",
+      "system_sha256": "a53fed681525134caa511adba761ef834e6395f82092b4fa4c29535d7fd4bfc3"
+    },
+    {
+      "actor_id": "w010-source",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "65a84642605117d33cac3faa24665c9260ee73b33bfb3d5f1d7e242b456cf638",
+      "provider": "mimo",
+      "role": "source",
+      "system_sha256": "00e0ae8fdc6252a0d0a190a56c8d22f6a426b0d8c584b8e69fd400fd5d1703a1"
+    },
+    {
+      "actor_id": "w011-source",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "65a84642605117d33cac3faa24665c9260ee73b33bfb3d5f1d7e242b456cf638",
+      "provider": "deepseek",
+      "role": "source",
+      "system_sha256": "342b70eeedbc69ff3cf77d56686926c00b95d62919fbc1fe86c91a2b8bebb20a"
+    },
+    {
+      "actor_id": "w012-source",
+      "controlled_guard_bound": true,
+      "input_task_sha256": "48de7ce5dcc987c2b2d2a86c3cac124825d7e6c20de021379a12c9df425c3a7d",
+      "provider": "mimo",
+      "role": "source",
+      "system_sha256": "408bf2ccafc57cd1a128a5a71cf081cedc4844dc9052296963703442ee11a8e6"
+    },
+    {
+      "actor_id": "w012-receiver",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "ea75edb2a627fb46a41d244838834d7b1fd1b06ed3fa33cccb8e7d1a3320b623",
+      "provider": "deepseek",
+      "role": "receiver",
+      "system_sha256": "d52a69b6fa89b4df68bec10f6474b7b4e5690bccefdff7659408f742b2a5ef73"
+    },
+    {
+      "actor_id": "w013-source",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "65a84642605117d33cac3faa24665c9260ee73b33bfb3d5f1d7e242b456cf638",
+      "provider": "mimo",
+      "role": "source",
+      "system_sha256": "408bf2ccafc57cd1a128a5a71cf081cedc4844dc9052296963703442ee11a8e6"
+    },
+    {
+      "actor_id": "w014-source",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "65a84642605117d33cac3faa24665c9260ee73b33bfb3d5f1d7e242b456cf638",
+      "provider": "mimo",
+      "role": "source",
+      "system_sha256": "342b70eeedbc69ff3cf77d56686926c00b95d62919fbc1fe86c91a2b8bebb20a"
+    },
+    {
+      "actor_id": "w015-source",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "7dea35f9f67a6655f6897cb4f8ba66c48af4db2b61db41a7d141cd03caa5a712",
+      "provider": "mimo",
+      "role": "source",
+      "system_sha256": "80756be531266a56860cc0ac572d7ee33e4e1c498954065fd4cd7cc3df8b2f45"
+    },
+    {
+      "actor_id": "w016-source",
+      "controlled_guard_bound": true,
+      "input_task_sha256": "48de7ce5dcc987c2b2d2a86c3cac124825d7e6c20de021379a12c9df425c3a7d",
+      "provider": "deepseek",
+      "role": "source",
+      "system_sha256": "00e0ae8fdc6252a0d0a190a56c8d22f6a426b0d8c584b8e69fd400fd5d1703a1"
+    },
+    {
+      "actor_id": "w016-receiver",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "ea75edb2a627fb46a41d244838834d7b1fd1b06ed3fa33cccb8e7d1a3320b623",
+      "provider": "mimo",
+      "role": "receiver",
+      "system_sha256": "9d2b1df9218d74a88ecc453649a079ad56a803c2afa04206f8c0828dc431093a"
+    },
+    {
+      "actor_id": "w017-source",
+      "controlled_guard_bound": true,
+      "input_task_sha256": "48de7ce5dcc987c2b2d2a86c3cac124825d7e6c20de021379a12c9df425c3a7d",
+      "provider": "mimo",
+      "role": "source",
+      "system_sha256": "342b70eeedbc69ff3cf77d56686926c00b95d62919fbc1fe86c91a2b8bebb20a"
+    },
+    {
+      "actor_id": "w017-receiver",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "ea75edb2a627fb46a41d244838834d7b1fd1b06ed3fa33cccb8e7d1a3320b623",
+      "provider": "deepseek",
+      "role": "receiver",
+      "system_sha256": "43c15d512cf8ee6690ae5534bfb97a0b84bc8cb13c7874df3c60261e1ad0d1ee"
+    },
+    {
+      "actor_id": "w018-source",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "fa08f2c19d6ff8ef771e91e59b44cad9fafb87d9e739b508a2398f7c1dea492c",
+      "provider": "deepseek",
+      "role": "source",
+      "system_sha256": "00e0ae8fdc6252a0d0a190a56c8d22f6a426b0d8c584b8e69fd400fd5d1703a1"
+    },
+    {
+      "actor_id": "w019-source",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "63485cce3542de79815ce220e7618e5558086738d6316695ccb3762874593d87",
+      "provider": "deepseek",
+      "role": "source",
+      "system_sha256": "342b70eeedbc69ff3cf77d56686926c00b95d62919fbc1fe86c91a2b8bebb20a"
+    },
+    {
+      "actor_id": "w020-source",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "a2a986eb7365d44d0092185b403ca5a65623f2078f14059b772ec88f93db54b6",
+      "provider": "deepseek",
+      "role": "source",
+      "system_sha256": "342b70eeedbc69ff3cf77d56686926c00b95d62919fbc1fe86c91a2b8bebb20a"
+    },
+    {
+      "actor_id": "w021-source",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "90e07794c62cd1aa6be9cee5f6223a238e120c438ad68f5742f774cd519580c2",
+      "provider": "mimo",
+      "role": "source",
+      "system_sha256": "408bf2ccafc57cd1a128a5a71cf081cedc4844dc9052296963703442ee11a8e6"
+    },
+    {
+      "actor_id": "w022-source",
+      "controlled_guard_bound": true,
+      "input_task_sha256": "48de7ce5dcc987c2b2d2a86c3cac124825d7e6c20de021379a12c9df425c3a7d",
+      "provider": "deepseek",
+      "role": "source",
+      "system_sha256": "408bf2ccafc57cd1a128a5a71cf081cedc4844dc9052296963703442ee11a8e6"
+    },
+    {
+      "actor_id": "w022-receiver",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "ea75edb2a627fb46a41d244838834d7b1fd1b06ed3fa33cccb8e7d1a3320b623",
+      "provider": "mimo",
+      "role": "receiver",
+      "system_sha256": "d52a69b6fa89b4df68bec10f6474b7b4e5690bccefdff7659408f742b2a5ef73"
+    },
+    {
+      "actor_id": "w023-source",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "fa08f2c19d6ff8ef771e91e59b44cad9fafb87d9e739b508a2398f7c1dea492c",
+      "provider": "mimo",
+      "role": "source",
+      "system_sha256": "342b70eeedbc69ff3cf77d56686926c00b95d62919fbc1fe86c91a2b8bebb20a"
+    },
+    {
+      "actor_id": "w024-source",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "7dea35f9f67a6655f6897cb4f8ba66c48af4db2b61db41a7d141cd03caa5a712",
+      "provider": "deepseek",
+      "role": "source",
+      "system_sha256": "3caafe2db1860166218ceb9da682e16c77741dc70ba5a9f22663d14072dd7182"
+    },
+    {
+      "actor_id": "w025-source",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "90e07794c62cd1aa6be9cee5f6223a238e120c438ad68f5742f774cd519580c2",
+      "provider": "mimo",
+      "role": "source",
+      "system_sha256": "342b70eeedbc69ff3cf77d56686926c00b95d62919fbc1fe86c91a2b8bebb20a"
+    },
+    {
+      "actor_id": "w026-source",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "a2a986eb7365d44d0092185b403ca5a65623f2078f14059b772ec88f93db54b6",
+      "provider": "deepseek",
+      "role": "source",
+      "system_sha256": "00e0ae8fdc6252a0d0a190a56c8d22f6a426b0d8c584b8e69fd400fd5d1703a1"
+    },
+    {
+      "actor_id": "w027-source",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "d81db99ccc9fe3742a6b28060f8dd04d1c0b6c97fe68e5c5edd56a20eeb57353",
+      "provider": "mimo",
+      "role": "source",
+      "system_sha256": "00e0ae8fdc6252a0d0a190a56c8d22f6a426b0d8c584b8e69fd400fd5d1703a1"
+    },
+    {
+      "actor_id": "w028-source",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "893786ae048ca129fe2c15b08bb96bcfa328700438b6da07b2274c566573c9b0",
+      "provider": "mimo",
+      "role": "source",
+      "system_sha256": "00e0ae8fdc6252a0d0a190a56c8d22f6a426b0d8c584b8e69fd400fd5d1703a1"
+    },
+    {
+      "actor_id": "w028-receiver",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "7ba517055035367026e6cbbfb00d639d93a2fd87de020b4cbc4891b5c9cae4a5",
+      "provider": "deepseek",
+      "role": "receiver",
+      "system_sha256": "9d2b1df9218d74a88ecc453649a079ad56a803c2afa04206f8c0828dc431093a"
+    },
+    {
+      "actor_id": "w029-source",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "63485cce3542de79815ce220e7618e5558086738d6316695ccb3762874593d87",
+      "provider": "deepseek",
+      "role": "source",
+      "system_sha256": "00e0ae8fdc6252a0d0a190a56c8d22f6a426b0d8c584b8e69fd400fd5d1703a1"
+    },
+    {
+      "actor_id": "w030-source",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "63485cce3542de79815ce220e7618e5558086738d6316695ccb3762874593d87",
+      "provider": "mimo",
+      "role": "source",
+      "system_sha256": "00e0ae8fdc6252a0d0a190a56c8d22f6a426b0d8c584b8e69fd400fd5d1703a1"
+    },
+    {
+      "actor_id": "w031-source",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "893786ae048ca129fe2c15b08bb96bcfa328700438b6da07b2274c566573c9b0",
+      "provider": "mimo",
+      "role": "source",
+      "system_sha256": "408bf2ccafc57cd1a128a5a71cf081cedc4844dc9052296963703442ee11a8e6"
+    },
+    {
+      "actor_id": "w031-receiver",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "7ba517055035367026e6cbbfb00d639d93a2fd87de020b4cbc4891b5c9cae4a5",
+      "provider": "deepseek",
+      "role": "receiver",
+      "system_sha256": "d52a69b6fa89b4df68bec10f6474b7b4e5690bccefdff7659408f742b2a5ef73"
+    },
+    {
+      "actor_id": "w032-source",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "d81db99ccc9fe3742a6b28060f8dd04d1c0b6c97fe68e5c5edd56a20eeb57353",
+      "provider": "mimo",
+      "role": "source",
+      "system_sha256": "342b70eeedbc69ff3cf77d56686926c00b95d62919fbc1fe86c91a2b8bebb20a"
+    },
+    {
+      "actor_id": "w033-source",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "d81db99ccc9fe3742a6b28060f8dd04d1c0b6c97fe68e5c5edd56a20eeb57353",
+      "provider": "deepseek",
+      "role": "source",
+      "system_sha256": "342b70eeedbc69ff3cf77d56686926c00b95d62919fbc1fe86c91a2b8bebb20a"
+    },
+    {
+      "actor_id": "w034-source",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "63485cce3542de79815ce220e7618e5558086738d6316695ccb3762874593d87",
+      "provider": "mimo",
+      "role": "source",
+      "system_sha256": "408bf2ccafc57cd1a128a5a71cf081cedc4844dc9052296963703442ee11a8e6"
+    },
+    {
+      "actor_id": "w035-source",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "893786ae048ca129fe2c15b08bb96bcfa328700438b6da07b2274c566573c9b0",
+      "provider": "deepseek",
+      "role": "source",
+      "system_sha256": "408bf2ccafc57cd1a128a5a71cf081cedc4844dc9052296963703442ee11a8e6"
+    },
+    {
+      "actor_id": "w035-receiver",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "7ba517055035367026e6cbbfb00d639d93a2fd87de020b4cbc4891b5c9cae4a5",
+      "provider": "mimo",
+      "role": "receiver",
+      "system_sha256": "d52a69b6fa89b4df68bec10f6474b7b4e5690bccefdff7659408f742b2a5ef73"
+    },
+    {
+      "actor_id": "w036-source",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "a2a986eb7365d44d0092185b403ca5a65623f2078f14059b772ec88f93db54b6",
+      "provider": "mimo",
+      "role": "source",
+      "system_sha256": "00e0ae8fdc6252a0d0a190a56c8d22f6a426b0d8c584b8e69fd400fd5d1703a1"
+    },
+    {
+      "actor_id": "w037-source",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "fa08f2c19d6ff8ef771e91e59b44cad9fafb87d9e739b508a2398f7c1dea492c",
+      "provider": "mimo",
+      "role": "source",
+      "system_sha256": "408bf2ccafc57cd1a128a5a71cf081cedc4844dc9052296963703442ee11a8e6"
+    },
+    {
+      "actor_id": "w038-source",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "fa08f2c19d6ff8ef771e91e59b44cad9fafb87d9e739b508a2398f7c1dea492c",
+      "provider": "deepseek",
+      "role": "source",
+      "system_sha256": "408bf2ccafc57cd1a128a5a71cf081cedc4844dc9052296963703442ee11a8e6"
+    },
+    {
+      "actor_id": "w039-source",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "7dea35f9f67a6655f6897cb4f8ba66c48af4db2b61db41a7d141cd03caa5a712",
+      "provider": "mimo",
+      "role": "source",
+      "system_sha256": "3caafe2db1860166218ceb9da682e16c77741dc70ba5a9f22663d14072dd7182"
+    },
+    {
+      "actor_id": "w040-source",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "63485cce3542de79815ce220e7618e5558086738d6316695ccb3762874593d87",
+      "provider": "mimo",
+      "role": "source",
+      "system_sha256": "342b70eeedbc69ff3cf77d56686926c00b95d62919fbc1fe86c91a2b8bebb20a"
+    },
+    {
+      "actor_id": "w041-source",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "893786ae048ca129fe2c15b08bb96bcfa328700438b6da07b2274c566573c9b0",
+      "provider": "mimo",
+      "role": "source",
+      "system_sha256": "342b70eeedbc69ff3cf77d56686926c00b95d62919fbc1fe86c91a2b8bebb20a"
+    },
+    {
+      "actor_id": "w041-receiver",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "7ba517055035367026e6cbbfb00d639d93a2fd87de020b4cbc4891b5c9cae4a5",
+      "provider": "deepseek",
+      "role": "receiver",
+      "system_sha256": "43c15d512cf8ee6690ae5534bfb97a0b84bc8cb13c7874df3c60261e1ad0d1ee"
+    },
+    {
+      "actor_id": "w042-source",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "7dea35f9f67a6655f6897cb4f8ba66c48af4db2b61db41a7d141cd03caa5a712",
+      "provider": "deepseek",
+      "role": "source",
+      "system_sha256": "80756be531266a56860cc0ac572d7ee33e4e1c498954065fd4cd7cc3df8b2f45"
+    },
+    {
+      "actor_id": "w043-source",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "893786ae048ca129fe2c15b08bb96bcfa328700438b6da07b2274c566573c9b0",
+      "provider": "deepseek",
+      "role": "source",
+      "system_sha256": "342b70eeedbc69ff3cf77d56686926c00b95d62919fbc1fe86c91a2b8bebb20a"
+    },
+    {
+      "actor_id": "w043-receiver",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "7ba517055035367026e6cbbfb00d639d93a2fd87de020b4cbc4891b5c9cae4a5",
+      "provider": "mimo",
+      "role": "receiver",
+      "system_sha256": "43c15d512cf8ee6690ae5534bfb97a0b84bc8cb13c7874df3c60261e1ad0d1ee"
+    },
+    {
+      "actor_id": "w044-source",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "fa08f2c19d6ff8ef771e91e59b44cad9fafb87d9e739b508a2398f7c1dea492c",
+      "provider": "deepseek",
+      "role": "source",
+      "system_sha256": "342b70eeedbc69ff3cf77d56686926c00b95d62919fbc1fe86c91a2b8bebb20a"
+    },
+    {
+      "actor_id": "w045-source",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "d81db99ccc9fe3742a6b28060f8dd04d1c0b6c97fe68e5c5edd56a20eeb57353",
+      "provider": "deepseek",
+      "role": "source",
+      "system_sha256": "408bf2ccafc57cd1a128a5a71cf081cedc4844dc9052296963703442ee11a8e6"
+    },
+    {
+      "actor_id": "w046-source",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "90e07794c62cd1aa6be9cee5f6223a238e120c438ad68f5742f774cd519580c2",
+      "provider": "deepseek",
+      "role": "source",
+      "system_sha256": "00e0ae8fdc6252a0d0a190a56c8d22f6a426b0d8c584b8e69fd400fd5d1703a1"
+    },
+    {
+      "actor_id": "w047-source",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "a2a986eb7365d44d0092185b403ca5a65623f2078f14059b772ec88f93db54b6",
+      "provider": "deepseek",
+      "role": "source",
+      "system_sha256": "408bf2ccafc57cd1a128a5a71cf081cedc4844dc9052296963703442ee11a8e6"
+    },
+    {
+      "actor_id": "w048-source",
+      "controlled_guard_bound": true,
+      "input_task_sha256": "48de7ce5dcc987c2b2d2a86c3cac124825d7e6c20de021379a12c9df425c3a7d",
+      "provider": "deepseek",
+      "role": "source",
+      "system_sha256": "342b70eeedbc69ff3cf77d56686926c00b95d62919fbc1fe86c91a2b8bebb20a"
+    },
+    {
+      "actor_id": "w048-receiver",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "ea75edb2a627fb46a41d244838834d7b1fd1b06ed3fa33cccb8e7d1a3320b623",
+      "provider": "mimo",
+      "role": "receiver",
+      "system_sha256": "43c15d512cf8ee6690ae5534bfb97a0b84bc8cb13c7874df3c60261e1ad0d1ee"
+    },
+    {
+      "actor_id": "w049-source",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "63485cce3542de79815ce220e7618e5558086738d6316695ccb3762874593d87",
+      "provider": "deepseek",
+      "role": "source",
+      "system_sha256": "408bf2ccafc57cd1a128a5a71cf081cedc4844dc9052296963703442ee11a8e6"
+    },
+    {
+      "actor_id": "w050-source",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "d81db99ccc9fe3742a6b28060f8dd04d1c0b6c97fe68e5c5edd56a20eeb57353",
+      "provider": "deepseek",
+      "role": "source",
+      "system_sha256": "00e0ae8fdc6252a0d0a190a56c8d22f6a426b0d8c584b8e69fd400fd5d1703a1"
+    },
+    {
+      "actor_id": "w051-source",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "90e07794c62cd1aa6be9cee5f6223a238e120c438ad68f5742f774cd519580c2",
+      "provider": "deepseek",
+      "role": "source",
+      "system_sha256": "408bf2ccafc57cd1a128a5a71cf081cedc4844dc9052296963703442ee11a8e6"
+    },
+    {
+      "actor_id": "w052-source",
+      "controlled_guard_bound": true,
+      "input_task_sha256": "48de7ce5dcc987c2b2d2a86c3cac124825d7e6c20de021379a12c9df425c3a7d",
+      "provider": "mimo",
+      "role": "source",
+      "system_sha256": "00e0ae8fdc6252a0d0a190a56c8d22f6a426b0d8c584b8e69fd400fd5d1703a1"
+    },
+    {
+      "actor_id": "w052-receiver",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "ea75edb2a627fb46a41d244838834d7b1fd1b06ed3fa33cccb8e7d1a3320b623",
+      "provider": "deepseek",
+      "role": "receiver",
+      "system_sha256": "9d2b1df9218d74a88ecc453649a079ad56a803c2afa04206f8c0828dc431093a"
+    },
+    {
+      "actor_id": "w053-source",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "fa08f2c19d6ff8ef771e91e59b44cad9fafb87d9e739b508a2398f7c1dea492c",
+      "provider": "mimo",
+      "role": "source",
+      "system_sha256": "00e0ae8fdc6252a0d0a190a56c8d22f6a426b0d8c584b8e69fd400fd5d1703a1"
+    },
+    {
+      "actor_id": "w054-source",
+      "controlled_guard_bound": false,
+      "input_task_sha256": "90e07794c62cd1aa6be9cee5f6223a238e120c438ad68f5742f774cd519580c2",
+      "provider": "mimo",
+      "role": "source",
+      "system_sha256": "00e0ae8fdc6252a0d0a190a56c8d22f6a426b0d8c584b8e69fd400fd5d1703a1"
+    }
+  ],
+  "all_checked_input_count": 209,
+  "all_inputs_before_after_exact": true,
+  "auditor_actual_authorization": {
+    "actual_entry_authorization": "UNBOUND"
+  },
+  "collector_default_enabled": false,
+  "completed_at_utc": "2026-10-15T13:47:07.069926+00:00",
+  "entry": {
+    "label": "rc20-engineering-design",
+    "python": "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+    "version": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+    "write_read_cleanup_probe": true
+  },
+  "findings": [],
+  "inputs_after": {
+    "audits/rc20-runtime-failure-engineering.audit.json": "787faa4f43ce5f4328e48feeb6a50680b051a899c8eb5e9af20c6e6a5e68acb0",
+    "audits/rc20-stdlib-project-development-v9.preflight.json": "09259aa5d6cfae5658411355fceda22286d8cba023f9a991edcd0861f76a1500",
+    "compiler/compile_governance.py": "42d0a00163fc5946479976a485e772ca5ee9f35d7d4736fbe61068bb4909d46f",
+    "eval-workspaces/rc20-controlled-removal-public-v1/terminal.json": "a738f15b5b319bdecc04438f07ba6b084dc2a98bf1b85697cd7cfe2192d20266",
+    "eval-workspaces/rc20-docker-capability-20261014T200758Z-010b06063a694174965688d1f36ae7ff/entry.json": "d5dfb62956ac47ed9a0cb86c519822150ff540d9c3a60377c11180df137f2c77",
+    "eval-workspaces/rc20-docker-python-probe-20261014T201321Z-7f1a32b184c54d82abfffced4e850158/image-binding.json": "3ca1d0ced11f5a587b4c6fbfb8139170e2eab2947c3f28cfd250c4ecf9f75762",
+    "eval-workspaces/rc20-paired-real-python-development-independent-audit-v1.py": "a198275c8647217105d2ca1f73dc6158050c80e6d86fffa76d2923c1b84b302c",
+    "eval-workspaces/rc20-paired-real-python-development-independent-audit-v6-final.py": "f5036101347618736ce1033d08854b008ccd3b71d23e7facbb68f160e6f5a925",
+    "eval-workspaces/rc20-project-v7-factory-20261015t104000-9ac2/revisions/r4/calibration-metadata.json": "b9a1d3927624787a8eac72d5ee69daca215968d2aba46e3b485561850113ebca",
+    "eval-workspaces/rc20-project-v7-factory-20261015t104000-9ac2/revisions/r4/delivery-manifest.json": "c9bef3bb850e0ac33264039197bff49dc5f9028a2426984c18b55b2cbabaa7fb",
+    "eval-workspaces/rc20-project-v7-factory-20261015t104000-9ac2/revisions/r4/factory.py": "56a3c1a83d149cf14676041347657b8dedfc2e449d44de04c06e6931d3d45929",
+    "eval-workspaces/rc20-project-v7-factory-20261015t104000-9ac2/revisions/r4/manual-rubrics.json": "916a64dbb7107831009639cf1a6146e8a52a44e18664e819531b4bb1aa4d1b85",
+    "eval-workspaces/rc20-project-v7-factory-20261015t104000-9ac2/revisions/r4/preexecution-freeze.json": "1e4215430caba50bce57006de3149bb35818dc351ef53da2a98a66d1515abeb9",
+    "eval-workspaces/rc20-project-v7-factory-20261015t104000-9ac2/revisions/r4/source-pins.json": "897ef55d5d3f702ab220f67b45a07f1ae05e255db9691e34b340a7fe43488104",
+    "eval-workspaces/rc20-project-v7-factory-20261015t104000-9ac2/revisions/r4/workflow-specs.json": "06e1766a3b0a2edecf6aff062a9ca81870cb122a5d4452aa832f4ea29e0f2a79",
+    "eval-workspaces/rc20-project-v7-manual-tests-v2.py": "e63208a3f5296c5b3c66deca6421e7ef98130312e8e22d11aa0f2c931df7719a",
+    "eval-workspaces/rc20-project-v7-manual-v2.py": "90f8e8e1a02d0a467fb42510688bbb44303e96f98e1b61ee4a81684f5852db8c",
+    "eval-workspaces/rc20-runtime-failure-adoption-v1/applied.json": "476087fa8864c09ab878caf0d5978ab6e2641e9a5b12a23f48e781cc25fd6ee1",
+    "eval-workspaces/rc20-runtime-failure-engineering-v1/result.json": "2d32ea1098b51ea27d2d524b23391cf0a0df2af567afb91b11f26e03d71c5b7e",
+    "eval-workspaces/rc20-semantic-api-independent-audit.py": "01e19f0c85475bdee68beac826ff4c8de7da7e4a46c7a6a07e828acd6c6dd87a",
+    "eval-workspaces/rc20-stdlib-project-development-v7-candidate-83001e19f36b45babcd2412ed3ed7c25/candidate-source-manifest-v2.json": "11452bcbcd08972b773dce6689006b0998437f3e790d763d76ca02f554d54fcc",
+    "eval-workspaces/rc20-stdlib-project-development-v7-candidate-83001e19f36b45babcd2412ed3ed7c25/evidence/collector-v2-final-17.receipt.json": "16836a1494d2b77e1f8c178859e6224ad7a853c4c462700cea835fd5638f6a97",
+    "eval-workspaces/rc20-stdlib-project-development-v7-candidate-83001e19f36b45babcd2412ed3ed7c25/evidence/public-factory-ast-proof-v1.json": "516a214123d39ce602b85f19f8847465a0a12ebbfd3a3583c6639ac7d054cb68",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/collector_v7.py": "35782e0754ca3395534cbc8b83014d547d7866b5912a8ba567bba96d564bdeef",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/derivation.json": "d8482f1221d60fed5e554c3730d5dcef4bdb6f39db5fc45dce513ce81913e965",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/baseline-runtime/INTEGRITY.md": "01e1e3eb772940fe8259b0cb125cd7712858c6f50d4f2fdcada420aa73d29ab5",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/baseline-runtime/LICENSE": "50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/baseline-runtime/SKILL.md": "6204675e555304a07a35af46038883ce285caec0a0fbe8b4ff8d98cde00d2ee4",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/baseline-runtime/VERSION.md": "1033f9c40e480f722ef32d922874d18953a6063d911ebacf36df156b7a0c7be1",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/baseline-runtime/integrity/manifest.json": "7b9ee6d6b2c2d7600de854ecd4ec74363491ab5694b8c06f4ade8cdde81e2e5b",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/baseline-runtime/policy-index.json": "3d451c8b4c9268f40032ed239158bd2741bb6426f710e5cdfbc5f0bc98146033",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/baseline-runtime/schemas/audit.schema.json": "a5e15c26eff86e3c4e2e174fb121ef22981628307f09cf18d09a589e738ea889",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/baseline-runtime/schemas/execution.schema.json": "d2a7cddc9d98c8101294df302259ba18217c27b9e7c8fee43d96c82ff6bde1d7",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/baseline-runtime/schemas/feedback.schema.json": "22da61a114a1e89ee641ac25e90e23d6231003351df15918d4265f9900091954",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/baseline-runtime/schemas/field-report.schema.json": "fdba5018f63287fe87e2bf57eb0080f1935c13408a181025502973cbfa1cfd40",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/baseline-runtime/schemas/governance-plan.schema.json": "adb033dedda5f25f5a41ee95c2fca1cddfb474739173ab9b5712ddcd3b9bff67",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/baseline-runtime/schemas/handoff.schema.json": "994769e2a35b4d2189c509b8c5fce6ba76e4941fa4cadaa51f8f02f48b338a97",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/baseline-runtime/schemas/task-context.schema.json": "acc323f7d86f8dad5d8694e7fcf566dad6987d077877fbe6dbc819029936ad38",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/baseline-runtime/scripts/plan_governance.py": "cfe243ec183c8d1846f31bd794195e85595dda3708319d7acbb4c8b6a12e48ca",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/baseline-runtime/scripts/project_facts.py": "f355e0fa241a1032c94d4959b610b86c2d0ad48b2c62bbfed1ded65bfa4bd9ee",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/baseline-runtime/scripts/project_tool.py": "960355b2763c5ca3e4a150051e24ff035cb73d06ce37818a87adc90385e03412",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/baseline-runtime/scripts/state_tool.py": "193cb9657c32dedb253727e93a13bcb6f39306331fc8a90d1319e337f5b088a0",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/baseline-runtime/scripts/validate_integrity.py": "cf09558e67b4488db88c5ce9836e9f1cf1c8bae97d6e1444bb9d2d80409157c0",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/full-runtime/INTEGRITY.md": "3e2404344195b4795ad4cb07944acac5bb1070a9e40c92c4da792abeb6e3774d",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/full-runtime/LICENSE": "50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/full-runtime/SKILL.md": "b97a3b100d407a78f372f0c9f01b3fea8afc4d2f5901f47624e4aac3ec5a2f74",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/full-runtime/VERSION.md": "ade8b56830f54d2546793cedfc813b7b89753e4b46853e459de504d1230b1de2",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/full-runtime/integrity/manifest.json": "45edf17cd540d3806588d396a43ee1b27ce86ded4fe6f8ddcb1085e75ad13084",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/full-runtime/policy-index.json": "27aa867cecd8198d8dabe20189efcfb7779fc8485bb48eab9a72e57c84f75d43",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/full-runtime/schemas/audit.schema.json": "a5e15c26eff86e3c4e2e174fb121ef22981628307f09cf18d09a589e738ea889",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/full-runtime/schemas/execution.schema.json": "d2a7cddc9d98c8101294df302259ba18217c27b9e7c8fee43d96c82ff6bde1d7",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/full-runtime/schemas/feedback.schema.json": "22da61a114a1e89ee641ac25e90e23d6231003351df15918d4265f9900091954",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/full-runtime/schemas/field-report.schema.json": "fdba5018f63287fe87e2bf57eb0080f1935c13408a181025502973cbfa1cfd40",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/full-runtime/schemas/governance-plan.schema.json": "1e1ef2e692bea3752ece6e292d2e7c3d67abfbe3b58dd93ec75655f2aff9b25e",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/full-runtime/schemas/handoff.schema.json": "994769e2a35b4d2189c509b8c5fce6ba76e4941fa4cadaa51f8f02f48b338a97",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/full-runtime/schemas/task-context.schema.json": "acc323f7d86f8dad5d8694e7fcf566dad6987d077877fbe6dbc819029936ad38",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/full-runtime/scripts/plan_governance.py": "8a6a9d07037d5e3da1cf15c2a311f34ff35a85c66cd40640fd3a454fe3fc3d50",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/full-runtime/scripts/project_facts.py": "f355e0fa241a1032c94d4959b610b86c2d0ad48b2c62bbfed1ded65bfa4bd9ee",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/full-runtime/scripts/project_tool.py": "960355b2763c5ca3e4a150051e24ff035cb73d06ce37818a87adc90385e03412",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/full-runtime/scripts/state_tool.py": "193cb9657c32dedb253727e93a13bcb6f39306331fc8a90d1319e337f5b088a0",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/full-runtime/scripts/validate_integrity.py": "cf09558e67b4488db88c5ce9836e9f1cf1c8bae97d6e1444bb9d2d80409157c0",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/raw_auditor.py": "9eef080e06a555ca07dbdef3438640fc1f27487677d3e3db7f729c6d40b935e5",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/task_factory.py": "ba75d206df8e7535e4a2d79d0baac04eb4ed0b4cb36c882bf5e19cf204060913",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/v6_pure_helpers.py": "fc8e5c4b4670bc74970a489f43f0d28e662498d40b74b0c8772b8454a27a10a4",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/ledger_v7.py": "15dab230103c14cc884cc75816359a76dc866f9e5cb43ca38b2b2b45f4eab1f2",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/workflow-spec.schema.json": "ea2378ae447c72abefa20d835e55e5e9c31aaf5e058581644ee7fdcde5459a53",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/collector_v7.py": "35782e0754ca3395534cbc8b83014d547d7866b5912a8ba567bba96d564bdeef",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/derivation.json": "d8482f1221d60fed5e554c3730d5dcef4bdb6f39db5fc45dce513ce81913e965",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/baseline-runtime/INTEGRITY.md": "01e1e3eb772940fe8259b0cb125cd7712858c6f50d4f2fdcada420aa73d29ab5",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/baseline-runtime/LICENSE": "50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/baseline-runtime/SKILL.md": "6204675e555304a07a35af46038883ce285caec0a0fbe8b4ff8d98cde00d2ee4",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/baseline-runtime/VERSION.md": "1033f9c40e480f722ef32d922874d18953a6063d911ebacf36df156b7a0c7be1",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/baseline-runtime/integrity/manifest.json": "7b9ee6d6b2c2d7600de854ecd4ec74363491ab5694b8c06f4ade8cdde81e2e5b",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/baseline-runtime/policy-index.json": "3d451c8b4c9268f40032ed239158bd2741bb6426f710e5cdfbc5f0bc98146033",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/baseline-runtime/schemas/audit.schema.json": "a5e15c26eff86e3c4e2e174fb121ef22981628307f09cf18d09a589e738ea889",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/baseline-runtime/schemas/execution.schema.json": "d2a7cddc9d98c8101294df302259ba18217c27b9e7c8fee43d96c82ff6bde1d7",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/baseline-runtime/schemas/feedback.schema.json": "22da61a114a1e89ee641ac25e90e23d6231003351df15918d4265f9900091954",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/baseline-runtime/schemas/field-report.schema.json": "fdba5018f63287fe87e2bf57eb0080f1935c13408a181025502973cbfa1cfd40",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/baseline-runtime/schemas/governance-plan.schema.json": "adb033dedda5f25f5a41ee95c2fca1cddfb474739173ab9b5712ddcd3b9bff67",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/baseline-runtime/schemas/handoff.schema.json": "994769e2a35b4d2189c509b8c5fce6ba76e4941fa4cadaa51f8f02f48b338a97",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/baseline-runtime/schemas/task-context.schema.json": "acc323f7d86f8dad5d8694e7fcf566dad6987d077877fbe6dbc819029936ad38",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/baseline-runtime/scripts/plan_governance.py": "cfe243ec183c8d1846f31bd794195e85595dda3708319d7acbb4c8b6a12e48ca",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/baseline-runtime/scripts/project_facts.py": "f355e0fa241a1032c94d4959b610b86c2d0ad48b2c62bbfed1ded65bfa4bd9ee",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/baseline-runtime/scripts/project_tool.py": "960355b2763c5ca3e4a150051e24ff035cb73d06ce37818a87adc90385e03412",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/baseline-runtime/scripts/state_tool.py": "193cb9657c32dedb253727e93a13bcb6f39306331fc8a90d1319e337f5b088a0",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/baseline-runtime/scripts/validate_integrity.py": "cf09558e67b4488db88c5ce9836e9f1cf1c8bae97d6e1444bb9d2d80409157c0",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/full-runtime/INTEGRITY.md": "3e2404344195b4795ad4cb07944acac5bb1070a9e40c92c4da792abeb6e3774d",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/full-runtime/LICENSE": "50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/full-runtime/SKILL.md": "b97a3b100d407a78f372f0c9f01b3fea8afc4d2f5901f47624e4aac3ec5a2f74",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/full-runtime/VERSION.md": "ade8b56830f54d2546793cedfc813b7b89753e4b46853e459de504d1230b1de2",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/full-runtime/integrity/manifest.json": "45edf17cd540d3806588d396a43ee1b27ce86ded4fe6f8ddcb1085e75ad13084",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/full-runtime/policy-index.json": "27aa867cecd8198d8dabe20189efcfb7779fc8485bb48eab9a72e57c84f75d43",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/full-runtime/schemas/audit.schema.json": "a5e15c26eff86e3c4e2e174fb121ef22981628307f09cf18d09a589e738ea889",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/full-runtime/schemas/execution.schema.json": "d2a7cddc9d98c8101294df302259ba18217c27b9e7c8fee43d96c82ff6bde1d7",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/full-runtime/schemas/feedback.schema.json": "22da61a114a1e89ee641ac25e90e23d6231003351df15918d4265f9900091954",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/full-runtime/schemas/field-report.schema.json": "fdba5018f63287fe87e2bf57eb0080f1935c13408a181025502973cbfa1cfd40",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/full-runtime/schemas/governance-plan.schema.json": "1e1ef2e692bea3752ece6e292d2e7c3d67abfbe3b58dd93ec75655f2aff9b25e",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/full-runtime/schemas/handoff.schema.json": "994769e2a35b4d2189c509b8c5fce6ba76e4941fa4cadaa51f8f02f48b338a97",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/full-runtime/schemas/task-context.schema.json": "acc323f7d86f8dad5d8694e7fcf566dad6987d077877fbe6dbc819029936ad38",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/full-runtime/scripts/plan_governance.py": "8a6a9d07037d5e3da1cf15c2a311f34ff35a85c66cd40640fd3a454fe3fc3d50",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/full-runtime/scripts/project_facts.py": "f355e0fa241a1032c94d4959b610b86c2d0ad48b2c62bbfed1ded65bfa4bd9ee",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/full-runtime/scripts/project_tool.py": "960355b2763c5ca3e4a150051e24ff035cb73d06ce37818a87adc90385e03412",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/full-runtime/scripts/state_tool.py": "193cb9657c32dedb253727e93a13bcb6f39306331fc8a90d1319e337f5b088a0",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/full-runtime/scripts/validate_integrity.py": "cf09558e67b4488db88c5ce9836e9f1cf1c8bae97d6e1444bb9d2d80409157c0",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/raw_auditor.py": "9eef080e06a555ca07dbdef3438640fc1f27487677d3e3db7f729c6d40b935e5",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/task_factory.py": "1de9aae09dc75a2183f6180e74292b6ffac19b6b54e159cd324ceab1c6f04ebc",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/v6_pure_helpers.py": "fc8e5c4b4670bc74970a489f43f0d28e662498d40b74b0c8772b8454a27a10a4",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/ledger_v7.py": "15dab230103c14cc884cc75816359a76dc866f9e5cb43ca38b2b2b45f4eab1f2",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/workflow-spec.schema.json": "ea2378ae447c72abefa20d835e55e5e9c31aaf5e058581644ee7fdcde5459a53",
+    "eval-workspaces/rc20-v7-analysis-registration.json": "0594777378c78c7b46e52b38a5ae692421cf1763aad2f77089420505eec1fc5b",
+    "eval-workspaces/rc20-v7-fixture-independent-review-r4-0017409871c14accb863c335c6a224b2/closure-r4.receipt.json": "cca39c642b8ade1d53d44d114ef29ae7f00eca03aa52dd917001741abcde0fa8",
+    "eval-workspaces/rc20-v7-host-binding.py": "2709b843b353a6f06ae1d93c74e13a2214fb8b3ca6011c9ccb165fcd577129fd",
+    "eval-workspaces/rc20-v7-host-binding/git-version.json": "fffc85ec2c8cd8ab0fb12b0e588979cc0fa3489fe3ce6acac6e011e90c170408",
+    "eval-workspaces/rc20-v7-host-binding/result.json": "e053367b642eab67fac3701433050a5ce5104c53f0e1effa1a757767e86aac8e",
+    "eval-workspaces/rc20-v7-manual-routing-check.json": "199a331c08f35fefd6c22ee7ee46f0c45d7c5d8dcd1fe50907e24a2021b9e318",
+    "eval-workspaces/rc20-v7-manual-v2-independent-review-8fa5c771ca5a4f35ab38e85702bf139c/closure.receipt.json": "f8447816b7fa9aa697defc96015dfe022e8ef02e1292dc162b250e6b21405815",
+    "eval-workspaces/rc20-v7-manual-v2-source-check/manifest.json": "f0c6e89b128d8471caddd1b423997d278ad5a6e775b04c18b8ffba67783a4c32",
+    "eval-workspaces/rc20-v7-registration-metadata-check/result.json": "6d3a88187813c3d2514e297499ab5c36d76a494993d762176d67593844c1488e",
+    "eval-workspaces/rc20-v7-runtime-preparation-v1.py": "0d2d098bb170e714f7cef64ed29fae252cddc94751d25d6ad1438d3ec167465b",
+    "eval-workspaces/rc20-v7-runtime-preparation-v1/failed.json": "825d5adb63000b478196d2a7d683a70eb28d3f70667c585048470f2d3dde1c21",
+    "eval-workspaces/rc20-v7-runtime-preparation-v2.py": "4cf233e64e68fa68190979d18c4ca540ef60b132ffbdab09676282b7edfef7d6",
+    "eval-workspaces/rc20-v7-runtime-preparation-v2/result.json": "dbe65f8dd4bebe5ee08e25309e785097da5a2c847973320cd7cefe258087dc7f",
+    "eval-workspaces/rc20-v8-api-contract-regression-20261015-674df9c/result.json": "12463f3756c07065a18f0c790baf1f6d7e7110cb98a66c48d75ed1c2a8aa4fa0",
+    "eval-workspaces/rc20-v8-api-contract-regression-20261015-674df9c/test_collector_api_contract.py": "15354d563645887c0d41f3bc90e8cb105c275766ce7166ac48c40fd91c4773d1",
+    "eval-workspaces/rc20-v9-bind-root-v2.py": "c48be2fc544413002a73063ae911c07b41ca1839d0e458d181feacfec9b983d7",
+    "eval-workspaces/rc20-v9-bind-root-v3.py": "ea4c5958fe81219e8ad26eff28f6c79e9f5d5df72210675eeeb818022993cbdc",
+    "eval-workspaces/rc20-v9-bind-root.py": "36d807cbcfcbcdb4188cfc07b34c9282666f36e74e3f504e1b2fb34554c20b0f",
+    "eval-workspaces/rc20-v9-clone.py": "517466ee7566eb6270b0a775830f754830550bc7d61b5a4aac92274840e2feb4",
+    "eval-workspaces/rc20-v9-derive-binding.py": "1ce43e824a2458f6bf024cae49dc22c5193f03a360c9374b318ee02a96365dbb",
+    "eval-workspaces/rc20-v9-interface-final-v2.md": "5bca913cba4bfa7cacf5aa8b2ec5e6010288f43768b6cb11c42a61ad7760e361",
+    "eval-workspaces/rc20-v9-launch-v2.py": "cc0c47279aea114eee60ba8647a404ee3e6774859f9772ca58a17fddb8338534",
+    "eval-workspaces/rc20-v9-launch.py": "b093b42e09afd44c1a41d5ad80a26c26f434f8af1b958b79b1307dd433246bf9",
+    "eval-workspaces/rc20-v9-precall-review-20261015-ec314a/review_prepared.py": "2d430f020ebda8dfcaf301b59d7d48412b2b41aeffe8f7cd69bc72f9dfd8b30c",
+    "eval-workspaces/rc20-v9-preparation-dependency-revision-v2/observed-preparation-failure.json": "169e8d95820c74a7346dd6e992670ef4e0636b8f5745f75df806f81d25271a76",
+    "eval-workspaces/rc20-v9-preparation-dependency-revision-v2/proof.json": "ef6bdfedf42c6f8b56b1a094e2994d50ca1c6e888631852ebe362ea1ffdb3eda",
+    "eval-workspaces/rc20-v9-preparation-manifest-revision-v3.py": "0af5503c80befdb102f1a5f7df7fa9781ec4800294ff5dd3663480d458eab683",
+    "eval-workspaces/rc20-v9-preparation-manifest-revision-v3/observed-preparation-failure.json": "10f348fbc4ee5f7099f34e20d89c975db78b9c490fbb2b82ef8133c9ba9c8e00",
+    "eval-workspaces/rc20-v9-preparation-manifest-revision-v3/proof.json": "58e5b123cbb2fe359edf23bef6033accc23c920daa6339ac9aafd12cdf3b426a",
+    "eval-workspaces/rc20-v9-prepare-dependency-revision-v2.py": "2eb7b44ab81dea3c9b7ae471ff7b70c44b76978d610ef91f6bb2e54d881084d5",
+    "eval-workspaces/rc20-v9-raw-auditor-compat-20261015T132042Z-40b045e15da74abe9b29b229f197ce9a/candidate-manifest-v1.json": "88ed8554a311587b60ec1c5200ccf11c112a607c2b09093da1d55aa26bf58cbe",
+    "eval-workspaces/rc20-v9-raw-auditor-compat-20261015T132042Z-40b045e15da74abe9b29b229f197ce9a/compatibility-notes.json": "f0bcb07be88b865aa64722aecd1283fa87fa0af79261bbc85e78bba5cc468862",
+    "eval-workspaces/rc20-v9-raw-auditor-compat-20261015T132042Z-40b045e15da74abe9b29b229f197ce9a/green-json-exact-03.receipt.json": "d9d8daba9651e5d66c4afdab68d3d82c7880a083b2116d32f0873dce58d41d99",
+    "eval-workspaces/rc20-v9-raw-auditor-compat-20261015T132042Z-40b045e15da74abe9b29b229f197ce9a/required-repository-pins.json": "f2876e5a246f7db201d0ac18622da4898c99d262f1fc535566e36265ce025ab7",
+    "eval-workspaces/rc20-v9-registration-v1/STARTED.json": "49407a159db55fe139db234764da5587bcd7229860bf8e8f1bbd6c23b1f66621",
+    "eval-workspaces/rc20-v9-registration-v2/STARTED.json": "4e11669099568c7e60399a0e7c7e73c9ffbdddab5c3ba7a9b2cf10e07c0ca215",
+    "eval-workspaces/rc20-v9-registration-v2/bundle/arm-contexts.json": "88f762f95da8fd6f2e005fd2a277fd17ee668adb32b157edc4a1d28fb5ff1cb2",
+    "eval-workspaces/rc20-v9-registration-v2/bundle/host-identity.json": "e3a2fa7162ed1054180179f0d00f2e7f4e251f44c990064d6311b366b7c69357",
+    "eval-workspaces/rc20-v9-registration-v2/bundle/profile-configuration.json": "35e7d9f682b3db8aadf883812ad41a8f756437ab741a36b7877cf9d729ec9363",
+    "eval-workspaces/rc20-v9-registration-v2/bundle/workflow-order.json": "f9e7b66eeb7060955c655c8b643eb8638d686a86588facf7009405f3a32db626",
+    "eval-workspaces/rc20-v9-registration-v2/bundle/workflow-spec.schema.json": "17a94020ca5073aeb36a70149cdc5562afcf6e1634711dc15961eed9a2267692",
+    "eval-workspaces/rc20-v9-registration-v2/bundle/workflow-specs.json": "94fddb06bf6a15f2b66fa7c6a9f81518b9802296317bca416531ecd130d0030f",
+    "eval-workspaces/rc20-v9-registration-v3/bundle/arm-contexts.json": "88f762f95da8fd6f2e005fd2a277fd17ee668adb32b157edc4a1d28fb5ff1cb2",
+    "eval-workspaces/rc20-v9-registration-v3/bundle/host-identity.json": "e3a2fa7162ed1054180179f0d00f2e7f4e251f44c990064d6311b366b7c69357",
+    "eval-workspaces/rc20-v9-registration-v3/bundle/profile-configuration.json": "35e7d9f682b3db8aadf883812ad41a8f756437ab741a36b7877cf9d729ec9363",
+    "eval-workspaces/rc20-v9-registration-v3/bundle/protocol.json": "a17b69a194a16976d76098bb5a57850fc13a980ddad6ad8e0e2113c7b93ed93a",
+    "eval-workspaces/rc20-v9-registration-v3/bundle/source-closure.json": "0d05d736481cec00ed433b935d21c4d94697ea3bbce056a713b40b90a308be6a",
+    "eval-workspaces/rc20-v9-registration-v3/bundle/workflow-order.json": "f9e7b66eeb7060955c655c8b643eb8638d686a86588facf7009405f3a32db626",
+    "eval-workspaces/rc20-v9-registration-v3/bundle/workflow-spec.schema.json": "17a94020ca5073aeb36a70149cdc5562afcf6e1634711dc15961eed9a2267692",
+    "eval-workspaces/rc20-v9-registration-v3/bundle/workflow-specs.json": "94fddb06bf6a15f2b66fa7c6a9f81518b9802296317bca416531ecd130d0030f",
+    "eval-workspaces/rc20-v9-registration-v3/prepared.json": "e3a3b06de0459e78df82ad361d41c1cc677a030743615e80c03986ac22f2ce0c",
+    "eval-workspaces/rc20-v9-source-preparation-v1/runtime-context-reuse.json": "f96e34f0ae95a32648db147ef218539a86872192afdbcd856612324427301b8b",
+    "eval-workspaces/rc20_provider_vault.py": "06dbe6ebf4573a0e514849864f118f3c162ae41ec206a7c379edd6f26e93426b",
+    "evolution/__init__.py": "8f155482d42c365d2ef36fa9d13e130b462da7a7beb3cdb56c5a7f5b4d9ea69e",
+    "evolution/cli_transport.py": "c6f2ade9c12c072afed9fa5404e3187f7ea1a46feba9c8726f5b1cacbbb1282f",
+    "evolution/contracts.py": "c64915a5d2a4ed199ba5c62a46885f8e5149541fcd43452eeb94fa44090692a2",
+    "evolution/controller.py": "cc0bf952be4325acb8572e9a22038ddc10587bbd166ace5bb8a71a1f28f85aef",
+    "evolution/engineering_broker.py": "0d5a593970941fb3483581c2f3e38d8b87589b46d89814a327c91cfad72e6cf8",
+    "evolution/evaluator.py": "e82602cba366a7124b6cbf5a36aee1586d8a6a86cdf47133b635475fbe4d4f25",
+    "evolution/isolated_python.py": "2fc136ffa4bb1ca0a99615c12278df36452257d093d8ec2aa9035a3dd4bf1c8d",
+    "evolution/project_executor.py": "530e587a9c3c9ddea17a39d7f889bd2097240a18a62d4751628cbb5f07540e69",
+    "evolution/provider_tools.py": "de7f75d851b61642c6926434d167b23cefec986cf71ce0a811e6ffbd9ebffb6b",
+    "evolution/search/__init__.py": "8f36033932c02730ff3e9dae7ec58f0ca5407d92ac8a94a415900400b0320c81",
+    "evolution/search/_numeric.py": "55eb5e1cc1f01c7e9b383139229b81788e371e14c56549a10928935929a0d85e",
+    "evolution/search/annealing.py": "0866657dc308e50f9e3aca2971a72c9cb666abb6e5bc95deae07ef29add745db",
+    "evolution/search/curvature.py": "9532cea78042e135ba8c12f1eba950d5d80532f5a8aaa69dd3f64c380ad168ac",
+    "evolution/search/differential.py": "e754b2d16b016b072e98dff25dcc923131cbf46ad3b0057815a8fe31b71b37c1",
+    "evolution/tool_broker.py": "217015a2943fba2647232cb487708bcd386fe847e0d01c96a6eceb57fdeec508",
+    "evolution/tool_campaign.py": "dff018273dc7203d9530b582c66b02e70af8b696f1e7212b23cdba91148782e4",
+    "evolution/tool_codex.py": "27336ad9767d8cf8bf24b0c89448a5131343b16278a13cdcbd7ff31c8396ec66",
+    "governance-src/README.md": "86bbdcdfd37d1690d6e7cf9ceeae9da15cc89600ac6b41a11cd22f68157d08a0",
+    "governance-src/model/governance-model.json": "d2d1d071fec2e0130811c64e5179de314c2a92c87c196d2a51ff433ebebb3bd0",
+    "governance-src/profiles/automation.json": "b1c2ecd100cd242c51105ab467c784727492b7addab3fa576c66b2234016599b",
+    "governance-src/profiles/content-project.json": "9faf686efcac663dfcb62a0d57949ee80e5e0de772a86c2ba112aee70057209c",
+    "governance-src/profiles/data.json": "b499098720186910e47c5645fd22c6860da39ec7351360445e4b9420c3564483",
+    "governance-src/profiles/design-system.json": "9ebd0ad746767af63e08730b7d27302479535fa81d6b8b99df46792cf90eea17",
+    "governance-src/profiles/docs.json": "a460c26e42ddeebf7775a348a983881db21f181116f603a4c2c8ca9849dc2ba9",
+    "governance-src/profiles/infrastructure.json": "8cf1509b8d7f8ab7a22d2573d152d70f316c79400f3dcc6d3d3949efff521700",
+    "governance-src/profiles/mixed.json": "dc6bc3056918cf453dc98af0f659c2b0d9e296eefb5ccd56005e7b723b359bb4",
+    "governance-src/profiles/ml.json": "22a6e55a8ac58305645b915e00817b7d862e461c1719649af52a8142f8ee3fd9",
+    "governance-src/profiles/operations.json": "10d35affe8badd78d0ca103bc8f7804ccc4dbccd6e09740ae775db747da0c43c",
+    "governance-src/profiles/product.json": "3ad84791889c4986afbc8b90bee983ed1e5565ab1e4142ed5628139b5d4b0559",
+    "governance-src/profiles/research.json": "a4cde51bee88caf72b8661daadccea9ff183286c0d9eb1c4666ac818a0604ee9",
+    "governance-src/profiles/software.json": "02ae6e912fbaac8aecd32651b8ac3e84f87971936093fcb153feecf1304f8b05",
+    "governance-src/runtime-scripts/plan_governance.py": "8a6a9d07037d5e3da1cf15c2a311f34ff35a85c66cd40640fd3a454fe3fc3d50",
+    "governance-src/runtime-scripts/project_facts.py": "f355e0fa241a1032c94d4959b610b86c2d0ad48b2c62bbfed1ded65bfa4bd9ee",
+    "governance-src/runtime-scripts/project_tool.py": "960355b2763c5ca3e4a150051e24ff035cb73d06ce37818a87adc90385e03412",
+    "governance-src/runtime-scripts/state_tool.py": "193cb9657c32dedb253727e93a13bcb6f39306331fc8a90d1319e337f5b088a0",
+    "governance-src/runtime-scripts/validate_integrity.py": "cf09558e67b4488db88c5ce9836e9f1cf1c8bae97d6e1444bb9d2d80409157c0",
+    "governance-src/schemas/audit.schema.json": "a5e15c26eff86e3c4e2e174fb121ef22981628307f09cf18d09a589e738ea889",
+    "governance-src/schemas/execution.schema.json": "d2a7cddc9d98c8101294df302259ba18217c27b9e7c8fee43d96c82ff6bde1d7",
+    "governance-src/schemas/feedback.schema.json": "22da61a114a1e89ee641ac25e90e23d6231003351df15918d4265f9900091954",
+    "governance-src/schemas/field-report.schema.json": "fdba5018f63287fe87e2bf57eb0080f1935c13408a181025502973cbfa1cfd40",
+    "governance-src/schemas/governance-model.schema.json": "cc8f68670a8e3fb6d6ac3af5ece4103f74a7a737b1fffe8d65a253f2b33c01b4",
+    "governance-src/schemas/governance-plan.schema.json": "1e1ef2e692bea3752ece6e292d2e7c3d67abfbe3b58dd93ec75655f2aff9b25e",
+    "governance-src/schemas/handoff.schema.json": "994769e2a35b4d2189c509b8c5fce6ba76e4941fa4cadaa51f8f02f48b338a97",
+    "governance-src/schemas/task-context.schema.json": "acc323f7d86f8dad5d8694e7fcf566dad6987d077877fbe6dbc819029936ad38",
+    "governance-src/templates/SKILL.template.md": "97f8cfcd9c5d8681a6f4788b8fdfca81ce1f698220f9fbe5468816f710a89d6f",
+    "qualification/FREEZE.json": "4486bd20a0724d7f3ec987b02442ff90b7c16f242517de388fb2baf566c928f0",
+    "tools/validate_navigation.py": "ce8cc0e107284ae10abde3e52f54f22529fc838059e91cf05c8a94c829aeb947"
+  },
+  "inputs_before": {
+    "audits/rc20-runtime-failure-engineering.audit.json": "787faa4f43ce5f4328e48feeb6a50680b051a899c8eb5e9af20c6e6a5e68acb0",
+    "audits/rc20-stdlib-project-development-v9.preflight.json": "09259aa5d6cfae5658411355fceda22286d8cba023f9a991edcd0861f76a1500",
+    "compiler/compile_governance.py": "42d0a00163fc5946479976a485e772ca5ee9f35d7d4736fbe61068bb4909d46f",
+    "eval-workspaces/rc20-controlled-removal-public-v1/terminal.json": "a738f15b5b319bdecc04438f07ba6b084dc2a98bf1b85697cd7cfe2192d20266",
+    "eval-workspaces/rc20-docker-capability-20261014T200758Z-010b06063a694174965688d1f36ae7ff/entry.json": "d5dfb62956ac47ed9a0cb86c519822150ff540d9c3a60377c11180df137f2c77",
+    "eval-workspaces/rc20-docker-python-probe-20261014T201321Z-7f1a32b184c54d82abfffced4e850158/image-binding.json": "3ca1d0ced11f5a587b4c6fbfb8139170e2eab2947c3f28cfd250c4ecf9f75762",
+    "eval-workspaces/rc20-paired-real-python-development-independent-audit-v1.py": "a198275c8647217105d2ca1f73dc6158050c80e6d86fffa76d2923c1b84b302c",
+    "eval-workspaces/rc20-paired-real-python-development-independent-audit-v6-final.py": "f5036101347618736ce1033d08854b008ccd3b71d23e7facbb68f160e6f5a925",
+    "eval-workspaces/rc20-project-v7-factory-20261015t104000-9ac2/revisions/r4/calibration-metadata.json": "b9a1d3927624787a8eac72d5ee69daca215968d2aba46e3b485561850113ebca",
+    "eval-workspaces/rc20-project-v7-factory-20261015t104000-9ac2/revisions/r4/delivery-manifest.json": "c9bef3bb850e0ac33264039197bff49dc5f9028a2426984c18b55b2cbabaa7fb",
+    "eval-workspaces/rc20-project-v7-factory-20261015t104000-9ac2/revisions/r4/factory.py": "56a3c1a83d149cf14676041347657b8dedfc2e449d44de04c06e6931d3d45929",
+    "eval-workspaces/rc20-project-v7-factory-20261015t104000-9ac2/revisions/r4/manual-rubrics.json": "916a64dbb7107831009639cf1a6146e8a52a44e18664e819531b4bb1aa4d1b85",
+    "eval-workspaces/rc20-project-v7-factory-20261015t104000-9ac2/revisions/r4/preexecution-freeze.json": "1e4215430caba50bce57006de3149bb35818dc351ef53da2a98a66d1515abeb9",
+    "eval-workspaces/rc20-project-v7-factory-20261015t104000-9ac2/revisions/r4/source-pins.json": "897ef55d5d3f702ab220f67b45a07f1ae05e255db9691e34b340a7fe43488104",
+    "eval-workspaces/rc20-project-v7-factory-20261015t104000-9ac2/revisions/r4/workflow-specs.json": "06e1766a3b0a2edecf6aff062a9ca81870cb122a5d4452aa832f4ea29e0f2a79",
+    "eval-workspaces/rc20-project-v7-manual-tests-v2.py": "e63208a3f5296c5b3c66deca6421e7ef98130312e8e22d11aa0f2c931df7719a",
+    "eval-workspaces/rc20-project-v7-manual-v2.py": "90f8e8e1a02d0a467fb42510688bbb44303e96f98e1b61ee4a81684f5852db8c",
+    "eval-workspaces/rc20-runtime-failure-adoption-v1/applied.json": "476087fa8864c09ab878caf0d5978ab6e2641e9a5b12a23f48e781cc25fd6ee1",
+    "eval-workspaces/rc20-runtime-failure-engineering-v1/result.json": "2d32ea1098b51ea27d2d524b23391cf0a0df2af567afb91b11f26e03d71c5b7e",
+    "eval-workspaces/rc20-semantic-api-independent-audit.py": "01e19f0c85475bdee68beac826ff4c8de7da7e4a46c7a6a07e828acd6c6dd87a",
+    "eval-workspaces/rc20-stdlib-project-development-v7-candidate-83001e19f36b45babcd2412ed3ed7c25/candidate-source-manifest-v2.json": "11452bcbcd08972b773dce6689006b0998437f3e790d763d76ca02f554d54fcc",
+    "eval-workspaces/rc20-stdlib-project-development-v7-candidate-83001e19f36b45babcd2412ed3ed7c25/evidence/collector-v2-final-17.receipt.json": "16836a1494d2b77e1f8c178859e6224ad7a853c4c462700cea835fd5638f6a97",
+    "eval-workspaces/rc20-stdlib-project-development-v7-candidate-83001e19f36b45babcd2412ed3ed7c25/evidence/public-factory-ast-proof-v1.json": "516a214123d39ce602b85f19f8847465a0a12ebbfd3a3583c6639ac7d054cb68",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/collector_v7.py": "35782e0754ca3395534cbc8b83014d547d7866b5912a8ba567bba96d564bdeef",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/derivation.json": "d8482f1221d60fed5e554c3730d5dcef4bdb6f39db5fc45dce513ce81913e965",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/baseline-runtime/INTEGRITY.md": "01e1e3eb772940fe8259b0cb125cd7712858c6f50d4f2fdcada420aa73d29ab5",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/baseline-runtime/LICENSE": "50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/baseline-runtime/SKILL.md": "6204675e555304a07a35af46038883ce285caec0a0fbe8b4ff8d98cde00d2ee4",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/baseline-runtime/VERSION.md": "1033f9c40e480f722ef32d922874d18953a6063d911ebacf36df156b7a0c7be1",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/baseline-runtime/integrity/manifest.json": "7b9ee6d6b2c2d7600de854ecd4ec74363491ab5694b8c06f4ade8cdde81e2e5b",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/baseline-runtime/policy-index.json": "3d451c8b4c9268f40032ed239158bd2741bb6426f710e5cdfbc5f0bc98146033",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/baseline-runtime/schemas/audit.schema.json": "a5e15c26eff86e3c4e2e174fb121ef22981628307f09cf18d09a589e738ea889",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/baseline-runtime/schemas/execution.schema.json": "d2a7cddc9d98c8101294df302259ba18217c27b9e7c8fee43d96c82ff6bde1d7",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/baseline-runtime/schemas/feedback.schema.json": "22da61a114a1e89ee641ac25e90e23d6231003351df15918d4265f9900091954",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/baseline-runtime/schemas/field-report.schema.json": "fdba5018f63287fe87e2bf57eb0080f1935c13408a181025502973cbfa1cfd40",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/baseline-runtime/schemas/governance-plan.schema.json": "adb033dedda5f25f5a41ee95c2fca1cddfb474739173ab9b5712ddcd3b9bff67",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/baseline-runtime/schemas/handoff.schema.json": "994769e2a35b4d2189c509b8c5fce6ba76e4941fa4cadaa51f8f02f48b338a97",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/baseline-runtime/schemas/task-context.schema.json": "acc323f7d86f8dad5d8694e7fcf566dad6987d077877fbe6dbc819029936ad38",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/baseline-runtime/scripts/plan_governance.py": "cfe243ec183c8d1846f31bd794195e85595dda3708319d7acbb4c8b6a12e48ca",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/baseline-runtime/scripts/project_facts.py": "f355e0fa241a1032c94d4959b610b86c2d0ad48b2c62bbfed1ded65bfa4bd9ee",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/baseline-runtime/scripts/project_tool.py": "960355b2763c5ca3e4a150051e24ff035cb73d06ce37818a87adc90385e03412",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/baseline-runtime/scripts/state_tool.py": "193cb9657c32dedb253727e93a13bcb6f39306331fc8a90d1319e337f5b088a0",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/baseline-runtime/scripts/validate_integrity.py": "cf09558e67b4488db88c5ce9836e9f1cf1c8bae97d6e1444bb9d2d80409157c0",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/full-runtime/INTEGRITY.md": "3e2404344195b4795ad4cb07944acac5bb1070a9e40c92c4da792abeb6e3774d",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/full-runtime/LICENSE": "50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/full-runtime/SKILL.md": "b97a3b100d407a78f372f0c9f01b3fea8afc4d2f5901f47624e4aac3ec5a2f74",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/full-runtime/VERSION.md": "ade8b56830f54d2546793cedfc813b7b89753e4b46853e459de504d1230b1de2",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/full-runtime/integrity/manifest.json": "45edf17cd540d3806588d396a43ee1b27ce86ded4fe6f8ddcb1085e75ad13084",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/full-runtime/policy-index.json": "27aa867cecd8198d8dabe20189efcfb7779fc8485bb48eab9a72e57c84f75d43",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/full-runtime/schemas/audit.schema.json": "a5e15c26eff86e3c4e2e174fb121ef22981628307f09cf18d09a589e738ea889",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/full-runtime/schemas/execution.schema.json": "d2a7cddc9d98c8101294df302259ba18217c27b9e7c8fee43d96c82ff6bde1d7",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/full-runtime/schemas/feedback.schema.json": "22da61a114a1e89ee641ac25e90e23d6231003351df15918d4265f9900091954",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/full-runtime/schemas/field-report.schema.json": "fdba5018f63287fe87e2bf57eb0080f1935c13408a181025502973cbfa1cfd40",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/full-runtime/schemas/governance-plan.schema.json": "1e1ef2e692bea3752ece6e292d2e7c3d67abfbe3b58dd93ec75655f2aff9b25e",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/full-runtime/schemas/handoff.schema.json": "994769e2a35b4d2189c509b8c5fce6ba76e4941fa4cadaa51f8f02f48b338a97",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/full-runtime/schemas/task-context.schema.json": "acc323f7d86f8dad5d8694e7fcf566dad6987d077877fbe6dbc819029936ad38",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/full-runtime/scripts/plan_governance.py": "8a6a9d07037d5e3da1cf15c2a311f34ff35a85c66cd40640fd3a454fe3fc3d50",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/full-runtime/scripts/project_facts.py": "f355e0fa241a1032c94d4959b610b86c2d0ad48b2c62bbfed1ded65bfa4bd9ee",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/full-runtime/scripts/project_tool.py": "960355b2763c5ca3e4a150051e24ff035cb73d06ce37818a87adc90385e03412",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/full-runtime/scripts/state_tool.py": "193cb9657c32dedb253727e93a13bcb6f39306331fc8a90d1319e337f5b088a0",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/full-runtime/scripts/validate_integrity.py": "cf09558e67b4488db88c5ce9836e9f1cf1c8bae97d6e1444bb9d2d80409157c0",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/raw_auditor.py": "9eef080e06a555ca07dbdef3438640fc1f27487677d3e3db7f729c6d40b935e5",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/task_factory.py": "ba75d206df8e7535e4a2d79d0baac04eb4ed0b4cb36c882bf5e19cf204060913",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/frozen/v6_pure_helpers.py": "fc8e5c4b4670bc74970a489f43f0d28e662498d40b74b0c8772b8454a27a10a4",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/ledger_v7.py": "15dab230103c14cc884cc75816359a76dc866f9e5cb43ca38b2b2b45f4eab1f2",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate-v2/workflow-spec.schema.json": "ea2378ae447c72abefa20d835e55e5e9c31aaf5e058581644ee7fdcde5459a53",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/collector_v7.py": "35782e0754ca3395534cbc8b83014d547d7866b5912a8ba567bba96d564bdeef",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/derivation.json": "d8482f1221d60fed5e554c3730d5dcef4bdb6f39db5fc45dce513ce81913e965",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/baseline-runtime/INTEGRITY.md": "01e1e3eb772940fe8259b0cb125cd7712858c6f50d4f2fdcada420aa73d29ab5",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/baseline-runtime/LICENSE": "50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/baseline-runtime/SKILL.md": "6204675e555304a07a35af46038883ce285caec0a0fbe8b4ff8d98cde00d2ee4",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/baseline-runtime/VERSION.md": "1033f9c40e480f722ef32d922874d18953a6063d911ebacf36df156b7a0c7be1",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/baseline-runtime/integrity/manifest.json": "7b9ee6d6b2c2d7600de854ecd4ec74363491ab5694b8c06f4ade8cdde81e2e5b",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/baseline-runtime/policy-index.json": "3d451c8b4c9268f40032ed239158bd2741bb6426f710e5cdfbc5f0bc98146033",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/baseline-runtime/schemas/audit.schema.json": "a5e15c26eff86e3c4e2e174fb121ef22981628307f09cf18d09a589e738ea889",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/baseline-runtime/schemas/execution.schema.json": "d2a7cddc9d98c8101294df302259ba18217c27b9e7c8fee43d96c82ff6bde1d7",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/baseline-runtime/schemas/feedback.schema.json": "22da61a114a1e89ee641ac25e90e23d6231003351df15918d4265f9900091954",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/baseline-runtime/schemas/field-report.schema.json": "fdba5018f63287fe87e2bf57eb0080f1935c13408a181025502973cbfa1cfd40",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/baseline-runtime/schemas/governance-plan.schema.json": "adb033dedda5f25f5a41ee95c2fca1cddfb474739173ab9b5712ddcd3b9bff67",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/baseline-runtime/schemas/handoff.schema.json": "994769e2a35b4d2189c509b8c5fce6ba76e4941fa4cadaa51f8f02f48b338a97",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/baseline-runtime/schemas/task-context.schema.json": "acc323f7d86f8dad5d8694e7fcf566dad6987d077877fbe6dbc819029936ad38",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/baseline-runtime/scripts/plan_governance.py": "cfe243ec183c8d1846f31bd794195e85595dda3708319d7acbb4c8b6a12e48ca",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/baseline-runtime/scripts/project_facts.py": "f355e0fa241a1032c94d4959b610b86c2d0ad48b2c62bbfed1ded65bfa4bd9ee",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/baseline-runtime/scripts/project_tool.py": "960355b2763c5ca3e4a150051e24ff035cb73d06ce37818a87adc90385e03412",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/baseline-runtime/scripts/state_tool.py": "193cb9657c32dedb253727e93a13bcb6f39306331fc8a90d1319e337f5b088a0",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/baseline-runtime/scripts/validate_integrity.py": "cf09558e67b4488db88c5ce9836e9f1cf1c8bae97d6e1444bb9d2d80409157c0",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/full-runtime/INTEGRITY.md": "3e2404344195b4795ad4cb07944acac5bb1070a9e40c92c4da792abeb6e3774d",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/full-runtime/LICENSE": "50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/full-runtime/SKILL.md": "b97a3b100d407a78f372f0c9f01b3fea8afc4d2f5901f47624e4aac3ec5a2f74",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/full-runtime/VERSION.md": "ade8b56830f54d2546793cedfc813b7b89753e4b46853e459de504d1230b1de2",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/full-runtime/integrity/manifest.json": "45edf17cd540d3806588d396a43ee1b27ce86ded4fe6f8ddcb1085e75ad13084",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/full-runtime/policy-index.json": "27aa867cecd8198d8dabe20189efcfb7779fc8485bb48eab9a72e57c84f75d43",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/full-runtime/schemas/audit.schema.json": "a5e15c26eff86e3c4e2e174fb121ef22981628307f09cf18d09a589e738ea889",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/full-runtime/schemas/execution.schema.json": "d2a7cddc9d98c8101294df302259ba18217c27b9e7c8fee43d96c82ff6bde1d7",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/full-runtime/schemas/feedback.schema.json": "22da61a114a1e89ee641ac25e90e23d6231003351df15918d4265f9900091954",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/full-runtime/schemas/field-report.schema.json": "fdba5018f63287fe87e2bf57eb0080f1935c13408a181025502973cbfa1cfd40",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/full-runtime/schemas/governance-plan.schema.json": "1e1ef2e692bea3752ece6e292d2e7c3d67abfbe3b58dd93ec75655f2aff9b25e",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/full-runtime/schemas/handoff.schema.json": "994769e2a35b4d2189c509b8c5fce6ba76e4941fa4cadaa51f8f02f48b338a97",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/full-runtime/schemas/task-context.schema.json": "acc323f7d86f8dad5d8694e7fcf566dad6987d077877fbe6dbc819029936ad38",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/full-runtime/scripts/plan_governance.py": "8a6a9d07037d5e3da1cf15c2a311f34ff35a85c66cd40640fd3a454fe3fc3d50",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/full-runtime/scripts/project_facts.py": "f355e0fa241a1032c94d4959b610b86c2d0ad48b2c62bbfed1ded65bfa4bd9ee",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/full-runtime/scripts/project_tool.py": "960355b2763c5ca3e4a150051e24ff035cb73d06ce37818a87adc90385e03412",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/full-runtime/scripts/state_tool.py": "193cb9657c32dedb253727e93a13bcb6f39306331fc8a90d1319e337f5b088a0",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/full-runtime/scripts/validate_integrity.py": "cf09558e67b4488db88c5ce9836e9f1cf1c8bae97d6e1444bb9d2d80409157c0",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/raw_auditor.py": "9eef080e06a555ca07dbdef3438640fc1f27487677d3e3db7f729c6d40b935e5",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/task_factory.py": "1de9aae09dc75a2183f6180e74292b6ffac19b6b54e159cd324ceab1c6f04ebc",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/frozen/v6_pure_helpers.py": "fc8e5c4b4670bc74970a489f43f0d28e662498d40b74b0c8772b8454a27a10a4",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/ledger_v7.py": "15dab230103c14cc884cc75816359a76dc866f9e5cb43ca38b2b2b45f4eab1f2",
+    "eval-workspaces/rc20-stdlib-project-development-v9-candidate/workflow-spec.schema.json": "ea2378ae447c72abefa20d835e55e5e9c31aaf5e058581644ee7fdcde5459a53",
+    "eval-workspaces/rc20-v7-analysis-registration.json": "0594777378c78c7b46e52b38a5ae692421cf1763aad2f77089420505eec1fc5b",
+    "eval-workspaces/rc20-v7-fixture-independent-review-r4-0017409871c14accb863c335c6a224b2/closure-r4.receipt.json": "cca39c642b8ade1d53d44d114ef29ae7f00eca03aa52dd917001741abcde0fa8",
+    "eval-workspaces/rc20-v7-host-binding.py": "2709b843b353a6f06ae1d93c74e13a2214fb8b3ca6011c9ccb165fcd577129fd",
+    "eval-workspaces/rc20-v7-host-binding/git-version.json": "fffc85ec2c8cd8ab0fb12b0e588979cc0fa3489fe3ce6acac6e011e90c170408",
+    "eval-workspaces/rc20-v7-host-binding/result.json": "e053367b642eab67fac3701433050a5ce5104c53f0e1effa1a757767e86aac8e",
+    "eval-workspaces/rc20-v7-manual-routing-check.json": "199a331c08f35fefd6c22ee7ee46f0c45d7c5d8dcd1fe50907e24a2021b9e318",
+    "eval-workspaces/rc20-v7-manual-v2-independent-review-8fa5c771ca5a4f35ab38e85702bf139c/closure.receipt.json": "f8447816b7fa9aa697defc96015dfe022e8ef02e1292dc162b250e6b21405815",
+    "eval-workspaces/rc20-v7-manual-v2-source-check/manifest.json": "f0c6e89b128d8471caddd1b423997d278ad5a6e775b04c18b8ffba67783a4c32",
+    "eval-workspaces/rc20-v7-registration-metadata-check/result.json": "6d3a88187813c3d2514e297499ab5c36d76a494993d762176d67593844c1488e",
+    "eval-workspaces/rc20-v7-runtime-preparation-v1.py": "0d2d098bb170e714f7cef64ed29fae252cddc94751d25d6ad1438d3ec167465b",
+    "eval-workspaces/rc20-v7-runtime-preparation-v1/failed.json": "825d5adb63000b478196d2a7d683a70eb28d3f70667c585048470f2d3dde1c21",
+    "eval-workspaces/rc20-v7-runtime-preparation-v2.py": "4cf233e64e68fa68190979d18c4ca540ef60b132ffbdab09676282b7edfef7d6",
+    "eval-workspaces/rc20-v7-runtime-preparation-v2/result.json": "dbe65f8dd4bebe5ee08e25309e785097da5a2c847973320cd7cefe258087dc7f",
+    "eval-workspaces/rc20-v8-api-contract-regression-20261015-674df9c/result.json": "12463f3756c07065a18f0c790baf1f6d7e7110cb98a66c48d75ed1c2a8aa4fa0",
+    "eval-workspaces/rc20-v8-api-contract-regression-20261015-674df9c/test_collector_api_contract.py": "15354d563645887c0d41f3bc90e8cb105c275766ce7166ac48c40fd91c4773d1",
+    "eval-workspaces/rc20-v9-bind-root-v2.py": "c48be2fc544413002a73063ae911c07b41ca1839d0e458d181feacfec9b983d7",
+    "eval-workspaces/rc20-v9-bind-root-v3.py": "ea4c5958fe81219e8ad26eff28f6c79e9f5d5df72210675eeeb818022993cbdc",
+    "eval-workspaces/rc20-v9-bind-root.py": "36d807cbcfcbcdb4188cfc07b34c9282666f36e74e3f504e1b2fb34554c20b0f",
+    "eval-workspaces/rc20-v9-clone.py": "517466ee7566eb6270b0a775830f754830550bc7d61b5a4aac92274840e2feb4",
+    "eval-workspaces/rc20-v9-derive-binding.py": "1ce43e824a2458f6bf024cae49dc22c5193f03a360c9374b318ee02a96365dbb",
+    "eval-workspaces/rc20-v9-interface-final-v2.md": "5bca913cba4bfa7cacf5aa8b2ec5e6010288f43768b6cb11c42a61ad7760e361",
+    "eval-workspaces/rc20-v9-launch-v2.py": "cc0c47279aea114eee60ba8647a404ee3e6774859f9772ca58a17fddb8338534",
+    "eval-workspaces/rc20-v9-launch.py": "b093b42e09afd44c1a41d5ad80a26c26f434f8af1b958b79b1307dd433246bf9",
+    "eval-workspaces/rc20-v9-precall-review-20261015-ec314a/review_prepared.py": "2d430f020ebda8dfcaf301b59d7d48412b2b41aeffe8f7cd69bc72f9dfd8b30c",
+    "eval-workspaces/rc20-v9-preparation-dependency-revision-v2/observed-preparation-failure.json": "169e8d95820c74a7346dd6e992670ef4e0636b8f5745f75df806f81d25271a76",
+    "eval-workspaces/rc20-v9-preparation-dependency-revision-v2/proof.json": "ef6bdfedf42c6f8b56b1a094e2994d50ca1c6e888631852ebe362ea1ffdb3eda",
+    "eval-workspaces/rc20-v9-preparation-manifest-revision-v3.py": "0af5503c80befdb102f1a5f7df7fa9781ec4800294ff5dd3663480d458eab683",
+    "eval-workspaces/rc20-v9-preparation-manifest-revision-v3/observed-preparation-failure.json": "10f348fbc4ee5f7099f34e20d89c975db78b9c490fbb2b82ef8133c9ba9c8e00",
+    "eval-workspaces/rc20-v9-preparation-manifest-revision-v3/proof.json": "58e5b123cbb2fe359edf23bef6033accc23c920daa6339ac9aafd12cdf3b426a",
+    "eval-workspaces/rc20-v9-prepare-dependency-revision-v2.py": "2eb7b44ab81dea3c9b7ae471ff7b70c44b76978d610ef91f6bb2e54d881084d5",
+    "eval-workspaces/rc20-v9-raw-auditor-compat-20261015T132042Z-40b045e15da74abe9b29b229f197ce9a/candidate-manifest-v1.json": "88ed8554a311587b60ec1c5200ccf11c112a607c2b09093da1d55aa26bf58cbe",
+    "eval-workspaces/rc20-v9-raw-auditor-compat-20261015T132042Z-40b045e15da74abe9b29b229f197ce9a/compatibility-notes.json": "f0bcb07be88b865aa64722aecd1283fa87fa0af79261bbc85e78bba5cc468862",
+    "eval-workspaces/rc20-v9-raw-auditor-compat-20261015T132042Z-40b045e15da74abe9b29b229f197ce9a/green-json-exact-03.receipt.json": "d9d8daba9651e5d66c4afdab68d3d82c7880a083b2116d32f0873dce58d41d99",
+    "eval-workspaces/rc20-v9-raw-auditor-compat-20261015T132042Z-40b045e15da74abe9b29b229f197ce9a/required-repository-pins.json": "f2876e5a246f7db201d0ac18622da4898c99d262f1fc535566e36265ce025ab7",
+    "eval-workspaces/rc20-v9-registration-v1/STARTED.json": "49407a159db55fe139db234764da5587bcd7229860bf8e8f1bbd6c23b1f66621",
+    "eval-workspaces/rc20-v9-registration-v2/STARTED.json": "4e11669099568c7e60399a0e7c7e73c9ffbdddab5c3ba7a9b2cf10e07c0ca215",
+    "eval-workspaces/rc20-v9-registration-v2/bundle/arm-contexts.json": "88f762f95da8fd6f2e005fd2a277fd17ee668adb32b157edc4a1d28fb5ff1cb2",
+    "eval-workspaces/rc20-v9-registration-v2/bundle/host-identity.json": "e3a2fa7162ed1054180179f0d00f2e7f4e251f44c990064d6311b366b7c69357",
+    "eval-workspaces/rc20-v9-registration-v2/bundle/profile-configuration.json": "35e7d9f682b3db8aadf883812ad41a8f756437ab741a36b7877cf9d729ec9363",
+    "eval-workspaces/rc20-v9-registration-v2/bundle/workflow-order.json": "f9e7b66eeb7060955c655c8b643eb8638d686a86588facf7009405f3a32db626",
+    "eval-workspaces/rc20-v9-registration-v2/bundle/workflow-spec.schema.json": "17a94020ca5073aeb36a70149cdc5562afcf6e1634711dc15961eed9a2267692",
+    "eval-workspaces/rc20-v9-registration-v2/bundle/workflow-specs.json": "94fddb06bf6a15f2b66fa7c6a9f81518b9802296317bca416531ecd130d0030f",
+    "eval-workspaces/rc20-v9-registration-v3/bundle/arm-contexts.json": "88f762f95da8fd6f2e005fd2a277fd17ee668adb32b157edc4a1d28fb5ff1cb2",
+    "eval-workspaces/rc20-v9-registration-v3/bundle/host-identity.json": "e3a2fa7162ed1054180179f0d00f2e7f4e251f44c990064d6311b366b7c69357",
+    "eval-workspaces/rc20-v9-registration-v3/bundle/profile-configuration.json": "35e7d9f682b3db8aadf883812ad41a8f756437ab741a36b7877cf9d729ec9363",
+    "eval-workspaces/rc20-v9-registration-v3/bundle/protocol.json": "a17b69a194a16976d76098bb5a57850fc13a980ddad6ad8e0e2113c7b93ed93a",
+    "eval-workspaces/rc20-v9-registration-v3/bundle/source-closure.json": "0d05d736481cec00ed433b935d21c4d94697ea3bbce056a713b40b90a308be6a",
+    "eval-workspaces/rc20-v9-registration-v3/bundle/workflow-order.json": "f9e7b66eeb7060955c655c8b643eb8638d686a86588facf7009405f3a32db626",
+    "eval-workspaces/rc20-v9-registration-v3/bundle/workflow-spec.schema.json": "17a94020ca5073aeb36a70149cdc5562afcf6e1634711dc15961eed9a2267692",
+    "eval-workspaces/rc20-v9-registration-v3/bundle/workflow-specs.json": "94fddb06bf6a15f2b66fa7c6a9f81518b9802296317bca416531ecd130d0030f",
+    "eval-workspaces/rc20-v9-registration-v3/prepared.json": "e3a3b06de0459e78df82ad361d41c1cc677a030743615e80c03986ac22f2ce0c",
+    "eval-workspaces/rc20-v9-source-preparation-v1/runtime-context-reuse.json": "f96e34f0ae95a32648db147ef218539a86872192afdbcd856612324427301b8b",
+    "eval-workspaces/rc20_provider_vault.py": "06dbe6ebf4573a0e514849864f118f3c162ae41ec206a7c379edd6f26e93426b",
+    "evolution/__init__.py": "8f155482d42c365d2ef36fa9d13e130b462da7a7beb3cdb56c5a7f5b4d9ea69e",
+    "evolution/cli_transport.py": "c6f2ade9c12c072afed9fa5404e3187f7ea1a46feba9c8726f5b1cacbbb1282f",
+    "evolution/contracts.py": "c64915a5d2a4ed199ba5c62a46885f8e5149541fcd43452eeb94fa44090692a2",
+    "evolution/controller.py": "cc0bf952be4325acb8572e9a22038ddc10587bbd166ace5bb8a71a1f28f85aef",
+    "evolution/engineering_broker.py": "0d5a593970941fb3483581c2f3e38d8b87589b46d89814a327c91cfad72e6cf8",
+    "evolution/evaluator.py": "e82602cba366a7124b6cbf5a36aee1586d8a6a86cdf47133b635475fbe4d4f25",
+    "evolution/isolated_python.py": "2fc136ffa4bb1ca0a99615c12278df36452257d093d8ec2aa9035a3dd4bf1c8d",
+    "evolution/project_executor.py": "530e587a9c3c9ddea17a39d7f889bd2097240a18a62d4751628cbb5f07540e69",
+    "evolution/provider_tools.py": "de7f75d851b61642c6926434d167b23cefec986cf71ce0a811e6ffbd9ebffb6b",
+    "evolution/search/__init__.py": "8f36033932c02730ff3e9dae7ec58f0ca5407d92ac8a94a415900400b0320c81",
+    "evolution/search/_numeric.py": "55eb5e1cc1f01c7e9b383139229b81788e371e14c56549a10928935929a0d85e",
+    "evolution/search/annealing.py": "0866657dc308e50f9e3aca2971a72c9cb666abb6e5bc95deae07ef29add745db",
+    "evolution/search/curvature.py": "9532cea78042e135ba8c12f1eba950d5d80532f5a8aaa69dd3f64c380ad168ac",
+    "evolution/search/differential.py": "e754b2d16b016b072e98dff25dcc923131cbf46ad3b0057815a8fe31b71b37c1",
+    "evolution/tool_broker.py": "217015a2943fba2647232cb487708bcd386fe847e0d01c96a6eceb57fdeec508",
+    "evolution/tool_campaign.py": "dff018273dc7203d9530b582c66b02e70af8b696f1e7212b23cdba91148782e4",
+    "evolution/tool_codex.py": "27336ad9767d8cf8bf24b0c89448a5131343b16278a13cdcbd7ff31c8396ec66",
+    "governance-src/README.md": "86bbdcdfd37d1690d6e7cf9ceeae9da15cc89600ac6b41a11cd22f68157d08a0",
+    "governance-src/model/governance-model.json": "d2d1d071fec2e0130811c64e5179de314c2a92c87c196d2a51ff433ebebb3bd0",
+    "governance-src/profiles/automation.json": "b1c2ecd100cd242c51105ab467c784727492b7addab3fa576c66b2234016599b",
+    "governance-src/profiles/content-project.json": "9faf686efcac663dfcb62a0d57949ee80e5e0de772a86c2ba112aee70057209c",
+    "governance-src/profiles/data.json": "b499098720186910e47c5645fd22c6860da39ec7351360445e4b9420c3564483",
+    "governance-src/profiles/design-system.json": "9ebd0ad746767af63e08730b7d27302479535fa81d6b8b99df46792cf90eea17",
+    "governance-src/profiles/docs.json": "a460c26e42ddeebf7775a348a983881db21f181116f603a4c2c8ca9849dc2ba9",
+    "governance-src/profiles/infrastructure.json": "8cf1509b8d7f8ab7a22d2573d152d70f316c79400f3dcc6d3d3949efff521700",
+    "governance-src/profiles/mixed.json": "dc6bc3056918cf453dc98af0f659c2b0d9e296eefb5ccd56005e7b723b359bb4",
+    "governance-src/profiles/ml.json": "22a6e55a8ac58305645b915e00817b7d862e461c1719649af52a8142f8ee3fd9",
+    "governance-src/profiles/operations.json": "10d35affe8badd78d0ca103bc8f7804ccc4dbccd6e09740ae775db747da0c43c",
+    "governance-src/profiles/product.json": "3ad84791889c4986afbc8b90bee983ed1e5565ab1e4142ed5628139b5d4b0559",
+    "governance-src/profiles/research.json": "a4cde51bee88caf72b8661daadccea9ff183286c0d9eb1c4666ac818a0604ee9",
+    "governance-src/profiles/software.json": "02ae6e912fbaac8aecd32651b8ac3e84f87971936093fcb153feecf1304f8b05",
+    "governance-src/runtime-scripts/plan_governance.py": "8a6a9d07037d5e3da1cf15c2a311f34ff35a85c66cd40640fd3a454fe3fc3d50",
+    "governance-src/runtime-scripts/project_facts.py": "f355e0fa241a1032c94d4959b610b86c2d0ad48b2c62bbfed1ded65bfa4bd9ee",
+    "governance-src/runtime-scripts/project_tool.py": "960355b2763c5ca3e4a150051e24ff035cb73d06ce37818a87adc90385e03412",
+    "governance-src/runtime-scripts/state_tool.py": "193cb9657c32dedb253727e93a13bcb6f39306331fc8a90d1319e337f5b088a0",
+    "governance-src/runtime-scripts/validate_integrity.py": "cf09558e67b4488db88c5ce9836e9f1cf1c8bae97d6e1444bb9d2d80409157c0",
+    "governance-src/schemas/audit.schema.json": "a5e15c26eff86e3c4e2e174fb121ef22981628307f09cf18d09a589e738ea889",
+    "governance-src/schemas/execution.schema.json": "d2a7cddc9d98c8101294df302259ba18217c27b9e7c8fee43d96c82ff6bde1d7",
+    "governance-src/schemas/feedback.schema.json": "22da61a114a1e89ee641ac25e90e23d6231003351df15918d4265f9900091954",
+    "governance-src/schemas/field-report.schema.json": "fdba5018f63287fe87e2bf57eb0080f1935c13408a181025502973cbfa1cfd40",
+    "governance-src/schemas/governance-model.schema.json": "cc8f68670a8e3fb6d6ac3af5ece4103f74a7a737b1fffe8d65a253f2b33c01b4",
+    "governance-src/schemas/governance-plan.schema.json": "1e1ef2e692bea3752ece6e292d2e7c3d67abfbe3b58dd93ec75655f2aff9b25e",
+    "governance-src/schemas/handoff.schema.json": "994769e2a35b4d2189c509b8c5fce6ba76e4941fa4cadaa51f8f02f48b338a97",
+    "governance-src/schemas/task-context.schema.json": "acc323f7d86f8dad5d8694e7fcf566dad6987d077877fbe6dbc819029936ad38",
+    "governance-src/templates/SKILL.template.md": "97f8cfcd9c5d8681a6f4788b8fdfca81ce1f698220f9fbe5468816f710a89d6f",
+    "qualification/FREEZE.json": "4486bd20a0724d7f3ec987b02442ff90b7c16f242517de388fb2baf566c928f0",
+    "tools/validate_navigation.py": "ce8cc0e107284ae10abde3e52f54f22529fc838059e91cf05c8a94c829aeb947"
+  },
+  "observed_review_wall_seconds": 0.9262703999993391,
+  "parallel_static_review": "No obvious blocker; verified145sources,21requiredpins,18files perruntime,9cases/54workflows/66roles,manual/caps/analysis/reuse metadata. No helper or actual execution.",
+  "payload_metadata": [
+    {
+      "actor_id": "w001-source",
+      "initial_payload_sha256": "612f109448dc5a62a9365494b92ba28fabdc430e07c4fd8559cd1b6a75b8b0b2"
+    },
+    {
+      "actor_id": "w002-source",
+      "initial_payload_sha256": "ed2ad319939583aab182efaff6467a3e8962ed27a6aaa223696fa99ca5a8bec6"
+    },
+    {
+      "actor_id": "w003-source",
+      "initial_payload_sha256": "4a8754172dfd6c805759512ad093a9a0ba5b68fc990088c323491f1c4d89eb32"
+    },
+    {
+      "actor_id": "w004-source",
+      "initial_payload_sha256": "77292f88212543d324516c0c5871683b6af91a188c4319c68b0d6cfceda178e4"
+    },
+    {
+      "actor_id": "w005-source",
+      "initial_payload_sha256": "c69b612c887ccf9b0148838de836fb45021a7fc3751073413c595ddab2d87966"
+    },
+    {
+      "actor_id": "w005-receiver",
+      "initial_payload_sha256": "ca866d26cbf9017aba41c41a26f85c07689c4818e36bec6f81e92c0e5598e9b7"
+    },
+    {
+      "actor_id": "w006-source",
+      "initial_payload_sha256": "6b808911cb43a68844b8826fe52ce59eb7ded2059ba82da419345bb404c34fa1"
+    },
+    {
+      "actor_id": "w007-source",
+      "initial_payload_sha256": "82ee437554e777d5469de1f8c6305d5c0f25b63faf2a1f1d5b9df5c7fa2da525"
+    },
+    {
+      "actor_id": "w008-source",
+      "initial_payload_sha256": "7b2c1475bae541acae080ded2ef660cf9e81f6acfabf8e6f3c220bfcd26501df"
+    },
+    {
+      "actor_id": "w009-source",
+      "initial_payload_sha256": "8ddd67e865d1b6b24bcd13d5703df80e8107b7803bee8a59bb57cdaf81ef27e4"
+    },
+    {
+      "actor_id": "w010-source",
+      "initial_payload_sha256": "13352d9430236c7d70513f06fca0088a4b80565d2cf2fcc32d2c458c46e63e85"
+    },
+    {
+      "actor_id": "w011-source",
+      "initial_payload_sha256": "303ea3e4a6e6b1aadfa39c19b6147571c4129e5a2ec575ace955db49cb61f000"
+    },
+    {
+      "actor_id": "w012-source",
+      "initial_payload_sha256": "fa5c121dffabacdb0b6752771efee162a3bfa35597c02df21b0d6c9de78bba00"
+    },
+    {
+      "actor_id": "w012-receiver",
+      "initial_payload_sha256": "a13ae831ca149574bdc217c0ae65439079808f2611f56e77428cb1bf38b42854"
+    },
+    {
+      "actor_id": "w013-source",
+      "initial_payload_sha256": "47c383f24f31ec14619f4517697c675d7a4984685fdd35b833f2176303bbccbd"
+    },
+    {
+      "actor_id": "w014-source",
+      "initial_payload_sha256": "4a95a32bff0a960ac28d35756b8c98f8f78c8d5bdd257a47ea3915a5267ad75b"
+    },
+    {
+      "actor_id": "w015-source",
+      "initial_payload_sha256": "3ca5d95ed8fa8fd33e0dc6c0548fa292e3ab42711791f30b9db2a37b51667344"
+    },
+    {
+      "actor_id": "w016-source",
+      "initial_payload_sha256": "7d34147c809c628ebce04643d6ab880ebf1a54e7f16e0e07e6f1be9ab4f7d2e0"
+    },
+    {
+      "actor_id": "w016-receiver",
+      "initial_payload_sha256": "1d6b583522e9f1f2c8b723eae28a19a705d1b03b77facca71bbab9060b270d2e"
+    },
+    {
+      "actor_id": "w017-source",
+      "initial_payload_sha256": "d5ff162fb4269822e3749ad365ad2edc20e7b27993bad14cc6c7ae1dff77ba63"
+    },
+    {
+      "actor_id": "w017-receiver",
+      "initial_payload_sha256": "63c67d29e2c75ee8ec461c46a1064e7c57489cf5dea87c371d1ea394503efef1"
+    },
+    {
+      "actor_id": "w018-source",
+      "initial_payload_sha256": "5f14a1a7b302437f59059e41c434997ad8503d8bb3db19cd1d5193495f90dd38"
+    },
+    {
+      "actor_id": "w019-source",
+      "initial_payload_sha256": "7916f6127bc45917798eb00e9d7d842d123753299a69e998baa69228d2dc0f66"
+    },
+    {
+      "actor_id": "w020-source",
+      "initial_payload_sha256": "a3f35adea380800d54ce7303d2ffb199671b4c0eb1d9e233eafe768bbfd87c31"
+    },
+    {
+      "actor_id": "w021-source",
+      "initial_payload_sha256": "65d99bce0da2cefc01ee369b5e55c02912dce80b87ba5c7e2a96dcd077a6ee40"
+    },
+    {
+      "actor_id": "w022-source",
+      "initial_payload_sha256": "5773b9eda88d5f398e272438286e184f39a3697dd2f19c3c4cf30868d902a336"
+    },
+    {
+      "actor_id": "w022-receiver",
+      "initial_payload_sha256": "eb57e5802696b85f7bfd92d5b3c16cafe3f03cd9c6a86bfc8e7db60f2f4e42e5"
+    },
+    {
+      "actor_id": "w023-source",
+      "initial_payload_sha256": "c253b9245ebca8963ff6114e1b17e990f10b81abdaec6c60068bb8df7e722be0"
+    },
+    {
+      "actor_id": "w024-source",
+      "initial_payload_sha256": "d86b53956581be36674bec3eba330ecc60506febe689eaa4c5aa93d89bbf84b6"
+    },
+    {
+      "actor_id": "w025-source",
+      "initial_payload_sha256": "e57462c236b9b2835de869ad465b6ba235d55f0b9729e03725f5fb66affb7722"
+    },
+    {
+      "actor_id": "w026-source",
+      "initial_payload_sha256": "2f1f9e89970a31abdcab3cbb340d6b37cb2548d4342ca0765a973afa17dc5185"
+    },
+    {
+      "actor_id": "w027-source",
+      "initial_payload_sha256": "f650c6ac669b029afefd1048f8563e5e46d864621a0ed4e7f729926fecae6b8d"
+    },
+    {
+      "actor_id": "w028-source",
+      "initial_payload_sha256": "7dc2d77c998588ed1948d283a1a7d4ffa11c850e7180fe97c1c70b604fa93ef4"
+    },
+    {
+      "actor_id": "w028-receiver",
+      "initial_payload_sha256": "bce06996b354a942911741648d911d24c6153852f07e99a9cc9475d89b05a54f"
+    },
+    {
+      "actor_id": "w029-source",
+      "initial_payload_sha256": "99c0254c3be73e9f60786ba0061eaae215db5cf8ba5c8e4f00cfcd242703822d"
+    },
+    {
+      "actor_id": "w030-source",
+      "initial_payload_sha256": "c99e03e91ff162b5d6a240375da4000745d84abf7c553d88f103652eba5745b0"
+    },
+    {
+      "actor_id": "w031-source",
+      "initial_payload_sha256": "a7589afc7bf9513db4c204c5daa1a16e744b2191ea281c66a594ac21be4b060e"
+    },
+    {
+      "actor_id": "w031-receiver",
+      "initial_payload_sha256": "7ba0192772bde0505fe50487c382ec8c791f3fdab130738b1a50c2eab5f0748b"
+    },
+    {
+      "actor_id": "w032-source",
+      "initial_payload_sha256": "1ca8d664631e18b0a15a26508b534e8a0a2ee4fd21c85a34c63e2bbf881b833c"
+    },
+    {
+      "actor_id": "w033-source",
+      "initial_payload_sha256": "9ff9f625799de8f69f997dd99986e3182714e277f4965595ce76110cc237f58d"
+    },
+    {
+      "actor_id": "w034-source",
+      "initial_payload_sha256": "19078dcbeb89131520bbc2d9ab1fb6dffd2b84e478078b33b2363c7ab314c202"
+    },
+    {
+      "actor_id": "w035-source",
+      "initial_payload_sha256": "0174e10f042a3e6bd1c2311244cb9c607fcc64e9621fd230caf3133582370b42"
+    },
+    {
+      "actor_id": "w035-receiver",
+      "initial_payload_sha256": "06aa7ff117e7221f9dc72e10b762b21cdcd047095d0b50fd04b67f4dd062664c"
+    },
+    {
+      "actor_id": "w036-source",
+      "initial_payload_sha256": "b0014bff002610d12f00ee8709eaddd2b67f7ccb8701abfba2c2da753f0c08de"
+    },
+    {
+      "actor_id": "w037-source",
+      "initial_payload_sha256": "4fabdb2ab71df16fa6babcdd0762ef503d50b51a84eac6d355c3173128d53de8"
+    },
+    {
+      "actor_id": "w038-source",
+      "initial_payload_sha256": "d0b37fdd3c6a0f5e59045a5f3038497cffc892b4d7125bdc80087af452c274bd"
+    },
+    {
+      "actor_id": "w039-source",
+      "initial_payload_sha256": "3cc0f5a2f035cc9655587f2d4a8910919851a2fe838754b89b9f58c4926df1ab"
+    },
+    {
+      "actor_id": "w040-source",
+      "initial_payload_sha256": "fa611444f8bc0304c5618327b04976e1af90904cda9e5524ced3bc47b17e2d71"
+    },
+    {
+      "actor_id": "w041-source",
+      "initial_payload_sha256": "bd4873f9678347f87f8e6452cf8c89e43c26aac5800c8042d2c6d2a6afd91096"
+    },
+    {
+      "actor_id": "w041-receiver",
+      "initial_payload_sha256": "529dd8582e38e5c650ad2c043ad7508a91dc8457d3a5ba1c9cb94b480217ceef"
+    },
+    {
+      "actor_id": "w042-source",
+      "initial_payload_sha256": "853d3d4c9c1e6efe8b4f06d2da5fbe8b92ad9803b95e0cb1c82ba9ab49b8ada5"
+    },
+    {
+      "actor_id": "w043-source",
+      "initial_payload_sha256": "3baaa965f357abb8cfc7cff331f19f6b2ff8fc35b3a0a51dd24997a7e6a970a1"
+    },
+    {
+      "actor_id": "w043-receiver",
+      "initial_payload_sha256": "a5113651bbc935945dd74e84b590ce3363e49de38ad2e9f704a30b3a556fe510"
+    },
+    {
+      "actor_id": "w044-source",
+      "initial_payload_sha256": "0936993eaf37f0098e6431426b8ee6b957642eda89fa8c033601ca03d6e678a8"
+    },
+    {
+      "actor_id": "w045-source",
+      "initial_payload_sha256": "cb135d7ecee5deca083cbd687844c7d535ce5da54029c88bbe8313c5976edc0b"
+    },
+    {
+      "actor_id": "w046-source",
+      "initial_payload_sha256": "a930047c52f4619f7cc0bca39fa75beda9f90f45b2442d84fc3429b45fca93af"
+    },
+    {
+      "actor_id": "w047-source",
+      "initial_payload_sha256": "6dea8f9caebe1f4ecf09113749af5ed0be89fef21ec8958f84da6271a1381809"
+    },
+    {
+      "actor_id": "w048-source",
+      "initial_payload_sha256": "5f9f54e24cb80997467e595e63e57d1e24da0b13a88a9c34bda4d1e2f4d4352c"
+    },
+    {
+      "actor_id": "w048-receiver",
+      "initial_payload_sha256": "8d68bb08f88b2932096d792c08fdbe2e0fc482e26ad792c1586a6e58e9b0dac8"
+    },
+    {
+      "actor_id": "w049-source",
+      "initial_payload_sha256": "8d4bba96c7d1510131c211e71da14af7bc09065cc66705c2b4a5435164d1fb58"
+    },
+    {
+      "actor_id": "w050-source",
+      "initial_payload_sha256": "07cd2c8bff1c60ee7eb1023aa9a7eea0dc22927546cadc65737a05dc2e253dd3"
+    },
+    {
+      "actor_id": "w051-source",
+      "initial_payload_sha256": "3796ce257598737ededf70dc6a8d77b9aa8322c874d684ffac0e7780972c8244"
+    },
+    {
+      "actor_id": "w052-source",
+      "initial_payload_sha256": "b9a29816bc9af39e119b4e705c3d4672d1f41ee55781efc735a3abf0354d03d8"
+    },
+    {
+      "actor_id": "w052-receiver",
+      "initial_payload_sha256": "79d56b2d37b28aacdf81f9314cbe6d018e21e23c494841fed67f71a49dc2b573"
+    },
+    {
+      "actor_id": "w053-source",
+      "initial_payload_sha256": "cbfa8787a667332f7c6e216b29902032bfabf4be42888403aa66efd1ab870d6d"
+    },
+    {
+      "actor_id": "w054-source",
+      "initial_payload_sha256": "ac37c1275b3d63d0463490032ddb3e7606aeac34d69f278e64aaaab483b14059"
+    }
+  ],
+  "preflight_sha256": "09259aa5d6cfae5658411355fceda22286d8cba023f9a991edcd0861f76a1500",
+  "prepared_receipt_sha256": "e3a3b06de0459e78df82ad361d41c1cc677a030743615e80c03986ac22f2ce0c",
+  "protocol_sha256": "a17b69a194a16976d76098bb5a57850fc13a980ddad6ad8e0e2113c7b93ed93a",
+  "readiness_checks": {
+    "all66_actual_call_expressions_bound_to_real_signature": true,
+    "all66_context_and_initial_payload_metadata_match_frozen_producer_and_independent_renderer": true,
+    "auditor_registration_source_closure_source_after": true,
+    "callback_keyloader_ledger_reserve_API_body_HTTP_planner_project_calls": 0,
+    "collector_require_registration": true,
+    "host_python_git_docker_file_identity_current_no_process_probe": true,
+    "manual_helper_rubric_analysis_closed": true,
+    "old_C9_v1_and_v2_failure_inputs_retained_exact": true,
+    "preflight_protocol_bindings_caps_counts_source_count_and_hashes_exact": true,
+    "public_factory_all_functions_unchanged_two_header_pins_only": true,
+    "runtime_packages18_each_exact": true,
+    "six_public_factory_dependencies_current": true,
+    "six_source_cutpoint_guard_closures_created_never_invoked": true
+  },
+  "registered_source_count": 145,
+  "review_script_sha256": "2d430f020ebda8dfcaf301b59d7d48412b2b41aeffe8f7cd69bc72f9dfd8b30c",
+  "reviewer": "/root/rc20_engineering_adapter_design",
+  "schema_version": "v9-first-precall-review-v1",
+  "scope_limits": [
+    "No collect, actual API function body, HTTP, Docker, planner, Git/project command, keyloader, ledger construction or actual audit was executed.",
+    "Receiver signature uses the registered initial template solely to bind expressions. Future actual source disk, receiver eligibility, accepted cutpoint, runtime execution and raw receipts remain unobserved until the authorized run.",
+    "Same exposed nine-case DEVELOPMENT population; no independent efficacy, no preparation savings/all-in benefit, no promotion. Historical preparation is provenance and never validates the new backend.",
+    "Public six-container checks and retained37/55 pure tests are separate engineering evidence, not measured model benefit; they were not rerun here.",
+    "Preparation v1 stale factory pins and v2 wrong manifest filename/field were preserved before successful fresh v3. Neither was an actual run or permission to resume closed v7/v8.",
+    "This external receipt is outside the already hashed source closure; explicit root authorization, exact launch source and sole exclusive new run are still required."
+  ],
+  "source_closure_sha256": "0d05d736481cec00ed433b935d21c4d94697ea3bbce056a713b40b90a308be6a",
+  "status": "PASS_PURE_PRECALL_NO_ACTUAL_AUTHORIZATION"
+}
