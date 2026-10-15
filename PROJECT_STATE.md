@@ -10,13 +10,21 @@ Current candidate: **3.0.0-rc.20 — Task Context and Complete Change Discipline
 
 来源、选用与排除、触发和验收映射由 [upstream-sources.json](third_party/upstream-sources.json) 维护；[鸣谢](THIRD_PARTY_NOTICES.md)保留五个上游及适用许可。三个新增来源的规则组只在预注册对照中消融，不撤销原有正确性、安全、真实性、必需验证或交接约束。
 
-当前候选在 v4 封存后收敛两条既有规则：先选择相关路径再批读；仅按已授权目标改变边缘返回或异常契约。必读、依赖扩读、未知和事实恢复义务保留。生成核心为 **6,642 字节**（`803f1da4…`），规范源身份 `51bdd1a9…`，资格身份 `4cf36631…`。仓库适配器新增显式公开语言提醒，不改变原评分或执行门禁；独立评审发现的命名路径漏测已复现并修正。[本次工程验收](audits/rc20-read-contract-feedback-engineering.audit.json)为 9 项门禁、821 项测试通过及 2 项跳过；这些不证明真实收益。[开发轮 v5](audits/rc20-paired-real-python-development-v5.audit.json)在 2/24 个角色返回后因 DeepSeek HTTP 503 服务繁忙且无用量而停止：5 次已知请求共 37,867 token，另 1 次未知请求与 pending 保留；22 个角色未调用。首份独审 RAW_INTEGRITY_PASS，事实初审 2 项 UNKNOWN。该轮不完整，不作组间收益比较，不续跑或重评；模型目录可用也不证明推理容量。当前源码的净收益仍未验证。
+当前候选在 v4 封存后收敛两条既有规则：先选择相关路径再批读；仅按已授权目标改变边缘返回或异常契约。必读、依赖扩读、未知和事实恢复义务保留。生成核心为 **6,642 字节**（`803f1da4…`），规范源身份 `51bdd1a9…`，资格身份 `4cf36631…`。仓库适配器使用显式公开语言提醒及 DeepSeek Pro / MiMo Flash disabled 配置；[当前工程验收](audits/rc20-pro-profile-engineering.audit.json)为 9 项门禁、832 项测试通过及 2 项跳过，18 文件运行时未变。这些不证明真实收益。
 
-最近完整结束的[真实 Python 配对开发轮 v4](audits/rc20-paired-real-python-development-v4.audit.json)已完成：24 个角色全部返回，独立机械检查通过 21 个；140 次请求共 **1,613,204** 个报告 token，最终 pending 为 0。首份独立原始审计 **RAW_INTEGRITY_PASS**，3478 个原始文件与 128 项源文件及副本前后哈希一致。完整组相对 RC19 的角色归属耗时下降 **30.52%**，但 token 增加 **2.60%**；相对简洁指令对照，token 增加 **6.51%**。三组机械检查均为 7/8；完整组事实审阅为 6 项有界支持、1 项 VETO、1 项因审阅准备偏差受限的 UNKNOWN。完整组把“None 返回 False”改成抛异常并写成已完成，不能用执行器限制解释或挽救。
+最近完成的[真实 Python 配对开发轮 v6](audits/rc20-paired-real-python-development-v6.audit.json)有 24 个角色、127 次已知请求，共 **1,370,476** 个报告 token；本轮 pending 为 0。首份独立原始审计 **RAW_INTEGRITY_PASS**，3441 个原始文件、146 项源码及副本前后哈希一致。三名审核者在成本揭盲前锁定全部事实初审：19 项有界支持、5 项 VETO。
 
-为核验容量替代，仓库新增显式 DeepSeek Pro / MiMo Flash disabled 配置；[工程验收](audits/rc20-pro-profile-engineering.audit.json)通过 9 项门禁、832 项测试及 2 项跳过，原 18 文件运行时未变。[新开发轮 v6](audits/rc20-paired-real-python-development-v6.preflight.json)已准备，计划 24 个角色；实际结论尚待协议执行与独立审阅。工程通过不证明容量恢复或收益；v5 未知费用围栏继续保留。
+| v6 条件 | 机械通过 | 机械与事实均支持 | 报告 token | 角色归属秒数 |
+|---|---:|---:|---:|---:|
+| RC19 | 8/8 | 7/8 | 458,630 | 472.16 |
+| 普通简洁指令对照 | 7/8 | 7/8 | 496,380 | 320.73 |
+| RC20 完整组 | 6/8 | 5/8 | 415,466 | 366.49 |
 
-本轮保留质量与成本失败，未取得可晋升的净收益；其源码身份与当前候选不同。下一步以新任务、相同预算和独立审计验证当前候选，再补齐独立验证与来源消融。默认分支和本地安装仍为 **RC19**。本轮没有实际触发连接重试，不能宣称该恢复策略已获真实故障验证。
+完整组相对 RC19 的 token 下降 **9.41%**、归属耗时下降 **22.38%**；相对普通指令对照，token 下降 **16.30%**、耗时增加 **14.27%**。完整组有两项机械失败及另一项事实否决：未定义工具参数导致提前拒绝、有限语言/边界行为失败、遗漏事实却声称保留，均不能用低成本抵消。提前失败也降低了观测成本，不能称为完成同等任务的节省。数据仅属两个已曝光任务族的开发诊断，**净收益未通过**；共享/启动耗时另列，发布尾部及研究/人工审核总成本未知。
+
+下一步修正已观察到的可靠性问题，再以完整工程执行、新任务分布和来源消融独立验证。默认分支和本地安装仍为 **RC19**。本轮未触发连接重试；完成调用不证明未来容量或零风险。
+
+[开发轮 v5](audits/rc20-paired-real-python-development-v5.audit.json)因 DeepSeek HTTP 503 且无用量在 2/24 个角色后停止：5 次已知请求、37,867 token，另 1 次未知/pending 与 22 个未调用角色继续保留，不续跑或重评。v6 的 pending 为 0 不清除这一旧围栏。历史[开发轮 v4](audits/rc20-paired-real-python-development-v4.audit.json)完整组耗时下降 30.52%、token 增加 2.60%，并有契约/完成状态 VETO；其原结论和源码身份保持冻结。
 
 历史[开发轮 v3](audits/rc20-paired-real-python-development-v3.audit.json)是不完整轮次，首份独审 RAW_INTEGRITY_FAIL；审计器额外要求受保护源端 README 必读的问题只在后续新身份修正，旧轮未重评。[开发轮 v2](audits/rc20-paired-real-python-development-v2.audit.json)使用旧规范身份，完整组 token 增加 22.63%、角色归属耗时增加 109.95%。历史审计与未知项继续冻结，不续跑、不重评、不重绑定当前候选。
 
