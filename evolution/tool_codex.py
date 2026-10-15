@@ -231,10 +231,13 @@ def _project_cli_trace_failures(events, journal, task):
     event envelope. Unknown/absent result shapes fail; real CLI compatibility
     still requires a separate registered first observation.
     """
+    from .engineering_broker import validate_execution_result, recoverable_project_test_failure
     observed, failures, seen_ids = [], [], set()
+    native_ordinal = 0
     for event in events:
         if event.get('type') != 'item.completed' or event.get('item', {}).get('type') != 'mcp_tool_call':
             continue
+        native_ordinal += 1
         item = event['item']
         arguments = item.get('arguments')
         if type(arguments) is str:
@@ -246,7 +249,7 @@ def _project_cli_trace_failures(events, journal, task):
         identifier = item.get('id')
         if (set(item) != {'id', 'type', 'server', 'tool', 'arguments', 'result', 'error', 'status'}
                 or type(identifier) is not str or not identifier or identifier in seen_ids
-                or item.get('status') != 'completed'
+                or type(item.get('status')) is not str or item['status'] not in {'completed', 'failed'}
                 or item.get('server') != 'upg_repo' or item.get('tool') not in TOOLS
                 or type(arguments) is not dict or item.get('error') is not None
                 or type(result) is not dict or set(result) != {'content', 'structured_content'}
@@ -266,11 +269,19 @@ def _project_cli_trace_failures(events, journal, task):
         except (ValueError, RecursionError):
             failures.append('scope-invalid:cli-project-mcp-result-unconfirmed')
             continue
+        if item['status'] == 'failed':
+            row = journal[native_ordinal - 1] if native_ordinal <= len(journal) else None
+            if (item['tool'] != 'repo_validate' or arguments != {} or type(row) is not dict
+                    or row.get('tool') != item['tool']
+                    or row.get('arguments_sha256') != sha(canonical(arguments))
+                    or row.get('result_sha256') != sha(canonical(value))
+                    or not recoverable_project_test_failure(value, task, row.get('state_sha256'))):
+                failures.append('scope-invalid:cli-project-mcp-result-unconfirmed')
+                continue
         observed.append((item['tool'], sha(canonical(arguments)), sha(canonical(value))))
     expected = [(row.get('tool'), row.get('arguments_sha256'), row.get('result_sha256')) for row in journal]
     if observed != expected:
         failures.append('scope-invalid:cli-project-ordered-results-journal-mismatch')
-    from .engineering_broker import validate_execution_result, recoverable_project_test_failure
     for row in journal:
         result = row.get('result', {})
         project_validation = row.get('tool') == 'repo_validate' and row.get('arguments') == {}

@@ -1,0 +1,69 @@
+{
+  "schema_version": "rc20-cli-known-failure-engineering-audit-v1",
+  "recorded_at": "2026-10-15T20:27:34.306099+00:00",
+  "status": "ENGINEERING_VERIFIED_NOT_ACTUAL_CALIBRATED",
+  "problem": "Native CLI marks a known repo_validate failure as failed; the earlier adapter accepted completed only and refused the matching receipt.",
+  "change": "Accept failed only for the existing canonical recoverable project-test failure rule, exact repo_validate empty arguments, native completion ordinal, journal result/argument hashes and project state. The task remains unsuccessful. All other failed, malformed, unknown or mismatched results remain refused.",
+  "source_identity": {
+    "evolution/tool_codex.py": "317e69122328c521a2366168d23d4e8b2c6d610d86667407c62b645682a952fc",
+    "tests/test_cli_native_failed_validation.py": "7ce9c9a973c3a91bfbb542f1822346f0bae48eb85d2c98cfb372df9130f0dc96"
+  },
+  "source_identity_measurement": "Raw worktree bytes tested; published Git blobs must be checked separately under existing LF attributes.",
+  "evidence": {
+    "first_engineering_entry_incomplete": {
+      "ref": "eval-workspaces/rc20-cli71-engineering-v1/result.json",
+      "sha256": "762bf5237f84ddc8c5a9adc756a5f2d341e8fb5c0844bb1f98a65864d6e858f0"
+    },
+    "unittest_completion": {
+      "ref": "eval-workspaces/rc20-cli71-unittest-v2/result.json",
+      "sha256": "900f79cad62d5bc935304d01996720bea1f559bc30237759a5c2903368977b6b"
+    },
+    "adoption": {
+      "ref": "eval-workspaces/rc20-cli71-adoption-v1/adoption.json",
+      "sha256": "82cb5bb919a930f07bce62fdfbde92fd8df5c03331fce2a22068113215fc9049"
+    },
+    "first_source_review": {
+      "ref": "eval-workspaces/rc20-cli-v7-root-first-source-review-v1/first-findings.receipt.json",
+      "sha256": "981efa55c4feea8e4d84269f49ea2f55540103a73c433be0e37983b80d8776bd"
+    },
+    "test_only_revision": {
+      "ref": "eval-workspaces/rc20-cli7-tests-v71-2d4b2bb562fa/candidate-manifest-v71.json",
+      "sha256": "6c772d8862de16f28e8205e3c8863cfce54855a6497ca52309dd1544769d5f03"
+    },
+    "independent_source_closure": {
+      "ref": "eval-workspaces/rc20-cli71-root-independent-closure-v1/first-closure.receipt.json",
+      "sha256": "5a2d9a14a5fa41a3a71b2053cb463c1d070cfe1d24a173a52779e838cb36af25"
+    },
+    "synthetic_two_case_producer_consumer_proof": {
+      "ref": "eval-workspaces/c7p-567d07b69e27/r1/first-result.json",
+      "sha256": "b59cc53bc1b3ea0b31eeecba8196b0f2774625569c8f36404aa69be5e47e54bf"
+    },
+    "closed_cli6_first_audit_public": {
+      "ref": "audits/rc20-native-cli-public-calibration-v6.audit.json",
+      "sha256": "d8a56c439ce1845e682b627266e94bffced2b125685b9c8c564c1e45ee61b879"
+    }
+  },
+  "engineering": {
+    "gates_passed": 9,
+    "discovered": 1064,
+    "passed": 1062,
+    "skipped": 2,
+    "source_files": 232,
+    "source_before_after_exact": true,
+    "all_engineering_entry_wall_seconds": 2087.8589999999967,
+    "first_entry_wall_seconds": 1041.702999999994,
+    "unittest_completion_wall_seconds": 1046.1560000000027,
+    "unittest_seconds": 1036.876
+  },
+  "first_engineering_entry": "Nine gates passed. Unittest had no final summary when the first entry ended at its configured 900-second subprocess ceiling; that entry masked the original terminating exception type in finally. First incomplete log/result retained; source map exact. A new exception-preserving entry completed unittest only with an engineering allowance of1800 seconds; no model study budget changed and no completed gates were repeated.",
+  "first_source_review": "MUST_FIX synthetic scanner literal and unsupported-Python fixture import selection; original findings retained. Only test selection and literal spelling changed; assertions and runtime values retained.",
+  "pure_proof_scope": "Real broker/receipt bookkeeping with fake CLI, Docker and Job lifecycle. Positive task succeeds; known negative is scope-confirmed and task-failed. Not actual native CLI, real Job cleanup or model efficacy.",
+  "governance_aggregate_sha256": "0049006fc61f4cbc4c028a63e1667044a2856339916fc1c623b5bfd4a7915561",
+  "qualification_id": "sha256:f78112d7a757424c557731c36ea4249844a1ef03a8c458ff940e234c307e5664",
+  "governance_and_delivered_runtime_changed": false,
+  "closed_actual_replayed_or_reaudited": false,
+  "net_benefit": "NOT_ESTABLISHED",
+  "promotion_allowed": false,
+  "default_branch_and_local_install": "RC19",
+  "next": "New source-bound public CLI calibration with a first independent actual audit; API settlement calibration and fresh paired/cross-Agent/source-ablation validation remain required."
+}
