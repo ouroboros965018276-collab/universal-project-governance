@@ -26,7 +26,7 @@ v6 使用前一规范身份 `51bdd1a9…` 和有限 CPython 配置。当前 `004
 
 [工程轮 v7](audits/rc20-stdlib-project-development-v7.audit.json)及[v8](audits/rc20-stdlib-project-development-v8.audit.json)因调用和执行器边界问题中断，原失败审计封存。[执行器修正](audits/rc20-runtime-failure-engineering.audit.json)通过九项门禁、931 项回归及六个真实容器用例，另两项回归跳过，公开原始证据独审 PASS。[v9](audits/rc20-stdlib-project-development-v9.audit.json)随后完成 12 次已知请求、71,151 token、pending 为 0；首个角色耗尽请求却未验证，Git 收据校验接口不匹配又触发全局停止，首次原始审计 FAIL。这些工程修正尚不证明模型质量或净收益。
 
-[v10 开发预注册](audits/rc20-stdlib-project-development-v10.preflight.json)固定 141 项源码，沿用相同模型、预算、已曝光任务及上下文；对齐 Git 收据、未预留请求拒绝和受损文件接手边界。孤立响应文件的审计缺口通过独立纯模拟定向闭环；[调用前独审](audits/rc20-stdlib-project-development-v10.precall-review.json)通过 66 个角色的真实调用表达式、请求内容与源码一致性核验。还没有本轮模型结果。
+[v10](audits/rc20-stdlib-project-development-v10.audit.json)在 51/54 条工作流后停止，留下 55 个角色记录、193 次有报告用量的请求和一次确认未发送的连接超时，共 **1,036,807 token**、pending 为 0。首次原始独审 PASS：6,189 个原始文件、141 项源码前后一致。首次人工材料抽取因零工具事件角色没有日志而失败，不重抽；人工质量和分组成本未揭盲，整轮不完整，**净收益未建立**。后续只在新身份修正抽取边界并接入原预算内的受限连接重试，旧轮不续跑或重评。
 
 下一步完成工程对照，再以新任务分布、跨 Agent 和来源消融独立验证。默认分支和本地安装仍为 **RC19**。完成调用不证明未来容量或零风险。
 

@@ -1,0 +1,98 @@
+{
+  "study_id": "upg-rc20-stdlib-project-development-v10",
+  "study_class": "DEVELOPMENT",
+  "status": "CLOSED_INCOMPLETE_RAW_PASS_MANUAL_EXTRACTION_FAILED",
+  "protocol_sha256": "e5b8a44627d35eecc8da55939f11285165932b36fba8aa1cbcb921f9693e106d",
+  "source_closure_sha256": "96a00d09a37724e0f4e72d87f714186514c9b781adc7123e3c0198a35dc0c99f",
+  "terminal_sha256": "deba5b77afdd2d940ae53afb9a2053423e8a6ed0164483a8ad3bd726f3a201c1",
+  "maintained_source_commit": "389cdda2d66d22f71201ce5c5f4884be4baeba08",
+  "preregistration_commit": "0c7f82716a304cf53c441b2b9dd68889d7c0533f",
+  "runtime_aggregate_sha256": "0049006fc61f4cbc4c028a63e1667044a2856339916fc1c623b5bfd4a7915561",
+  "original_terminal": {
+    "status": "preparation-failed-before-send",
+    "planned_workflows": 54,
+    "observed_workflow_records": 51,
+    "planned_actor_roles": 66,
+    "attempted_actor_roles": 55,
+    "actor_records": 55,
+    "unfinished_role": null,
+    "unknown_usage": false,
+    "execution_state_unknown": false,
+    "execution_infrastructure_failed": false,
+    "overrun": []
+  },
+  "global_request_accounting": {
+    "reserved_request_rows": 194,
+    "reported_usage_estimate_committed_rows": 193,
+    "confirmed_not_invoked_before_send_rows": 1,
+    "reported_total_tokens": 1036807,
+    "pending": 0,
+    "limits": "The 194 reservations are not 194 provider responses. The final confirmed-not-invoked attempt has no model response or reported usage. Missing future roles have no zero-cost observation. Older study unknown fences remain unchanged."
+  },
+  "first_raw_audit": {
+    "status": "RAW_INTEGRITY_PASS",
+    "ref": "eval-workspaces/rc20-v10-independent-first-actual-audit-prepared-20261015-ac9939ba/first-audit.json",
+    "sha256": "1f42db66fe0c0314b304641270885008fe4822fc34a79e661713715411ffa449",
+    "seal_sha256": "c8fb2015842717f9b9bac1dd8419de81307cad12a729fd595f07106a46549467",
+    "auditor_source_sha256": "649c0a6afb600be3308113571ff368cf426855b1f9f1dd7069365c3a8d12965b",
+    "main_calls": 1,
+    "main_exit_code": 0,
+    "raw_files": 6189,
+    "source_files": 141,
+    "raw_and_sources_before_after_exact": true,
+    "external_execution_boundary_calls": 0,
+    "restored_actual_authorization": "UNBOUND",
+    "scope": "Original incomplete prefix integrity only; not task success, efficacy or permission to resume."
+  },
+  "stop_diagnosis": {
+    "original_actor_result_status": "transport-failed-not-invoked",
+    "transport": {
+      "phase": "connect",
+      "connection_attempted": true,
+      "http_dispatch": "not_started",
+      "exception_class": "TimeoutError"
+    },
+    "original_request_receipt_sha256": "37dffa54ee35e5722a36f5d223e7d4a62458fe9715497e42d9bc12633f5fd736",
+    "interpretation": "Confirmed connection failure before HTTP dispatch. Existing protocol had no retry and stopped globally. No insufficient-balance response was observed. Original statuses and flags are retained."
+  },
+  "first_manual_extraction": {
+    "status": "FAILED_NO_RETRY",
+    "helper_sha256": "90f8e8e1a02d0a467fb42510688bbb44303e96f98e1b61ee4a81684f5852db8c",
+    "directory": "eval-workspaces/rc20-stdlib-project-development-v10-manual-v7",
+    "packets_created": 0,
+    "exception_type": "FileNotFoundError",
+    "missing_reference": "actors/w003-source/artifacts/broker.jsonl",
+    "cause": "Frozen helper unconditionally required a broker journal. The actual raw-confirmed tool-contract-failed result had zero broker events, zero API tool trace entries, no journal, and unchanged received/final state.",
+    "observation_ref": "eval-workspaces/rc20-v10-closed-preservation-v1/observed-extraction-failure.json",
+    "stderr_provenance": "Original traceback is in tool exec chunk518762; no original local stderr capture is claimed.",
+    "manual_quality": "UNASSESSED",
+    "condition_costs_unblinded": false
+  },
+  "preservation": {
+    "ref": "eval-workspaces/rc20-v10-closed-preservation-v1/result.json",
+    "entries": 6344,
+    "archive_sha256": "759f9ba651966d9faa4688c384063bd6b1aa93ba5dc48ceb00b496d099f22485",
+    "entry_map_sha256": "cc94010fb76b81357608ccd4ba946cd7a81eb5816317f0f893dd6719c1956be9",
+    "originals_and_archive_exact": true,
+    "scope": "Byte preservation only; no extraction retry, replay, regrade or raw re-audit."
+  },
+  "efficacy": {
+    "complete_paired_blocks": null,
+    "manual_quality": "UNASSESSED",
+    "paired_token_improvement": null,
+    "paired_inclusive_wall_improvement": null,
+    "net_benefit": "NOT_ESTABLISHED",
+    "gate": "FAIL_INCOMPLETE_AND_NO_LOCKED_MANUAL_INITIALS",
+    "all_in_research_and_manual_cost": null,
+    "promotion_allowed": false
+  },
+  "qualification": {"formal": "UNASSESSED", "locked": "NOT_RUN"},
+  "next_identity_only": "Future separately registered sources may accept proven zero-event missing journals and reuse the existing once-only confirmed-pre-HTTP-connect retry within unchanged request/tool/time/money caps. These changes cannot resume, re-extract or alter C10.",
+  "accepted_release": "Default main and local installed Skill remain RC19.",
+  "limitations": [
+    "Same exposed public nine-case development population; not independent postselection evidence.",
+    "Reported requested model names and saved response/transport observations do not establish hidden provider internals.",
+    "Staged CLI pure testing occurred concurrently; host load effects are unmeasured. No cross-Agent-class efficacy claim.",
+    "Incomplete data, short outputs, green CI and raw integrity cannot establish quality-constrained savings or Stable."
+  ]
+}
