@@ -146,13 +146,13 @@ class RuntimeFailureTests(unittest.TestCase):
             final_failed=json.dumps({'summary':'Public failing package.','validation':'failed','helper_gap':'project_tool unavailable in bounded broker'})
             with patch.object(p,'execute_project',side_effect=AssertionError('final score cannot execute')):
                 corrupt=broker.quality_from_current_receipts(b,before,final_failed,[],[])
-            self.assertTrue(corrupt['execution_state_unknown']);failed['diagnostics']=original
+            self.assertTrue(corrupt['execution_state_unknown']);failed['diagnostics']=copy.deepcopy(original)
             b.call('repo_read',{'paths':['sample_pkg/core.py']})
             b.call('repo_patch',{'operations':[{'path':'sample_pkg/core.py','old_sha256':b.snapshot()['sample_pkg/core.py'],'new_text':FILES['sample_pkg/core.py']+'# repaired\n'}]})
             failed['diagnostics'][0]['stderr']='unverified historical hint'
             with patch.object(p,'execute_project',side_effect=AssertionError('stale read cannot execute')):
                 corrupt=broker.quality_from_current_receipts(b,before,final_failed,[],[])
-            self.assertTrue(corrupt['execution_state_unknown']);failed['diagnostics']=original
+            self.assertTrue(corrupt['execution_state_unknown']);failed['diagnostics']=copy.deepcopy(original)
             with patch.object(p,'_capture',FakeDocker()):passed=b.call('repo_validate',{})
             self.assertTrue(passed['ok']);self.assertEqual(passed['diagnostics'],[]);b.call('repo_status',{})
             trace=[];previous=None

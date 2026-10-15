@@ -667,9 +667,22 @@ def tool_definitions(*, execution_backend=None):
 
 def serve(spec_file):
     spec = json.loads(Path(spec_file).read_text(encoding="utf-8"))
-    broker = RepoBroker(spec["workspace"], spec["task"], spec["git_binary"],
-                        audit_file=spec["audit_file"], max_calls=spec["max_tool_calls"], deadline=spec["deadline"],
-                        execution_backend=spec.get("execution_backend"), execution_artifacts=spec.get("execution_artifacts"))
+    profile = spec.get("broker_profile_id")
+    if profile is None:
+        broker = RepoBroker(spec["workspace"], spec["task"], spec["git_binary"],
+                            audit_file=spec["audit_file"], max_calls=spec["max_tool_calls"], deadline=spec["deadline"],
+                            execution_backend=spec.get("execution_backend"), execution_artifacts=spec.get("execution_artifacts"))
+        definitions = tool_definitions(execution_backend=broker.execution_backend)
+    elif type(profile) is str and profile == 'stdlib-python-project-v1':
+        from evolution.engineering_broker import create_broker, tool_definitions as project_definitions
+        if spec.get("execution_backend") is not None:
+            raise ValueError('project profile cannot mix another execution backend')
+        broker = create_broker(spec["workspace"], spec["task"], spec["git_binary"],
+            audit_file=spec["audit_file"], max_calls=spec["max_tool_calls"], deadline=spec["deadline"],
+            execution_artifacts=spec.get("execution_artifacts"))
+        definitions = project_definitions()
+    else:
+        raise ValueError('unknown explicit broker profile')
     while True:
         raw = sys.stdin.buffer.readline(MAX_TOTAL_BYTES + 1)
         if not raw:
@@ -687,12 +700,21 @@ def serve(spec_file):
         elif method == "ping":
             response["result"] = {}
         elif method == "tools/list":
-            response["result"] = {"tools": tool_definitions(execution_backend=broker.execution_backend)}
+            response["result"] = {"tools": definitions}
         elif method == "tools/call":
             params = request.get("params", {})
             result = broker.call(params.get("name"), params.get("arguments", {}))
             response["result"] = {"content": [{"type": "text", "text": canonical(result).decode("utf-8")}],
                                   "isError": not result["ok"]}
+            if profile is not None and result.get('ok') is not True:
+                from evolution.engineering_broker import recoverable_project_test_failure
+                recoverable = (recoverable_project_test_failure(result, broker.task, broker.events[-1]['state_sha256'])
+                               if broker.events and params.get('name') == 'repo_validate'
+                               and params.get('arguments', {}) == {} else False)
+                if not recoverable:
+                    # The CLI's provider turns are opaque. Close only this
+                    # broker after refusal; never claim a per-HTTP stop bound.
+                    broker.terminal_result = result
         else:
             response["error"] = {"code": -32601, "message": "method not found"}
         sys.stdout.buffer.write(canonical(response) + b"\n")

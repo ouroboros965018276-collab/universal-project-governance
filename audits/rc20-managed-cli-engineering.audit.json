@@ -1,0 +1,120 @@
+{
+  "schema_version": "rc20-managed-cli-engineering-audit-v1",
+  "recorded_at": "2026-10-15T18:48:57.016106+00:00",
+  "status": "ENGINEERING_VERIFIED_NOT_MODEL_EFFICACY",
+  "changes": [
+    "Opt-in registered API work deadline stays closed while the same in-flight HTTP request may settle accounting for at most 600 further seconds; no late tool/finish/success and no second settlement request.",
+    "Registered native CLI uses the existing project broker and fixed Docker recipes, with honest known FAIL and unknown types and history/cache evidence.",
+    "Git preparation preserves intent, original streams, typed result and safe stage before any CLI dispatch; failures retain their no-replay fence."
+  ],
+  "source_identity": {
+    "evolution/provider_tools.py": "6a2f3ddb2b606069640c550dbca6ecfa396245dc1f9a792693982ec216d49637",
+    "evolution/engineering_broker.py": "50c1dca5b854cd39841d17541e2d84a57d6572003bf8fff8f483086452d66032",
+    "evolution/tool_broker.py": "11e4447a596bad5f4d49424ccb08dc42d9256e3ae3c14a9046a26d24c81eaecf",
+    "evolution/tool_codex.py": "3d26b4a0b449453ed82b9f70627dbf595773cd09992e0d473691d0f6ac868654",
+    "tests/test_managed_settlement.py": "46412b437491593ec805bab3d7a5202764a86afdbd871219e680c5f5ba635076",
+    "tests/test_managed_settlement_boundaries.py": "0bbe1a723bf6388d5de05a883edf1285f5ae70e54202080fac2f7c9d697c2529",
+    "tests/test_managed_settlement_race.py": "ab9b9a8d58f272a4499de07cceb2219426bcc9de22227c6e63aa9a60176e7785",
+    "tests/test_cli_preparation_evidence.py": "42ffa41decba6ed1084ce52a64b2726fe9af2a791b7eb498acd706f59de35c9a",
+    "tests/test_engineering_cli.py": "d982c214ff968327908f0c478fa2666b920e51cf5bb1259d052eb328bb74c901",
+    "tests/test_runtime_candidate_failures.py": "c27b6bde212cc2080ba395b409c9721f61e806d83b3a2e4e2d9dbb7b2c20f2f4"
+  },
+  "evidence": {
+    "adoption": {
+      "ref": "eval-workspaces/rc20-managed-cli-adoption-v1/adoption.json",
+      "sha256": "ba841a57ccc0580ef72251429f7bd251c79606790e6a2296a7161b1f89ce7694"
+    },
+    "first_regression_stopped_at_synthetic_secret_fixture": {
+      "ref": "eval-workspaces/rc20-managed-cli-engineering-v1/result.json",
+      "sha256": "a41026b47455fd4b9dfdbc4e0eb3ff325dacf3e732f91e6e31bb01032ba0e6f6"
+    },
+    "fixture_source_only_revision": {
+      "ref": "eval-workspaces/rc20-managed-cli-engineering-v1/security-fixture-revision.json",
+      "sha256": "7f88337ffa370af96e1774182a6bd9da0c1ffb59ae9121ce5fdebf35697a2af4"
+    },
+    "full_regression": {
+      "ref": "eval-workspaces/rc20-managed-cli-engineering-v2/result.json",
+      "sha256": "82bdbf800039982af1208ae486c26b59b68db9f6a73ba821c4c783cbf9a379f3"
+    },
+    "managed_first_race_finding": {
+      "ref": "eval-workspaces/rc20-managed-settlement-independent-review-20261015T174129Z-08b10d62270b45ec8efe26d1d393e519/first-findings.receipt.json",
+      "sha256": "1ce6bc17f84f3a4c120b18fad04739a3b829900c3c0c8f57de75b7f823d5beb8"
+    },
+    "managed_v2_independent_closure": {
+      "ref": "eval-workspaces/rc20-managed-settlement-v2-independent-review-20261015T175348Z-9442377b7f4d4196a06c97e622e960fb/first-closure.receipt.json",
+      "sha256": "5ffa0f0ae74059ca61c2a7a2ef2ba27a2014c555a5c2a53c34023a6b0a34cd7b"
+    },
+    "cli_v6_independent_closure": {
+      "ref": "eval-workspaces/rc20-cli-v6-independent-closure-20261015T182548Z-08bff64a5f014fbca546189d5db974ef/first-closure.receipt.json",
+      "sha256": "171fca30563d4dea4a699ae72d7091cafe4e8bce3732a0bc513dfec637e85d38"
+    },
+    "closed_cli_first_actual_audit": {
+      "ref": "eval-workspaces/rc20-cli-v5-first-audit-prepared-20261015T180023Z-a4a41325e8c6474892d6d6f9b0f0db6e/first-audit.json",
+      "sha256": "3b127545bc8cb26c85410b1b1510fd3e2d46c28cf89faedc6dbf8e944c6f434b"
+    },
+    "closed_cli_byte_preservation": {
+      "ref": "eval-workspaces/rc20-cli-v5-zip-byte-check-20261015T183215Z-6f41df156efe4b54943369defe7961aa/first-byte-check.receipt.json",
+      "sha256": "4b521367762c514b277c746aaf36399ace41fb940ef1f35a86bcaf2c88bfcdff"
+    },
+    "new_empty_long_path_git_diagnostic": {
+      "ref": "eval-workspaces/rc20-git-entry-diagnostic-v3-20261016-41da289c/observation.json",
+      "sha256": "55f9d660407b19924d2a0940ff8cb614a6bbb01fdd01e4e4893ada64bf430188"
+    },
+    "git_source_normalization": {
+      "ref": "eval-workspaces/rc20-managed-cli-engineering-v2/git-source-normalization.json",
+      "sha256": "93c3a11afb2d62c4a4c63c1c69141d915cf6bfd1dd463497bf4efb51360b006b"
+    }
+  },
+  "engineering": {
+    "gates_passed": 9,
+    "discovered": 1055,
+    "passed": 1053,
+    "skipped": 2,
+    "source_files": 231,
+    "source_before_after_exact": true,
+    "wall_seconds": 253.5
+  },
+  "closed_cli_public_calibration": {
+    "first_audit": "RAW_INTEGRITY_FAIL",
+    "owner_exit_code": 3,
+    "completed_cases": 0,
+    "model_dispatch": "SOURCE_PROVEN_NOT_STARTED",
+    "completed_turn_usage": null,
+    "reported_pre_dispatch_usage": {
+      "measurement": "model-dispatch-not-started",
+      "total_tokens": 0,
+      "cost_usd": null
+    },
+    "native_mcp": "NOT_OBSERVED",
+    "project_cleanup": "NOT_ESTABLISHED",
+    "old_exact_prepare_cause": "UNKNOWN",
+    "new_diagnostic": "One new empty247-character workspace: Git rc1, Filename too long; this does not identify the lost old Git result.",
+    "replayed_or_reaudited": false
+  },
+  "limits": [
+    "Engineering and public calibrations do not establish UPG task quality, token/time improvement, cross-Agent generality or all-in cost.",
+    "Managed deadline settlement still needs a new source-bound public actual calibration; partial or unpersisted usage stays unknown.",
+    "The closed C11 unknown request and all prior failures remain unchanged; no retry, extraction or regrading.",
+    "No runtime governance semantic or generated Skill bytes changed in this integration."
+  ],
+  "governance_aggregate_sha256": "0049006fc61f4cbc4c028a63e1667044a2856339916fc1c623b5bfd4a7915561",
+  "qualification_id": "sha256:f78112d7a757424c557731c36ea4249844a1ef03a8c458ff940e234c307e5664",
+  "net_benefit": "NOT_ESTABLISHED",
+  "promotion_allowed": false,
+  "default_branch_and_local_install": "RC19",
+  "source_identity_measurement": "Raw worktree bytes from the completed regression source map.",
+  "published_git_source_identity": {
+    "evolution/provider_tools.py": "6a2f3ddb2b606069640c550dbca6ecfa396245dc1f9a792693982ec216d49637",
+    "evolution/engineering_broker.py": "50c1dca5b854cd39841d17541e2d84a57d6572003bf8fff8f483086452d66032",
+    "evolution/tool_broker.py": "11e4447a596bad5f4d49424ccb08dc42d9256e3ae3c14a9046a26d24c81eaecf",
+    "evolution/tool_codex.py": "3d26b4a0b449453ed82b9f70627dbf595773cd09992e0d473691d0f6ac868654",
+    "tests/test_managed_settlement.py": "c6b105e17176faaf54efcd41fcae0328550aab4c5fb79843b4e3329975405e1b",
+    "tests/test_managed_settlement_boundaries.py": "26abac2ad76cb8aa75c85055ce7cef7a69c613d53951d77ccbec0b0a07420ca9",
+    "tests/test_managed_settlement_race.py": "e0a59a68b3fd8f44978b3f3e083b4d0bdb73062e39aec1d7b93d4d90fbea5f46",
+    "tests/test_cli_preparation_evidence.py": "42ffa41decba6ed1084ce52a64b2726fe9af2a791b7eb498acd706f59de35c9a",
+    "tests/test_engineering_cli.py": "d982c214ff968327908f0c478fa2666b920e51cf5bb1259d052eb328bb74c901",
+    "tests/test_runtime_candidate_failures.py": "c27b6bde212cc2080ba395b409c9721f61e806d83b3a2e4e2d9dbb7b2c20f2f4"
+  },
+  "policy": "Existing .gitattributes * text=auto eol=lf; no rule or worktree modification.",
+  "verification": "Every staged blob equals tested raw bytes or exactly CRLF to LF; Python AST identical."
+}

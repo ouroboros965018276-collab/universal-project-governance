@@ -35,6 +35,10 @@ ADAPTER = "official-chat-api-bounded-repo-broker-v5"
 ENGINEERING_PROFILE = "stdlib-python-project-v1"
 ENGINEERING_BACKEND = "docker-cpython-project-v1"
 ENGINEERING_ADAPTER = "official-chat-api-registered-project-v1"
+SETTLEMENT_POLICY = "work-deadline-accounting-only-settlement-600s-v1"
+SETTLEMENT_ADAPTER = "official-chat-api-registered-project-settlement-v1"
+SETTLEMENT_MAX_SECONDS = 600
+MAX_CAPTURE_HEADER_BYTES = 32768
 ENGINEERING_SCHEMA_CORRECTIONS = 1
 CONTROLLED_LOCAL_STOP_POLICY = "confirmed-first-patch-tail-local-stop-v1"
 ENDPOINTS = {"deepseek": ("api.deepseek.com", "/chat/completions"),
@@ -223,7 +227,7 @@ def _write_new(path, value, secret=""):
     return sha(data)
 
 
-def _post(provider, payload, key, timeout):
+def _post(provider, payload, key, timeout, *, _managed=None):
     """One direct HTTPS request. No proxies from env, redirects or retries."""
     host, path = ENDPOINTS[provider]
     headers = {"Content-Type": "application/json", "Accept": "application/json"}
@@ -235,6 +239,8 @@ def _post(provider, payload, key, timeout):
         phase = "connection-create"
         connection = http.client.HTTPSConnection(host, timeout=timeout)
         phase, connection_attempted = "connect", True
+        if _managed is not None:
+            _managed.observe(phase, connection_attempted, dispatch)
         connection.connect()  # DNS/TCP/TLS only; this direct connection has no tunnel/proxy.
         connection.auto_open = 0  # Never let request() implicitly reconnect.
         remaining = deadline - time.perf_counter()
@@ -242,24 +248,52 @@ def _post(provider, payload, key, timeout):
             raise DeadlineBeforeDispatch("connected-after-deadline")
         if connection.sock is not None:
             connection.sock.settimeout(remaining)
+        if _managed is not None and not _managed.begin_dispatch():
+            raise DeadlineBeforeDispatch("managed-work-dispatch-gate-closed")
         # Mark before entering request: even a local-looking exception here
         # cannot prove that no HTTP bytes reached the provider.
         phase, dispatch = "http-request", "may_have_started"
         connection.request("POST", path, body=body, headers=headers)
         phase = "response-headers"
+        if _managed is not None:
+            _managed.observe(phase, connection_attempted, dispatch)
         response = connection.getresponse()
         dispatch = "response_received"
-        status, response_headers = response.status, dict(response.getheaders())
+        status, header_items = response.status, response.getheaders()
+        if _managed is not None:
+            _managed.capture_headers(status, header_items)
+        response_headers = dict(header_items)
         phase = "response-body"
-        body = response.read(MAX_RESPONSE_BYTES + 1)
+        if _managed is None:
+            body = response.read(MAX_RESPONSE_BYTES + 1)
+        else:
+            _managed.observe(phase, connection_attempted, dispatch)
+            chunks, count = [], 0
+            while count <= MAX_RESPONSE_BYTES:
+                maximum = min(65536, MAX_RESPONSE_BYTES + 1 - count)
+                chunk = response.read1(maximum)
+                if type(chunk) is not bytes or len(chunk) > maximum:
+                    raise ResponseUnknown("invalid-bounded-response-chunk")
+                if not chunk:
+                    if getattr(response, "length", None) not in (None, 0):
+                        raise http.client.IncompleteRead(b"", response.length)
+                    break
+                _managed.capture_chunk(chunk)
+                chunks.append(chunk)
+                count += len(chunk)
+            body = b"".join(chunks)
         if len(body) > MAX_RESPONSE_BYTES:
             raise ResponseUnknown("response-size-limit")
         received = status, response_headers, body
+        if _managed is not None:
+            _managed.complete_response(received)
     except BaseException as error:
         failure = _transport(phase, error, connection_attempted, dispatch)
     finally:
         if connection is not None:
             try:
+                if _managed is not None:
+                    _managed.observe("connection-close", connection_attempted, dispatch)
                 connection.close()
             except BaseException as error:
                 if failure is None:
@@ -295,6 +329,191 @@ def _bounded_post(provider, payload, key, timeout):
     if not ok:
         raise TransportFailure(result) from None
     return result
+
+
+class _ManagedRequest:
+    """One owned HTTPS attempt. Worker changes memory only; never files/callbacks.
+
+    begin_dispatch is the irreversible request() commitment boundary, not proof
+    that particular HTTP bytes reached the peer. Cancellation linearizes against
+    that boundary; an already committed attempt remains potentially dispatched.
+    A blocked DNS worker cannot be killed safely, but a closed gate permanently
+    prevents it from invoking request() after it eventually returns from connect.
+    """
+    def __init__(self, provider, payload, key, work_deadline, settlement_deadline):
+        self.provider, self.payload, self.key = provider, payload, key
+        self.work_deadline, self.settlement_deadline = work_deadline, settlement_deadline
+        self.condition = threading.Condition()
+        self.state = {"phase": "worker-before-request", "connection_attempted": False,
+            "http_dispatch": "not_started", "dispatch_started": False,
+            "dispatch_closed": False, "headers": None, "body": bytearray(),
+            "response": None, "failure": None, "done": False, "revision": 0,
+            "headers_observed_monotonic": None, "body_last_observed_monotonic": None,
+            "response_completed_monotonic": None}
+        self.thread = threading.Thread(target=self._worker, daemon=True)
+
+    def observe(self, phase, attempted, dispatch):
+        with self.condition:
+            self.state.update(phase=phase, connection_attempted=attempted, http_dispatch=dispatch)
+            self.state["revision"] += 1
+            self.condition.notify_all()
+
+    def begin_dispatch(self):
+        with self.condition:
+            if self.state["dispatch_closed"] or time.perf_counter() >= self.work_deadline:
+                self.state["dispatch_closed"] = True
+                return False
+            self.state.update(dispatch_started=True, phase="http-request", http_dispatch="may_have_started")
+            return True
+
+    def cancel_before_dispatch(self):
+        with self.condition:
+            self.state["dispatch_closed"] = True
+            self.condition.notify_all()
+            return not self.state["dispatch_started"]
+
+    def capture_headers(self, status, headers):
+        if (type(status) is not int or not 100 <= status <= 599 or len(headers) > 100
+                or any(type(k) is not str or type(v) is not str for k, v in headers)
+                or len(canonical(headers)) > MAX_CAPTURE_HEADER_BYTES):
+            raise ResponseUnknown("response-header-limit-or-shape")
+        with self.condition:
+            observed = time.perf_counter()
+            if observed > self.settlement_deadline:
+                raise TimeoutError("headers-after-settlement-deadline")
+            self.state["headers"] = (status, tuple(headers))
+            self.state["headers_observed_monotonic"] = observed
+            self.state["revision"] += 1
+            self.condition.notify_all()
+
+    def capture_chunk(self, chunk):
+        with self.condition:
+            observed = time.perf_counter()
+            if observed > self.settlement_deadline:
+                raise TimeoutError("body-after-settlement-deadline")
+            if len(self.state["body"]) + len(chunk) > MAX_RESPONSE_BYTES + 1:
+                raise ResponseUnknown("response-size-limit")
+            self.state["body"].extend(chunk)
+            self.state["body_last_observed_monotonic"] = observed
+            self.state["revision"] += 1
+            self.condition.notify_all()
+
+    def complete_response(self, response):
+        with self.condition:
+            observed = time.perf_counter()
+            if observed > self.settlement_deadline:
+                raise TimeoutError("response-complete-after-settlement-deadline")
+            self.state["response"] = response
+            self.state["response_completed_monotonic"] = observed
+            self.state["revision"] += 1
+            self.condition.notify_all()
+
+    def snapshot(self):
+        with self.condition:
+            value = dict(self.state)
+            value["body"] = bytes(value["body"])
+            return value
+
+    def wait(self, seconds, revision):
+        with self.condition:
+            if not self.state["done"] and self.state["revision"] == revision:
+                self.condition.wait(max(0, seconds))
+
+    def start(self):
+        self.thread.start()
+
+    def _worker(self):
+        failure = None
+        try:
+            remaining = self.settlement_deadline - time.perf_counter()
+            if remaining <= 0:
+                raise DeadlineBeforeDispatch("managed-worker-started-after-settlement")
+            _post(self.provider, self.payload, self.key, remaining, _managed=self)
+        except BaseException as error:
+            failure = (error.transport if isinstance(error, TransportFailure) else
+                _transport("worker-before-request", error, False, "not_started")
+                if isinstance(error, DeadlineBeforeDispatch) else _transport("unobserved", error))
+        finally:
+            with self.condition:
+                self.state.update(failure=failure, done=True)
+                self.state["revision"] += 1
+                self.key = ""
+                self.condition.notify_all()
+
+
+def _managed_post(provider, payload, key, work_deadline, settlement_deadline, capture):
+    """Main owns capture/persistence. A late response is accounting-only.
+
+    No retry, second HTTP attempt or worker file I/O exists. A still-alive
+    dispatched worker at the settlement limit stays unknown; daemon lifetime
+    bounds shutdown but does not attest remote cancellation or thread cleanup.
+    """
+    job = _ManagedRequest(provider, payload, key, work_deadline, settlement_deadline)
+    header_saved, capture_failure = False, None
+    job.start()
+    try:
+        while True:
+            state = job.snapshot()
+            if state["headers"] is not None and not header_saved:
+                status, headers = state["headers"]
+                try:
+                    capture("headers", {"http_status": status, "headers": [list(pair) for pair in headers],
+                        "headers_sha256": sha(canonical(headers)), "headers_bytes": len(canonical(headers)),
+                        "observed_monotonic": state["headers_observed_monotonic"]})
+                except (OSError, ValueError, UnicodeError) as error:
+                    capture_failure = _transport("response-persist", error, True, "response_received")
+                    job.cancel_before_dispatch()
+                header_saved = True
+            now = time.perf_counter()
+            cancelled_before_dispatch = False
+            if now >= work_deadline:
+                cancelled_before_dispatch = job.cancel_before_dispatch()
+            if (state["done"] or now >= settlement_deadline
+                    or now >= work_deadline and cancelled_before_dispatch):
+                break
+            job.wait(min(work_deadline if now < work_deadline else settlement_deadline,
+                         settlement_deadline) - now, state["revision"])
+    finally:
+        job.cancel_before_dispatch()  # Also applies when main persistence fails.
+    state = job.snapshot()
+    # Cover headers published between the last wait snapshot and the final fence.
+    if state["headers"] is not None and not header_saved:
+        status, headers = state["headers"]
+        try:
+            capture("headers", {"http_status": status, "headers": [list(pair) for pair in headers],
+                "headers_sha256": sha(canonical(headers)), "headers_bytes": len(canonical(headers)),
+                "observed_monotonic": state["headers_observed_monotonic"]})
+        except (OSError, ValueError, UnicodeError) as error:
+            capture_failure = capture_failure or _transport("response-persist", error, True, "response_received")
+    body, response, failure = state["body"], state["response"], state["failure"]
+    if state["headers"] is not None or body:
+        try:
+            capture("body", {"body_sha256": sha(body), "body_bytes": len(body),
+                "body_utf8": body.decode("utf-8", errors="replace"), "body_complete": response is not None,
+                "last_observed_monotonic": state["body_last_observed_monotonic"],
+                "response_completed_monotonic": state["response_completed_monotonic"]})
+        except (OSError, ValueError, UnicodeError) as error:
+            capture_failure = capture_failure or _transport("response-persist", error, True, "response_received")
+    if not state["done"]:
+        failure = (_transport("worker-before-request", DeadlineBeforeDispatch(), state["connection_attempted"], "not_started")
+            if not state["dispatch_started"] else
+            _transport("connection-close" if response is not None else "deadline-wait", None,
+                state["connection_attempted"], "response_received" if state["headers"] is not None else "may_have_started"))
+    observed = time.perf_counter()
+    return {"response": response, "failure": capture_failure or failure, "settlement": {
+        "policy": SETTLEMENT_POLICY, "max_seconds": SETTLEMENT_MAX_SECONDS,
+        "accounting_only": observed >= work_deadline,
+        "work_closed": observed >= work_deadline,
+        "attempt_dispatch_gate_closed": state["dispatch_closed"], "dispatch_started": state["dispatch_started"],
+        "worker_done": state["done"], "worker_alive_at_return": job.thread.is_alive(),
+        "last_observed_phase": state["phase"], "body_complete": response is not None,
+        "body_bytes_observed": len(body), "body_sha256": sha(body),
+        "work_deadline_monotonic": work_deadline, "settlement_deadline_monotonic": settlement_deadline,
+        "headers_observed_monotonic": state["headers_observed_monotonic"],
+        "body_last_observed_monotonic": state["body_last_observed_monotonic"],
+        "response_completed_monotonic": state["response_completed_monotonic"],
+        "capture_failure": capture_failure, "transport_failure": failure,
+        "settlement_limit_reached": observed >= settlement_deadline}}
 
 
 def _schema(value, schema, depth=0):
@@ -696,7 +915,7 @@ def _verify_controlled_local_stop(proposal, metadata, broker, native_trace, last
 def run_actor(provider, model, task, root, artifact_dir, git_binary, system_context, key_loader,
               max_requests=12, timeout_seconds=180, *, response_json_mode, thinking,
               before_request=None, after_request=None, profile_id=None, execution_backend=None, connect_retry_policy=None, tool_feedback_policy=None,
-              broker_profile_id=None, controlled_local_stop_guard=None):
+              broker_profile_id=None, controlled_local_stop_guard=None, settlement_policy=None):
     """Run once on existing disk state; new actor => fresh artifact directory.
 
     before_request(metadata) reserves the outer budget before dispatch and may
@@ -747,6 +966,10 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
         if engineering.PROFILE_ID != ENGINEERING_PROFILE or engineering.BACKEND_ID != ENGINEERING_BACKEND:
             raise ValueError("engineering module identity mismatch")
         adapter_identity = ENGINEERING_ADAPTER
+    if settlement_policy is not None:
+        if (type(settlement_policy) is not str or settlement_policy != SETTLEMENT_POLICY or engineering is None):
+            raise ValueError("settlement requires the exact opt-in engineering policy")
+        adapter_identity = SETTLEMENT_ADAPTER
     if tool_feedback_policy is not None and (type(tool_feedback_policy) is not str
             or tool_feedback_policy != PUBLIC_LANGUAGE_FEEDBACK_POLICY
             or execution_backend != "docker-cpython-finite-v1"):
@@ -787,6 +1010,7 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
             raise ActorFence("existing actor artifacts/pending; no replay")
         started = time.perf_counter()
         deadline = started + timeout_seconds
+        settlement_deadline = deadline + SETTLEMENT_MAX_SECONDS if settlement_policy is not None else None
         input_identity = sha(canonical(task))
         # The caller must explicitly derive a stage-two task from received disk.
         # The actor never blesses drift by changing its input task.
@@ -822,6 +1046,10 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                 schema_correction_limit=ENGINEERING_SCHEMA_CORRECTIONS)
         if controlled_local_stop_guard is not None:
             entry["controlled_local_stop_policy"] = CONTROLLED_LOCAL_STOP_POLICY
+        if settlement_policy is not None:
+            entry.update(settlement_policy=settlement_policy, settlement_max_seconds=SETTLEMENT_MAX_SECONDS,
+                work_deadline_monotonic=deadline, settlement_deadline_monotonic=settlement_deadline,
+                settlement_scope="Only account the same in-flight HTTPS attempt; no late tools, report, success or new dispatch. Inclusive wall includes settlement.")
         if tool_feedback_policy is not None:
             entry["tool_feedback_policy"] = tool_feedback_policy
         if profile_id in {FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE}:
@@ -864,6 +1092,7 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
         connect_retries, next_retry_parent = 0, None
         schema_rejections, schema_rejection_receipts = 0, []
         controlled_local_stop, last_calls, last_outcome_sha = None, [], None
+        work_cutoff_reached, last_settlement = False, None
         for index in range(1, max_requests + 1):
             remaining = deadline - time.perf_counter()
             if remaining <= 0:
@@ -885,6 +1114,9 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                         "output_cap": output_cap, "input_task_sha256": input_identity, "adapter": adapter_identity}
             if engineering:
                 metadata["broker_profile_id"] = broker_profile_id
+            if settlement_policy is not None:
+                metadata.update(settlement_policy=settlement_policy, settlement_max_seconds=SETTLEMENT_MAX_SECONDS,
+                    work_deadline_monotonic=deadline, settlement_deadline_monotonic=settlement_deadline)
             if settings is not None:
                 metadata.update(profile_id=profile_id, thinking=thinking, reasoning_effort_requested=settings["reasoning_effort"])
             if profile_id in {FLASH_THINKING_PROFILE, FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE}:
@@ -963,8 +1195,28 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
             response_sha, usage, raw, request_error, overrun = None, None, None, None, {}
             transport, not_invoked = _transport("unobserved"), False
             deadline_telemetry = None
+            managed, capture_receipts = None, []
+            if settlement_policy is not None:
+                last_settlement = None
             try:
-                if profile_id in {FLASH_THINKING_PROFILE, FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE}:
+                if settlement_policy is not None:
+                    def capture(kind, value):
+                        relative = "requests/%02d.transport-%s.json" % (index, kind)
+                        capture_sha = _write_new(artifacts / relative, dict(metadata, capture_kind=kind, capture=value), key)
+                        capture_receipts.append({"kind": kind, "receipt_ref": relative, "receipt_sha256": capture_sha})
+                    sampled = time.perf_counter()
+                    managed = _managed_post(provider, payload, key, deadline, settlement_deadline, capture)
+                    last_settlement = managed["settlement"]
+                    last_settlement.update(capture_receipts=capture_receipts,
+                        work_budget_seconds=timeout_seconds,
+                        total_observation_budget_seconds=timeout_seconds + SETTLEMENT_MAX_SECONDS,
+                        actor_elapsed_before_transport_seconds=sampled-started,
+                        actor_elapsed_after_transport_seconds=time.perf_counter()-started)
+                    work_cutoff_reached = work_cutoff_reached or last_settlement["accounting_only"]
+                    if managed["response"] is None:
+                        raise TransportFailure(managed["failure"] or _transport("unobserved"))
+                    code, headers, body = managed["response"]
+                elif profile_id in {FLASH_THINKING_PROFILE, FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE}:
                     sampled = time.perf_counter()
                     passed_timeout = deadline - sampled
                     deadline_telemetry = {"schema_version": DEADLINE_TELEMETRY_SCHEMA,
@@ -990,17 +1242,26 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                 if engineering:
                     response_record.update(adapter=adapter_identity, broker_profile_id=broker_profile_id,
                         execution_backend=execution_backend, request_id=request_id)
+                # For the opt-in path, preserve already verified components even
+                # if the subsequent durable response write or close fails.
+                if settlement_policy is not None and decode_failure is None:
+                    usage = _usage(raw.get("usage")) if isinstance(raw, dict) else None
+                    if usage is not None:
+                        receipts.append(usage)
                 response_sha = _write_new(artifacts / "requests" / ("%02d.response.json" % index), response_record, key)
                 if decode_failure is not None:
                     raise TransportFailure(decode_failure)
                 usage = _usage(raw.get("usage")) if isinstance(raw, dict) else None
                 if usage is not None:
-                    receipts.append(usage)
+                    if settlement_policy is None:
+                        receipts.append(usage)
                     if usage["output_tokens"] > output_cap:
                         overrun["output_tokens"] = {"actual": usage["output_tokens"], "requested_cap": output_cap}
                     if usage["input_tokens"] > metadata["input_utf8_bytes"]:
                         overrun["input_tokens"] = {"actual": usage["input_tokens"], "reserved_byte_bound": metadata["input_utf8_bytes"]}
                 transport["phase"] = "response-envelope"
+                if managed is not None and managed["failure"] is not None:
+                    raise TransportFailure(managed["failure"])
                 if (code != 200 or not isinstance(raw, dict) or usage is None
                         or not isinstance(raw.get("id"), str) or not raw["id"]
                         or not isinstance(raw.get("model"), str) or not raw["model"]
@@ -1032,6 +1293,12 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                     transport["exception_class"] = _exception_class(error)
                 not_invoked = transport["http_dispatch"] == "not_started"
                 unknown = not not_invoked
+            if settlement_policy is not None:
+                work_cutoff_reached = work_cutoff_reached or time.perf_counter() >= deadline
+                if last_settlement is not None:
+                    last_settlement.update(work_closed=work_cutoff_reached,
+                        accounting_only=work_cutoff_reached,
+                        actor_elapsed_before_account_seconds=time.perf_counter()-started)
             outcome = dict(metadata, dispatched=not not_invoked, not_invoked=not_invoked, transport=transport,
                            usage=usage, unknown=unknown, unexpected_overrun=overrun, response_sha256=response_sha,
                            model_reported=raw.get("model") if isinstance(raw, dict) else None,
@@ -1039,6 +1306,8 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                            elapsed_seconds=time.perf_counter() - request_started, error_type=request_error)
             if deadline_telemetry is not None:
                 outcome["deadline_telemetry"] = deadline_telemetry
+            if settlement_policy is not None:
+                outcome["settlement"] = last_settlement
             outcome_sha = _write_new(artifacts / "requests" / ("%02d.receipt.json" % index), outcome, key)
             last_outcome_sha = outcome_sha
             retry_authorization = None
@@ -1067,6 +1336,10 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                 failures.append("unexpected-provider-usage-overrun")
                 status = "unexpected-overrun-blocked"
                 break
+            if settlement_policy is not None and (work_cutoff_reached or time.perf_counter() >= deadline):
+                work_cutoff_reached = True
+                status = "work-deadline-settled-unfinished"
+                break  # Usage was accounted once; never consume this late message.
             reported_models.append(raw["model"])
             calls = message.get("tool_calls") or []
             last_calls = calls
@@ -1128,6 +1401,10 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                     status = "tool-contract-failed"
                     break
             for call in calls:
+                if settlement_policy is not None and time.perf_counter() >= deadline:
+                    work_cutoff_reached = True
+                    status = "work-deadline-settled-unfinished"
+                    break
                 try:
                     function = call["function"]
                     name, arguments = function["name"], function["arguments"]
@@ -1142,6 +1419,10 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                     if not _schema(args, definitions[name]["inputSchema"]):
                         raise ValueError("tool schema")
                     seen_calls.add(call_id)
+                    if settlement_policy is not None and time.perf_counter() >= deadline:
+                        work_cutoff_reached = True
+                        status = "work-deadline-settled-unfinished"
+                        break
                     if name == FINISH_TOOL:
                         if not call_id.strip() or _redact(arguments, key) != arguments or _redact(args, key) != args:
                             raise ValueError("terminal report identity or redaction would change original arguments")
@@ -1157,8 +1438,16 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                             "api_tool_attempt_sequence": tool_attempts, "grading_performed_here": False}
                         if engineering:
                             report.update(broker_profile_id=broker_profile_id, execution_backend=execution_backend)
+                        if settlement_policy is not None and time.perf_counter() >= deadline:
+                            work_cutoff_reached = True
+                            status = "work-deadline-settled-unfinished"
+                            break
                         final_report_sha = _write_new(artifacts / "report-receipt.json", report, key)
                         final_report, final_text, status = report, arguments, "completed"
+                        break
+                    if settlement_policy is not None and time.perf_counter() >= deadline:
+                        work_cutoff_reached = True
+                        status = "work-deadline-settled-unfinished"
                         break
                     result = broker.call(name, args)
                     event = broker.events[-1]
@@ -1224,8 +1513,12 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                     failures.append("api-tool-rejected:invalid-or-unrecorded-call")
                     status = "tool-contract-failed"
                     break
-            if status in {"tool-contract-failed", "completed"} or unknown or execution_state_unknown or execution_infrastructure_failed:
+            if status in {"tool-contract-failed", "completed"} or unknown or execution_state_unknown or execution_infrastructure_failed or work_cutoff_reached:
                 break
+        if settlement_policy is not None and time.perf_counter() >= deadline:
+            work_cutoff_reached = True
+            if not unknown and not execution_state_unknown and not execution_infrastructure_failed:
+                status = "work-deadline-settled-unfinished"
         if unknown:
             failures.append("unknown-api-response-or-usage")
         if status != "completed":
@@ -1303,6 +1596,16 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                                                      "api_response_ids": [item["api_response_id"] for item in native_trace],
                                                      "finish_response_id": final_report["api_response_id"] if final_report else None,
                                                      "finish_report_sha256": final_report_sha})
+        if settlement_policy is not None:
+            # Even an earlier current validation PASS cannot convert a timed-out
+            # actor or a late finish into successful work. This is pure grading.
+            work_cutoff_reached = work_cutoff_reached or time.perf_counter() >= deadline
+            result.update(work_deadline_reached=work_cutoff_reached, settlement=last_settlement)
+            if work_cutoff_reached:
+                quality.update(hard_pass=False, task_success=False)
+                quality["failures"].append("actor-work-deadline-closed")
+                if not unknown and not execution_state_unknown and not execution_infrastructure_failed:
+                    result["status"] = "work-deadline-settled-unfinished"
         if engineering:
             result.update(broker_profile_id=broker_profile_id, schema_rejections=schema_rejections,
                           schema_rejection_receipts=schema_rejection_receipts)
@@ -1319,7 +1622,7 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
         result = _redact(result, key)
         receipt_sha = _write_new(artifacts / "actor.result.json", result, key)
         result["receipt"]["result_file_sha256"] = receipt_sha
-        if not unknown and controlled_local_stop is None and not (engineering and (execution_state_unknown or execution_infrastructure_failed)) and actor_pending.exists():
+        if not unknown and controlled_local_stop is None and not work_cutoff_reached and not (engineering and (execution_state_unknown or execution_infrastructure_failed)) and actor_pending.exists():
             actor_pending.unlink()
         return result
     finally:

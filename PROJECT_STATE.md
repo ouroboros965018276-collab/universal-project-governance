@@ -28,9 +28,13 @@ v6 使用前一规范身份 `51bdd1a9…` 和有限 CPython 配置。当前 `004
 
 [v10](audits/rc20-stdlib-project-development-v10.audit.json)在 51/54 条工作流后停止，留下 55 个角色记录、193 次有报告用量的请求和一次确认未发送的连接超时，共 **1,036,807 token**、pending 为 0。首次原始独审 PASS：6,189 个原始文件、141 项源码前后一致。首次人工材料抽取因零工具事件角色没有日志而失败，不重抽；人工质量和分组成本未揭盲，整轮不完整，**净收益未建立**。后续只在新身份修正抽取边界并接入原预算内的受限连接重试，旧轮不续跑或重评。
 
-[工具 envelope 修正](audits/rc20-provider-index-engineering.audit.json)接纳合法的可选 ordinal index，并保持原始请求和参数；九项门禁、941 项回归通过，另两项跳过。旧轮没有重评，修正尚不证明任务收益。下一轮将固定新适配器、零事件抽取和原预算内的一次确认未发送连接重试；再以新任务分布、跨 Agent 和来源消融独立验证。默认分支和本地安装仍为 **RC19**。完成调用不证明未来容量或零风险。
+[工具 envelope 修正](audits/rc20-provider-index-engineering.audit.json)接纳合法的可选 ordinal index，并保持原始请求和参数；当时九项门禁、941 项回归通过，另两项跳过。旧轮没有重评，修正尚不证明任务收益。默认分支和本地安装仍为 **RC19**。完成调用不证明未来容量或零风险。
 
-[v11](audits/rc20-stdlib-project-development-v11.audit.json)因一次在途请求的 HTTP 状态与用量无法确认而停止：31/66 个角色记录、189 次有报告用量的请求，共 **1,044,521 token**；另一次确认未发送、一次未知请求，pending 为 1。首次原始独审 **FAIL**，4,444 个原始文件和 157 项源码前后相同；人工抽取未运行，分组成本未揭盲，**净收益未建立**。原登记与[修订前首次发现](audits/rc20-stdlib-project-development-v11.precall-review.json)、[调用前闭环](audits/rc20-stdlib-project-development-v11.precall-closure-v2.json)保留。下一步解决任务截止后在途请求的可观测与结算边界，再注册新的公平对照；不续跑或重评本轮。
+[v11](audits/rc20-stdlib-project-development-v11.audit.json)因一次在途请求的 HTTP 状态与用量无法确认而停止：31/66 个角色记录、189 次有报告用量的请求，共 **1,044,521 token**；另一次确认未发送、一次未知请求，pending 为 1。首次原始独审 **FAIL**，4,444 个原始文件和 157 项源码前后相同；人工抽取未运行，分组成本未揭盲，**净收益未建立**。原登记与[修订前首次发现](audits/rc20-stdlib-project-development-v11.precall-review.json)、[调用前闭环](audits/rc20-stdlib-project-development-v11.precall-closure-v2.json)保留，不续跑或重评本轮。
+
+当前[适配器工程验收](audits/rc20-managed-cli-engineering.audit.json)通过九项门禁、**1,053 项回归，另两项跳过**。API 新增显式在途结算：任务截止后只观察原请求用量，最长另等 600 秒，不接受迟到工具、finish 或任务成功。原生 CLI 接入同一工程执行器，保存 Git 准备原始输出并绑定收据。首次全回归因合成凭据测试字面量触发安全扫描而停止；修正写法后运行字节及断言不变，原失败保留，扫描规则未放宽。治理规范、18 个交付文件及资格身份未变。
+
+原 CLI 公开校准在模型派发前停止，首次独审 FAIL，未观察到原生 MCP 或工程验证，未建立清理证据。另一个新建空目录的单次诊断复现了 247 字符路径下 Git 的 `Filename too long`；旧轮未保存 Git 输出，旧根因仍未知。下一项[短路径 CLI 校准](audits/rc20-native-cli-public-calibration-v6.preregistration.json)已预注册、尚未启动；API 结算也需新身份校准。两者仅验收接口及证据，后续仍须新任务分布、公平配对、跨 Agent 和来源消融的独立验证，才可判断净收益。
 
 历史轮次与原失败结论保留在 [audits/](audits/)，不续跑、重评或绑定当前候选。[v5](audits/rc20-paired-real-python-development-v5.audit.json)的 HTTP 503 留有一次用量未知/pending；新轮 pending 为 0 不清除这一围栏。各轮成本、VETO 和源码身份以各自冻结审计为准。
 

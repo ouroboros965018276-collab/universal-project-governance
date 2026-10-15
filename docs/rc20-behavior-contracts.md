@@ -230,6 +230,15 @@ primitive 返回状态还必须与实际收据原始字节一致，不能单凭�
 `stdlib-python-project-v1` 使用独立身份 `official-chat-api-registered-project-v1` 和
 `docker-cpython-project-v1`，复用原 API 循环及受控文件操作。只接受固定 Pro/Flash
 模型配置、持久预算回调和注册任务；默认及有限 VM 配置保持原义，旧结果不重评。
+
+`ToolCodex` 也可通过显式 `broker_profile_id="stdlib-python-project-v1"` 使用同一工程代理，
+身份为 `codex-exec-required-stdlib-project-mcp-v1`。CLI 仅开放五个注册 MCP 工具，
+结束报告使用原生 JSON schema；API 使用 `repo_finish`。CLI 的完成回合用量不证明
+内部 HTTP 请求数、全部重试费用或受控中断能力，不能套用 API 的逐请求预留结论。
+模型发送前，项目模式将固定 Git 初始化的 intent、原始双流、退出码、耗时和来源绑定
+写入工作区外的 `preparation/git-init/`。持久化失败或初始化失败保留锁和未派发记录；
+未知异常文字不进入对外原因字段。历史成功收据的准备证据发生漂移时仍拒绝重放。
+
 `repo_validate` 执行可信任务注册的标准库包导入、unittest、模块 CLI 与文件处理配方，
 模型不能提交 shell、任意 argv、环境或镜像。测试必须匹配完整 ID 与数量；零测试、
 跳过、预期失败或文本 PASS 不能替代成功检查。
@@ -256,6 +265,16 @@ primitive 返回状态还必须与实际收据原始字节一致，不能单凭�
 快照和下一请求身份共同绑定。适配器在下一预算预留或请求之前停止；源端未完成、不评分，
 保留其 actor pending，与未知费用预留分开。接手只能使用源端实际磁盘，独立完成当前验证；
 该路径不能清除先前未知、补写意图或把中断算成成功。
+
+API 可另行显式选择 `settlement_policy="work-deadline-accounting-only-settlement-600s-v1"`，
+使用身份 `official-chat-api-registered-project-settlement-v1`。工作预算仍至多 180 秒；
+截止后只观察同一在途请求，绝对观察截止为原工作截止加 600 秒，不新增请求、工具或成功报告。
+完整迟到响应可结算一次用量，但任务为 `work-deadline-settled-unfinished`，成功标记为 false，
+actor pending 保留。worker 只发布有界内存观测，主线程负责原始收据和 accounting；
+已开始的远端请求不因此取消，线程存活与完成字段也不证明远端取消或清理。
+完整用量遇到 close 错误仍保留已知分量；不完整响应、持久化或结算不确定性继续保留预留和围栏。
+外层协议须重新绑定字段、观察与工作预算及全部实际等待成本，旧 collector/ledger/auditor
+不能仅改标签复用；该配置不能补结或重算旧轮未知请求。
 
 该配置不随 Skill 交付。`project_tool` 不可用，按既有手工状态路径披露绑定与报告缺口。
 范围限注册标准库工程；同进程、同 UID 的恶意 Python 仍可干扰 unittest 或 runner，
