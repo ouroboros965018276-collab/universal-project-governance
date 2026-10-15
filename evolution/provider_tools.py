@@ -571,8 +571,9 @@ def _engineering_batch(calls, definitions, seen_calls, key, task):
     are never converted into a schema correction authorization.
     """
     parsed, rejected, identifiers = [], [], set()
-    for item in calls:
-        if (not isinstance(item, dict) or set(item) != {"id", "type", "function"}
+    for ordinal, item in enumerate(calls):
+        if (not isinstance(item, dict) or set(item) not in ({"id", "type", "function"}, {"id", "type", "function", "index"})
+                or "index" in item and (type(item["index"]) is not int or item["index"] != ordinal)
                 or item.get("type") != "function" or not isinstance(item.get("id"), str)
                 or not item["id"].strip() or item["id"] in seen_calls or item["id"] in identifiers
                 or not isinstance(item.get("function"), dict)
