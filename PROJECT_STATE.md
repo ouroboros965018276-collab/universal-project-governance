@@ -24,15 +24,15 @@ v6 使用前一规范身份 `51bdd1a9…` 和有限 CPython 配置。当前 `004
 
 完整组相对 RC19 的 token 下降 **9.41%**、归属耗时下降 **22.38%**；相对普通指令对照，token 下降 **16.30%**、耗时增加 **14.27%**。完整组有两项机械失败及另一项事实否决：未定义工具参数导致提前拒绝、有限语言/边界行为失败、遗漏事实却声称保留，均不能用低成本抵消。提前失败也降低了观测成本，不能称为完成同等任务的节省。数据仅属两个已曝光任务族的开发诊断，**净收益未通过**；共享/启动耗时另列，发布尾部及研究/人工审核总成本未知。
 
-[工程轮 v7](audits/rc20-stdlib-project-development-v7.audit.json)及[v8](audits/rc20-stdlib-project-development-v8.audit.json)因调用和执行器边界问题中断，原失败审计封存。[执行器修正](audits/rc20-runtime-failure-engineering.audit.json)通过九项门禁、931 项回归及六个真实容器用例，另两项回归跳过，公开原始证据独审 PASS。[v9](audits/rc20-stdlib-project-development-v9.audit.json)随后完成 12 次已知请求、71,151 token、pending 为 0；首个角色耗尽请求却未验证，Git 收据校验接口不匹配又触发全局停止，首次原始审计 FAIL。下一轮将精确对齐实际生产者与校验器；这些工程修正尚不证明模型质量或净收益。
+[工程轮 v7](audits/rc20-stdlib-project-development-v7.audit.json)及[v8](audits/rc20-stdlib-project-development-v8.audit.json)因调用和执行器边界问题中断，原失败审计封存。[执行器修正](audits/rc20-runtime-failure-engineering.audit.json)通过九项门禁、931 项回归及六个真实容器用例，另两项回归跳过，公开原始证据独审 PASS。[v9](audits/rc20-stdlib-project-development-v9.audit.json)随后完成 12 次已知请求、71,151 token、pending 为 0；首个角色耗尽请求却未验证，Git 收据校验接口不匹配又触发全局停止，首次原始审计 FAIL。这些工程修正尚不证明模型质量或净收益。
+
+[v10 开发预注册](audits/rc20-stdlib-project-development-v10.preflight.json)固定 141 项源码，沿用相同模型、预算、已曝光任务及上下文；对齐 Git 收据、未预留请求拒绝和受损文件接手边界。孤立响应文件的审计缺口通过独立纯模拟定向闭环；[调用前独审](audits/rc20-stdlib-project-development-v10.precall-review.json)通过 66 个角色的真实调用表达式、请求内容与源码一致性核验。还没有本轮模型结果。
 
 下一步完成工程对照，再以新任务分布、跨 Agent 和来源消融独立验证。默认分支和本地安装仍为 **RC19**。完成调用不证明未来容量或零风险。
 
-[开发轮 v5](audits/rc20-paired-real-python-development-v5.audit.json)因 DeepSeek HTTP 503 且无用量在 2/24 个角色后停止：5 次已知请求、37,867 token，另 1 次未知/pending 与 22 个未调用角色继续保留，不续跑或重评。v6 的 pending 为 0 不清除这一旧围栏。历史[开发轮 v4](audits/rc20-paired-real-python-development-v4.audit.json)完整组耗时下降 30.52%、token 增加 2.60%，并有契约/完成状态 VETO；其原结论和源码身份保持冻结。
+历史轮次与原失败结论保留在 [audits/](audits/)，不续跑、重评或绑定当前候选。[v5](audits/rc20-paired-real-python-development-v5.audit.json)的 HTTP 503 留有一次用量未知/pending；新轮 pending 为 0 不清除这一围栏。各轮成本、VETO 和源码身份以各自冻结审计为准。
 
-历史[开发轮 v3](audits/rc20-paired-real-python-development-v3.audit.json)是不完整轮次，首份独审 RAW_INTEGRITY_FAIL；审计器额外要求受保护源端 README 必读的问题只在后续新身份修正，旧轮未重评。[开发轮 v2](audits/rc20-paired-real-python-development-v2.audit.json)使用旧规范身份，完整组 token 增加 22.63%、角色归属耗时增加 109.95%。历史审计与未知项继续冻结，不续跑、不重评、不重绑定当前候选。
-
-仓库专用的 API、解释器与隔离执行适配器不随 Skill 安装。[显式 CPython 工程审计](audits/rc20-cpython-backend-engineering.audit.json)与人工固定样例回归属于工程证据，不能替代模型任务净收益。历史[原生轮次](audits/rc20-native-context.audit.json)、[API v1](audits/rc20-api-tools-v1.audit.json)、[API v2](audits/rc20-api-tools-v2-development.audit.json)、[AST](audits/rc20-prospective-api-v1.audit.json)、[语义](audits/rc20-semantic-api-v1.audit.json)、[开发 v3](audits/rc20-tools-v3-development.audit.json)、[推理](audits/rc20-thinking-development-v1.audit.json)、[上下文 v1](audits/rc20-contract-context-development-v1.audit.json)、[上下文 v2](audits/rc20-public-contract-context-development-v2.audit.json)和[计划接手 v4](audits/rc20-handoff-tools-development-v4.audit.json)保留原证据；不续跑、重评或合并。有限契约的范围见[说明](docs/rc20-behavior-contracts.md)。
+仓库专用的 API、解释器与隔离执行适配器不随 Skill 安装。人工样例及[工程审计](audits/rc20-cpython-backend-engineering.audit.json)不能替代模型收益；契约能力与限制见[说明](docs/rc20-behavior-contracts.md)。
 
 ## 最近一次重要发布：RC19
 

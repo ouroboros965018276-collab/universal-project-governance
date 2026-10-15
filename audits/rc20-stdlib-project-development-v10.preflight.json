@@ -1,0 +1,176 @@
+{
+  "study_id": "upg-rc20-stdlib-project-development-v10",
+  "status": "REGISTERED_DEVELOPMENT_NOT_EFFICACY",
+  "registered_at": "2026-10-15T14:44:16.478477+00:00",
+  "protocol_sha256": "e5b8a44627d35eecc8da55939f11285165932b36fba8aa1cbcb921f9693e106d",
+  "source_closure_sha256": "96a00d09a37724e0f4e72d87f714186514c9b781adc7123e3c0198a35dc0c99f",
+  "source_files": 141,
+  "prepared_receipt_sha256": "554ccdae39512754e9daf53781341500ccf3894b49ff420c79f1c626e8d40a33",
+  "maintained_source_commit": "389cdda2d66d22f71201ce5c5f4884be4baeba08",
+  "bindings": {
+    "adapter_source_sha256": "de7f75d851b61642c6926434d167b23cefec986cf71ce0a811e6ffbd9ebffb6b",
+    "aggregate_sha256": "0049006fc61f4cbc4c028a63e1667044a2856339916fc1c623b5bfd4a7915561",
+    "auditor_source_sha256": "649c0a6afb600be3308113571ff368cf426855b1f9f1dd7069365c3a8d12965b",
+    "base_broker_source_sha256": "217015a2943fba2647232cb487708bcd386fe847e0d01c96a6eceb57fdeec508",
+    "broker_source_sha256": "0d5a593970941fb3483581c2f3e38d8b87589b46d89814a327c91cfad72e6cf8",
+    "collector_source_sha256": "1eeb6176cc6acaac0c1eab9adf11ac866382ed31e7b72a6635bb4e8d19135739",
+    "controlled_stop_policy": "confirmed-first-patch-tail-local-stop-v1",
+    "executor_source_sha256": "530e587a9c3c9ddea17a39d7f889bd2097240a18a62d4751628cbb5f07540e69",
+    "factory_artifact_sha256": "94fddb06bf6a15f2b66fa7c6a9f81518b9802296317bca416531ecd130d0030f",
+    "factory_source_sha256": "5a985a47e2345bd049e476b160c8a88432e9d9340f03b7e0da83f54fb45bfa03",
+    "git_commit": "389cdda2d66d22f71201ce5c5f4884be4baeba08",
+    "host_identity_sha256": "e3a2fa7162ed1054180179f0d00f2e7f4e251f44c990064d6311b366b7c69357",
+    "ledger_source_sha256": "15dab230103c14cc884cc75816359a76dc866f9e5cb43ca38b2b2b45f4eab1f2",
+    "manual_helper_sha256": "90f8e8e1a02d0a467fb42510688bbb44303e96f98e1b61ee4a81684f5852db8c",
+    "manual_rubric_sha256": "916a64dbb7107831009639cf1a6146e8a52a44e18664e819531b4bb1aa4d1b85",
+    "model_sha256": "d2d1d071fec2e0130811c64e5179de314c2a92c87c196d2a51ff433ebebb3bd0",
+    "qualification_id": "sha256:f78112d7a757424c557731c36ea4249844a1ef03a8c458ff940e234c307e5664",
+    "runtime_map_sha256": "8965a883554321ec1883e625f0636e63b9f537f1779e61ede14ec8c2be2c7fcc",
+    "skill_sha256": "b97a3b100d407a78f372f0c9f01b3fea8afc4d2f5901f47624e4aac3ec5a2f74",
+    "source_closure_sha256": "96a00d09a37724e0f4e72d87f714186514c9b781adc7123e3c0198a35dc0c99f"
+  },
+  "arms": [
+    "rc19",
+    "attention",
+    "full"
+  ],
+  "providers": [
+    "deepseek",
+    "mimo"
+  ],
+  "counts": {
+    "actor_roles": 66,
+    "cases": 9,
+    "known_tool_cutpoint_cases": 1,
+    "planned_handoff_cases": 1,
+    "single_cases": 7,
+    "theoretical_request_slots": 792,
+    "workflows": 54
+  },
+  "actor_caps": {
+    "output_tokens": 8192,
+    "requests": 12,
+    "seconds": 180,
+    "tools": 32
+  },
+  "chain_caps": {
+    "dual": {
+      "requests": 24,
+      "seconds": 480,
+      "tools": 64
+    },
+    "single": {
+      "requests": 12,
+      "seconds": 240,
+      "tools": 32
+    }
+  },
+  "round_caps": {
+    "actors": 66,
+    "deepseek_USD": "20",
+    "known_reported_tokens_soft": 8000000,
+    "mimo_CNY": "20",
+    "mimo_USD": "3",
+    "ordinary_failure_stop_limit": null,
+    "request_slots": 1000,
+    "round_seconds_soft": 14400
+  },
+  "profile_configuration_sha256": "db21a61c86bb3398f9b9568cdb290482407115dfc1ac0be3c21b8fb62ac8ced6",
+  "scope": "Same nine-case exposed public DEVELOPMENT population; not fresh independent holdout, continuation or regrade of a closed round.",
+  "fixture_exposure": "Same exposed public DEVELOPMENT population. Closed v8 made five known requests and v9 made twelve known requests in their first source role. Retained cases/contexts are reused openly; postselection independent tasks must be new.",
+  "engineering_reference": "audits/rc20-runtime-failure-engineering.audit.json",
+  "engineering_evidence": {
+    "gates": 9,
+    "regressions": {
+      "discovered": 933,
+      "passed": 931,
+      "skipped": 2
+    },
+    "public_containers": 6,
+    "first_public_raw_audit": "RAW_INTEGRITY_PASS",
+    "exact_ci_run": 38743998151,
+    "ci_jobs": 11,
+    "ci_conclusion": "success"
+  },
+  "preparation": {
+    "directory": "eval-workspaces/rc20-v10-registration-v1",
+    "actual_model_or_project_calls": 0,
+    "new_planner_processes": 0,
+    "retained_historical_planner_processes": 22,
+    "changes": "New collector narrowly proves pre-reservation refusal; new raw auditor aligns actual Git envelopes and closes orphan-response namespace; receiver factory admits damaged runtime snapshots. Maintained backend, models, contexts, budgets and acceptance thresholds unchanged.",
+    "previous_first_mustfix_retained": "eval-workspaces/rc20-v10-independent-review-20261015-59ed1b/first-findings.receipt.json",
+    "source_evidence": [
+      {
+        "ref": "eval-workspaces/rc20-v10-independent-review-20261015-59ed1b/first-findings.receipt.json",
+        "sha256": "964bb54125cf035ffd515324566f799b58c0dfc070bc41e7c0abc8a41ee95b60"
+      },
+      {
+        "ref": "eval-workspaces/rc20-v10-independent-review-20261015-59ed1b/window-orphan-reproduction.json",
+        "sha256": "6f59f9edac397970122ee6da1f1aae163dd0ca0885483f666292191a8fe49d0f"
+      },
+      {
+        "ref": "eval-workspaces/rc20-v10-independent-closure-v2-20261015-4d0c2cb6/closure.receipt.json",
+        "sha256": "5a1d0ed8abd09a22815d3cd6b2e882c9b9ecbd975ca43208dd639b0eee250e19"
+      },
+      {
+        "ref": "eval-workspaces/rc20-v10-orphan-closure-v2-20261015T143554Z-90e32c37ce57424db8380169a1e8dbae/red-orphan-v2-01.receipt.json",
+        "sha256": "78d0933899f1e5f90865525b40ba7fa9b67306ec8c8790e9bf31ee4f6fc09c76"
+      },
+      {
+        "ref": "eval-workspaces/rc20-v10-orphan-closure-v2-20261015T143554Z-90e32c37ce57424db8380169a1e8dbae/green-orphan-v2-02.receipt.json",
+        "sha256": "ea585e3c2633d6483451b7c2b8a992e10000884a3a3b82334aceebe16ac9ba2b"
+      },
+      {
+        "ref": "eval-workspaces/rc20-v10-orphan-closure-v2-20261015T143554Z-90e32c37ce57424db8380169a1e8dbae/green-legacy-v2-03.receipt.json",
+        "sha256": "b899f9e5ec1ef8713926b4db8824461427778bc605d5c3f63ff221dcdf463e96"
+      },
+      {
+        "ref": "eval-workspaces/rc20-v10-ledger-refusal-producer-v2-20261015T140933Z-cb63f2dac74b451f82608e74c951ba4e/test-evidence.json",
+        "sha256": "f4e080a5fbce4edff11219d4948f5b80d757d021a5e5bd2f46869fdcc99bcb0d"
+      },
+      {
+        "ref": "eval-workspaces/rc20-cutpoint-receiver-boundary-20261015T142017Z-845b6f6457c147d08c9b88b8997b8c2f/source-bound-test-evidence.json",
+        "sha256": "3a6eb0a71697f27c1fc72976b9fed97c0c7f55a93152f837c368c9e4187d8f29"
+      },
+      {
+        "ref": "eval-workspaces/rc20-cutpoint-receiver-boundary-20261015T142017Z-845b6f6457c147d08c9b88b8997b8c2f/function-ast-diff.json",
+        "sha256": "f709ad1b003d377180f6c0b461e7800c6ffe48a567d68e87835d531420877641"
+      },
+      {
+        "ref": "eval-workspaces/rc20-runtime-failure-engineering-v1/result.json",
+        "sha256": "2d32ea1098b51ea27d2d524b23391cf0a0df2af567afb91b11f26e03d71c5b7e"
+      },
+      {
+        "ref": "audits/rc20-runtime-failure-engineering.audit.json",
+        "sha256": "787faa4f43ce5f4328e48feeb6a50680b051a899c8eb5e9af20c6e6a5e68acb0"
+      },
+      {
+        "ref": "eval-workspaces/rc20-v9-source-preparation-v1/ci.json",
+        "sha256": "8639c14b27e2d272d4d66fb95b259b80d821b710b77720ab5f47d588ff787688"
+      },
+      {
+        "ref": "eval-workspaces/rc20-v9-closed-publication-v1/ci.json",
+        "sha256": "b37df4e710dc8556363e50604496218cd0deb4149a28a65887a0c6a1ca816cd2"
+      }
+    ],
+    "cost_scope": "Historical preparation and new copy are declared measured components; remaining binding/manual/research/all-in costs unknown."
+  },
+  "before_actual_requirement": {
+    "independent_first_review": "audits/rc20-stdlib-project-development-v10.precall-review.json",
+    "all_registered_sources_exact": true,
+    "collector_source_default_enabled": false,
+    "auditor_actual_authorization": "UNBOUND",
+    "explicit_root_launch_hash": true,
+    "exclusive_new_raw_root": true
+  },
+  "credential_handling": "Existing external DPAPI vault callback only after durable reservation; official HTTPS/no redirects; no credential in source, prompt, env, argv or logs.",
+  "analysis_registration": {
+    "ref": "eval-workspaces/rc20-v7-analysis-registration.json",
+    "sha256": "0594777378c78c7b46e52b38a5ae692421cf1763aad2f77089420505eec1fc5b",
+    "requirements": "All 18 complete paired blocks; no full-arm quality regression against a passing control and no severe full-arm VETO; full reported tokens and inclusive workflow wall below each control. Unknown/incomplete cannot establish net benefit."
+  },
+  "manual_review": "Exact frozen v2 helper/rubric; packets omit diagnostic stderr. Fresh metadata-blind graders lock all graded initials before arm/cost unblinding; cut source remains unfinished/ungraded.",
+  "terminal_policy": "One independent actual raw audit after terminal and session exit. No replay, resume, reprepare, regrade or re-audit of actual rounds. Unknown usage/execution/source drift stops and retains fences. Known task failure remains failure even if raw evidence passes.",
+  "promotion_allowed": false,
+  "remaining": "Fresh postselection engineering tasks, cross-Agent classes and guidance ablations with quality/cost acceptance before merge/local install; original Stable qualification unchanged."
+}
