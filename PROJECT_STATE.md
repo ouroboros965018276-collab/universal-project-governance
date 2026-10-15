@@ -6,7 +6,7 @@
 
 RC20 将表达相关性、完整改动、事实保真和按需读取纳入[规范源](governance-src/model/governance-model.json)。生成核心 **6,737 字节**，保持四组指引、16 项政策、8 项 Hot Path、3 项默认规则及 18 个交付文件。规范身份 `0049006f…`、资格身份 `f78112d7…`。五个上游的版本、许可、适配与排除由[来源清单](third_party/upstream-sources.json)维护，见[鸣谢](THIRD_PARTY_NOTICES.md)。
 
-既有提交 `42bd463e0d6471edd01534c6a527ac46299639d7` 的 [11 项 CI](https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/38810139587) 全部通过；最近完整测试为 **1,064 通过、2 跳过**。[安全扫描优化](audits/rc20-security-scan-pruning.audit.json)另有 8 项通过、1 项宿主跳过，实际仓库扫描入口约 4.86 秒，尚待自身提交的 CI；不得混用验证身份。此前本地完整测试超时和首轮 CI fixture 失败保留在[工程审计](audits/rc20-cli-known-failure-engineering.audit.json)，其 CI 待确认文字是历史快照。
+工程提交 `381706c130e6c184733c75331b1a101f7b4a4a36` 的 [11 项 CI](https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/38814200493) 全部通过；Linux Python 3.11 完整测试为 **1,073 通过、2 跳过**。[安全扫描优化](audits/rc20-security-scan-pruning.audit.json)已包含在该提交中；本地另有 8 项通过、1 项宿主跳过，实际仓库扫描入口约 4.86 秒。冻结审计中的 CI 待完成文字只描述其记录时点。此前本地完整测试超时和首轮 CI fixture 失败保留在[工程审计](audits/rc20-cli-known-failure-engineering.audit.json)。
 
 [新的公开 API 校准](audits/rc20-managed-api-public-calibration-v4.audit.json)首次原始独审 **RAW_PASS**：6 次已记录请求、**10,309 个报告 token**，197 个原始文件和 94 项源码前后相同。MiMo 的公开修复通过注册测试与包导入；DeepSeek 短探针未完成任务，保持未完成判定。本轮未触发迟到结算分支，不能据此声称该分支已被真实验证，也不能作为模型效率比较或 UPG 净收益证据。
 
