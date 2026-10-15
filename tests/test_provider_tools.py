@@ -1650,5 +1650,110 @@ class FlashThinkingProfileTests(_ProviderFixture, unittest.TestCase):
         self.assertIn("deadline_telemetry", self.after[0])
 
 
+@unittest.skipUnless(SUPPORTED, "repository engine requires Python 3.10+")
+class FlashDisabledConnectTests(_ProviderFixture, unittest.TestCase):
+    def disabled(self, provider="deepseek", **kwargs):
+        return self.run_actor(provider=provider,
+            model=lab.FLASH_DISABLED_PROFILE_SETTINGS[provider]["model"],
+            profile_id=lab.FLASH_DISABLED_PROFILE, thinking="disabled", **kwargs)
+
+    def connect_failure(self, *, dispatch="not_started", phase="connect"):
+        return lab.TransportFailure({"phase": phase, "exception_class": "TimeoutError",
+            "connection_attempted": True, "http_dispatch": dispatch})
+
+    def acknowledge(self, metadata):
+        self.after.append(metadata)
+        if metadata["not_invoked"]:
+            return {"policy": "confirmed-pre-http-connect-once-v1", "connect_retry_authorized": True,
+                "prior_request_id": metadata["request_id"], "prior_request_index": metadata["request_index"],
+                "request_payload_sha256": metadata["request_payload_sha256"],
+                "input_task_sha256": metadata["input_task_sha256"],
+                "prior_receipt_sha256": metadata["receipt_sha256"]}
+
+    def test_disabled_wire_and_nullable_reasoning_complete_the_same_task(self):
+        for provider in ("deepseek", "mimo"):
+            for nullable in (False, True):
+                with self.subTest(provider=provider, nullable=nullable):
+                    self.artifacts = self.base / (provider + "-nullable-" + str(nullable))
+                    self.workspace = self.base / (provider + "-workspace-" + str(nullable))
+                    self.workspace.mkdir()
+                    for name, text in self.task["initial_files"].items():
+                        (self.workspace / name).write_bytes(text.encode("utf-8"))
+                    self.before, self.after = [], []
+                    steps = self.ready() + [self.final(4)]
+                    def post(actual, payload, key, timeout):
+                        self.assertEqual(payload["thinking"], {"type": "disabled"})
+                        self.assertNotIn("reasoning_effort", payload)
+                        self.assertEqual(payload["max_tokens" if actual == "deepseek" else "max_completion_tokens"], 8192)
+                        step = steps[len(self.before) - 1]
+                        response = step(payload) if callable(step) else step
+                        message = response["choices"][0]["message"]
+                        if nullable:
+                            message["reasoning_content"] = None
+                        else:
+                            message.pop("reasoning_content")
+                        return 200, {}, canonical(response)
+                    with patch.object(lab, "_bounded_post", side_effect=post):
+                        result = self.disabled(provider, max_requests=4)
+                    self.assertEqual(result["status"], "completed")
+                    self.assertTrue(result["quality"]["hard_pass"])
+                    self.assertEqual(result["quality"]["task_success"], 1)
+                    self.assertEqual((self.workspace / "target.txt").read_text(), "fixed\n")
+
+    def test_confirmed_connect_retry_uses_a_new_slot_same_payload_and_remaining_clock(self):
+        now, payloads, timeouts = [100.0], [], []
+        steps = self.ready() + [self.final(4)]
+        self.account = self.acknowledge
+        def post(provider, payload, key, timeout):
+            payloads.append(canonical(payload)); timeouts.append(timeout)
+            if len(payloads) == 1:
+                now[0] += 21
+                raise self.connect_failure()
+            step = steps[len(payloads) - 2]
+            return 200, {}, canonical(step(payload) if callable(step) else step)
+        with patch.object(lab.time, "perf_counter", side_effect=lambda: now[0]), patch.object(lab, "_bounded_post", side_effect=post):
+            result = self.disabled(max_requests=5, connect_retry_policy=lab.CONNECT_RETRY_POLICY)
+        self.assertEqual(result["status"], "completed")
+        self.assertEqual(payloads[0], payloads[1])
+        self.assertEqual(timeouts[:2], [180.0, 159.0])
+        self.assertEqual([row["request_index"] for row in self.before], [1, 2, 3, 4, 5])
+        self.assertNotEqual(self.before[0]["request_id"], self.before[1]["request_id"])
+        self.assertEqual(self.before[1]["retry_of_request_id"], self.before[0]["request_id"])
+        self.assertTrue(self.after[0]["not_invoked"])
+        self.assertIsNone(self.after[0]["usage"])
+        self.assertTrue((self.artifacts / "requests/01.receipt.json").is_file())
+        self.assertTrue((self.artifacts / "requests/02.receipt.json").is_file())
+
+    def test_no_outer_acknowledgement_means_no_retry(self):
+        with patch.object(lab, "_bounded_post", side_effect=self.connect_failure()) as post:
+            result = self.disabled(connect_retry_policy=lab.CONNECT_RETRY_POLICY)
+        self.assertEqual(post.call_count, 1)
+        self.assertEqual(result["status"], "transport-failed-not-invoked")
+        self.assertFalse(result["unknown_usage"])
+
+    def test_second_connect_failure_cannot_receive_a_third_attempt(self):
+        self.account = self.acknowledge
+        with patch.object(lab, "_bounded_post", side_effect=self.connect_failure()) as post:
+            result = self.disabled(connect_retry_policy=lab.CONNECT_RETRY_POLICY)
+        self.assertEqual(post.call_count, 2)
+        self.assertEqual(result["status"], "transport-failed-not-invoked")
+        self.assertEqual(len(self.before), 2)
+
+    def test_http_uncertainty_is_never_a_connect_retry(self):
+        self.account = self.acknowledge
+        with patch.object(lab, "_bounded_post", side_effect=self.connect_failure(dispatch="unknown", phase="http-request")) as post:
+            result = self.disabled(connect_retry_policy=lab.CONNECT_RETRY_POLICY)
+        self.assertEqual(post.call_count, 1)
+        self.assertTrue(result["unknown_usage"])
+        self.assertFalse(self.after[0]["not_invoked"])
+
+    def test_old_profile_cannot_enable_the_new_retry_policy(self):
+        with self.assertRaises(ValueError):
+            self.run_actor(model="deepseek-flash", profile_id=lab.FLASH_THINKING_PROFILE,
+                thinking="enabled", connect_retry_policy=lab.CONNECT_RETRY_POLICY)
+        self.assertEqual((self.loaded, self.before, self.after), ([], [], []))
+        self.assertFalse(self.artifacts.exists())
+
+
 if __name__ == "__main__":
     unittest.main()

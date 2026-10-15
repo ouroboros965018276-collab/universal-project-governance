@@ -46,6 +46,13 @@ FLASH_THINKING_PROFILE_SETTINGS = {
     "deepseek": {"model": "deepseek-flash", "thinking": "enabled", "output_cap": 8192, "reasoning_effort": "low"},
     "mimo": {"model": "mimo-v2.6-flash", "thinking": "enabled", "output_cap": 8192, "reasoning_effort": None},
 }
+FLASH_DISABLED_PROFILE = "thinking-disabled-flash-8192-v1"
+FLASH_DISABLED_PROFILE_SETTINGS = {
+    "deepseek": {"model": "deepseek-flash", "thinking": "disabled", "output_cap": 8192, "reasoning_effort": None},
+    "mimo": {"model": "mimo-v2.6-flash", "thinking": "disabled", "output_cap": 8192, "reasoning_effort": None},
+}
+CONNECT_RETRY_POLICY = "confirmed-pre-http-connect-once-v1"
+CONNECT_RETRY_EXCEPTIONS = frozenset({"TimeoutError", "gaierror", "ConnectionRefusedError", "ConnectionResetError"})
 DEADLINE_TELEMETRY_SCHEMA = "bounded-post-wait-v1"
 TRANSPORT_PHASES = frozenset({"preparation", "worker-before-request", "payload-serialize", "connection-create",
     "connect", "http-request", "response-headers", "response-body", "connection-close", "response-decode",
@@ -58,11 +65,12 @@ def profile_configuration(profile_id):
     Rates are per million tokens; MiMo currencies are alternatives, never
     summed or converted. No ledger or transport selection happens here.
     """
-    if type(profile_id) is not str or profile_id not in {THINKING_PROFILE, FLASH_THINKING_PROFILE}:
+    if type(profile_id) is not str or profile_id not in {THINKING_PROFILE, FLASH_THINKING_PROFILE, FLASH_DISABLED_PROFILE}:
         raise ValueError("unknown explicit provider profile")
-    flash = profile_id == FLASH_THINKING_PROFILE
+    flash = profile_id in {FLASH_THINKING_PROFILE, FLASH_DISABLED_PROFILE}
     return {"profile_id": profile_id,
-        "providers": copy.deepcopy(FLASH_THINKING_PROFILE_SETTINGS if flash else THINKING_PROFILE_SETTINGS),
+        "providers": copy.deepcopy(FLASH_DISABLED_PROFILE_SETTINGS if profile_id == FLASH_DISABLED_PROFILE else
+            FLASH_THINKING_PROFILE_SETTINGS if flash else THINKING_PROFILE_SETTINGS),
         "prices": {"deepseek": {"USD": {"input_hit": ".006", "input_miss": ".30", "output": "1.20"}},
             "mimo": ({"CNY": {"input_hit": ".02", "input_miss": "1", "output": "2"},
                        "USD": {"input_hit": ".0028", "input_miss": ".14", "output": ".28"}} if flash else
@@ -122,6 +130,35 @@ class TransportFailure(ResponseUnknown):
         if self.transport["http_dispatch"] == "not_started" and (self.transport["connection_attempted"] is None
                 or self.transport["phase"] not in {"worker-before-request", "payload-serialize", "connection-create", "connect"}):
             self.transport["http_dispatch"] = "unknown"
+
+
+def _confirmed_connect_not_sent(outcome):
+    """Only an observed direct HTTPS connect failure, never an HTTP retry."""
+    transport = outcome.get("transport")
+    return (isinstance(transport, dict)
+        and set(transport) == {"phase", "exception_class", "connection_attempted", "http_dispatch"}
+        and transport["phase"] == "connect" and transport["connection_attempted"] is True
+        and transport["http_dispatch"] == "not_started"
+        and transport["exception_class"] in CONNECT_RETRY_EXCEPTIONS
+        and outcome.get("error_type") == "ResponseUnknown"
+        and outcome.get("dispatched") is False and outcome.get("not_invoked") is True
+        and outcome.get("unknown") is False and outcome.get("unexpected_overrun") == {}
+        and "usage" in outcome and outcome["usage"] is None
+        and all(name in outcome and outcome[name] is None
+            for name in ("response_sha256", "api_response_id", "model_reported")))
+
+
+def _connect_retry_authorization(metadata, receipt_sha256):
+    return {"policy": CONNECT_RETRY_POLICY, "connect_retry_authorized": True,
+        "prior_request_id": metadata["request_id"], "prior_request_index": metadata["request_index"],
+        "request_payload_sha256": metadata["request_payload_sha256"],
+        "input_task_sha256": metadata["input_task_sha256"], "prior_receipt_sha256": receipt_sha256}
+
+
+def _connect_retry_authorization_matches(authorization, metadata, receipt_sha256):
+    expected = _connect_retry_authorization(metadata, receipt_sha256)
+    return (type(authorization) is dict and authorization == expected
+        and all(type(authorization[name]) is type(value) for name, value in expected.items()))
 
 
 def _redact(value, secret):
@@ -467,7 +504,7 @@ def _recoverable_tool_feedback(tool, arguments, result, event, task, execution_b
 
 def run_actor(provider, model, task, root, artifact_dir, git_binary, system_context, key_loader,
               max_requests=12, timeout_seconds=180, *, response_json_mode, thinking,
-              before_request=None, after_request=None, profile_id=None, execution_backend=None):
+              before_request=None, after_request=None, profile_id=None, execution_backend=None, connect_retry_policy=None):
     """Run once on existing disk state; new actor => fresh artifact directory.
 
     before_request(metadata) reserves the outer budget before dispatch and may
@@ -484,7 +521,9 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
     repo_finish is a terminal API report, never a broker/MCP operation. Only
     its strict native arguments reach the unchanged artifact quality grader.
     requests counts bounded transport slots; per-request receipts separately
-    record connection attempts and HTTP non-dispatch/uncertainty. No retries.
+    record connection attempts and HTTP non-dispatch/uncertainty. Only the new
+    disabled profile may explicitly enable one proven connect-only retry,
+    acknowledged by the outer ledger, within the original slot/wall budgets.
     """
     if provider not in ENDPOINTS or not isinstance(model, str) or not model.strip():
         raise ValueError("allowlisted provider and explicit model are required")
@@ -494,9 +533,12 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
         raise ValueError("timeout_seconds must be in (0,180]")
     if not isinstance(system_context, str) or not callable(key_loader):
         raise ValueError("system_context and key_loader are required")
+    if connect_retry_policy is not None and (type(connect_retry_policy) is not str or connect_retry_policy != CONNECT_RETRY_POLICY
+            or profile_id != FLASH_DISABLED_PROFILE or not callable(before_request) or not callable(after_request)):
+        raise ValueError("connect retry requires explicit new disabled profile and durable budget callbacks")
     if execution_backend is not None:
         from evolution.isolated_python import EXECUTION_BACKEND
-        if type(execution_backend) is not str or execution_backend != EXECUTION_BACKEND or profile_id != FLASH_THINKING_PROFILE:
+        if type(execution_backend) is not str or execution_backend != EXECUTION_BACKEND or profile_id not in {FLASH_THINKING_PROFILE, FLASH_DISABLED_PROFILE}:
             raise ValueError("finite CPython execution requires its explicit backend and Flash profile")
     settings, configuration = None, None
     if profile_id is None:
@@ -506,7 +548,7 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
     else:
         configuration = profile_configuration(profile_id)
         settings = configuration["providers"][provider]
-        if (response_json_mode is not False or thinking != "enabled" or model != settings["model"]):
+        if (response_json_mode is not False or thinking != settings["thinking"] or model != settings["model"]):
             raise ValueError("explicit thinking profile/provider/model/mode mismatch")
         output_cap = settings["output_cap"]
     task = copy.deepcopy(validate_task(task))
@@ -547,12 +589,14 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                  "output_cap": output_cap, "timeout_seconds": timeout_seconds, "application_execution": False}
         if settings is not None:
             entry.update(profile_id=profile_id, reasoning_effort_requested=settings["reasoning_effort"])
-        if profile_id == FLASH_THINKING_PROFILE:
+        if profile_id in {FLASH_THINKING_PROFILE, FLASH_DISABLED_PROFILE}:
             entry.update(profile_configuration_sha256=sha(canonical(configuration)),
                          deadline_telemetry_schema=DEADLINE_TELEMETRY_SCHEMA)
         if execution_backend is not None:
             entry.update(execution_backend=execution_backend, application_execution=True,
                 application_execution_scope="Only registered finite Python behavior probes after the unchanged VM gate; not whole-application tests, deployment or arbitrary commands. Document-only stages do not execute Python.")
+        if profile_id == FLASH_DISABLED_PROFILE:
+            entry["connect_retry_policy"] = connect_retry_policy
         actor_pending = artifacts / "actor.pending.json"
         backend_options = ({"execution_backend": execution_backend, "execution_artifacts": artifacts / "execution"}
             if execution_backend is not None else {})
@@ -584,6 +628,7 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
         status, final_text, unknown, request_count, refusal_reason = "request-budget-exhausted", "", False, 0, None
         tool_attempts, final_report, final_report_sha = 0, None, None
         failed_execution, execution_state_unknown, execution_infrastructure_failed = None, False, False
+        connect_retries, next_retry_parent = 0, None
         for index in range(1, max_requests + 1):
             remaining = deadline - time.perf_counter()
             if remaining <= 0:
@@ -605,10 +650,13 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                         "output_cap": output_cap, "input_task_sha256": input_identity, "adapter": ADAPTER}
             if settings is not None:
                 metadata.update(profile_id=profile_id, thinking=thinking, reasoning_effort_requested=settings["reasoning_effort"])
-            if profile_id == FLASH_THINKING_PROFILE:
+            if profile_id in {FLASH_THINKING_PROFILE, FLASH_DISABLED_PROFILE}:
                 metadata["profile_configuration_sha256"] = entry["profile_configuration_sha256"]
             if execution_backend is not None:
                 metadata["execution_backend"] = execution_backend
+            if profile_id == FLASH_DISABLED_PROFILE:
+                metadata.update(connect_retry_policy=connect_retry_policy, retry_of_request_id=next_retry_parent)
+                next_retry_parent = None
             try:
                 reservation = before_request(copy.deepcopy(metadata)) if before_request else None
                 if isinstance(reservation, dict) and "reservation_receipt_sha256" in reservation:
@@ -654,7 +702,7 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
             transport, not_invoked = _transport("unobserved"), False
             deadline_telemetry = None
             try:
-                if profile_id == FLASH_THINKING_PROFILE:
+                if profile_id in {FLASH_THINKING_PROFILE, FLASH_DISABLED_PROFILE}:
                     sampled = time.perf_counter()
                     passed_timeout = deadline - sampled
                     deadline_telemetry = {"schema_version": DEADLINE_TELEMETRY_SCHEMA,
@@ -727,9 +775,10 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
             if deadline_telemetry is not None:
                 outcome["deadline_telemetry"] = deadline_telemetry
             outcome_sha = _write_new(artifacts / "requests" / ("%02d.receipt.json" % index), outcome, key)
+            retry_authorization = None
             if after_request:
                 try:
-                    after_request(copy.deepcopy(_redact(dict(outcome, receipt_sha256=outcome_sha), key)))
+                    retry_authorization = after_request(copy.deepcopy(_redact(dict(outcome, receipt_sha256=outcome_sha), key)))
                 except BaseException:
                     unknown = True
                     failures.append("outer-budget-accounting-failed")
@@ -738,6 +787,13 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                 break
             pending.unlink()
             if not_invoked:
+                if (connect_retry_policy == CONNECT_RETRY_POLICY and connect_retries == 0
+                        and index < max_requests and time.perf_counter() < deadline
+                        and _confirmed_connect_not_sent(outcome)
+                        and _connect_retry_authorization_matches(retry_authorization, metadata, outcome_sha)):
+                    connect_retries += 1
+                    next_retry_parent = request_id
+                    continue  # Same messages/payload; next slot has its own reserve and receipt.
                 status = "transport-failed-not-invoked"
                 refusal_reason = transport["exception_class"]
                 break

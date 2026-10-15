@@ -16,7 +16,7 @@ Current candidate: **3.0.0-rc.20 — Task Context and Complete Change Discipline
 
 首份独立审计为 **RAW_INTEGRITY_FAIL**，完整核账和净收益均未确认。失败来自审计器额外要求源端读取受保护 README；18 份留存任务输入的范围列表与公开读写矩阵逐项一致，源端合同并未要求该读取。只修未来校验器，不重评当前记录。18 份阶段事实审阅另保留 10 项有界支持、7 项 UNKNOWN、1 项报告表述 VETO；这些判断不能覆盖原始审计失败。
 
-[上一轮 v2](audits/rc20-paired-real-python-development-v2.audit.json)是旧规范身份的完整开发诊断：1,580,447 个报告 token；完整版相对 RC19 token 增加 22.63%、角色归属墙时增加 109.95%。当前轮明确了 JSON 比较与 README 权限，但仍未证实净收益。下一步仅在新身份中修正读取假设、补足公开事实投影，并验证显式低延迟与发送前连接恢复策略；原轮次不续跑、不重试、不重评。默认分支和本地安装仍为 **RC19**。
+[上一轮 v2](audits/rc20-paired-real-python-development-v2.audit.json)是旧规范身份的完整开发诊断：1,580,447 个报告 token；完整版相对 RC19 token 增加 22.63%、角色归属墙时增加 109.95%。当前轮明确了 JSON 比较与 README 权限，但仍未证实净收益。下一步仅在新身份中修正读取假设、补足公开事实投影；[显式关闭思考与连接恢复适配器的工程验收](audits/rc20-disabled-connect-engineering.audit.json)已通过，连接恢复仅限明确未发送的连接失败，沿用原墙时与请求预算。未来 v4 仍 **UNBOUND**、未发实际 API，效果待实测；原轮次不续跑、不重试、不重评。默认分支和本地安装仍为 **RC19**。
 
 仓库专用的 API、解释器与隔离执行适配器不随 Skill 安装。[显式 CPython 工程审计](audits/rc20-cpython-backend-engineering.audit.json)与人工固定样例回归属于工程证据，不能替代模型任务净收益。历史[原生轮次](audits/rc20-native-context.audit.json)、[API v1](audits/rc20-api-tools-v1.audit.json)、[API v2](audits/rc20-api-tools-v2-development.audit.json)、[AST](audits/rc20-prospective-api-v1.audit.json)、[语义](audits/rc20-semantic-api-v1.audit.json)、[开发 v3](audits/rc20-tools-v3-development.audit.json)、[推理](audits/rc20-thinking-development-v1.audit.json)、[上下文 v1](audits/rc20-contract-context-development-v1.audit.json)、[上下文 v2](audits/rc20-public-contract-context-development-v2.audit.json)和[计划接手 v4](audits/rc20-handoff-tools-development-v4.audit.json)保留原证据；不续跑、重评或合并。有限契约的范围见[说明](docs/rc20-behavior-contracts.md)。
 
