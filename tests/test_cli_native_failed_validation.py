@@ -17,10 +17,14 @@ import test_engineering_cli as legacy
 
 class NativeFailedValidationTests(unittest.TestCase):
     def setUp(self):
+        platform_stub = mock.patch.object(tool_codex.platform, 'platform',
+            return_value='synthetic-cli-projection-platform-v1')
+        self.addCleanup(platform_stub.stop)
+        platform_stub.start()
         self.fixture = legacy.CliProjectCandidateTests(
             'test_whole_mock_cli_turn_preserves_tombstones_cost_receipt_and_cache_without_reexecution')
-        self.fixture.setUp()
         self.addCleanup(self.fixture.doCleanups)
+        self.fixture.setUp()
 
     def turn(self, *, checked_ok=False, mutate=None):
         f = self.fixture
@@ -170,3 +174,63 @@ class NativeFailedValidationTests(unittest.TestCase):
         self.assertTrue(quality['execution_state_unknown'])
         self.assertFalse(quality['scope_ok'])
         self.assertEqual(quality['task_success'], 0)
+
+
+class NativeFixtureBootstrapTests(unittest.TestCase):
+    """Exercise only fixture lifecycle; nested projection bodies are suppressed."""
+    @staticmethod
+    def child():
+        name = 'test_failed_known_validation_keeps_scope_but_never_success'
+        child = NativeFailedValidationTests(name)
+        setattr(child, name, lambda: None)
+        return child
+
+    @staticmethod
+    def globals_snapshot():
+        return [(owner, name, getattr(owner, name)) for owner, names in (
+            (subprocess, ('run', 'Popen', 'check_output', 'call', 'check_call')),
+            (legacy.socket, ('socket', 'create_connection')),
+            (legacy.tool_broker, ('git_command',)),
+            (legacy.project_executor, ('execute_project', 'read_project_receipt')))
+            for name in names]
+
+    def test_cold_platform_probe_is_stubbed_without_any_process_attempt(self):
+        child = self.child()
+        original_platform = tool_codex.platform.platform
+        globals_before = self.globals_snapshot()
+        def cold_platform_probe():
+            return subprocess.check_output(['synthetic-platform-probe-never-execute']).decode()
+        with mock.patch.object(tool_codex.platform, 'platform', side_effect=cold_platform_probe) as probe:
+            observed = unittest.TestResult()
+            try:
+                child.run(observed)
+                succeeded, probe_calls = observed.wasSuccessful(), probe.call_count
+                leaked = [name for owner, name, value in globals_before if getattr(owner, name) is not value]
+            finally:
+                # A baseline RED must not contaminate its outer test process.
+                if hasattr(child, 'fixture'):
+                    child.fixture.doCleanups()
+            self.assertTrue(succeeded, 'nested bootstrap must complete without cold platform subprocess')
+            self.assertEqual(probe_calls, 0)
+            self.assertEqual(leaked, [])
+        self.assertIs(tool_codex.platform.platform, original_platform)
+
+    def test_partial_fixture_setup_failure_restores_all_global_mocks(self):
+        child = self.child()
+        original_platform = tool_codex.platform.platform
+        globals_before = self.globals_snapshot()
+        with mock.patch.object(tool_codex, 'ToolCodex', side_effect=RuntimeError('synthetic-bootstrap-constructor-failure')):
+            observed = unittest.TestResult()
+            try:
+                child.run(observed)
+                leaked = [name for owner, name, value in globals_before if getattr(owner, name) is not value]
+                platform_restored = tool_codex.platform.platform is original_platform
+            finally:
+                # Compensate only after observing the old fixture's leak.
+                if hasattr(child, 'fixture'):
+                    child.fixture.doCleanups()
+        self.assertEqual(len(observed.errors), 1)
+        self.assertIn('synthetic-bootstrap-constructor-failure', observed.errors[0][1])
+        self.assertEqual(observed.failures, [])
+        self.assertEqual(leaked, [])
+        self.assertTrue(platform_restored)
