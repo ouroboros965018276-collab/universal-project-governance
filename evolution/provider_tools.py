@@ -51,6 +51,11 @@ FLASH_DISABLED_PROFILE_SETTINGS = {
     "deepseek": {"model": "deepseek-flash", "thinking": "disabled", "output_cap": 8192, "reasoning_effort": None},
     "mimo": {"model": "mimo-v2.6-flash", "thinking": "disabled", "output_cap": 8192, "reasoning_effort": None},
 }
+DEEPSEEK_PRO_FLASH_DISABLED_PROFILE = "thinking-disabled-deepseek-pro-mimo-flash-8192-v1"
+DEEPSEEK_PRO_FLASH_DISABLED_PROFILE_SETTINGS = {
+    "deepseek": {"model": "deepseek-v4-pro", "thinking": "disabled", "output_cap": 8192, "reasoning_effort": None},
+    "mimo": {"model": "mimo-v2.6-flash", "thinking": "disabled", "output_cap": 8192, "reasoning_effort": None},
+}
 CONNECT_RETRY_POLICY = "confirmed-pre-http-connect-once-v1"
 CONNECT_RETRY_EXCEPTIONS = frozenset({"TimeoutError", "gaierror", "ConnectionRefusedError", "ConnectionResetError"})
 PUBLIC_LANGUAGE_FEEDBACK_POLICY = "public-finite-language-reminder-v1"
@@ -66,13 +71,16 @@ def profile_configuration(profile_id):
     Rates are per million tokens; MiMo currencies are alternatives, never
     summed or converted. No ledger or transport selection happens here.
     """
-    if type(profile_id) is not str or profile_id not in {THINKING_PROFILE, FLASH_THINKING_PROFILE, FLASH_DISABLED_PROFILE}:
+    if type(profile_id) is not str or profile_id not in {THINKING_PROFILE, FLASH_THINKING_PROFILE, FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE}:
         raise ValueError("unknown explicit provider profile")
-    flash = profile_id in {FLASH_THINKING_PROFILE, FLASH_DISABLED_PROFILE}
+    flash = profile_id in {FLASH_THINKING_PROFILE, FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE}
+    deepseek_pro_disabled = profile_id == DEEPSEEK_PRO_FLASH_DISABLED_PROFILE
     return {"profile_id": profile_id,
-        "providers": copy.deepcopy(FLASH_DISABLED_PROFILE_SETTINGS if profile_id == FLASH_DISABLED_PROFILE else
+        "providers": copy.deepcopy(DEEPSEEK_PRO_FLASH_DISABLED_PROFILE_SETTINGS if deepseek_pro_disabled else
+            FLASH_DISABLED_PROFILE_SETTINGS if profile_id == FLASH_DISABLED_PROFILE else
             FLASH_THINKING_PROFILE_SETTINGS if flash else THINKING_PROFILE_SETTINGS),
-        "prices": {"deepseek": {"USD": {"input_hit": ".006", "input_miss": ".30", "output": "1.20"}},
+        "prices": {"deepseek": {"USD": ({"input_hit": ".044", "input_miss": "1.32", "output": "3.96"}
+                if deepseek_pro_disabled else {"input_hit": ".006", "input_miss": ".30", "output": "1.20"})},
             "mimo": ({"CNY": {"input_hit": ".02", "input_miss": "1", "output": "2"},
                        "USD": {"input_hit": ".0028", "input_miss": ".14", "output": ".28"}} if flash else
                       {"CNY": {"input_hit": ".025", "input_miss": "3", "output": "6"},
@@ -80,7 +88,11 @@ def profile_configuration(profile_id):
         "price_evidence": {"deepseek": "https://api-docs.deepseek.com/quick_start/pricing/",
             "mimo": "https://mimo.mi.com/docs/price",
             **({"mimo_flash": "https://mimo.mi.com/models/en-US/mimo-v2.6-flash"} if flash else {}),
-            "basis": "DeepSeek peak-rate estimate (off-peak rates are half; no time-based rate selection here); MiMo reviewed realtime rates per million tokens. Estimates, not invoices or provider billing caps. MiMo currency alternatives are not summed."}}
+            **({"deepseek_thinking_mode": "https://api-docs.deepseek.com/guides/thinking_mode/",
+                "deepseek_model_version": "DeepSeek-V4-Pro-0813"} if deepseek_pro_disabled else {}),
+            "basis": ("DeepSeek-V4-Pro-0813 peak-rate estimate (off-peak rates are half; no time-based rate selection here); MiMo reviewed realtime rates per million tokens. Estimates, not invoices or provider billing caps. MiMo currency alternatives are not summed."
+                if deepseek_pro_disabled else
+                "DeepSeek peak-rate estimate (off-peak rates are half; no time-based rate selection here); MiMo reviewed realtime rates per million tokens. Estimates, not invoices or provider billing caps. MiMo currency alternatives are not summed.")}}
 
 
 class ActorFence(RuntimeError):
@@ -546,7 +558,7 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
     Without profile_id, the existing mandatory False/disabled pair and 4096
     output cap are unchanged. Explicit reviewed thinking profiles bind
     model, mode and cap together; it is never selected as a fallback.
-    Only the new Flash profile records the exact _bounded_post timeout argument
+    Explicit Flash-pair and DeepSeek-Pro/MiMo-Flash profiles record the exact _bounded_post timeout argument
     and actor clock samples. These are not socket timeouts or service latency.
     Its explicit execution_backend may opt into registered finite CPython
     probes after the VM gate. Execution uncertainty/infra failure is reported
@@ -554,8 +566,8 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
     repo_finish is a terminal API report, never a broker/MCP operation. Only
     its strict native arguments reach the unchanged artifact quality grader.
     requests counts bounded transport slots; per-request receipts separately
-    record connection attempts and HTTP non-dispatch/uncertainty. Only the new
-    disabled profile may explicitly enable one proven connect-only retry,
+    record connection attempts and HTTP non-dispatch/uncertainty. Only the
+    explicit disabled Flash or Pro/Flash profile may enable one proven connect-only retry,
     acknowledged by the outer ledger, within the original slot/wall budgets.
     """
     if provider not in ENDPOINTS or not isinstance(model, str) or not model.strip():
@@ -571,12 +583,13 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
             or execution_backend != "docker-cpython-finite-v1"):
         raise ValueError("public language feedback requires its explicit policy and finite backend")
     if connect_retry_policy is not None and (type(connect_retry_policy) is not str or connect_retry_policy != CONNECT_RETRY_POLICY
-            or profile_id != FLASH_DISABLED_PROFILE or not callable(before_request) or not callable(after_request)):
-        raise ValueError("connect retry requires explicit new disabled profile and durable budget callbacks")
+            or profile_id not in (FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE)
+            or not callable(before_request) or not callable(after_request)):
+        raise ValueError("connect retry requires explicit disabled profile and durable budget callbacks")
     if execution_backend is not None:
         from evolution.isolated_python import EXECUTION_BACKEND
-        if type(execution_backend) is not str or execution_backend != EXECUTION_BACKEND or profile_id not in {FLASH_THINKING_PROFILE, FLASH_DISABLED_PROFILE}:
-            raise ValueError("finite CPython execution requires its explicit backend and Flash profile")
+        if type(execution_backend) is not str or execution_backend != EXECUTION_BACKEND or profile_id not in {FLASH_THINKING_PROFILE, FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE}:
+            raise ValueError("finite CPython execution requires its explicit backend and supported profile")
     settings, configuration = None, None
     if profile_id is None:
         if response_json_mode is not False or thinking != "disabled":
@@ -626,7 +639,7 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                  "output_cap": output_cap, "timeout_seconds": timeout_seconds, "application_execution": False}
         if settings is not None:
             entry.update(profile_id=profile_id, reasoning_effort_requested=settings["reasoning_effort"])
-        if profile_id in {FLASH_THINKING_PROFILE, FLASH_DISABLED_PROFILE}:
+        if profile_id in {FLASH_THINKING_PROFILE, FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE}:
             entry.update(profile_configuration_sha256=sha(canonical(configuration)),
                          deadline_telemetry_schema=DEADLINE_TELEMETRY_SCHEMA)
         if execution_backend is not None:
@@ -634,7 +647,7 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                 application_execution_scope="Only registered finite Python behavior probes after the unchanged VM gate; not whole-application tests, deployment or arbitrary commands. Document-only stages do not execute Python.")
         if tool_feedback_policy is not None:
             entry["tool_feedback_policy"] = tool_feedback_policy
-        if profile_id == FLASH_DISABLED_PROFILE:
+        if profile_id in {FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE}:
             entry["connect_retry_policy"] = connect_retry_policy
         actor_pending = artifacts / "actor.pending.json"
         backend_options = ({"execution_backend": execution_backend, "execution_artifacts": artifacts / "execution"}
@@ -689,13 +702,13 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                         "output_cap": output_cap, "input_task_sha256": input_identity, "adapter": ADAPTER}
             if settings is not None:
                 metadata.update(profile_id=profile_id, thinking=thinking, reasoning_effort_requested=settings["reasoning_effort"])
-            if profile_id in {FLASH_THINKING_PROFILE, FLASH_DISABLED_PROFILE}:
+            if profile_id in {FLASH_THINKING_PROFILE, FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE}:
                 metadata["profile_configuration_sha256"] = entry["profile_configuration_sha256"]
             if tool_feedback_policy is not None:
                 metadata["tool_feedback_policy"] = tool_feedback_policy
             if execution_backend is not None:
                 metadata["execution_backend"] = execution_backend
-            if profile_id == FLASH_DISABLED_PROFILE:
+            if profile_id in {FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE}:
                 metadata.update(connect_retry_policy=connect_retry_policy, retry_of_request_id=next_retry_parent)
                 next_retry_parent = None
             try:
@@ -743,7 +756,7 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
             transport, not_invoked = _transport("unobserved"), False
             deadline_telemetry = None
             try:
-                if profile_id in {FLASH_THINKING_PROFILE, FLASH_DISABLED_PROFILE}:
+                if profile_id in {FLASH_THINKING_PROFILE, FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE}:
                     sampled = time.perf_counter()
                     passed_timeout = deadline - sampled
                     deadline_telemetry = {"schema_version": DEADLINE_TELEMETRY_SCHEMA,

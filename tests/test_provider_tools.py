@@ -1909,5 +1909,335 @@ class FlashDisabledConnectTests(_ProviderFixture, unittest.TestCase):
         self.assertFalse(self.artifacts.exists())
 
 
+@unittest.skipUnless(SUPPORTED, "repository engine requires Python 3.10+")
+class DeepSeekProFlashDisabledProfileTests(_ProviderFixture, unittest.TestCase):
+    def disabled(self, provider="deepseek", **kwargs):
+        return self.run_actor(provider=provider,
+            model=lab.DEEPSEEK_PRO_FLASH_DISABLED_PROFILE_SETTINGS[provider]["model"],
+            profile_id=lab.DEEPSEEK_PRO_FLASH_DISABLED_PROFILE, thinking="disabled", **kwargs)
+
+    def reset_run(self, name):
+        self.artifacts, self.before, self.after = self.base / name, [], []
+        (self.workspace / "target.txt").write_bytes(b"old\n")
+
+    def test_explicit_pro_configuration_rates_evidence_and_old_configuration_identities(self):
+        profile = lab.DEEPSEEK_PRO_FLASH_DISABLED_PROFILE
+        self.assertEqual(profile, "thinking-disabled-deepseek-pro-mimo-flash-8192-v1")
+        config = lab.profile_configuration(profile)
+        self.assertEqual(config["providers"], {
+            "deepseek": {"model": "deepseek-v4-pro", "thinking": "disabled",
+                "output_cap": 8192, "reasoning_effort": None},
+            "mimo": {"model": "mimo-v2.6-flash", "thinking": "disabled",
+                "output_cap": 8192, "reasoning_effort": None}})
+        self.assertEqual(config["prices"]["deepseek"],
+            {"USD": {"input_hit": ".044", "input_miss": "1.32", "output": "3.96"}})
+        self.assertEqual(config["prices"]["mimo"], {
+            "CNY": {"input_hit": ".02", "input_miss": "1", "output": "2"},
+            "USD": {"input_hit": ".0028", "input_miss": ".14", "output": ".28"}})
+        self.assertEqual(config["price_evidence"]["deepseek"],
+            "https://api-docs.deepseek.com/quick_start/pricing/")
+        self.assertEqual(config["price_evidence"]["deepseek_thinking_mode"],
+            "https://api-docs.deepseek.com/guides/thinking_mode/")
+        self.assertEqual(config["price_evidence"]["deepseek_model_version"], "DeepSeek-V4-Pro-0813")
+        self.assertEqual(config["price_evidence"]["mimo_flash"],
+            "https://mimo.mi.com/models/en-US/mimo-v2.6-flash")
+        self.assertIn("peak-rate estimate", config["price_evidence"]["basis"])
+        self.assertIn("not invoices", config["price_evidence"]["basis"])
+        config["providers"]["deepseek"]["model"] = "mutated"
+        config["prices"]["deepseek"]["USD"]["output"] = "0"
+        fresh = lab.profile_configuration(profile)
+        self.assertEqual(fresh["providers"]["deepseek"]["model"], "deepseek-v4-pro")
+        self.assertEqual(fresh["prices"]["deepseek"]["USD"]["output"], "3.96")
+        # Captured from the unmodified module in a separate offline copy.
+        original = {
+            lab.THINKING_PROFILE: "4f4307e6e479eeb852a4d1a7bb358a7e64917467cae0fa11fe4063db1d47d1df",
+            lab.FLASH_THINKING_PROFILE: "f5ae975f21072974c9da04da33e8081a2e2fc44be6769c2cbe8c36e82d58081b",
+            lab.FLASH_DISABLED_PROFILE: "a11dd520a6f62837f3bfab36468653c418d0caf80c7f0d658b5231429633919e"}
+        for old_profile, identity in original.items():
+            self.assertEqual(sha(canonical(lab.profile_configuration(old_profile))), identity)
+
+    def test_both_provider_payloads_entries_receipts_and_precise_deadline_identity(self):
+        identity = sha(canonical(lab.profile_configuration(lab.DEEPSEEK_PRO_FLASH_DISABLED_PROFILE)))
+        for provider in ("deepseek", "mimo"):
+            for nullable in (False, True):
+                with self.subTest(provider=provider, nullable=nullable):
+                    self.reset_run(provider + "-nullable-" + str(nullable))
+                    current, timeouts = [100.0], []
+                    original = _ProviderFixture.reserve.__get__(self)
+                    def reserve(metadata):
+                        current[0] += 2
+                        return original(metadata)
+                    self.reserve = reserve
+                    steps = self.ready() + [self.final(4)]
+                    def post(actual, payload, key, timeout):
+                        index = len(self.before)
+                        self.assertEqual(actual, provider)
+                        expected_keys = {"model", "messages", "tools", "tool_choice", "stream", "thinking",
+                            "max_tokens" if provider == "deepseek" else "max_completion_tokens"}
+                        self.assertEqual(set(payload), expected_keys)
+                        self.assertEqual(payload["model"],
+                            "deepseek-v4-pro" if provider == "deepseek" else "mimo-v2.6-flash")
+                        self.assertEqual(payload["thinking"], {"type": "disabled"})
+                        self.assertEqual(payload["max_tokens" if provider == "deepseek" else "max_completion_tokens"], 8192)
+                        self.assertNotIn("reasoning_effort", payload)
+                        self.assertEqual(key, SECRET)
+                        pending = json.loads((self.artifacts / "requests" / ("%02d.pending.json" % index)).read_bytes())
+                        self.assertEqual(pending["profile_configuration_sha256"], identity)
+                        timeouts.append(timeout)
+                        current[0] += 3
+                        step = steps[index - 1]
+                        response = step(payload) if callable(step) else step
+                        message = response["choices"][0]["message"]
+                        if nullable:
+                            message["reasoning_content"] = None
+                        else:
+                            message.pop("reasoning_content")
+                        return 200, {}, canonical(response)
+                    with patch.object(lab.time, "perf_counter", side_effect=lambda: current[0]), \
+                            patch.object(lab, "_bounded_post", side_effect=post):
+                        result = self.disabled(provider, max_requests=4)
+                    self.assertEqual(result["status"], "completed")
+                    self.assertTrue(result["quality"]["hard_pass"], result["quality"])
+                    self.assertEqual(timeouts, [178.0, 173.0, 168.0, 163.0])
+                    entry = json.loads((self.artifacts / "actor.started.json").read_bytes())
+                    on_disk = json.loads((self.artifacts / "actor.result.json").read_bytes())
+                    for item in [entry, on_disk, result] + self.before + self.after:
+                        self.assertEqual(item["profile_id"], lab.DEEPSEEK_PRO_FLASH_DISABLED_PROFILE)
+                        self.assertEqual(item["profile_configuration_sha256"], identity)
+                        self.assertEqual(item["model_requested"],
+                            "deepseek-v4-pro" if provider == "deepseek" else "mimo-v2.6-flash")
+                        self.assertEqual(item["thinking"], "disabled")
+                        self.assertEqual(item["output_cap"], 8192)
+                        self.assertIsNone(item["reasoning_effort_requested"])
+                        self.assertIsNone(item["connect_retry_policy"])
+                    self.assertEqual(entry["deadline_telemetry_schema"], lab.DEADLINE_TELEMETRY_SCHEMA)
+                    for index, item in enumerate(self.after, 1):
+                        receipt = json.loads((self.artifacts / "requests" / ("%02d.receipt.json" % index)).read_bytes())
+                        self.assertEqual(receipt["profile_configuration_sha256"], identity)
+                        self.assertEqual(receipt["deadline_telemetry"], item["deadline_telemetry"])
+                        self.assertEqual(item["deadline_telemetry"]["bounded_post_timeout_seconds"], timeouts[index - 1])
+                        self.assertEqual(item["deadline_telemetry"]["actor_elapsed_before_bounded_post_seconds"], 2 + (index - 1) * 5)
+                        self.assertEqual(item["deadline_telemetry"]["actor_elapsed_after_bounded_post_seconds"], index * 5)
+                        self.assertIsNone(receipt["retry_of_request_id"])
+
+    def test_new_and_existing_profiles_reject_wrong_models_before_any_dispatch(self):
+        cases = []
+        for old_profile in (lab.THINKING_PROFILE, lab.FLASH_THINKING_PROFILE, lab.FLASH_DISABLED_PROFILE):
+            mode = lab.profile_configuration(old_profile)["providers"]["deepseek"]["thinking"]
+            cases.append({"provider": "deepseek", "model": "deepseek-v4-pro",
+                "profile_id": old_profile, "thinking": mode})
+        base = {"provider": "deepseek", "model": "deepseek-v4-pro",
+            "profile_id": lab.DEEPSEEK_PRO_FLASH_DISABLED_PROFILE, "thinking": "disabled"}
+        cases.extend([dict(base, model="deepseek-flash"), dict(base, thinking="enabled"),
+            dict(base, response_json_mode=True),
+            dict(base, provider="mimo", model="mimo-v2.6-pro")])
+        for args in cases:
+            with self.subTest(args=args), patch.object(lab, "_bounded_post") as post, self.assertRaises(ValueError):
+                self.run_actor(**args)
+            post.assert_not_called()
+            self.assertEqual((self.loaded, self.before, self.after), ([], [], []))
+            self.assertFalse(self.artifacts.exists())
+
+    def test_new_profile_accepts_explicit_finite_backend_and_existing_feedback_without_container(self):
+        from evolution import isolated_python as isolated
+        for provider in ("deepseek", "mimo"):
+            with self.subTest(provider=provider):
+                self.reset_run("backend-feedback-" + provider)
+                steps = self.ready() + [self.final(4)]
+                with patch.object(lab, "_bounded_post", side_effect=self.scripted(steps)), \
+                        patch.object(isolated, "_capture", side_effect=AssertionError("document-only fixture must not run Docker")) as capture:
+                    result = self.disabled(provider, execution_backend=isolated.EXECUTION_BACKEND,
+                        tool_feedback_policy=lab.PUBLIC_LANGUAGE_FEEDBACK_POLICY)
+                capture.assert_not_called()
+                self.assertTrue(result["quality"]["hard_pass"], result["quality"])
+                self.assertEqual(result["quality"]["validation"]["execution"]["status"], "NOT_APPLICABLE")
+                self.assertFalse(result["execution_state_unknown"])
+                self.assertFalse(result["execution_infrastructure_failed"])
+                for item in [result] + self.before + self.after:
+                    self.assertEqual(item["execution_backend"], isolated.EXECUTION_BACKEND)
+                    self.assertEqual(item["tool_feedback_policy"], lab.PUBLIC_LANGUAGE_FEEDBACK_POLICY)
+                self.assertEqual(list((self.artifacts / "execution").iterdir()), [])
+
+    def test_wrong_backend_is_still_rejected_before_artifacts_credentials_or_budget(self):
+        for backend in (False, "unknown"):
+            with self.subTest(backend=backend), patch.object(lab, "_bounded_post") as post, self.assertRaises(ValueError):
+                self.disabled(execution_backend=backend)
+            post.assert_not_called()
+        self.assertEqual((self.loaded, self.before, self.after), ([], [], []))
+        self.assertFalse(self.artifacts.exists())
+
+    def test_http503_missing_usage_is_unknown_pending_and_never_retried_or_switched(self):
+        error = {"error": {"type": "service_unavailable_error", "message": "synthetic unavailable"}}
+        for provider in ("deepseek", "mimo"):
+            with self.subTest(provider=provider):
+                self.reset_run("http503-" + provider)
+                self.account = self.authorize_retry
+                with patch.object(lab, "_bounded_post", return_value=(503, {}, canonical(error))) as post:
+                    result = self.disabled(provider, max_requests=12, connect_retry_policy=lab.CONNECT_RETRY_POLICY)
+                self.assertEqual(post.call_count, 1)
+                self.assertEqual(post.call_args.args[1]["model"],
+                    "deepseek-v4-pro" if provider == "deepseek" else "mimo-v2.6-flash")
+                self.assertEqual(result["status"], "unknown-call-blocked")
+                self.assertTrue(result["unknown_usage"])
+                self.assertIsNone(result["usage"])
+                self.assertIsNone(result["known_usage"]["total_tokens"])
+                self.assertEqual(result["tool_events"], [])
+                self.assertTrue(self.after[0]["unknown"])
+                self.assertTrue(self.after[0]["dispatched"])
+                self.assertFalse(self.after[0]["not_invoked"])
+                self.assertIsNone(self.after[0]["usage"])
+                self.assertEqual(self.after[0]["transport"]["phase"], "response-envelope")
+                self.assertIn("deadline_telemetry", self.after[0])
+                self.assertTrue((self.artifacts / "actor.pending.json").exists())
+                self.assertTrue((self.artifacts / "requests/01.pending.json").exists())
+                self.assertFalse((self.artifacts / "requests/02.pending.json").exists())
+
+    def test_timeout_and_owner_interrupt_preserve_original_deadline_pending_without_retry(self):
+        for provider in ("deepseek", "mimo"):
+            for mode in ("timeout", "interrupt"):
+                with self.subTest(provider=provider, mode=mode):
+                    self.reset_run(provider + "-" + mode)
+                    current = [100.0]
+                    original = _ProviderFixture.reserve.__get__(self)
+                    def reserve(metadata):
+                        current[0] += 7
+                        return original(metadata)
+                    self.reserve = reserve
+                    def fail(actual, payload, key, timeout):
+                        self.assertEqual(timeout, 173)
+                        current[0] += 173 if mode == "timeout" else 5
+                        if mode == "interrupt":
+                            raise KeyboardInterrupt
+                        raise lab.TransportFailure({"phase": "deadline-wait", "exception_class": None,
+                            "connection_attempted": None, "http_dispatch": "unknown"})
+                    with patch.object(lab.time, "perf_counter", side_effect=lambda: current[0]), \
+                            patch.object(lab, "_bounded_post", side_effect=fail) as post:
+                        result = self.disabled(provider)
+                    self.assertEqual(post.call_count, 1)
+                    self.assertTrue(result["unknown_usage"])
+                    self.assertIsNone(result["usage"])
+                    timing = self.after[0]["deadline_telemetry"]
+                    self.assertEqual(timing["bounded_post_timeout_seconds"], 173)
+                    self.assertEqual(timing["actor_elapsed_before_bounded_post_seconds"], 7)
+                    self.assertEqual(timing["actor_elapsed_after_bounded_post_seconds"], 180 if mode == "timeout" else 12)
+                    self.assertTrue((self.artifacts / "requests/01.pending.json").exists())
+                    self.assertTrue((self.artifacts / "actor.pending.json").exists())
+
+    def authorize_retry(self, metadata):
+        self.after.append(metadata)
+        return {"policy": lab.CONNECT_RETRY_POLICY, "connect_retry_authorized": True,
+            "prior_request_id": metadata["request_id"], "prior_request_index": metadata["request_index"],
+            "request_payload_sha256": metadata["request_payload_sha256"],
+            "input_task_sha256": metadata["input_task_sha256"],
+            "prior_receipt_sha256": metadata["receipt_sha256"]}
+
+    def test_authorized_connect_retry_uses_same_payload_new_slot_reservation_receipt_and_original_clock(self):
+        for provider in ("deepseek", "mimo"):
+            with self.subTest(provider=provider):
+                self.reset_run("authorized-connect-" + provider)
+                self.account = self.authorize_retry
+                current, payloads, timeouts, reservations = [100.0], [], [], []
+                steps = self.ready() + [self.final(4)]
+                def post(actual, payload, key, timeout):
+                    index = len(self.before)
+                    payloads.append(canonical(payload))
+                    timeouts.append(timeout)
+                    pending = json.loads((self.artifacts / "requests" / ("%02d.pending.json" % index)).read_bytes())
+                    reservations.append(pending["reservation"]["reservation_id"])
+                    if index == 1:
+                        current[0] += 21
+                        raise lab.TransportFailure({"phase": "connect", "exception_class": "TimeoutError",
+                            "connection_attempted": True, "http_dispatch": "not_started"})
+                    step = steps[index - 2]
+                    return 200, {}, canonical(step(payload) if callable(step) else step)
+                with patch.object(lab.time, "perf_counter", side_effect=lambda: current[0]), \
+                        patch.object(lab, "_bounded_post", side_effect=post) as transport:
+                    result = self.disabled(provider, max_requests=5, connect_retry_policy=lab.CONNECT_RETRY_POLICY)
+                self.assertEqual(result["status"], "completed")
+                self.assertTrue(result["quality"]["hard_pass"], result["quality"])
+                self.assertEqual(transport.call_count, 5)
+                self.assertEqual(payloads[0], payloads[1])
+                self.assertEqual(timeouts[:2], [180.0, 159.0])
+                self.assertEqual(result["requests"], 5)
+                self.assertEqual(result["usage"]["total_tokens"], 60)
+                self.assertEqual([item["request_index"] for item in self.before], [1, 2, 3, 4, 5])
+                self.assertEqual(len(set(reservations)), 5)
+                self.assertEqual(reservations, [item["request_id"] for item in self.before])
+                self.assertEqual(self.before[1]["retry_of_request_id"], self.before[0]["request_id"])
+                self.assertNotEqual(self.before[0]["request_id"], self.before[1]["request_id"])
+                first = json.loads((self.artifacts / "requests/01.receipt.json").read_bytes())
+                second = json.loads((self.artifacts / "requests/02.receipt.json").read_bytes())
+                self.assertTrue(first["not_invoked"])
+                self.assertFalse(first["unknown"])
+                self.assertIsNone(first["usage"])
+                self.assertEqual(second["retry_of_request_id"], first["request_id"])
+                self.assertEqual(second["request_payload_sha256"], first["request_payload_sha256"])
+                self.assertEqual(self.after[0]["receipt_sha256"], sha((self.artifacts / "requests/01.receipt.json").read_bytes()))
+                self.assertEqual(result["connect_retry_policy"], lab.CONNECT_RETRY_POLICY)
+
+    def test_missing_mismatched_authorization_or_second_connect_failure_never_adds_another_retry(self):
+        failure = lab.TransportFailure({"phase": "connect", "exception_class": "TimeoutError",
+            "connection_attempted": True, "http_dispatch": "not_started"})
+        for mode, count in (("missing", 1), ("wrong-receipt", 1), ("second-failure", 2)):
+            with self.subTest(mode=mode):
+                self.reset_run("connect-boundary-" + mode)
+                def account(metadata):
+                    if mode == "missing":
+                        return _ProviderFixture.account(self, metadata)
+                    authorization = self.authorize_retry(metadata)
+                    if mode == "wrong-receipt":
+                        authorization["prior_receipt_sha256"] = "0" * 64
+                    return authorization
+                self.account = account
+                with patch.object(lab, "_bounded_post", side_effect=failure) as post:
+                    result = self.disabled(max_requests=12, connect_retry_policy=lab.CONNECT_RETRY_POLICY)
+                self.assertEqual(post.call_count, count)
+                self.assertEqual(result["requests"], count)
+                self.assertEqual(result["status"], "transport-failed-not-invoked")
+                self.assertFalse(result["unknown_usage"])
+                self.assertFalse((self.artifacts / "requests" / ("%02d.pending.json" % (count + 1))).exists())
+
+    def test_http_dispatched_or_uncertain_transport_cannot_use_connect_retry_even_with_outer_ack(self):
+        for provider in ("deepseek", "mimo"):
+            for phase, dispatch in (("http-request", "may_have_started"), ("response-body", "response_received")):
+                with self.subTest(provider=provider, phase=phase):
+                    self.reset_run(provider + "-" + phase)
+                    self.account = self.authorize_retry
+                    failure = lab.TransportFailure({"phase": phase, "exception_class": "TimeoutError",
+                        "connection_attempted": True, "http_dispatch": dispatch})
+                    with patch.object(lab, "_bounded_post", side_effect=failure) as post:
+                        result = self.disabled(provider, max_requests=12, connect_retry_policy=lab.CONNECT_RETRY_POLICY)
+                    self.assertEqual(post.call_count, 1)
+                    self.assertTrue(result["unknown_usage"])
+                    self.assertIsNone(result["usage"])
+                    self.assertTrue(self.after[0]["unknown"])
+                    self.assertFalse(self.after[0]["not_invoked"])
+                    self.assertTrue((self.artifacts / "requests/01.pending.json").exists())
+                    self.assertTrue((self.artifacts / "actor.pending.json").exists())
+                    self.assertFalse((self.artifacts / "requests/02.pending.json").exists())
+
+    def test_default_connect_failure_stops_once_and_invalid_policy_is_precredential(self):
+        for policy in ("unknown", False):
+            with self.subTest(policy=policy), patch.object(lab, "_bounded_post") as post, self.assertRaises(ValueError):
+                self.disabled(connect_retry_policy=policy)
+            post.assert_not_called()
+        self.assertEqual((self.loaded, self.before, self.after), ([], [], []))
+        self.assertFalse(self.artifacts.exists())
+        failure = lab.TransportFailure({"phase": "connect", "exception_class": "TimeoutError",
+            "connection_attempted": True, "http_dispatch": "not_started"})
+        for provider in ("deepseek", "mimo"):
+            with self.subTest(provider=provider):
+                self.reset_run("connect-default-" + provider)
+                with patch.object(lab, "_bounded_post", side_effect=failure) as post:
+                    result = self.disabled(provider)
+                self.assertEqual(post.call_count, 1)
+                self.assertEqual(result["status"], "transport-failed-not-invoked")
+                self.assertFalse(result["unknown_usage"])
+                self.assertTrue(self.after[0]["not_invoked"])
+                self.assertFalse(self.after[0]["dispatched"])
+                self.assertIsNone(self.before[0]["connect_retry_policy"])
+                self.assertIsNone(self.after[0]["retry_of_request_id"])
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -115,7 +115,17 @@ Flash 也绑定[精确模型页](https://mimo.mi.com/models/en-US/mimo-v2.6-flas
 profile/configuration hash，不修改或重用旧账作为 Flash 账。默认 disabled4096 和
 原 Pro8192 请求、收据字段保持原样。
 
-仅新 Flash profile 的请求收据增加 `deadline_telemetry`：同一单调时钟采样的
+`thinking-disabled-flash-8192-v1` 固定 DeepSeek Flash / MiMo Flash、thinking disabled、
+8192 输出上限及省略 effort。另一个显式配置
+`thinking-disabled-deepseek-pro-mimo-flash-8192-v1` 仅将 DeepSeek 请求型号改为
+`deepseek-v4-pro`，MiMo 仍为 `mimo-v2.6-flash`；同样固定 disabled、8192、JSON mode
+false。DeepSeek Pro 的每百万 token 峰值估价为 USD .044/1.32/3.96（hit/miss/output），
+来自[官方模型与价格](https://api-docs.deepseek.com/quick_start/pricing/)；模型版本说明为
+DeepSeek-V4-Pro-0813，API 别名不保证未来服务端版本固定。MiMo 费率保持上述 Flash
+口径。配置存在或模型目录可见不证明推理容量、完成任务或净收益；新账本必须冻结精确
+配置，不中途切换型号或重定价旧结果。
+
+显式 Flash 或 Pro/Flash 配置的请求收据增加 `deadline_telemetry`：同一单调时钟采样的
 actor elapsed、实际传给 `_bounded_post` 的等待参数及返回/异常后的 actor elapsed；
 它不是底层 socket timeout、服务端延迟或已发送证明。调用配置 hash 绑定到 pending
 及 outcome，遥测在 outcome/回调持久化；硬杀在 outcome 前发生时不能补造遥测。
@@ -123,7 +133,11 @@ actor elapsed、实际传给 `_bounded_post` 的等待参数及返回/异常后�
 没有新增未证实的 reasoning budget/effort 参数，完整 opaque reasoning 回传不变。
 
 传输收据区分已完成的连接阶段失败与可能已开始的请求；unknown 或迟到响应继续
-保留 fence，不重试。公开格式错误中的 `JSONDecodeError` 仅在路径匹配已注册
+保留 fence，不重试。上述两个 disabled 配置可显式启用
+`confirmed-pre-http-connect-once-v1`：只允许已证明 HTTP 尚未开始的白名单连接失败，
+且须由外层持久预算回调绑定原请求与收据授权一次；新槽位、预留和收据沿用相同请求
+正文及剩余原预算。默认不启用；HTTP 503、可能已发送、响应或用量未知均不能授权重试。
+公开格式错误中的 `JSONDecodeError` 仅在路径匹配已注册
 `json`/`file_hash_manifest` 检查时允许原工具反馈循环继续；它不是成功，不放宽
 no-op、保护、作用域、partial write 或 unknown 规则。新 API collector 必须显式
 选 `build_prompt(..., terminal_report="native-tool")`；默认 JSON 终态提示保留
