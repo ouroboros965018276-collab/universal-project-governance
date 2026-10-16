@@ -8,7 +8,7 @@ RC20 将表达相关性、完整改动、事实保真和按需读取纳入[规�
 
 工程提交 `381706c130e6c184733c75331b1a101f7b4a4a36` 的 [11 项 CI](https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/38814200493) 全部通过；Linux Python 3.11 完整测试为 **1,073 通过、2 跳过**。[安全扫描优化](audits/rc20-security-scan-pruning.audit.json)已包含在该提交中；本地另有 8 项通过、1 项宿主跳过，实际仓库扫描入口约 4.86 秒。冻结审计中的 CI 待完成文字只描述其记录时点。此前本地完整测试超时和首轮 CI fixture 失败保留在[工程审计](audits/rc20-cli-known-failure-engineering.audit.json)。
 
-[新的公开 API 校准](audits/rc20-managed-api-public-calibration-v4.audit.json)首次原始独审 **RAW_PASS**：6 次已记录请求、**10,309 个报告 token**，197 个原始文件和 94 项源码前后相同。MiMo 的公开修复通过注册测试与包导入；DeepSeek 短探针未完成任务，保持未完成判定。本轮未触发迟到结算分支，不能据此声称该分支已被真实验证，也不能作为模型效率比较或 UPG 净收益证据。
+[公开 API 工具校准](audits/rc20-managed-api-public-calibration-v4.audit.json)首次独审通过；新的[四角色中断校准](audits/rc20-managed-api-phase-calibration-failure-v3.audit.json)首次独审 **FAIL**。后者要求同批读取并修改，MiMo 提交占位哈希后被工具正确拒绝；原件及失败判定已独立字节保全。后续仅以新实验身份修正调用顺序，不重跑旧轮。两轮均不能证明 UPG 净收益，迟到结算分支仍无真实验证。
 
 [后端 v5](audits/rc20-fixed-backend-controls-v5.audit.json)完成三族固定对照：3 个参考解通过 40 个测试 ID；26 个负例返回检查失败，其中 **6 个触及输出限制，不能算作目标语义缺陷的有效检出**。首次独审和独立字节保全已完成。[v4 首次失败](audits/rc20-fixed-backend-controls-v4.audit.json)仍保留。[原生 CLI v7 首次失败](audits/rc20-native-cli-closed-failure-v7.audit.json)已冻结保全；收据重建的配置不兼容在新源码身份中修正。[CLI v8 公开校准](audits/rc20-native-cli-public-calibration-v8.audit.json)首次独审通过：正常修复及已知验证失败各有 4 次真实工具调用，验证、清理和完成回合用量证据一致，独立字节复核通过；它不证明任务质量或净收益。[六族开发复验](audits/rc20-six-family-fixed-controls-v7.audit.json)首次独审通过：6 个参考实现通过 65 个测试 ID，15 个已知错误或空测试对照返回检查失败；负例类别不能直接算作语义检出，资源标志保留在原审计中。该轮及[MIME 参考首轮失败](audits/rc20-six-family-reference-failure-v6.audit.json)均完成独立字节保全。公平配对、跨 Agent 接手、来源消融和独立未暴露验证仍待完成；各轮禁止续跑、重审或修补原证据。
 

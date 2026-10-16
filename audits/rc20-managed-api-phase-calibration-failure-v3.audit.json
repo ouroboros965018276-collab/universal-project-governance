@@ -1,0 +1,93 @@
+{
+  "schema_version": "rc20-managed-api-phase-calibration-failure-v3",
+  "candidate": "3.0.0-rc.20",
+  "evidence_class": "PUBLIC_DEVELOPMENT_CALIBRATION_NOT_PRIMARY_OR_HOLDOUT",
+  "result": "RAW_FAIL",
+  "started_at_utc": "2026-10-15T23:50:40.423476+00:00",
+  "recorded_at_utc": "2026-10-16T00:05:43.582283+00:00",
+  "published_baseline": {
+    "commit": "381706c130e6c184733c75331b1a101f7b4a4a36",
+    "scope": "Previously successful API6a CI only; it does not CI-qualify the staged API7 calibration source."
+  },
+  "staged_api_source_sha256": "e6bff4926c3c725d0937dc5e0f77e58517b861665fe052810e4a6d223caa3363",
+  "registration": {
+    "protocol_sha256": "65c26230cc64f87c4f8a9271e718d76e3efe07d7bff9285e4eb88a850b6ffb1c",
+    "roles": 4,
+    "providers": [
+      "deepseek",
+      "mimo"
+    ],
+    "phase_controls": [
+      "before-first-repository-tool-delivery-v1",
+      "first-confirmed-repo-patch-request-tail-v1"
+    ],
+    "actor_work_seconds": 180,
+    "max_requests_per_actor": 12,
+    "max_tools_per_actor": 32,
+    "minimum_dispatch_seconds": 15,
+    "same_inflight_settlement_seconds": 600,
+    "workflow_seconds_soft": 840,
+    "round_seconds_soft": 3480,
+    "source_completion": "Planned controlled sources remain unfinished and ungraded; the unexpected failure branch is not qualified."
+  },
+  "closed_process": {
+    "root_observed_parent_exit_code": 0,
+    "owned_job_cleanup": "CONFIRMED_BY_ORIGINAL_OWNER_RECEIPTS",
+    "owner_inclusive_wall_seconds": 18.819919300003676,
+    "owner_closed_sha256": "f8fea8401ea068c796b5df2687f813c70259d5d3d1c9a160f1a23fa182d7b243",
+    "external_exit_sha256": "3ff8f4b71f9cb37e4675ae9d34110e9989f7dce0754d4c3b446b68cca8c24c62"
+  },
+  "first_independent_raw_audit": {
+    "exit_code": 1,
+    "report_sha256": "c66c6d2248a03a23f8ec5a89c8d1952170115b5a931b734762bc10a7568d4353",
+    "seal_sha256": "6918e64fe6197cce7275ad6e08aef982ee8da16c1f6b87509a43658498ad0301",
+    "external_exit_sha256": "ba09343c1dff8d183fbb63cd9a26932f6e5efc4d20ca7d6a1cc50a5826ecf560",
+    "first_error": {
+      "code": "unknown or failed phase calibration remains FAIL",
+      "exception_class": "ValueError",
+      "scope": "audit-body"
+    },
+    "raw_files": 267,
+    "source_pins": 111,
+    "per_actor_and_ledger_verification_reached": false,
+    "failure_tail_preserved": true,
+    "replay_or_reaudit_authorized": false
+  },
+  "producer_observations_not_independent_qualification": {
+    "completed_actor_records": 4,
+    "phase_patterns_reported_observed": 3,
+    "request_slots": 5,
+    "reported_tokens": 7189,
+    "usage_independent_qualification": "NOT_REACHED_BY_FIRST_AUDIT"
+  },
+  "bounded_diagnosis": {
+    "ref": "local:rc20-api7-cal3-first-failure-diagnosis-v1-4af29c6d/bounded-diagnosis.json",
+    "sha256": "b324b0f40e32739ed084cd7d44e0836a80a6d0ab1cb0c67c216f569ed2b4a642",
+    "observed": "MiMo read both public files, then supplied <sha_from_read> as patch precondition in the same batch; the broker correctly refused the patch.",
+    "source_defect": "Calibration prompt requested reading and patching in one first batch although patch arguments depend on the returned file hash.",
+    "causal_limit": "The rejected placeholder and conflicting sequencing are observed. Improvement under a new prompt remains untested.",
+    "prospective_correction": "New independent calibration identity: read, wait for actual tool output, then patch with the exact returned hash. Keep both providers, controls, budgets and preconditions; old failure remains frozen."
+  },
+  "byte_preservation": {
+    "archive_sha256": "25e5c8ef306ec9ca288293f9aa41ecbd61339727f7733ab3f7d8a5c142774f66",
+    "manifest_sha256": "d908ddd3ac283f5e4f40cebded4c8455480c734016d1b23ea8757b6e71d5af18",
+    "seal_sha256": "34072ffe090452cc0cb856d101ca8f76723083cbcadab5df2e04504fccab23f8",
+    "archive_entries": 562,
+    "closed_trees": 9,
+    "closed_files": 358,
+    "source_pins": 111,
+    "binary_policy": "108 nonbinary source roles archived; 3 exact host binaries hash only.",
+    "independent_receipt_sha256": "04aeaa932423efd050455a9d0fc14937f7d1d9d03bc5e2d54c54ba504044fffa",
+    "independent_seal_sha256": "c551233dc81f58d34fdd857fdc46d840ef6fa35f285691b8845bc4ed6abb45fd",
+    "independent_result": "BYTE_ONLY_PASS; original failure unchanged; no semantic reread or cost regrade."
+  },
+  "limits": {
+    "task_quality": "NOT_ASSESSED",
+    "primary_token_time_net_benefit": "NOT_ESTABLISHED",
+    "late_tail_real_branch": "NOT_ESTABLISHED_BY_THIS_FAILED_ROUND",
+    "formal_qualification": "UNASSESSED",
+    "locked_holdout": "NOT_RUN",
+    "main_and_local": "RC19 remains; RC20 not merged or installed.",
+    "historical_unknown_costs_cleared": false
+  }
+}
