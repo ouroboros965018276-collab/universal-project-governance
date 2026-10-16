@@ -1,0 +1,145 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "operation",
+    "domains"
+  ],
+  "properties": {
+    "operation": {
+      "enum": [
+        "edit",
+        "refactor",
+        "delete",
+        "migration",
+        "dependency",
+        "generated",
+        "architecture",
+        "security",
+        "data",
+        "docs",
+        "release",
+        "governance_upgrade"
+      ]
+    },
+    "domains": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "code",
+          "api",
+          "schema",
+          "config",
+          "data",
+          "docs",
+          "infra",
+          "security",
+          "ml",
+          "automation",
+          "design",
+          "generated",
+          "governance",
+          "research",
+          "content",
+          "product",
+          "operations"
+        ]
+      }
+    },
+    "signals": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string"
+      }
+    },
+    "profiles": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string"
+      }
+    },
+    "unfinished": {
+      "type": "boolean"
+    },
+    "explicit_audit": {
+      "type": "boolean"
+    },
+    "field_test_reporting": {
+      "type": "boolean"
+    },
+    "risk": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "scope": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2
+        },
+        "reversibility": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2
+        },
+        "security": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2
+        },
+        "data": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2
+        },
+        "external_consumers": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2
+        },
+        "migration": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2
+        },
+        "contract_change": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2
+        },
+        "unknowns": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2
+        },
+        "handoff": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2
+        }
+      }
+    },
+    "project_type": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "agent_mode": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "capabilities": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 100
+      }
+    }
+  }
+}
