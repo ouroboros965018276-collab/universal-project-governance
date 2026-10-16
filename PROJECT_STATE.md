@@ -4,21 +4,17 @@
 
 ## 当前能力与验证
 
-RC20 将表达相关性、完整改动、事实保真和按需读取纳入[规范源](governance-src/model/governance-model.json)。生成核心 **6,737 字节**，保持四组指引、16 项政策、8 项 Hot Path、3 项默认规则及 18 个交付文件。规范身份 `0049006f…`、资格身份 `f78112d7…`。五个上游的版本、许可、适配与排除由[来源清单](third_party/upstream-sources.json)维护，见[鸣谢](THIRD_PARTY_NOTICES.md)。
+表达相关性、完整改动、事实保真和按需读取统一由[规范源](governance-src/model/governance-model.json)编译。生成核心 **6,737 字节**，四组指引、16 项政策、8 项 Hot Path、3 项默认规则，18 个交付文件；规范身份 `0049006f…`、资格身份 `f78112d7…`。五个上游的版本、许可、适配及排除见[来源清单](third_party/upstream-sources.json)和[鸣谢](THIRD_PARTY_NOTICES.md)。仓库专用评测源码不随 Skill 交付。
 
-工程提交 `eaeb8b695d5e1131670fc55cf3fd6a0706b2620a` 的 [11 项 CI](https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/38830685586) 全部通过；Linux Python 3.11 完整测试为 **1,087 通过、2 跳过**。[安全扫描优化](audits/rc20-security-scan-pruning.audit.json)已包含在该提交中；本地另有 8 项通过、1 项宿主跳过，实际仓库扫描入口约 4.86 秒。冻结审计中的 CI 待完成文字只描述其记录时点。此前本地完整测试超时和首轮 CI fixture 失败保留在[工程审计](audits/rc20-cli-known-failure-engineering.audit.json)。
+已推送提交 `9fa1df5e3f7b07e6e22fec7cb27d3c5d3d92fa7c` 的 [11 项 CI](https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/38848025053) 全部通过，本地 9 项仓库门禁通过。这些是工程验证。[API 四阶段](audits/rc20-managed-api-four-phase-calibration-v4.audit.json)、[原生 CLI 正常及已知失败](audits/rc20-native-cli-public-calibration-v8.audit.json)和[四项公开工具契约控制](audits/rc20-public-tool-contract-controls-v3.audit.json)完成首次原始校验及独立字节保全；工具契约控制调用真实模型 **0 次**。它们不证明治理效果或净收益。
 
-[公开 API 工具校准](audits/rc20-managed-api-public-calibration-v4.audit.json)首次独审通过。[四角色首轮失败](audits/rc20-managed-api-phase-calibration-failure-v3.audit.json)保留：同批读写提示使 MiMo 使用占位哈希，被工具正确拒绝。[新四阶段校准](audits/rc20-managed-api-four-phase-calibration-v4.audit.json)改为等待实际读取结果后再修改，两家模型的四项控制首次独审通过：**6 次请求、8,960 个报告 token**，独立字节保全通过。API7 已进入仓库实现，149 项相关测试通过，匹配 CI 全部通过。以上校准不证明任务质量或 UPG 净收益，迟到结算分支仍无真实验证。
+[九族开发配对驱动](qualification/pilots/rc20-primary/README.md)及[v4 紧凑源码修订](qualification/pilots/rc20-primary-v4/README.md)可追溯重建。此前三项整合结果由一份[整合检查点审计](audits/rc20-development-integration-checkpoint-v1.audit.json)保存：
 
-[后端 v5](audits/rc20-fixed-backend-controls-v5.audit.json)完成三族固定对照：3 个参考解通过 40 个测试 ID；26 个负例返回检查失败，其中 **6 个触及输出限制，不能算作目标语义缺陷的有效检出**。首次独审和独立字节保全已完成。[v4 首次失败](audits/rc20-fixed-backend-controls-v4.audit.json)仍保留。[原生 CLI v7 首次失败](audits/rc20-native-cli-closed-failure-v7.audit.json)已冻结保全；收据重建的配置不兼容在新源码身份中修正。[CLI v8 公开校准](audits/rc20-native-cli-public-calibration-v8.audit.json)首次独审通过：正常修复及已知验证失败各有 4 次真实工具调用，验证、清理和完成回合用量证据一致，独立字节复核通过；它不证明任务质量或净收益。[六族开发复验](audits/rc20-six-family-fixed-controls-v7.audit.json)首次独审通过：6 个参考实现通过 65 个测试 ID，15 个已知错误或空测试对照返回检查失败；负例类别不能直接算作语义检出，资源标志保留在原审计中。该轮及[MIME 参考首轮失败](audits/rc20-six-family-reference-failure-v6.audit.json)均完成独立字节保全。[开发配对驱动](qualification/pilots/rc20-primary/README.md)已纳入仓库，预定 18 个配对块、54 条工作流、66 个角色；源码独审与 18 项新增定向纯校验通过。[首轮实测失败](audits/rc20-primary-first-workflow-failure-v1.audit.json)在 w001 的原始校验阶段以 `ValueError` 停止：原端记录 5 次请求，但尚无独立用量或任务质量结论；首次独审准入在启动 reader 前拒绝，未生成原始审计报告或封印。556 项原件归档的独立字节核验通过；有限诊断尚未定位具体失败条件，不续跑或重判。跨 Agent 接手、来源消融和独立未暴露验证仍待完成；各轮禁止续跑、重审或修补原证据。
+- **九族 v4**：运行与首次原始审计均退出 0，61 个角色原始证明通过、5 个未调用角色保留。首次盲评打包混淆注册中断与实际中断而失败，未完成评分锁；不能据此得出质量或净收益。8,495 项原件归档完成独立字节核验。新 helper 及完整 66 包合成控制经非作者复核，旧轮不重新提取或评分。
+- **四规则组消融首轮**：注册 8 对、16 个角色，第二个角色在原始校验时停止。执行器正确拒绝超出剩余额度的整批工具调用，读取器计数顺序不一致。首次独审未启动；修复已通过 12 项定向检查、非作者源码复核和完整合成生产／消费校验，原轮不重新判定。新的主对照与消融准备完成，尚无效果结论。
+- **跨 API／CLI 公开接手**：此前[首轮读取异常](audits/rc20-public-mixed-first-failure-v3.audit.json)保留。命令数组读取修复后的新轮发生 CLI 连接发送失败；前两次工具调用成功，无完成回合用量。未观察到容量或余额错误，更深层网络原因未知。新公开校准轮复用身份一致的冻结源码与规划结果，使用新项目、协议和授权，已完成两个方向的两条自然工作流及四个角色，首次原始审计通过；完整运行约 140.60 秒，用量按模型分域记录，独立字节保全正在进行。它不证明语义质量、突发中断恢复或净收益，旧轮未知用量不清除。
 
-[四项公开工具对照](audits/rc20-public-tool-contract-controls-v3.audit.json)首次原始校验和独立字节核验通过，修复了三个清理映射收据的写入／读取格式不一致；模型调用为 0，不构成有效性证据。[v4 冻结源码修订](qualification/pilots/rc20-primary-v4/README.md)只保存两份代码覆盖及还原所需的原始 README，全部 120 文件可从固定 Git 基线逐字节重建。新的九族 API 开发配对运行和首次原始审计均已退出 0：61 个角色的原始证据通过，5 个未调用角色明确保留。随后首次盲评打包因 `controlled-source-not-complete` 停止，未生成完整评审包或初始评分锁，不能据此得出质量或净收益结论。原因是混淆注册的中断计划与实际观察到的中断；新 helper 已通过 6 项定向合成检查和非作者源码复核，旧轮不重新打包或重判。
-
-[API → 原生 CLI 的新增公开接手校准](audits/rc20-public-mixed-first-failure-v3.audit.json)在 CLI 结果接收阶段停止：CLI 原生进程已退出，但原始接收异常被外层停止逻辑覆盖，账本仍保留未知敞口，未启动首次独审。461 项原件归档的独立字节核验通过；该轮不续跑、不重判。增加有界首错位置的新轮仍在同一接手方向停止，首次定位到命令参数数组被对象限定读取器拒绝。仅此读取条件的修复已通过 7 项新增纯检查和非作者源码复核，保留精确参数、原始字节与其他验证约束；新轮的观察仍不能转为已验证用量，另一个接手方向尚未运行。
-
-现有开发证据不支持晋升：已曝光 [v6](audits/rc20-paired-real-python-development-v6.audit.json) 的完整组质量为 **5/8**，两组对照各 **7/8**；较低成本包含提前失败，净收益 FAIL。[v11](audits/rc20-stdlib-project-development-v11.audit.json) 留有一次用量未知，首次原始独审 FAIL。[原生 CLI v6](audits/rc20-native-cli-public-calibration-v6.audit.json) 的首次失败同样保留。其他历史数字、成本、VETO 和源码身份只在各自 [audits/](audits/) 中查阅，不绑定当前候选。
-
-合并和安装仍要求完整组质量不劣于两组对照、无严重否决，报告 token 与完整工作流耗时均严格低于两组对照；未知用量、意外中断、缺失耗时或超限阻止有利净收益结论。研究、人工与未观测总成本保持未知；新轮记账完成不清除旧轮未知费用。正式资格 **UNASSESSED**，locked **NOT RUN**，不宣称 Stable。
+合并和安装要求完整组质量不劣于 RC19 与 attention control、无严重否决，报告 token 与完整工作流耗时均严格低于两组对照，并补足来源消融、真实跨 Agent 接手和独立未暴露验证。未知用量、意外中断、缺失耗时或超限阻止有利净收益结论。研究、人工及未观测总成本保持未知。正式资格 **UNASSESSED**，locked **NOT RUN**，不宣称 Stable。其他已曝光开发结果、首次失败及冻结实验限制保留在各自 [audits/](audits/)，不绑定为当前候选的有效性证明。
 
 ## 最近一次重要发布：RC19
 
