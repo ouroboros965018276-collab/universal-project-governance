@@ -59,7 +59,7 @@
       "policy_ids": [
         "STRUCTURAL_INTEGRATION"
       ],
-      "statement": "Keep contracts/safety/error handling; resolve affected consumers/tests and obsolete paths. Change edge/error returns/exceptions only as required by the authorized goal. Minimize needless work, not diff size. Priority: user intent; correctness/safety/truth; contracts/structure; maintainability/readability; cost."
+      "statement": "Keep contracts/safety/error handling; resolve affected consumers/tests and obsolete paths. Use current bytes/revisions and the tool's edit semantics; a fragment cannot replace a whole file. Change edge/error returns/exceptions only for the authorized goal. Minimize needless work, not diff size; reserve final validation/handoff budget. Priority: user intent; correctness/safety/truth; contracts/structure; maintainability/readability; cost."
     },
     {
       "id": "evidence_fidelity",
@@ -73,7 +73,7 @@
       "policy_ids": [
         "EVIDENCE_AFFECTED"
       ],
-      "statement": "Honor required reads; select relevant paths/anchors via indexes or bounded search before batching. Listings/links alone are not read obligations. Trace implementations/contracts/consumers/tests; expand for dependencies, failures, stale/conflicting evidence or coverage gaps. Defer unrelated material. Recover interrupted/stale/contradictory state from project evidence. Indexes/labels/read budgets never prove coverage; unknowns stay unknown."
+      "statement": "Honor required reads; discover existing paths/anchors via indexes or bounded search before batching. Writable paths may be planned additions; listings/links alone are not read obligations. Trace implementations/contracts/consumers/tests; expand for dependencies, failures, stale/conflicting evidence or coverage gaps. Defer unrelated material. Recover interrupted/stale/contradictory state from project evidence. Indexes/labels/read budgets never prove coverage; unknowns stay unknown."
     }
   ],
   "risk_model": {

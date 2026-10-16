@@ -9,6 +9,7 @@
 - Adds repository-only finite Python behavior contracts for new tool studies after public equivalent-program counterexamples exposed whole-module AST false negatives; preserves the aborted round and unchanged historical AST semantics. Supported syntax, bounds and finite-probe limits are explicit.
 - Compacts the generated core without removing policies; adds public path metadata, bounded probe-free diagnostics and fixed transport phase receipts to the repository API helper. New callers explicitly select native terminal reporting; legacy prompts and closed results keep their original identities. Handoff contracts require affected reads and preserve complete protected-byte checks.
 - Publishes the evidence manifest shape and free-prose document assertions with external factual review, actual-snapshot handoffs and an explicit 8192-token thinking profile; disabled/4096 compatibility remains available. Closed development failures retain their costs and grades.
+- On 2026-10-16, follows closed tool-task failures with explicit missing-path reads and guarded single-fragment edits in the repository engineering broker; current SHA, observed reads, batch bounds and replay proofs remain required. Canonical guidance distinguishes existing/planned paths and patch/replacement semantics, with budget for final validation and handoff. New source and qualification identities do not reinterpret the failed rounds or establish benefit.
 
 
 ## 3.0.0-rc.19 — 2026-10-13 — candidate

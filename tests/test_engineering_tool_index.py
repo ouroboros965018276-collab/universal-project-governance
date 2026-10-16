@@ -74,12 +74,13 @@ class EngineeringToolIndexTests(_ProviderFixture,unittest.TestCase):
         parsed,rejected=self.batch([item]);self.assertEqual(rejected,['read-0']);self.assertEqual(parsed[0]['tool'],'repo_read')
         item['function']['arguments']='{';self.assertEqual(self.batch([item])[1],['read-0'])
 
-    def produce(self,first,provider='deepseek'):
+    def produce(self,first,provider='deepseek',*,following=()):
         payloads=[];counter=[0]
         finish=call('finish','repo_finish',{'summary':'Public synthetic read only; required repair and validation remain incomplete.','validation':'failed','helper_gap':'project_tool unavailable in bounded broker'});finish['index']=0
+        steps = [first, *following, [finish]]
         def response(provider,payload,key,timeout):
             payloads.append(copy.deepcopy(payload));counter[0]+=1
-            body=completion(counter[0],first if counter[0]==1 else[finish]);body['model']='synthetic-observed-model'
+            body=completion(counter[0],steps[counter[0]-1]);body['model']='synthetic-observed-model'
             return 200,{},canonical(body)
         post=create_autospec(lab._bounded_post,side_effect=response)
         # Wrap the true class method, never substitute a broker implementation.
@@ -123,6 +124,62 @@ class EngineeringToolIndexTests(_ProviderFixture,unittest.TestCase):
         self.assertEqual(result['status'],'completed');self.assertEqual([x[1]for x in actual],['repo_read']*3)
         self.assertEqual([x['arguments']['paths'][0]for x in result['tool_events']],['pkg.py','contract.json','README.md'])
         self.assertEqual(result['tool_attempts'],4)
+
+    def test_missing_creatable_path_is_observed_then_returned_to_the_model(self):
+        self.task['writable_files'].append('new.py')
+        item = call('mixed-read', 'repo_read', {'paths': ['pkg.py', 'new.py']})
+        result, payloads, actual, _ = self.produce([item])
+        self.assertEqual(result['status'], 'completed')
+        self.assertEqual(result['requests'], 2)
+        self.assertEqual(result['tool_attempts'], 2)  # Read plus the native terminal call.
+        self.assertEqual(result['known_usage']['total_tokens'], 30)
+        self.assertEqual(result['schema_rejections'], 0)
+        self.assertEqual([row[1] for row in actual], ['repo_read'])
+        feedback = json.loads(next(m['content'] for m in payloads[1]['messages'] if m['role'] == 'tool'))
+        self.assertEqual(feedback['files']['new.py'], {'exists': False, 'text': None, 'sha256': None})
+        self.assertEqual(feedback['files']['pkg.py'], {'text': 'value = 1\n', 'sha256': sha(b'value = 1\n')})
+        self.assertFalse((self.workspace / 'new.py').exists())
+        self.assertEqual(engineering.files_from_receipt_journal(self.task, result['tool_events']), self.task['initial_files'])
+        self.assertEqual(result['quality']['task_success'], 0)
+        self.assertFalse(result['execution_state_unknown'])
+        instruction = payloads[0]['messages'][0]['content']
+        self.assertIn('initial_paths lists existing files', instruction)
+        self.assertIn('entire file', instruction)
+
+    def test_optional_fragment_schema_passes_same_native_chain_and_complete_replay(self):
+        operation = {'path': 'pkg.py', 'old_sha256': sha(b'value = 1\n'), 'old_text': '1', 'new_text': '2'}
+        result, payloads, actual, _ = self.produce([self.item()], following=[
+            [call('fragment', 'repo_patch', {'operations': [operation]})]])
+        self.assertEqual(result['status'], 'completed')
+        self.assertEqual(result['requests'], 3)
+        self.assertEqual(result['tool_attempts'], 3)
+        self.assertEqual(result['known_usage']['total_tokens'], 45)
+        self.assertEqual(result['schema_rejections'], 0)
+        self.assertEqual([row[1] for row in actual], ['repo_read', 'repo_patch'])
+        self.assertEqual(actual[1][2]['operations'], [operation])
+        self.assertEqual((self.workspace / 'pkg.py').read_bytes(), b'value = 2\n')
+        expected = dict(self.task['initial_files'], **{'pkg.py': 'value = 2\n'})
+        self.assertEqual(engineering.files_from_receipt_journal(self.task, result['tool_events']), expected)
+        self.assertEqual(result['quality']['task_success'], 0)
+        self.assertFalse(result['execution_state_unknown'])
+        feedback = json.loads([m['content'] for m in payloads[2]['messages'] if m['role'] == 'tool'][-1])
+        self.assertEqual(feedback['files']['pkg.py']['sha256'], sha(b'value = 2\n'))
+
+    def test_bad_fragment_stays_terminal_with_known_attempt_cost(self):
+        operation = {'path': 'pkg.py', 'old_sha256': sha(b'value = 1\n'), 'old_text': 'missing', 'new_text': '2'}
+        result, _, actual, _ = self.produce([self.item()], following=[
+            [call('bad-fragment', 'repo_patch', {'operations': [operation]})]])
+        self.assertEqual(result['status'], 'tool-contract-failed')
+        self.assertEqual(result['requests'], 2)
+        self.assertEqual(result['tool_attempts'], 2)
+        self.assertEqual(result['known_usage']['total_tokens'], 30)
+        self.assertEqual(result['schema_rejections'], 0)
+        self.assertEqual([row[1] for row in actual], ['repo_read', 'repo_patch'])
+        self.assertFalse(result['tool_events'][-1]['result']['ok'])
+        self.assertFalse(result['execution_state_unknown'])
+        self.assertIsNone(result['final_report'])
+        self.assertEqual((self.workspace / 'pkg.py').read_bytes(), b'value = 1\n')
+        self.assertEqual(engineering.files_from_receipt_journal(self.task, result['tool_events']), self.task['initial_files'])
 
     def test_bad_second_ordinal_prevalidates_whole_batch_without_broker_or_feedback(self):
         result,_,actual,_=self.produce([self.item('r0',index=0),self.item('r1',index=0)])

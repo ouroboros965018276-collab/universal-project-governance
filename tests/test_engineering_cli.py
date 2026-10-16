@@ -161,12 +161,17 @@ class CliProjectCandidateTests(unittest.TestCase):
         self.assertNotIn('repo_finish', ' '.join(argv))
         self.assertFalse(any('API_KEY' in item or 'auth.json' in item for item in argv))
 
-    def test_cli_instruction_has_correct_terminal_protocol_and_api_text_is_preserved(self):
-        self.assertEqual(sha(engineering.public_instruction().encode('utf-8')), 'f5eedcd3b9a768c9af57550656dc72b89c30af1eaf11fac56e38fb4a67f439aa')
+    def test_cli_and_api_instructions_keep_distinct_terminal_protocols(self):
+        api = engineering.public_instruction()
+        self.assertIn('End with repo_finish alone', api)
         text = self.adapter.public_instruction()
         self.assertNotIn('repo_finish', text)
         self.assertIn('JSON output schema', text)
         self.assertIn('current successful checks', text)
+        for instruction in (api, text):
+            self.assertIn('initial_paths lists existing files', instruction)
+            self.assertIn('exists=false, text=null and sha256=null', instruction)
+            self.assertIn('a string replaces the entire file, never a fragment or diff', instruction)
 
     def test_current_known_pass_is_read_only_no_implicit_validation(self):
         self.complete()
@@ -456,6 +461,36 @@ class CliProjectCandidateTests(unittest.TestCase):
             ('repo_read', {'paths': ['pkg/core.py']})])
         self.assertEqual(len(responses), 1)
         self.assertTrue(responses[0]['result']['isError'])
+        self.assertEqual(self.executor_calls, 0)
+
+    def test_mcp_absent_creatable_read_keeps_next_registered_call_available(self):
+        self.task['writable_files'].append('pkg/new.py')
+        responses = self.run_mcp_calls([
+            ('repo_read', {'paths': ['pkg/core.py', 'pkg/new.py']}),
+            ('repo_read', {'paths': ['README.md']})])
+        self.assertEqual(len(responses), 2)
+        for response in responses:
+            self.assertFalse(response['result']['isError'])
+        feedback = json.loads(responses[0]['result']['content'][0]['text'])
+        self.assertEqual(feedback['files']['pkg/new.py'], {'exists': False, 'text': None, 'sha256': None})
+        events = [json.loads(line) for line in (self.base / 'stdio-audit.jsonl').read_bytes().splitlines()]
+        self.assertEqual(len(events), 2)
+        self.assertEqual(engineering.files_from_receipt_journal(self.task, events), self.task['initial_files'])
+        self.assertFalse((self.repo / 'pkg/new.py').exists())
+        self.assertEqual(self.executor_calls, 0)
+
+    def test_mcp_optional_fragment_keeps_same_tool_and_replays_complete_bytes(self):
+        operation = {'path': 'pkg/core.py', 'old_sha256': sha(b'VALUE = 0\n'), 'old_text': '0', 'new_text': '3'}
+        responses = self.run_mcp_calls([
+            ('repo_read', {'paths': ['pkg/core.py']}),
+            ('repo_patch', {'operations': [operation]}),
+            ('repo_read', {'paths': ['pkg/core.py']})])
+        self.assertEqual(len(responses), 3)
+        self.assertTrue(all(not row['result']['isError'] for row in responses))
+        self.assertEqual((self.repo / 'pkg/core.py').read_bytes(), b'VALUE = 3\n')
+        events = [json.loads(line) for line in (self.base / 'stdio-audit.jsonl').read_bytes().splitlines()]
+        self.assertEqual(events[1]['arguments']['operations'], [operation])
+        self.assertEqual(engineering.files_from_receipt_journal(self.task, events)['pkg/core.py'], 'VALUE = 3\n')
         self.assertEqual(self.executor_calls, 0)
 
     def test_mcp_keeps_known_test_failure_repairable_without_reclassifying_unknown(self):
