@@ -13,6 +13,7 @@ import copy
 import http.client
 import importlib
 import json
+import math
 import os
 from pathlib import Path
 import queue
@@ -912,10 +913,203 @@ def _verify_controlled_local_stop(proposal, metadata, broker, native_trace, last
                 next_request_reserved=False, api_requests_observed=request_count)
 
 
+PHASE_STOP_POLICIES = {
+    "before-first-repository-tool-delivery-v1": "validated-batch-before-tool-delivery",
+    "first-confirmed-repo-patch-request-tail-v1": "complete-request-tool-tail",
+}
+ACTOR_TIMING_SCHEMA = "collector-first-setup-absolute-work-deadline-v1"
+
+
+class ControlledPhaseStopRequested:
+    __slots__ = ("receipt_ref", "receipt_sha256")
+
+    def __init__(self, receipt_ref, receipt_sha256):
+        self.receipt_ref, self.receipt_sha256 = receipt_ref, receipt_sha256
+
+
+def _registered_actor_timing(value, timeout_seconds, observed):
+    if (type(value) is not dict or set(value) != {"schema", "started_monotonic", "work_deadline_monotonic"}
+            or value["schema"] != ACTOR_TIMING_SCHEMA
+            or not all(type(value[k]) in (int, float) and math.isfinite(value[k])
+                       for k in ("started_monotonic", "work_deadline_monotonic"))
+            or value["started_monotonic"] > observed
+            or value["work_deadline_monotonic"] - value["started_monotonic"] != timeout_seconds
+            or value["work_deadline_monotonic"] > observed + timeout_seconds):
+        raise ValueError("registered actor clock cannot extend work")
+    if value["work_deadline_monotonic"] <= observed:
+        raise DeadlineBeforeDispatch("registered actor setup exhausted work deadline")
+    return copy.deepcopy(value)
+
+
+def _phase_cut_evidence(policy, phase, metadata, broker, native_trace, calls,
+                        artifacts, received, outcome_sha, response_sha, request_count):
+    """Read known durable raw once; no broker operation or project execution."""
+    import stat
+    if (PHASE_STOP_POLICIES.get(policy) != phase or type(request_count) is not int
+            or not 1 <= request_count <= 12 or metadata["request_index"] != request_count
+            or type(calls) is not list or not calls
+            or any(call.get("function", {}).get("name") == FINISH_TOOL for call in calls)
+            or len(native_trace) != len(broker.events)):
+        raise ValueError("invalid registered phase boundary")
+
+    def owned(relative, maximum):
+        path = artifacts / relative
+        current = path.parent
+        while current == artifacts or artifacts in current.parents:
+            info = current.lstat()
+            if stat.S_ISLNK(info.st_mode) or getattr(info, "st_file_attributes", 0) & 1024:
+                raise ValueError("phase boundary linked parent")
+            if current == artifacts:
+                break
+            current = current.parent
+        before = path.lstat()
+        if (not stat.S_ISREG(before.st_mode) or before.st_nlink != 1 or before.st_size > maximum
+                or getattr(before, "st_file_attributes", 0) & 1024):
+            raise ValueError("phase boundary raw file is not owned")
+        raw = path.read_bytes()
+        after = path.lstat()
+        if (len(raw) != before.st_size or (before.st_dev, before.st_ino, before.st_size, before.st_nlink)
+                != (after.st_dev, after.st_ino, after.st_size, after.st_nlink)):
+            raise ValueError("phase boundary raw changed")
+        return raw
+
+    request_ref = "requests/%02d.receipt.json" % request_count
+    response_ref = "requests/%02d.response.json" % request_count
+    request_raw, response_raw = owned(request_ref, MAX_RESPONSE_BYTES), owned(response_ref, MAX_RESPONSE_BYTES * 2)
+    outcome, response = json.loads(request_raw), json.loads(response_raw)
+    if (sha(request_raw) != outcome_sha or sha(response_raw) != response_sha
+            or request_raw != canonical(outcome) + b"\n" or response_raw != canonical(response) + b"\n"
+            or any(outcome.get(k) != metadata.get(k) for k in metadata)
+            or outcome.get("unknown") is not False or outcome.get("dispatched") is not True
+            or outcome.get("not_invoked") is not False or outcome.get("unexpected_overrun") != {}
+            or outcome.get("response_sha256") != response_sha
+            or response.get("request_id") != metadata["request_id"]
+            or response.get("response", {}).get("id") != outcome.get("api_response_id")):
+        raise ValueError("phase boundary request/response is not known exact")
+    settlement = outcome.get("settlement") or {}
+    if (settlement.get("accounting_only") is not False or settlement.get("work_closed") is not False
+            or settlement.get("worker_done") is not True or settlement.get("worker_alive_at_return") is not False
+            or settlement.get("attempt_dispatch_gate_closed") is not True or settlement.get("dispatch_started") is not True
+            or settlement.get("policy") != SETTLEMENT_POLICY or settlement.get("max_seconds") != 600
+            or settlement.get("body_complete") is not True or settlement.get("capture_failure") is not None
+            or settlement.get("transport_failure") is not None):
+        raise ValueError("phase boundary transport tail is unknown or late")
+    snapshot = broker.snapshot()
+    current = sha(canonical(snapshot))
+    if any(name not in broker.task["writable_files"] and snapshot.get(name) != sha(text.encode("utf-8"))
+           for name, text in broker.task["initial_files"].items()):
+        raise ValueError("phase boundary protected state changed")
+    audit_present = (artifacts / "broker.jsonl").exists()
+    audit = owned("broker.jsonl", MAX_INPUT_BYTES * MAX_TOOLS * 2) if audit_present else b""
+    if audit != b"".join(canonical(event) + b"\n" for event in broker.events):
+        raise ValueError("phase boundary journal differs")
+    previous = None
+    for trace, event in zip(native_trace, broker.events):
+        raw = owned("tool-receipts/%02d.json" % event["sequence"], MAX_INPUT_BYTES)
+        if (raw != canonical(trace) + b"\n" or trace.get("previous_chain_sha256") != previous
+                or trace.get("chain_sha256") != sha(canonical({k: v for k, v in trace.items() if k != "chain_sha256"}))
+                or any(trace.get(key) != event.get(key) for key in ("tool", "arguments_sha256", "result_sha256", "state_sha256"))
+                or trace.get("broker_event_sha256") != sha(canonical(event))
+                or trace.get("broker_sequence") != event.get("sequence")
+                or trace.get("adapter") != metadata["adapter"]
+                or trace.get("broker_profile_id") != ENGINEERING_PROFILE
+                or trace.get("execution_backend") != ENGINEERING_BACKEND):
+            raise ValueError("phase boundary trace chain differs")
+        previous = trace["chain_sha256"]
+    batch = [{"call_id": call["id"], "tool": call["function"]["name"],
+              "arguments_utf8_sha256": sha(call["function"]["arguments"].encode("utf-8"))} for call in calls]
+    tail = [trace for trace in native_trace if trace["request_index"] == request_count]
+    successful_patches = sum(event.get("tool") == "repo_patch" and event.get("result", {}).get("ok") is True
+                             for event in broker.events)
+    if phase == "validated-batch-before-tool-delivery":
+        if broker.events or native_trace or snapshot != received or audit_present:
+            raise ValueError("zero-tool boundary already delivered work")
+    else:
+        if (not successful_patches
+                or any(event.get("tool") == "repo_patch" and event.get("result", {}).get("ok") is True
+                       and trace["request_index"] < request_count for event, trace in zip(broker.events, native_trace))
+                or [trace["tool_call_id"] for trace in tail] != [row["call_id"] for row in batch]
+                or any(trace["api_response_id"] != outcome["api_response_id"] for trace in tail)
+                or not any(event.get("tool") == "repo_patch" and event.get("result", {}).get("ok") is True
+                           for event in broker.events[-len(tail):])
+                or broker.read_evidence_failures(broker.events)):
+            raise ValueError("patch boundary is not the complete first-patch tail")
+    return {"schema_version": "registered-repository-phase-cut-evidence-v1", "policy_id": policy,
+            "phase": phase, "trigger_ordinal": 1, "kind": "controlled-phase-stop-observed",
+            "request_metadata": copy.deepcopy(metadata), "request_receipt_ref": request_ref,
+            "request_receipt_sha256": outcome_sha, "response_artifact_ref": response_ref,
+            "response_artifact_sha256": response_sha, "api_response_id": outcome["api_response_id"],
+            "api_requests_observed": request_count, "batch": batch, "batch_sha256": sha(canonical(batch)),
+            "broker_event_count": len(broker.events), "request_tail_event_count": len(tail),
+            "successful_patch_count": successful_patches, "broker_audit_present": audit_present,
+            "broker_audit_sha256": sha(audit), "last_trace_chain_sha256": previous,
+            "received_state_sha256": sha(canonical(received)), "state_sha256": current,
+            "source_completion_required": False, "source_completed": False, "source_graded": False,
+            "next_request_reserved": False, "next_request_dispatched": False}
+
+
+def _controlled_phase_boundary(policy, phase, guard, metadata, broker, native_trace, calls,
+                               artifacts, received, outcome_sha, response_sha, request_count, key, deadline):
+    if PHASE_STOP_POLICIES[policy] != phase:
+        return None
+    if phase == "validated-batch-before-tool-delivery" and broker.events:
+        return None
+    if phase == "complete-request-tool-tail" and not any(
+            event.get("tool") == "repo_patch" and event.get("result", {}).get("ok") is True for event in broker.events):
+        return None
+    if time.perf_counter() >= deadline:
+        raise DeadlineBeforeDispatch("phase boundary after work deadline")
+    evidence = _phase_cut_evidence(policy, phase, metadata, broker, native_trace, calls,
+                                   artifacts, received, outcome_sha, response_sha, request_count)
+    observed_ref = "control/phase-stop-observed.json"
+    observed_sha = _write_new(artifacts / observed_ref, evidence, key)
+    proposal = guard(dict(copy.deepcopy(evidence), observed_receipt_ref=observed_ref,
+                          observed_receipt_sha256=observed_sha))
+    if (time.perf_counter() >= deadline or type(proposal) is not ControlledPhaseStopRequested
+            or proposal.receipt_ref != "control/phase-stop-authorization.json"
+            or not isinstance(proposal.receipt_sha256, str)
+            or re.fullmatch(r"[0-9a-f]{64}", proposal.receipt_sha256) is None):
+        raise ValueError("phase boundary proposal missing, late or untyped")
+    repeated = _phase_cut_evidence(policy, phase, metadata, broker, native_trace, calls,
+                                   artifacts, received, outcome_sha, response_sha, request_count)
+    if repeated != evidence:
+        raise ValueError("phase boundary changed during authorization")
+    observed_path = artifacts / observed_ref
+    import stat
+    observed_info = observed_path.lstat()
+    if (not stat.S_ISREG(observed_info.st_mode) or observed_info.st_nlink != 1
+            or getattr(observed_info, "st_file_attributes", 0) & 1024):
+        raise ValueError("phase observation is linked")
+    if observed_path.read_bytes() != canonical(evidence) + b"\n":
+        raise ValueError("phase observation changed during authorization")
+    expected = dict(evidence, kind="controlled-phase-stop-authorization",
+                    observed_receipt_ref=observed_ref, observed_receipt_sha256=observed_sha)
+    path = artifacts / proposal.receipt_ref
+    import stat
+    parent = path.parent.lstat()
+    if stat.S_ISLNK(parent.st_mode) or getattr(parent, "st_file_attributes", 0) & 1024:
+        raise ValueError("phase authorization parent is linked")
+    info = path.lstat()
+    if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1 or info.st_size > 65536 or getattr(info, "st_file_attributes", 0) & 1024:
+        raise ValueError("phase authorization must be owned bounded raw")
+    raw = path.read_bytes()
+    after = path.lstat()
+    if (info.st_dev, info.st_ino, info.st_size, info.st_nlink) != (after.st_dev, after.st_ino, after.st_size, after.st_nlink):
+        raise ValueError("phase authorization changed during read")
+    if raw != canonical(expected) + b"\n" or sha(raw) != proposal.receipt_sha256:
+        raise ValueError("phase authorization binding differs")
+    accepted = dict(expected, kind="controlled-phase-stop-accepted",
+                    authorization_receipt_ref=proposal.receipt_ref, authorization_receipt_sha256=proposal.receipt_sha256)
+    accepted_ref = "control/phase-stop.accepted.json"
+    accepted_sha = _write_new(artifacts / accepted_ref, accepted, key)
+    return dict(accepted, accepted_receipt_ref=accepted_ref, accepted_receipt_sha256=accepted_sha)
+
+
 def run_actor(provider, model, task, root, artifact_dir, git_binary, system_context, key_loader,
               max_requests=12, timeout_seconds=180, *, response_json_mode, thinking,
               before_request=None, after_request=None, profile_id=None, execution_backend=None, connect_retry_policy=None, tool_feedback_policy=None,
-              broker_profile_id=None, controlled_local_stop_guard=None, settlement_policy=None):
+              broker_profile_id=None, controlled_local_stop_guard=None, settlement_policy=None,
+              actor_timing=None, controlled_phase_stop_policy=None, controlled_phase_stop_guard=None):
     """Run once on existing disk state; new actor => fresh artifact directory.
 
     before_request(metadata) reserves the outer budget before dispatch and may
@@ -948,6 +1142,15 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
         raise ValueError("max_requests must be in [1,12]")
     if type(timeout_seconds) not in (int, float) or not 0 < timeout_seconds <= 180:
         raise ValueError("timeout_seconds must be in (0,180]")
+    registered_timing = (_registered_actor_timing(actor_timing, timeout_seconds, time.perf_counter())
+                         if actor_timing is not None else None)
+    if registered_timing is not None and (broker_profile_id != ENGINEERING_PROFILE or settlement_policy != SETTLEMENT_POLICY):
+        raise ValueError("external actor clock requires the explicit managed project profile")
+    if (controlled_phase_stop_policy is not None or controlled_phase_stop_guard is not None):
+        if (controlled_phase_stop_policy not in PHASE_STOP_POLICIES or not callable(controlled_phase_stop_guard)
+                or controlled_local_stop_guard is not None or broker_profile_id != ENGINEERING_PROFILE
+                or settlement_policy != SETTLEMENT_POLICY or registered_timing is None):
+            raise ValueError("phase stop requires exact opt-in project policy, guard and external actor clock")
     if not isinstance(system_context, str) or not callable(key_loader):
         raise ValueError("system_context and key_loader are required")
     if controlled_local_stop_guard is not None and (broker_profile_id != ENGINEERING_PROFILE
@@ -1008,7 +1211,7 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
     try:
         if any(path != lock for path in artifacts.iterdir()):
             raise ActorFence("existing actor artifacts/pending; no replay")
-        started = time.perf_counter()
+        started = time.perf_counter() if registered_timing is None else registered_timing["started_monotonic"]
         deadline = started + timeout_seconds
         settlement_deadline = deadline + SETTLEMENT_MAX_SECONDS if settlement_policy is not None else None
         input_identity = sha(canonical(task))
@@ -1046,6 +1249,10 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                 schema_correction_limit=ENGINEERING_SCHEMA_CORRECTIONS)
         if controlled_local_stop_guard is not None:
             entry["controlled_local_stop_policy"] = CONTROLLED_LOCAL_STOP_POLICY
+        if registered_timing is not None:
+            entry["actor_timing"] = copy.deepcopy(registered_timing)
+        if controlled_phase_stop_guard is not None:
+            entry["controlled_phase_stop_policy"] = controlled_phase_stop_policy
         if settlement_policy is not None:
             entry.update(settlement_policy=settlement_policy, settlement_max_seconds=SETTLEMENT_MAX_SECONDS,
                 work_deadline_monotonic=deadline, settlement_deadline_monotonic=settlement_deadline,
@@ -1400,6 +1607,19 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                     failures.append("api-tool-rejected:invalid-engineering-batch")
                     status = "tool-contract-failed"
                     break
+            if controlled_phase_stop_guard is not None and not has_finish:
+                try:
+                    accepted = _controlled_phase_boundary(controlled_phase_stop_policy, "validated-batch-before-tool-delivery",
+                        controlled_phase_stop_guard, metadata, broker, native_trace, calls, artifacts, received,
+                        outcome_sha, response_sha, request_count, key, deadline)
+                    if accepted is not None:
+                        controlled_local_stop = accepted
+                        status, refusal_reason = "controlled-phase-stop-unfinished", None
+                        break
+                except BaseException as error:
+                    failures.append("api-phase-stop-rejected:unverified-pre-delivery")
+                    status, refusal_reason = "controlled-phase-stop-proposal-refused", _exception_class(error)
+                    break
             for call in calls:
                 if settlement_policy is not None and time.perf_counter() >= deadline:
                     work_cutoff_reached = True
@@ -1513,6 +1733,21 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                     failures.append("api-tool-rejected:invalid-or-unrecorded-call")
                     status = "tool-contract-failed"
                     break
+            if (controlled_phase_stop_guard is not None and not has_finish
+                    and status not in {"tool-contract-failed", "completed"} and not unknown
+                    and not execution_state_unknown and not execution_infrastructure_failed and not work_cutoff_reached):
+                try:
+                    accepted = _controlled_phase_boundary(controlled_phase_stop_policy, "complete-request-tool-tail",
+                        controlled_phase_stop_guard, metadata, broker, native_trace, calls, artifacts, received,
+                        outcome_sha, response_sha, request_count, key, deadline)
+                    if accepted is not None:
+                        controlled_local_stop = accepted
+                        status, refusal_reason = "controlled-phase-stop-unfinished", None
+                        break
+                except BaseException as error:
+                    failures.append("api-phase-stop-rejected:unverified-request-tail")
+                    status, refusal_reason = "controlled-phase-stop-proposal-refused", _exception_class(error)
+                    break
             if status in {"tool-contract-failed", "completed"} or unknown or execution_state_unknown or execution_infrastructure_failed or work_cutoff_reached:
                 break
         if settlement_policy is not None and time.perf_counter() >= deadline:
@@ -1616,6 +1851,10 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
             result["controlled_local_stop"] = controlled_local_stop
             if controlled_local_stop is not None:
                 result["receipt"]["controlled_local_stop_accepted_sha256"] = controlled_local_stop["accepted_receipt_sha256"]
+        if controlled_phase_stop_guard is not None:
+            result["controlled_phase_stop"] = controlled_local_stop
+            if controlled_local_stop is not None:
+                result["receipt"]["controlled_phase_stop_accepted_sha256"] = controlled_local_stop["accepted_receipt_sha256"]
         if execution_backend is not None:
             result.update(execution_state_unknown=execution_state_unknown,
                           execution_infrastructure_failed=execution_infrastructure_failed)
