@@ -1,0 +1,354 @@
+{
+  "schema_version": 1,
+  "study_id": "rc20-paired-real-python-development-v2",
+  "observed_at_utc": "2026-10-14T23:03:38.450248+00:00",
+  "scope": "Development experiment: three arms, two provider directions, core/document task families, planned-stage handoffs and finite isolated CPython probes. Exposed generator families and fresh instances; not formal independent qualification, arbitrary application execution or crash recovery.",
+  "terminal_status": "COMPLETED_NET_BENEFIT_NOT_ESTABLISHED",
+  "replay_or_append_allowed": false,
+  "registration": {
+    "protocol_sha256": "3004c47e97e3b905e5baf17286aede6c862e4d8e5e239cedc95699d30ea10e30",
+    "collector_sha256": "405c6f74e2d6c912fbcff8acc81038f4131aed44b1e04328a8fd704e1d691258",
+    "preflight_sha256": "955684845ebca0f5e8af1b4f029123ef7dce51052bc01c1169df8fae3983f4fb",
+    "seed": 90144,
+    "namespace": "rc20_paired_real_python_v2_20261015",
+    "profile": "thinking-enabled-flash-8192-v1",
+    "canonical_source_sha256": "44786ed4b4b9fbdbc9b45a83384659017c0840621ccdcc87adc3b3560ba36c22",
+    "baseline_revision": "bd4a4d5c1c6fb9fca829e410729879d1b01f05b9"
+  },
+  "roles": {
+    "planned": 24,
+    "returned": 24,
+    "mechanical_strict_pass": 23,
+    "ordinary_failures": 1,
+    "not_invoked": 0,
+    "native_finish_reports": 23
+  },
+  "accounting": {
+    "accounting_dispatched_flag_count": 130,
+    "accounting_flag_is_not_HTTP_delivery_proof": true,
+    "boundary": "Conservative peak/all-input-miss estimates, not invoices. MiMo currencies are alternatives; pending exposure is not zero and can overlap known components.",
+    "known_fee_estimates": {
+      "deepseek": {
+        "USD": "0.2754681"
+      },
+      "mimo": {
+        "CNY": "0.809871",
+        "USD": "0.11338194"
+      }
+    },
+    "known_reported_tokens": 1580447,
+    "original_pending_estimates": {
+      "deepseek": {
+        "USD": "0"
+      },
+      "mimo": {
+        "CNY": "0",
+        "USD": "0"
+      }
+    },
+    "pending": 0,
+    "raw_basic_observed_components": {
+      "all_raw_basic_components_estimate": {
+        "deepseek": {
+          "USD": "0.2754681"
+        },
+        "mimo": {
+          "CNY": "0.809871",
+          "USD": "0.11338194"
+        }
+      },
+      "boundary": "Observed basic counts only; invalid details/telemetry never become normalized usage or a zero invoice.",
+      "raw_basic_reported_token_subtotal": 1580447,
+      "requests_without_valid_basic_usage": 0
+    },
+    "slots": 130
+  },
+  "timing": {
+    "study": {
+      "attributed_seconds": 1452.8047409999963,
+      "launch_seconds": 0.117586600001232,
+      "missing_roles": 0,
+      "publication_tail_seconds": null,
+      "round_seconds": 1452.9815374999998,
+      "shared_seconds": 0.1767965000035474
+    },
+    "external_owner": {
+      "schema_version": 1,
+      "study": "D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution\\eval-workspaces\\rc20-paired-real-python-development-v2",
+      "protocol_sha256": "3004c47e97e3b905e5baf17286aede6c862e4d8e5e239cedc95699d30ea10e30",
+      "driver_sha256": "405c6f74e2d6c912fbcff8acc81038f4131aed44b1e04328a8fd704e1d691258",
+      "preflight_sha256": "955684845ebca0f5e8af1b4f029123ef7dce51052bc01c1169df8fae3983f4fb",
+      "started_at_utc": "2026-10-14T22:29:32.8430773Z",
+      "ended_at_utc": "2026-10-14T22:53:46.3256171Z",
+      "process_wall_seconds": 1453.4764991,
+      "process_exit_code": 0,
+      "launch_error_type": null,
+      "owner_entry": "root PowerShell exec_command",
+      "no_replay": true
+    },
+    "boundary": "Actor attribution includes registered admission cost exactly once; external process timing is separate. Manual/research windows are not added to overlapping study attribution."
+  },
+  "arm_aggregates": {
+    "attention": {
+      "chains": 4,
+      "known_usage": {
+        "cached_tokens": null,
+        "input_tokens": 437720,
+        "output_tokens": 15978,
+        "reasoning_tokens": 6823,
+        "total_tokens": 453698
+      },
+      "roles": 8,
+      "runtime_seconds": 479.0847676999874,
+      "strict_chains": 3,
+      "strict_pass": 7
+    },
+    "full": {
+      "chains": 4,
+      "known_usage": {
+        "cached_tokens": null,
+        "input_tokens": 591098,
+        "output_tokens": 29534,
+        "reasoning_tokens": 16316,
+        "total_tokens": 620632
+      },
+      "roles": 8,
+      "runtime_seconds": 659.5691395000031,
+      "strict_chains": 4,
+      "strict_pass": 8
+    },
+    "rc19": {
+      "chains": 4,
+      "known_usage": {
+        "cached_tokens": 390400,
+        "input_tokens": 484506,
+        "output_tokens": 21611,
+        "reasoning_tokens": 10186,
+        "total_tokens": 506117
+      },
+      "roles": 8,
+      "runtime_seconds": 314.1508338000058,
+      "strict_chains": 4,
+      "strict_pass": 8
+    }
+  },
+  "descriptive_full_total_ratios": {
+    "attention": {
+      "full_to_control_attributed_wall": 1.3767274268946046,
+      "full_to_control_total_tokens": 1.367940788806651
+    },
+    "rc19": {
+      "full_to_control_attributed_wall": 2.0995301254552676,
+      "full_to_control_total_tokens": 1.2262619117713889
+    }
+  },
+  "failure": {
+    "observation": {
+      "arm": "attention",
+      "causal_diagnosis": "UNASSESSED; these are recorded outcomes, not an inferred model or transport cause",
+      "kind": "document",
+      "last_finite_validation_ok": false,
+      "last_public_diagnostic_codes": [
+        "forbidden-symbol-present"
+      ],
+      "native_finish": false,
+      "physical_scope_ok": true,
+      "provider": "mimo",
+      "result_status": "outer-budget-refused",
+      "stage": "receiver"
+    },
+    "clarification": "The failed MiMo attention document receiver returned one HTTP response and read only. A subsequent request was refused locally under the preregistered remaining-window guard, before reservation or dispatch. No native patch, repo_validate, repo_status or finish occurred; the final host VM check did run and failed on the unfinished initial program, with no CPython execution; the initial unfinished program remains. No observed balance/quota error, code-writing mistake or terminal unknown is established."
+  },
+  "manual_factual_review": {
+    "coverage": "All24 invoked roles,23 native reports plus1 missing report, source/final README and HANDOFF; stage-current only-veto. Initial judgments locked before metadata unblinding.",
+    "per_arm_initial_verdicts": {
+      "rc19": {
+        "SUPPORTED_BOUNDED": 3,
+        "UNKNOWN": 3,
+        "VETO": 2
+      },
+      "attention": {
+        "SUPPORTED_BOUNDED": 2,
+        "UNKNOWN": 5,
+        "VETO": 1
+      },
+      "full": {
+        "SUPPORTED_BOUNDED": 3,
+        "UNKNOWN": 3,
+        "VETO": 2
+      }
+    },
+    "mechanical_grades_changed": false,
+    "scope": "VETO items concern unsupported Git-status attribution and one narrow document-relevance finding; code/patch correctness remains a separate surface. UNKNOWN includes omitted projected facts, nonspecific causal errors, prior-state history and inherited protected stale documentation.",
+    "review_disagreement": "The narrow README meta-explanation relevance VETO is retained. A second reviewer considered the cited contract trust sentence a relevance blemish but found no basis for instruction-injection, material safety or factual-fabrication claims. Neither opinion rescues prior judgments. The cited receiver prompt did not contain the document-writer-specific express ban on process/self-explanation, so this is a reviewer relevance judgment, not a breach of a quoted receiver ban.",
+    "manual_review_tokens": null,
+    "active_review_wall_seconds": null,
+    "window_boundary": "Individual reviewers recorded overlapping elapsed windows, not active model/computation cost. Those windows must not be summed as independent cost."
+  },
+  "diagnostic_limits": [
+    "The full arm used22.626191177% more reported total tokens and109.953012546% more attributed wall time than RC19 in this development sample. No causal or general-population estimate follows from these small fixed instances.",
+    "First HANDOFF failures were later corrected, with their costs retained. Stage-schema transitions and preservation of inherited fields require further diagnosis; this audit does not claim that governance invented those fields.",
+    "Protected README in some core receivers retains a generic pending note after registered implementation completion; the actor cannot resolve a forbidden edit. This is a future task-design conflict, not permission to rewrite old tasks/results or blame the actor.",
+    "Parsed/redacted API JSON and hashes are not original retained HTTP wire bytes; configured model IDs do not attest provider-internal routing/retries. Docker receipts establish bounded local observations, not zero risk or general isolation.",
+    "Research, compilation and manual-review token costs remain unknown; known task tokens are not total lifecycle cost.",
+    "Public CONTRACT contains stage handoff target objects, but the actual model-visible prompts do not explicitly declare closed key sets, whole-object exact equality, unchanged array length/order or a ban on adding unknown items. Existing strict JSON failures remain unchanged. Extra inherited keys cannot by themselves establish an Agent/UPG error; future protocols must disclose comparison semantics before generation."
+  ],
+  "evidence": {
+    "preregistration": {
+      "path": "audits/rc20-paired-real-python-development-v2.preflight.json",
+      "sha256": "955684845ebca0f5e8af1b4f029123ef7dce51052bc01c1169df8fae3983f4fb"
+    },
+    "independent_raw_audit": {
+      "path": "eval-workspaces/rc20-paid24-actual-independent-2xzg_rxm/independent.result.v1.json",
+      "sha256": "4612b952569ce5deb7fcfefe37455c00d5d6666569c86c6c5c52dca8145f4e34"
+    },
+    "independent_safe_aggregate": {
+      "path": "eval-workspaces/rc20-paid24-actual-independent-2xzg_rxm/safe.aggregate.v1.json",
+      "sha256": "86b753d40fc2bafe62bdaba078131978a00cb2abc99b726f69e3c19a2a933ded"
+    },
+    "terminal_owner": {
+      "path": "eval-workspaces/rc20-paired-real-python-development-v2.owner-terminal.json",
+      "sha256": "233be50f7f687c2ec0526e989338ab65fe20132d9bbc814d3f32d60c276e600a"
+    },
+    "root_terminal_preservation": {
+      "path": "eval-workspaces/rc20-paired-real-python-development-v2.terminal-preservation/result.json",
+      "sha256": "62aa629824270e7c4ec659954c8f125dfe14620f8393df03ce7e73c4ea420c30"
+    },
+    "prelaunch_preservation": {
+      "path": "eval-workspaces/rc20-paired-real-python-development-v2.prelaunch/result.json",
+      "sha256": "b2037e8b65b8e932b79dab6a6ce6319c93fc889953afe9ddea6add9edd6cc505"
+    },
+    "manual_packets": {
+      "path": "eval-workspaces/rc20-paired-real-python-development-v2-manual-review-20261015/packets.json",
+      "sha256": "3eff7770d2929ed03edb000f40e2afb2e0a41439a41b4376364b5a668249c7b2"
+    },
+    "manual_coverage": {
+      "path": "eval-workspaces/rc20-paired-real-python-development-v2-manual-review-20261015/coverage.json",
+      "sha256": "1297719a5b250c296f6ca58520a6881148dc6f1da7bb428e71aa24222a238e7b"
+    },
+    "manual_first12": {
+      "path": "eval-workspaces/rc20-paid24-manual-first12-independent-2bd936a8897b4c40af8d54f3865c0ca0/manual-review.first12.json",
+      "sha256": "914c77e9893c4f7039d3aad06ed62f92019cbbc98fd6bb80a05c6deadf7e945b"
+    },
+    "manual_last12": {
+      "path": "eval-workspaces/rc20-paired-real-python-development-v2-manual-review-20261015/root-last12.initial-review.json",
+      "sha256": "e6921e6ae4e4e582fc2c53695b6a3077468125c50ee304645fe82ffb85b0d018"
+    },
+    "manual_second_opinion": {
+      "path": "eval-workspaces/rc20-paid24-second-factual-review-f6bpmzlc/verdict.v1.json",
+      "sha256": "9e7f4b77c0492d8a1ff11af34296b2209201c1b14ea98b43fca9799090736f97"
+    },
+    "terminal_descriptive_diagnosis": {
+      "path": "eval-workspaces/rc20-paid24-terminal-safe-diagnosis-0e7b2436b993/diagnosis.json",
+      "sha256": "5f7acdf6a5507302525c9b637a3a0ef316c79a8d51c1fbd557027e794b3d1976"
+    }
+  },
+  "source_and_raw_preservation": {
+    "source_files": 134,
+    "raw_files": 3474,
+    "root_raw_exact_before_after": true,
+    "archived_sources_rebind_old_results": false
+  },
+  "net_benefit": "NOT_ESTABLISHED",
+  "release_gate": "BLOCKED_PENDING_VERIFIED_QUALITY_CONSTRAINED_NET_BENEFIT",
+  "formal_qualification": "UNASSESSED",
+  "locked_holdout": "NOT_RUN",
+  "default_branch_and_installed_skill": "3.0.0-rc.19",
+  "next_action": "Adapt existing canonical rules for current stage schemas and concise relevant delivery, fix future experiment contradictions without loosening correctness, then register fresh paired tasks. Do not merge or deploy on engineering passes alone.",
+  "diagnostic_observations": {
+    "runtime_partition": {
+      "round_seconds": 1452.9815374999998,
+      "bounded_post_elapsed_sum": 1274.547930999921,
+      "http_fraction": 0.8771948563041676,
+      "actor_validation_summary_window_sum": 105.15700000000288,
+      "per_role_planner_sum": 3.727897699984169,
+      "receiver_incoming_sum": 15.53080509999927,
+      "admission_validation_subset_do_not_add_again": 13.125000000010914,
+      "other_runtime_residual_not_attributed_to_governance_alone": 54.017903700092575,
+      "study_launch_seconds_separate": 0.117586600001232,
+      "measurement_metadata_tail_seconds": null
+    },
+    "combined_context_dimensions": {
+      "attention": {
+        "core-receiver": {
+          "skill_bytes": 8303,
+          "plan_bytes": 3311,
+          "system_bytes": 12744
+        },
+        "core-source": {
+          "skill_bytes": 8303,
+          "plan_bytes": 3311,
+          "system_bytes": 12744
+        },
+        "document-receiver": {
+          "skill_bytes": 8303,
+          "plan_bytes": 3451,
+          "system_bytes": 12884
+        },
+        "document-source": {
+          "skill_bytes": 8303,
+          "plan_bytes": 1684,
+          "system_bytes": 11117
+        }
+      },
+      "full": {
+        "core-receiver": {
+          "skill_bytes": 6492,
+          "plan_bytes": 5325,
+          "system_bytes": 12885
+        },
+        "core-source": {
+          "skill_bytes": 6492,
+          "plan_bytes": 5325,
+          "system_bytes": 12885
+        },
+        "document-receiver": {
+          "skill_bytes": 6492,
+          "plan_bytes": 5465,
+          "system_bytes": 13025
+        },
+        "document-source": {
+          "skill_bytes": 6492,
+          "plan_bytes": 3698,
+          "system_bytes": 11258
+        }
+      },
+      "rc19": {
+        "core-receiver": {
+          "skill_bytes": 8303,
+          "plan_bytes": 3311,
+          "system_bytes": 12682
+        },
+        "core-source": {
+          "skill_bytes": 8303,
+          "plan_bytes": 3311,
+          "system_bytes": 12682
+        },
+        "document-receiver": {
+          "skill_bytes": 8303,
+          "plan_bytes": 3451,
+          "system_bytes": 12822
+        },
+        "document-source": {
+          "skill_bytes": 8303,
+          "plan_bytes": 1684,
+          "system_bytes": 11055
+        }
+      }
+    },
+    "observed_rework_totals": {
+      "episodes": 10,
+      "requests": 27,
+      "reported_tokens": 407158,
+      "post_elapsed_seconds": 208.69160729998111
+    },
+    "public_exactness_caveat": "The public handoff_contract/stage1_handoff_contract objects expose target values. Inspected model-visible prompts, common instruction and CONTRACT do not separately declare whole-object exact JSON comparison, forbidden additional keys or exact unknowns-list membership. This is a future specification-clarity issue; old strict grades remain unchanged. All9 extra-key episodes retained keys already present in preceding actual stage disk. Governance causation is plausible but not established.",
+    "root_cause_judgment": {
+      "provider_scaffold": "Dominant observed wall is bounded HTTP wait; first failing response has tiny output/reasoning, so token generation volume alone does not explain it. NoHTTP error/unknown observed.",
+      "task_runtime_contract": "Stage schema transition and closed-object comparison insufficiently explicit; all recovered tool failures wereHANDOFF JSON rather than Python behavior.",
+      "governance": "The existing schema-first/contracts instructions coexist with preserve/carry facts/unknowns. Full compact Skill is offset by larger emitted plan: combined model context is203 UTF8bytes larger thanRC19 for each role. No causal conclusion from this single order-confounded sample.",
+      "input_cost": "Input tokens dominate. Full has moreadditional read bytes and more request/history generation in the largest doc receiver; fixed system size alone is not an adequate explanation."
+    },
+    "window_limit": "Rework windows retain27 requests/407158 tokens/208.6916073seconds; they are observed history, not counterfactual savings. HTTP wait does not distinguish network, prefill, generation, queue or other remote stages."
+  }
+}

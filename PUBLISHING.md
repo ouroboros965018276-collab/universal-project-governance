@@ -1,25 +1,16 @@
-# Publishing and Test-Freeze Gates
+# 发布与测试冻结门禁
 
-Current candidate: **3.0.0-rc.19 — Project Fact Recovery and Measured Execution Cost**
+当前候选：**3.0.0-rc.20 — Task Context and Complete Change Discipline**。
 
-RC19 starts from merged RC18 `29cf112b4629d6b90504b079e95a5370c206a4cb`.
-Its [latency investigation](docs/rc19-latency-diagnosis.md) separates historical
-tail latency from reproducible local preparation overhead. Bounded repository
-tools, exact positive structural contracts and actual CLI usage support a new
-two-model comparison. Independent measurements and this candidate's release
-checks are pending; no real-model speedup, net-benefit or Stable claim is made.
-Installed local RC18 remains the accepted release until integration and a fresh
-deployment acceptance record. The records below retain RC18's original stages.
+RC20 从已合并的 RC19 `bd4a4d5c1c6fb9fca829e410729879d1b01f05b9` 开始。当前发布、验证和安装事实统一见[项目状态](PROJECT_STATE.md)；[RC19 安装验收](audits/rc19-installation.audit.json)是历史基线，不能验证 RC20。候选仍需自身的编译、回归、导航、完整性、打包及安装验收。规则来源比较保留每次注册调用、失败和 unknown 用量围栏；静态检查或更短文档都不证明净收益。Stable 仍须通过原正式资格门禁。
 
-## Historical RC18 record
+## 历史 RC18 证据
 
-RC18 repairs demonstrated task-grader false positives, compacts canonical runtime instructions, accepts UTF-8 BOM JSON in runtime helpers, and binds native development measurements to their exact execution inputs and budgets. Completed paired measurements, the audited nine-arm development round and release work are recorded in [PROJECT_STATE.md](PROJECT_STATE.md); RC17's audit retains its original scope. Final local regression passes 299/299 tests in 98.700 seconds, including post-measurement bounded checkpoint-I/O retry hardening, and all eight local release gates pass. Hosted CI passes 11/11 at measured freeze `8d1cb51945c5d98bf3db7c2e72557d7e50274275`; final PR/main CI is recorded separately. Publish only after this candidate's own compile, regression, integrity, isolated lifecycle, deterministic-package and privacy checks pass. Qualification thresholds and historical outcomes are unchanged. Empirical admission remains BLOCKED and formal qualification is UNASSESSED: locked qualification is NOT RUN; empirical qualification and Stable are NOT ACHIEVED. No learned candidate is promoted. Pre-merge installation snapshot: the user-level Skill is RC17, and RC18 is prepared but not installed at that snapshot; later deployment needs its own observed acceptance record.
+RC18 的产物评分修正、测量范围、失败、费用、模型身份及资格限制保留在[不可变测量审计](audits/rc18-real-evaluation.audit.json)和[项目状态](PROJECT_STATE.md)。原始[配对测量](qualification/pilots/rc18-native/paired.summary.json)、[中止的 v1](qualification/pilots/rc18-native/round-v1.summary.json)及[v2 注册协议](evolution/protocol/rc18-native-development-v2.json)继续保留；发布流程不维护第二份历史结果摘要。产物修复不能证明真实工具执行或跨 Agent 交接，历史结果不替代当前候选验收或正式资格。
 
-The [eight-pair RC17/candidate artifact measurement](qualification/pilots/rc18-native/paired.summary.json) contains 16 fresh calls with all task checks passing: input tokens decrease 3.85175% and total tokens 3.84511%. Full evaluator callback time, including isolated compilation, planning and grading, has a +23.6975% point estimate; the time-ratio 95% interval [0.95923, 1.51345] includes 1, so timing improvement is unestablished. Compiled `SKILL.md` shrinks from 11144 to 7940 UTF-8 bytes (28.75%); this is a separate byte measurement. The [v1 matrix](qualification/pilots/rc18-native/round-v1.summary.json) stopped after a safely rejected invalid learner edit incorrectly aborted the full arm; five arms did not run. Its checkpoints and costs remain intact. The [freshly preregistered v2 nine-arm round](evolution/protocol/rc18-native-development-v2.json) completed 9/9 arms and passed experiment-record audit: 188 actual CLI turns (158 task, 30 learner), 2684192 tokens, 158/158 raw task results passing mechanical regrading and 0 final-task dispatches. Two temporary Windows checkpoint replacement denials were reconciled before same-freeze recovery; additional calls are counted, while the occupying process and specific cause remain unknown. Trials total 227 turns / 3238130 tokens, including paired calls within v1; the separate capability probe brings totals to 228 turns / 3253051 tokens. No final-task feedback is reused and no causal algorithm benefit is established. Requested `gpt-6-luna` identity is not yet provider-confirmed; completed-turn token reports do not establish provider-internal retry coverage. JSON artifact repair does not establish real tool execution or cross-Agent handoff. None of these observations bypasses the independent final-evidence or formal locked gates.
+## 真实 Agent 测试前的工程门禁
 
-## Engineering gate before real-Agent testing
-
-All must pass:
+以下检查均须通过；`python` 代表已验证的 Python 执行入口：
 
 ```bash
 python compiler/compile_governance.py --check
@@ -30,42 +21,37 @@ python tools/validate_repository.py .
 python tools/validate_skill_bundle.py universal-project-governance
 python universal-project-governance/scripts/validate_integrity.py universal-project-governance
 python tools/security_audit.py .
+python tools/validate_navigation.py .
 python -m unittest discover -s tests -v
 ```
 
-CI must also pass Linux Python 3.8/3.11/3.13, offline-evolution Python 3.10/3.13, Windows Python 3.11/3.13, upstream Agent Skills validation, local lifecycle install/remove, clean Codex-target installation, deterministic packaging, and private default-branch installation after promotion.
+CI 还须通过 Linux Python 3.8/3.11/3.13、离线演化 Python 3.10/3.13、Windows Python 3.11/3.13、上游 Agent Skills 校验、本地生命周期安装/卸载、干净 Codex 目标安装、确定性打包，以及晋升后的默认分支安装验收。
 
-## Real-Agent locked gate
+## 正式真实 Agent 锁定门禁
 
-One immutable result round under the current qualification fingerprint must satisfy every non-compensatory gate:
+当前资格指纹下的一轮不可变结果必须满足全部不可补偿门禁。先验收注册轮次、冻结身份、schema 有效的隔离执行、匹配的模型/适配器/宿主条件及保留字节；被拒输入不得进入发布推断。分析器以 1 表示 FAIL、2 表示 MORE_DATA，均不晋升 Stable。
 
-Evidence admission comes first: registered round, current frozen identity, schema-valid isolated executions, matched model/adapter/host conditions and retained artifact bytes. Rejected inputs never reach release inference. Analyzer exits 1 for FAIL and 2 for MORE_DATA; neither exit promotes Stable.
+1. 锁定场景、Agent 和实验条件完整覆盖；
+2. 项目部署完整性与完成报告；
+3. 评分器变异敏感性；
+4. attention-control 有效性；
+5. 类别特定的关键安全；
+6. 越界控制及独立 `local_guard`、`structural_guard` 暴露与置信界限；
+7. 核心任务非劣；
+8. 治理增益；
+9. 交接恢复与退化减少；
+10. 触发精确率与召回率；
+11. token、时间、工具、任务产物和受管文件效率；
+12. 明确置信区间语义下的分组泛化。
 
-1. complete locked scenario/Agent/arm coverage;
-2. project deployment integrity and completion reports;
-3. evaluator mutation sensitivity;
-4. attention-control validity;
-5. class-specific critical safety;
-6. scope-overreach control with independent `local_guard` and `structural_guard` exposure/confidence bounds;
-7. core-task non-inferiority;
-8. governance uplift;
-9. handoff recovery and degradation reduction;
-10. trigger precision/recall;
-11. token/time/tool/task-artifact/managed-file efficiency;
-12. subgroup generalization under explicit CI semantics.
+## 正式推断
 
-## Formal inference
+主要置信区间使用预注册的 Agent family → scenario → pair/repetition 分层 bootstrap。直接报告分组证据；泛化 PASS 表示已建立预注册的严重反转判据，不默认为每组收益显著。
 
-Primary CIs use preregistered hierarchical bootstrap over Agent family → scenario → pair/repetition.
+## 灰测证据
 
-Subgroup CI evidence is reported directly. Generalization PASS means the preregistered severe-reversal criterion is established; it does not silently imply significant benefit in every subgroup.
+个人和朋友灰测可导出 `upg-field-test-reports.json`，它是诊断证据，不能替代锁定资格。Stable 前须明确决定保留或移除报告能力。关闭路径已可执行：新绑定不创建 ledger，report/export 不可用。退出前须先导出并清理已有非空 ledger；`remove` 在历史仍存在时拒绝继续，不静默丢弃记录。
 
-## Field-test evidence
+## 冻结规则
 
-Personal and friend gray testing may export `upg-field-test-reports.json`. These reports are diagnostic field evidence, not substitutes for locked qualification.
-
-Before Stable, the report capability receives an explicit retain/remove decision. The disabled path is already executable: fresh binding creates no ledger and report/export operations are unavailable. Existing non-empty ledgers must be exported and purged before retirement; `remove` refuses to proceed while history remains and never silently discards it.
-
-## Freeze rule
-
-After `qualification/FREEZE.json` is regenerated for the current candidate, no frozen surface changes during a result round. Any such change invalidates the round and requires a new fingerprint.
+当前候选统一生成 `qualification/FREEZE.json` 后，结果轮中不得修改冻结面；变化需要新指纹。新 Skill+plan 投影的编译契约与旧专用收集器分开验证，不放宽旧冻结实验的 validator，也不修改其历史审计。

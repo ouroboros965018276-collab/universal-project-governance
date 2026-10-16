@@ -1,0 +1,77 @@
+{
+  "schema_version": "rc20-native-cli-public-calibration-v6-audit-v1",
+  "recorded_at": "2026-10-15T19:19:16.090640+00:00",
+  "status": "PUBLIC_CALIBRATION_FAILED_NOT_QUALIFIED",
+  "protocol_sha256": "68ce308eb3fdbb6e65896efdedf6fd001e64b6e739190676af4c8305dd20ed44",
+  "sole_owner": {
+    "session_id": 53549,
+    "closed": true,
+    "last_chunk": "2bfdb8",
+    "tool_wrapper_exit": 1,
+    "calibration_supervisor_exit": 3,
+    "terminal_status": "UNKNOWN_NO_REPLAY",
+    "completed_cases_preliminary_only": [
+      "positive"
+    ],
+    "round_seconds": 89.17109840000921
+  },
+  "first_audit": {
+    "status": "RAW_INTEGRITY_FAIL",
+    "failure": "terminal-does-not-observe-both-registered-patterns",
+    "cases": {},
+    "raw_files": 144,
+    "source_files": 88,
+    "before_after_exact": true,
+    "external_boundary_calls": 0,
+    "completed_turn_usage_qualified": null,
+    "cleanup_qualified": "NOT_ESTABLISHED"
+  },
+  "separate_bounded_diagnosis": {
+    "scope": "Read-only prefix/source diagnosis after the failed first audit; no reader/quality/validation execution or regrade.",
+    "negative_original_report": "ACTOR_RETURNED/completed, CLI exit0, four broker journal entries; this is not independent task qualification.",
+    "native_difference": "repo_validate item.completed has status failed, error null and one JSON content result; remaining tools have status completed.",
+    "source_boundary": "tool_codex._project_cli_trace_failures only accepts completed, producing result-unconfirmed/ordered-journal-mismatch and scope_ok false; supervisor scope assertion then stops.",
+    "old_verdict_changed": false,
+    "reported_usage_not_independently_qualified": {
+      "positive": {
+        "input_tokens": 65014,
+        "output_tokens": 331,
+        "total_tokens": 65345,
+        "cost_usd": null
+      },
+      "negative": {
+        "input_tokens": 65780,
+        "output_tokens": 349,
+        "total_tokens": 66129,
+        "cost_usd": null
+      }
+    },
+    "provider_internal_requests_and_cost": "UNKNOWN_UNATTESTED; no currency estimate or efficacy comparison"
+  },
+  "evidence": {
+    "preregistration": {
+      "ref": "audits/rc20-native-cli-public-calibration-v6.preregistration.json",
+      "sha256": "da3baa8052bedcf31330fd77442d7d153394e7fcf7cb62daa0d4bdb586bef50b"
+    },
+    "first_audit": {
+      "ref": "eval-workspaces/rc20-cli-v6-first-audit-prepared-20261015T184740Z-e8fa1103319f4f24b22abdfa4b408071/first-audit.json",
+      "sha256": "984514b90d308e0905f919ec48a93c98204c4bde1d6fa86854e03dd5e4826d1d"
+    },
+    "bounded_diagnosis": {
+      "ref": "eval-workspaces/rc20-cli-v6-negative-boundary-diagnosis-20261015T191303Z-761b2689f1094f5eae81eabc8deeddef/first-diagnosis.receipt.json",
+      "sha256": "c34714b423458d53c8dbdf445c93f29c64d81bf86b04fcd1a29ae0dea34fb2c0"
+    },
+    "closed_byte_preservation": {
+      "ref": "eval-workspaces/rc20-cli-v6-closed-preservation-v1/result.json",
+      "sha256": "3f961a151b6d8754e6a61b4d7a0a1a688da17e1eded0192d6c6a3dc9d0cfa3d8"
+    },
+    "independent_byte_check": {
+      "ref": "eval-workspaces/rc20-cli-v6-zip-byte-check-20261015T191553Z-f18cac8b13ba421798d81b8b61a19505/first-byte-check.receipt.json",
+      "sha256": "d86d0b6cab6fa237f7928fab53335d43979670760406c63f81089d333169283c"
+    }
+  },
+  "next_scope": "New private candidate for narrowly source-confirmed known failed validation native status, full pure producer/consumer integration, independent review and new protocol only; no old replay.",
+  "net_benefit": "NOT_ESTABLISHED",
+  "promotion_allowed": false,
+  "default_branch_and_local_install": "RC19"
+}

@@ -1,7 +1,8 @@
 """Frozen matched real-tool collection with honest cost and coverage limits.
 
-The bounded broker inspects and edits artifacts; it never executes application
-code. Multiple requested OpenAI models are not multiple provider families.
+The default broker inspects and edits artifacts without application execution.
+Finite CPython execution requires explicit selection. Multiple requested OpenAI
+models are not multiple provider families.
 Collection can establish scoped paired benefit, never formal qualification.
 """
 from __future__ import annotations
@@ -23,10 +24,16 @@ BOOTSTRAP_SEED = 19012
 BOOTSTRAP_REPETITIONS = 4000
 
 
-def build_prompt(skill, plan, task_prompt):
-    """Preserve exact Skill/planner strings; hidden grader checks stay private."""
+def build_prompt(skill, plan, task_prompt, *, terminal_report="json", execution_backend=None):
+    """Preserve exact context; explicitly select the terminal transport.
+
+    The default retains the legacy CLI prompt bytes. Native API callers must
+    select their tool terminal explicitly; this does not choose a transport.
+    """
     if not isinstance(skill, str) or not isinstance(task_prompt, str):
         raise ValueError("skill and task prompt must be exact strings")
+    if not isinstance(terminal_report, str) or terminal_report not in ("json", "native-tool"):
+        raise ValueError("terminal_report must be json or native-tool")
     if isinstance(plan, str):
         if not isinstance(json.loads(plan), dict):
             raise ValueError("planner text must encode an object")
@@ -40,8 +47,31 @@ def build_prompt(skill, plan, task_prompt):
               "validate the result and inspect repository status using repo_read, repo_patch, repo_validate and repo_status. "
               "project_tool and persistent governance state are unavailable in this broker; follow the supplied governance plan and disclose the helper gap. "
               "Do not probe unregistered/hidden paths. "
-              "The broker cannot execute application code. Finish with only JSON containing summary (string), "
-              "validation ('passed' or 'failed'), and helper_gap ('project_tool unavailable in bounded broker').")
+              "The broker cannot execute application code. ")
+    if execution_backend is not None:
+        from .isolated_python import EXECUTION_BACKEND
+        from .engineering_broker import BACKEND_ID
+        if not isinstance(execution_backend, str) or execution_backend not in (EXECUTION_BACKEND, BACKEND_ID):
+            raise ValueError("unknown execution backend")
+        if execution_backend == EXECUTION_BACKEND:
+            common = common.replace("The broker cannot execute application code. ",
+                                "repo_validate retains the complete finite VM structural/dependency contract and "
+                                "executes only its admitted registered Python calls in isolated CPython, with "
+                                "host exact-type expected-value checks. It cannot run arbitrary commands or "
+                                "validate a complete application. ")
+        else:
+            common = common.replace("The broker cannot execute application code. ",
+                "repo_validate executes only the registered stdlib Python project suite in isolated CPython, "
+                "including package imports, unittest, CLI and registered file processing. "
+                "Current snapshot-bound receipts compare registered exit codes, stdout/stderr and output files. "
+                "It cannot run arbitrary commands or establish correctness outside that suite. ")
+    if terminal_report == "native-tool":
+        common += ("Finish by calling repo_finish alone as the sole tool call in that response, with summary (string), "
+                   "validation ('passed' or 'failed'), and helper_gap ('project_tool unavailable in bounded broker'). "
+                   "Do not submit a free-text terminal report.")
+    else:
+        common += ("Finish with only JSON containing summary (string), "
+                   "validation ('passed' or 'failed'), and helper_gap ('project_tool unavailable in bounded broker').")
     # Delimiters leave plan_text byte-for-byte unchanged inside the prompt.
     return common + "\n\n<governance_skill>\n" + skill + "\n</governance_skill>\n\n<governance_plan>\n" + plan_text + "\n</governance_plan>\n\n<task>\n" + task_prompt + "\n</task>"
 

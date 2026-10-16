@@ -1,0 +1,183 @@
+{
+  "study_id": "upg-rc20-stdlib-project-development-v7",
+  "registered_at": "2026-10-15T12:17:31.185075+00:00",
+  "status": "PREPARED_BEFORE_MODEL_CALLS_INDEPENDENT_PRECALL_REVIEW_PENDING",
+  "study_class": "DEVELOPMENT",
+  "scope": "Nine newly registered stdlib Python project cases, real registered unit/import/CLI/file processing, controlled file removal, planned handoff and known first-patch-tail interruption, DeepSeek/MiMo in both directions. No arbitrary-project malicious-code safety, quota/forced-kill recovery, postselection efficacy, seven-Agent-class, Stable or universal benefit claim.",
+  "accepted_baseline": {
+    "version": "3.0.0-rc.19",
+    "default_commit": "bd4a4d5c1c6fb9fca829e410729879d1b01f05b9",
+    "runtime_map_sha256": "2c173faf9c86237f24245adc28f05150b9998aabde3bdc0686653ed672c43db6"
+  },
+  "candidate_source_commit": "98aebdacf249b60a02e39b6a5c9da7645c64b933",
+  "bindings": {
+    "adapter_source_sha256": "de7f75d851b61642c6926434d167b23cefec986cf71ce0a811e6ffbd9ebffb6b",
+    "aggregate_sha256": "0049006fc61f4cbc4c028a63e1667044a2856339916fc1c623b5bfd4a7915561",
+    "auditor_source_sha256": "d32af857941af0cb95a454072728f06b75751d954bfaf3dd138d20ce757bfe59",
+    "base_broker_source_sha256": "217015a2943fba2647232cb487708bcd386fe847e0d01c96a6eceb57fdeec508",
+    "broker_source_sha256": "ab2a4607de42636e61c76ea82263e58692e44a49d251c9e81c677c732919bbf5",
+    "collector_source_sha256": "9c9c7e28040d25618ab64eac2ed5da56de5810dd5601ec110bd8a814342ad23c",
+    "controlled_stop_policy": "confirmed-first-patch-tail-local-stop-v1",
+    "executor_source_sha256": "fe1934c2f241cbd535f72d78168046165871ca7be63fbc5e6851243011b6998b",
+    "factory_artifact_sha256": "94fddb06bf6a15f2b66fa7c6a9f81518b9802296317bca416531ecd130d0030f",
+    "factory_source_sha256": "1de9aae09dc75a2183f6180e74292b6ffac19b6b54e159cd324ceab1c6f04ebc",
+    "git_commit": "98aebdacf249b60a02e39b6a5c9da7645c64b933",
+    "host_identity_sha256": "e3a2fa7162ed1054180179f0d00f2e7f4e251f44c990064d6311b366b7c69357",
+    "ledger_source_sha256": "15dab230103c14cc884cc75816359a76dc866f9e5cb43ca38b2b2b45f4eab1f2",
+    "manual_helper_sha256": "90f8e8e1a02d0a467fb42510688bbb44303e96f98e1b61ee4a81684f5852db8c",
+    "manual_rubric_sha256": "916a64dbb7107831009639cf1a6146e8a52a44e18664e819531b4bb1aa4d1b85",
+    "model_sha256": "d2d1d071fec2e0130811c64e5179de314c2a92c87c196d2a51ff433ebebb3bd0",
+    "qualification_id": "sha256:f78112d7a757424c557731c36ea4249844a1ef03a8c458ff940e234c307e5664",
+    "runtime_map_sha256": "8965a883554321ec1883e625f0636e63b9f537f1779e61ede14ec8c2be2c7fcc",
+    "skill_sha256": "b97a3b100d407a78f372f0c9f01b3fea8afc4d2f5901f47624e4aac3ec5a2f74",
+    "source_closure_sha256": "cd833521ff2f20336fb8a1159c568038f55c0274b76d63cb14cf516aa86dd0ea"
+  },
+  "protocol_sha256": "1bc92c15e521ae815f7f6c933aa1e40280b4889a5a9b372a9fb730fd99f064f4",
+  "prepared_receipt_sha256": "75c088506686f032c302580520c0e97619c00662d72b486f4fe40e1a4f8b364d",
+  "source_closure_inputs": 126,
+  "factory_registration": {
+    "case_ids": [
+      "gate-operations-cabef53968",
+      "cold-chain-cabef53968",
+      "harbor-consumers-cabef53968",
+      "grant-reconstruct-cabef53968",
+      "manifest-safety-cabef53968",
+      "stream-cleanup-cabef53968",
+      "queue-interrupted-cabef53968",
+      "roster-planned-cabef53968",
+      "meter-cutpoint-cabef53968"
+    ],
+    "namespace": "upg_r20_project_d7",
+    "seed": 90271
+  },
+  "schedule_seed": 20261027,
+  "counts": {
+    "actor_roles": 66,
+    "cases": 9,
+    "known_tool_cutpoint_cases": 1,
+    "planned_handoff_cases": 1,
+    "single_cases": 7,
+    "theoretical_request_slots": 792,
+    "workflows": 54
+  },
+  "arms": [
+    "rc19",
+    "attention",
+    "full"
+  ],
+  "models": {
+    "deepseek": "deepseek-v4-pro",
+    "mimo": "mimo-v2.6-flash"
+  },
+  "actor_caps": {
+    "output_tokens": 8192,
+    "requests": 12,
+    "seconds": 180,
+    "tools": 32
+  },
+  "chain_caps": {
+    "dual": {
+      "requests": 24,
+      "seconds": 480,
+      "tools": 64
+    },
+    "single": {
+      "requests": 12,
+      "seconds": 240,
+      "tools": 32
+    }
+  },
+  "round_caps": {
+    "actors": 66,
+    "deepseek_USD": "20",
+    "known_reported_tokens_soft": 8000000,
+    "mimo_CNY": "20",
+    "mimo_USD": "3",
+    "ordinary_failure_stop_limit": null,
+    "request_slots": 1000,
+    "round_seconds_soft": 14400
+  },
+  "dispatch_guard": {
+    "clock_scope": "Conservative outer actor-call monotonic clock sampled just before run_actor; not its internal clock or the exact bounded POST timeout. Same15s minimum across all arms/providers/stages. A permitted dispatch does not guarantee completion or remove unknown risk.",
+    "minimum_dispatch_window_seconds": 15
+  },
+  "connect_retry_policy": null,
+  "tool_feedback_policy": null,
+  "project_tool_available": false,
+  "analysis": {
+    "schema_version": "stdlib-project-development-analysis-v7",
+    "study_class": "DEVELOPMENT",
+    "selection_claim": "preregistered-development-not-independent-efficacy",
+    "primary_unit": "A complete workflow within case and provider/direction, paired across rc19, attention and full. A dual source and receiver share one disk without source conversation or intended patches entering the receiver prompt.",
+    "planned_blocks": 18,
+    "planned_workflows": 54,
+    "planned_actor_roles": 66,
+    "quality": {
+      "workflow_pass": "Every completion-required stage passes current registered execution and all applicable frozen manual semantic requirements. Controlled-cut source is unfinished and ungraded; its receiver must independently complete. UNKNOWN, missing evidence, ordinary FAIL and VETO are never PASS.",
+      "manual_blinding": "Freeze helper and r4 rubric before calls; first independent raw audit once after terminal, then extract once; lock all graded initial decisions before cost/condition unblinding. Reviewer observes authored content and public contracts, not arm/provider/accounting metadata. Content can reveal clues, so this is metadata blinding.",
+      "serious_veto": "Any definite serious safety, scope, contract or factual VETO in full rejects a favorable full quality/cost decision; other high scores cannot compensate.",
+      "development_quality_condition": "Full workflow pass count must be at least each control's pass count, with no serious full VETO. This is a descriptive development criterion, not a noninferiority confidence bound or formal qualification. In addition, no paired block where a control passes may regress to full FAIL/UNKNOWN/VETO; gains on another block cannot compensate a per-block regression."
+    },
+    "cost": {
+      "primary": [
+        "Sum of provider-reported total tokens across all invoked prefixes, including failed attempts",
+        "Sum of inclusive workflow wall seconds, including preparation, runtime planner, Git, API, raw verification and operational persistence"
+      ],
+      "controls": [
+        "rc19",
+        "attention"
+      ],
+      "development_cost_condition": "Both primary totals for full must be strictly lower than each control on the complete same 18 paired blocks, in addition to the quality condition. Any incomplete block, unknown usage/execution, overrun or missing time prevents a favorable net decision. Fewer completed tasks or early failures never establish equal-quality savings.",
+      "secondary_descriptive": [
+        "Per-block paired token and inclusive wall deltas",
+        "Requests, tool calls, retries/rejections, planner and API phase brackets",
+        "Known fees by provider with MiMo CNY/USD alternatives separate",
+        "Mechanical and semantic outcomes separately"
+      ],
+      "research_cost": "Record observed preparation receipts separately from model execution. Other research, manual review and final publication instrumentation costs remain unknown where unobserved; never fill with zero. Do not claim all-in break-even without them.",
+      "timing_limits": "Chain finalization tail samples are retained separately. Final measurement-metadata publication is outside its own last operational sample and remains unmeasured. Provider waiting and cache/rate exposure follow observed request receipts; requested model identifiers do not prove hidden provider internals."
+    },
+    "failure_policy": "No closed study resume, replay, reprepare, regrade or live provider failover. Known task failures are retained; unknown API/execution, infrastructure failure, source drift or inclusive cap overrun stops globally. No connection/HTTP503 retry. Any later fix requires a fresh registered identity and task exposure disclosure.",
+    "promotion": "A favorable DEVELOPMENT result alone cannot authorize default merge, RC20 installation, Stable or universal efficacy. Fresh postselection independent engineering tasks, cross-Agent evidence and source ablations remain required. Formal qualification retains its existing noncompensable gates and frozen identity."
+  },
+  "analysis_sha256": "0594777378c78c7b46e52b38a5ae692421cf1763aad2f77089420505eec1fc5b",
+  "preparation_cost": {
+    "observed_wall_seconds": 6.866845999989891,
+    "scope": "research-preparation-before-actual",
+    "source_refs": [
+      {
+        "ref": "eval-workspaces/rc20-v7-runtime-preparation-v2/result.json",
+        "sha256": "dbe65f8dd4bebe5ee08e25309e785097da5a2c847973320cd7cefe258087dc7f"
+      },
+      {
+        "ref": "eval-workspaces/rc20-v7-host-binding/result.json",
+        "sha256": "e053367b642eab67fac3701433050a5ce5104c53f0e1effa1a757767e86aac8e"
+      }
+    ]
+  },
+  "preparation_cost_limitations": "Only declared runtime/context and host-binding components are summed. Other preparation, human calibrations, manual/research effort and final measurement publication are not zero; all-in cost/break-even remains unknown. First v1 list-wrapper preparation failure occurred before packages/planner/provider execution and is retained.",
+  "original_public_specs_sha256": "06e1766a3b0a2edecf6aff062a9ca81870cb122a5d4452aa832f4ea29e0f2a79",
+  "public_factory_source_sha256": "1de9aae09dc75a2183f6180e74292b6ffac19b6b54e159cd324ceab1c6f04ebc",
+  "factory_reference_inputs_sent": false,
+  "preparation_serialization": "All eight prepared inputs are canonical JSON+LF; public list is wrapped without changing values. Protocol hashes bind bundle bytes, source closure also binds original raw files. Collector copies prepared bytes exactly; strict d32 auditor canonical checks retained.",
+  "engineering": {
+    "source_commit": "98aebdacf249b60a02e39b6a5c9da7645c64b933",
+    "ci_run": 38727728461,
+    "ci_jobs_success": 11,
+    "gates_passed": 9,
+    "unit_passed": 922,
+    "unit_skipped": 2,
+    "source_before_after": 202,
+    "collector_synthetic_pass": 25,
+    "auditor_synthetic_pass": 29,
+    "manual_helper_synthetic_pass": 18,
+    "manual_helper_independent_closure_sha256": "f8447816b7fa9aa697defc96015dfe022e8ef02e1292dc162b250e6b21405815"
+  },
+  "actual_model_calls_at_registration": 0,
+  "promotion_allowed": false,
+  "formal_qualification": "UNASSESSED",
+  "locked_trial": "NOT_RUN",
+  "default_and_local": "RC19; no RC20 installation or main merge",
+  "prior_closed_trials": "Immutable negative/incomplete trials retain original identity and unknown fences. v6 used old 51bdd1a9 finite profile and failed quality/net benefit; v5 unknown request is not cleared by later rounds.",
+  "next": "Separate independent static pre-call receipt before sole authorized launch; after terminal sole first raw audit, one extraction, all blind initial locks before cost joining. Fresh postselection validation and guidance ablations remain required."
+}

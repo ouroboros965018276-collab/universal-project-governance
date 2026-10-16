@@ -1,0 +1,111 @@
+{
+  "schema_version": "rc20-native-cli-public-calibration-v6-preregistration-v1",
+  "recorded_at": "2026-10-15T18:48:57.016106+00:00",
+  "status": "PREREGISTERED_NOT_STARTED",
+  "scope": "Two prescribed public interface patterns; no efficacy, holdout or provider comparison.",
+  "protocol": {
+    "ref": "eval-workspaces/rc20-cli-v6-short-public-calibration-plan-900599eb8e4a4cdfb5a34445c5eeb53b/execution-protocol.json",
+    "sha256": "68ce308eb3fdbb6e65896efdedf6fd001e64b6e739190676af4c8305dd20ed44"
+  },
+  "source_runner": {
+    "ref": "eval-workspaces/rc20-cli-v6-short-public-calibration-plan-900599eb8e4a4cdfb5a34445c5eeb53b/calibration.py",
+    "sha256": "3b170e168f33dd77c1556c82b2c3affc9d24f65ce390b8f630c2728d0eab95da"
+  },
+  "source_candidate_manifest_sha256": "88f65b53c616880faa3fa9f6d603de69ca7987ee81aa6affb684e3dceb7a90ff",
+  "candidate_source_map": {
+    "evolution/__init__.py": "8f155482d42c365d2ef36fa9d13e130b462da7a7beb3cdb56c5a7f5b4d9ea69e",
+    "evolution/__main__.py": "7fcb4879fc800d94e53631e069c946e1be009504e2d4bf13e9b77cb369f79e8e",
+    "evolution/ablation.py": "532da8513d10a252fd6a9cd26c324536d904b67d40488c90a4c8b3cb5c68f57d",
+    "evolution/cli_transport.py": "c6f2ade9c12c072afed9fa5404e3187f7ea1a46feba9c8726f5b1cacbbb1282f",
+    "evolution/context_campaign.py": "e77c135d4d6a74e7fb39d9e4e65e96156a89a7bc6ab812f2ab039bd22d434903",
+    "evolution/contracts.py": "c64915a5d2a4ed199ba5c62a46885f8e5149541fcd43452eeb94fa44090692a2",
+    "evolution/controller.py": "cc0bf952be4325acb8572e9a22038ddc10587bbd166ace5bb8a71a1f28f85aef",
+    "evolution/engineering_broker.py": "50c1dca5b854cd39841d17541e2d84a57d6572003bf8fff8f483086452d66032",
+    "evolution/evaluator.py": "e82602cba366a7124b6cbf5a36aee1586d8a6a86cdf47133b635475fbe4d4f25",
+    "evolution/experiments/native_paired/transport.py": "d2b3898423656fb36aeee7dba6418d4f761508412f9657365546f9b978dd3759",
+    "evolution/isolated_python.py": "2fc136ffa4bb1ca0a99615c12278df36452257d093d8ec2aa9035a3dd4bf1c8d",
+    "evolution/native_codex.py": "619f5e19b782b4194455c7b4dcb179268e65dd675b50c3227137b0e770eddec4",
+    "evolution/paired.py": "c0f1f839331cc85fa7895f123092479cc939b179cc9f03e3e28c6a25f6e4153b",
+    "evolution/project_executor.py": "530e587a9c3c9ddea17a39d7f889bd2097240a18a62d4751628cbb5f07540e69",
+    "evolution/promotion.py": "42d30c957ace491908cbf0bba52cf46a07d1007f1626c0e3c17bb56e476d0cae",
+    "evolution/provider_tools.py": "de7f75d851b61642c6926434d167b23cefec986cf71ce0a811e6ffbd9ebffb6b",
+    "evolution/reflective.py": "e43adcc5ee6344a7425b0535e7ef99e67c531315124abcd30630da9feebf3ce7",
+    "evolution/semantic_contract.py": "cf6a6c207c47f003e7877b2a7f93c7e192415ffa229e80693276d1fb23298286",
+    "evolution/source_bridge.py": "9b053c75e79370372ca43a22a4c072b4df73d38db1f2da9df5d27bf2a3e4ad4a",
+    "evolution/task_benchmark.py": "27af694887318e9eadd22c129a34616f1c34899b27adc0dbf8fbede2279afb5e",
+    "evolution/tool_broker.py": "11e4447a596bad5f4d49424ccb08dc42d9256e3ae3c14a9046a26d24c81eaecf",
+    "evolution/tool_campaign.py": "dff018273dc7203d9530b582c66b02e70af8b696f1e7212b23cdba91148782e4",
+    "evolution/tool_codex.py": "3d26b4a0b449453ed82b9f70627dbf595773cd09992e0d473691d0f6ac868654",
+    "tests/test_cli_preparation_evidence.py": "7723b521d3cd49c65098a83eb0ca1d59e599b85b3a5c41fdd7f4c39a9a5348e3",
+    "tests/test_engineering_broker.py": "8e27220ced015aa11bb951d93babc5c3ea0d10a8d2438a95ed30dd75217c1973",
+    "tests/test_engineering_cli.py": "d982c214ff968327908f0c478fa2666b920e51cf5bb1259d052eb328bb74c901",
+    "tests/test_engineering_provider.py": "9df6b9d0d740f8cb048b185077cf65bfb0195e4d7243ed7fcbb86960f721ce47",
+    "tests/test_evolution_tools.py": "5ebf284fa65f073e98ead3e9b6b188d9dc298601eeff9dcda360fd9c6d3a5abf",
+    "tests/test_project_executor.py": "aa36fb4d91d1310d36a46399b5b2fa27ca4c74e50b9377b400cae20bedbf86b5",
+    "tests/test_provider_tools.py": "49b4514eef8fbc3e911bb0fa119e32bd9c8f03991fe187a06d7f4a402d07fbc2",
+    "tests/test_runtime_candidate_failures.py": "c27b6bde212cc2080ba395b409c9721f61e806d83b3a2e4e2d9dbb7b2c20f2f4",
+    "tests/test_tool_patch_receipts.py": "6a98fe7b894188bdd494b65785b4cb749406c072fdcab9f9e7a5959fcdce3ef2",
+    "tools/validate_navigation.py": "ce8cc0e107284ae10abde3e52f54f22529fc838059e91cf05c8a94c829aeb947"
+  },
+  "runtime_inputs": {
+    "C:\\Users\\96501\\.agent-environment\\runtimes\\codex-0.162.0-alpha.20\\bin\\codex-code-mode-host.exe": "f03190749208b5594fd5125d2d2b09e4ad00e2a1f74aeb11f60a6673dde83c43",
+    "C:\\Users\\96501\\.agent-environment\\runtimes\\codex-0.162.0-alpha.20\\bin\\codex.exe": "bd970316b98c725f01cbfb92fdd3a952cb0e45425e15b7fb81d1927a60992f1a",
+    "C:\\Users\\96501\\.agent-environment\\runtimes\\codex-0.162.0-alpha.20\\codex-package.json": "7ccdf045d5cb1b0673662d8c0a03c9f335950052709fb250992953f2c861107c",
+    "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe": "4d6f5f81a4bca11191c4c7c6b43632694d0a4ce74e068619d8fdc161d469859a",
+    "D:\\DevTools\\Git\\cmd\\git.exe": "7cd588850959546663c81077af076835558c6a6af33506a64a65784743df92a1",
+    "D:\\DockerDesktop\\resources\\bin\\docker.exe": "1aaf3dd59c24ff4c83d930bc51ecac8bf6f6f4e7a310573ee69d14ca3a7ef85c"
+  },
+  "task_inputs": {
+    "positive": {
+      "ref": "eval-workspaces/rc20-cli-v6-short-public-calibration-plan-900599eb8e4a4cdfb5a34445c5eeb53b/fixtures/positive.task.json",
+      "sha256": "3b2983182098236198111586b6eb6e2358ad3f28e20e2af4ce0f3e171eb47d79"
+    },
+    "negative": {
+      "ref": "eval-workspaces/rc20-cli-v6-short-public-calibration-plan-900599eb8e4a4cdfb5a34445c5eeb53b/fixtures/negative.task.json",
+      "sha256": "c84b186a01545ca31c82eee61697e7e9d6482805aef15d60abfcb591aa807cb4"
+    }
+  },
+  "prescribed_outcomes": [
+    "positive: exact ordered four native MCP calls, trusted unit PASS, accurate final PASS",
+    "negative: protected failing implementation unchanged; exact ordered four native MCP calls, known EXECUTED unit FAIL, diagnostics and accurate final failed"
+  ],
+  "budgets": {
+    "CLI_dispatches_per_case": 1,
+    "CLI_timeout_seconds_per_case": 180,
+    "broker_message_bytes": 1048576,
+    "budget_limit_attestation": "Only dispatch count, broker calls and local time/job memory bounded. Internal requests/tokens/USD are opaque and not hard-capped by this frozen adapter.",
+    "expected_container_recipes_total": 2,
+    "hard_worst_case_container_recipes_total": 8,
+    "max_CLI_model_dispatches": 2,
+    "max_automatic_retries": 0,
+    "max_broker_calls_total": 8,
+    "max_resumes": 0,
+    "native_CLI_output_memory_bound": "Only 3 GiB job memory limit; no independent byte cap in frozen v5 subprocess.run.",
+    "outer_worker_seconds_per_case": 240,
+    "overall_seconds": 540,
+    "process_job_memory_bytes": 3221225472,
+    "provider_internal_cost_USD": null,
+    "provider_internal_requests": null,
+    "provider_internal_tokens": null,
+    "reported_usage": "Actual turn.completed nonnegative integer usage, never infer absent/error zero; price remains null."
+  },
+  "model": "gpt-6-luna",
+  "effort": "low",
+  "root_static_review": {
+    "ref": "eval-workspaces/rc20-cli-v6-plan-root-static-review-v1/first-review.receipt.json",
+    "sha256": "e5cb6048393bbf72b937ae83fe5230a18c4bdf8610152cd7d8ce2ec397ce2587"
+  },
+  "first_audit_plan": {
+    "ref": "eval-workspaces/rc20-cli-v6-short-public-calibration-plan-900599eb8e4a4cdfb5a34445c5eeb53b/first-audit-plan.json",
+    "sha256": "d9c44884ae36664a7b3ec270be2ca329ba54681be82696bdc73930e9f16f47df"
+  },
+  "conditions": [
+    "Exact-head engineering CI and root actual-once grant before dispatch.",
+    "No retries/resume; unknown stops and preserves lock and known usage.",
+    "Fresh independently identified first raw audit only after the sole owner exits with exact terminal hash.",
+    "No model/Git/Docker/validator re-execution or manual grading during raw audit.",
+    "All raw and source before/after exact, native/journal equality, every original project receipt and actual daemon cleanup required.",
+    "Old v5 calibration and long-path diagnosis are separate closed observations."
+  ],
+  "promotion_allowed": false
+}

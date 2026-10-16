@@ -1,0 +1,469 @@
+{
+  "schema_version": 1,
+  "study_id": "upg-rc20-handoff-tools-development-v4",
+  "observed_at_utc": "2026-10-14T20:48:37.261720+00:00",
+  "scope": "Full-only exposed DEVELOPMENT planned-stage handoff interoperability. Source finishes a registered partial stage; this does not test sudden interruption, quota exhaustion or forced-kill recovery. No seven-direct-family coverage, independent efficacy, Stable, bootstrap or universal net-benefit claim. Prior intent beyond disk remains unknown.",
+  "terminal_status": "unknown-call-global-stop",
+  "replay_or_append_allowed": false,
+  "registration": {
+    "preflight": "audits/rc20-handoff-tools-development-v4.preflight.json",
+    "preflight_sha256": "97966e07543609ed31831278f767396d01a68b2c618115a6551be1438957ef63",
+    "publication_commit": "01d98bc5d3addf9d8bf7905b3ff217af24784e4e",
+    "candidate_source_commit": "a0b33f86589884c11138f17ad29969b05b630e87",
+    "protocol_sha256": "237385f7a4f1483bf876a4e584bf6441e0c36e4c759e328738510d53498e7ba3",
+    "current_qualification_fingerprint_at_registration": "sha256:ef3bbf0cbfb5840d4621992fafde024b9316a1cdd3e5972514a54c31daa313c4",
+    "precall_independent_metadata_review_sha256": "6f90f0d203bdbcc733989c438f4f15d1a6c7d9805d8be167ced03189344b292d"
+  },
+  "completion": {
+    "planned_roles": 8,
+    "returned_roles": 3,
+    "mechanical_strict_passes": 2,
+    "unknown_incomplete_roles": 1,
+    "not_invoked_roles": 5,
+    "native_report_attempts": 2,
+    "native_report_absences": 1,
+    "planned_chains": 4,
+    "complete_observed_cost_chains": 1,
+    "document_roles_invoked": 0,
+    "document_roles_not_run": 4,
+    "comparison_arms_present": false
+  },
+  "roles": [
+    {
+      "actor_id": "chain-1-source",
+      "provider": "deepseek",
+      "model_requested": "deepseek-flash",
+      "kind": "core",
+      "stage": "source",
+      "invoked": true,
+      "mechanical_strict_pass": true,
+      "adapter_wall_seconds": 20.137557099998958,
+      "inclusive_runtime_seconds": 20.64498680000179,
+      "planner_seconds": 0.1585047000007762,
+      "incoming_handoff_seconds": 0.0,
+      "request_slots": 4,
+      "saved_responses": 4,
+      "known_usage": {
+        "cached_tokens": 27008,
+        "input_tokens": 34885,
+        "output_tokens": 4032,
+        "reasoning_tokens": 2804,
+        "total_tokens": 38917
+      },
+      "native_finish_count": 1,
+      "blocked_out_of_scope_attempt_count": 0,
+      "own_stage_terminal_snapshot_protected_hash_mismatches": 0
+    },
+    {
+      "actor_id": "chain-1-receiver",
+      "provider": "mimo",
+      "model_requested": "mimo-v2.6-pro",
+      "kind": "core",
+      "stage": "receiver",
+      "invoked": true,
+      "mechanical_strict_pass": true,
+      "adapter_wall_seconds": 156.1624856999988,
+      "inclusive_runtime_seconds": 156.6938659999978,
+      "planner_seconds": 0.1779127999980119,
+      "incoming_handoff_seconds": 0.040617299997393275,
+      "request_slots": 5,
+      "saved_responses": 5,
+      "known_usage": {
+        "cached_tokens": 40576,
+        "input_tokens": 54540,
+        "output_tokens": 2891,
+        "reasoning_tokens": 1398,
+        "total_tokens": 57431
+      },
+      "native_finish_count": 1,
+      "blocked_out_of_scope_attempt_count": 0,
+      "own_stage_terminal_snapshot_protected_hash_mismatches": 0
+    },
+    {
+      "actor_id": "chain-2-source",
+      "provider": "mimo",
+      "model_requested": "mimo-v2.6-pro",
+      "kind": "core",
+      "stage": "source",
+      "invoked": true,
+      "mechanical_strict_pass": false,
+      "adapter_wall_seconds": 180.06329910000204,
+      "inclusive_runtime_seconds": 180.49978340000234,
+      "planner_seconds": 0.1506943999993382,
+      "incoming_handoff_seconds": 0.0,
+      "request_slots": 4,
+      "saved_responses": 3,
+      "known_usage": {
+        "cached_tokens": 14592,
+        "input_tokens": 21323,
+        "output_tokens": 1881,
+        "reasoning_tokens": 1227,
+        "total_tokens": 23204
+      },
+      "native_finish_count": 0,
+      "blocked_out_of_scope_attempt_count": 0,
+      "own_stage_terminal_snapshot_protected_hash_mismatches": 0
+    },
+    {
+      "actor_id": "chain-2-receiver",
+      "provider": "deepseek",
+      "model_requested": "deepseek-flash",
+      "kind": "core",
+      "stage": "receiver",
+      "invoked": false,
+      "mechanical_strict_pass": null,
+      "adapter_wall_seconds": null,
+      "inclusive_runtime_seconds": null,
+      "planner_seconds": null,
+      "incoming_handoff_seconds": null,
+      "request_slots": null,
+      "saved_responses": null,
+      "known_usage": null,
+      "native_finish_count": null,
+      "blocked_out_of_scope_attempt_count": null,
+      "own_stage_terminal_snapshot_protected_hash_mismatches": null
+    },
+    {
+      "actor_id": "chain-3-source",
+      "provider": "deepseek",
+      "model_requested": "deepseek-flash",
+      "kind": "document",
+      "stage": "source",
+      "invoked": false,
+      "mechanical_strict_pass": null,
+      "adapter_wall_seconds": null,
+      "inclusive_runtime_seconds": null,
+      "planner_seconds": null,
+      "incoming_handoff_seconds": null,
+      "request_slots": null,
+      "saved_responses": null,
+      "known_usage": null,
+      "native_finish_count": null,
+      "blocked_out_of_scope_attempt_count": null,
+      "own_stage_terminal_snapshot_protected_hash_mismatches": null
+    },
+    {
+      "actor_id": "chain-3-receiver",
+      "provider": "mimo",
+      "model_requested": "mimo-v2.6-pro",
+      "kind": "document",
+      "stage": "receiver",
+      "invoked": false,
+      "mechanical_strict_pass": null,
+      "adapter_wall_seconds": null,
+      "inclusive_runtime_seconds": null,
+      "planner_seconds": null,
+      "incoming_handoff_seconds": null,
+      "request_slots": null,
+      "saved_responses": null,
+      "known_usage": null,
+      "native_finish_count": null,
+      "blocked_out_of_scope_attempt_count": null,
+      "own_stage_terminal_snapshot_protected_hash_mismatches": null
+    },
+    {
+      "actor_id": "chain-4-source",
+      "provider": "mimo",
+      "model_requested": "mimo-v2.6-pro",
+      "kind": "document",
+      "stage": "source",
+      "invoked": false,
+      "mechanical_strict_pass": null,
+      "adapter_wall_seconds": null,
+      "inclusive_runtime_seconds": null,
+      "planner_seconds": null,
+      "incoming_handoff_seconds": null,
+      "request_slots": null,
+      "saved_responses": null,
+      "known_usage": null,
+      "native_finish_count": null,
+      "blocked_out_of_scope_attempt_count": null,
+      "own_stage_terminal_snapshot_protected_hash_mismatches": null
+    },
+    {
+      "actor_id": "chain-4-receiver",
+      "provider": "deepseek",
+      "model_requested": "deepseek-flash",
+      "kind": "document",
+      "stage": "receiver",
+      "invoked": false,
+      "mechanical_strict_pass": null,
+      "adapter_wall_seconds": null,
+      "inclusive_runtime_seconds": null,
+      "planner_seconds": null,
+      "incoming_handoff_seconds": null,
+      "request_slots": null,
+      "saved_responses": null,
+      "known_usage": null,
+      "native_finish_count": null,
+      "blocked_out_of_scope_attempt_count": null,
+      "own_stage_terminal_snapshot_protected_hash_mismatches": null
+    }
+  ],
+  "usage": {
+    "reserved_request_slots": 13,
+    "saved_response_and_usage_records": 12,
+    "additional_possible_dispatch_with_unknown_usage": 1,
+    "known_input_tokens": 110748,
+    "known_output_tokens": 8804,
+    "known_total_tokens": 119552,
+    "cached_tokens_subset": 82176,
+    "reasoning_tokens_subset": 5429,
+    "subset_rule": "Cache/reasoning are subsets, not extra tokens. Unknown/missing usage and five uninvoked roles are not zero."
+  },
+  "runtime_timing": {
+    "attributed_role_sum_seconds": 357.83863620000193,
+    "boundary": "Fixture construction and freeze compilation are research preparation. Final timing-metadata publication is measurement instrumentation outside the last operational clock sample; its duration is unmeasured, not zero.",
+    "measurement_metadata_tail_seconds": null,
+    "observed_launch_plus_runtime_wall_seconds": 358.1154789000029,
+    "round_wall_seconds": 357.8807183000026,
+    "shared_initialization_seconds": 0.025942899999790825,
+    "shared_runtime_control_seconds": 0.04208210000069812,
+    "shared_terminal_seconds": 0.016139200000907294,
+    "unattributed_runtime_seconds": 0.0
+  },
+  "study_launch_instrumentation": {
+    "included_in_role_cost": false,
+    "included_in_runtime_round": false,
+    "scope": "One-time dependency/protocol/source identity, registration, replay exclusion and STARTED receipt are research launch instrumentation. Their observed duration is reported separately, never charged to the first role.",
+    "wall_seconds": 0.23476060000029975
+  },
+  "request_pipeline_breakdown": {
+    "sum_seconds": 354.01040240000293,
+    "fraction_of_runtime_round": 0.9891854584444102,
+    "scope": "Sequential request timing starts after reservation/key/pending preparation and includes transport wait, response decode/persist/envelope. This does not separate remote generation, queue, network or local parsing. Remaining runtime includes other native/preparation/control work."
+  },
+  "fees": {
+    "known_all_input_miss_estimate": {
+      "deepseek": {
+        "USD": "0.0153039"
+      },
+      "mimo": {
+        "CNY": "0.256221",
+        "USD": "0.037152045"
+      }
+    },
+    "retained_unknown_reservation_estimate": {
+      "deepseek": {
+        "USD": "0"
+      },
+      "mimo": {
+        "CNY": "0.172335",
+        "USD": "0.024988575"
+      }
+    },
+    "boundary": "Peak/all-input-miss estimates, not invoice; unknown reserves may overlap known charges; MiMo currency alternatives not summed; missing usage not zero.",
+    "actual_invoice_total": null,
+    "currencies_are_alternatives": true
+  },
+  "unknown_call": {
+    "actor_id": "chain-2-source",
+    "request_index": 4,
+    "elapsed_seconds": 86.45338160000028,
+    "input_utf8_bytes": 41061,
+    "output_cap": 8192,
+    "receipt_sha256": "907ec3ce4bc27a9716e46fdcfb85e08ae02fcf8e6b9ce46cc6c2ad9fe0ebd638",
+    "saved_response": false,
+    "usage": null,
+    "transport": {
+      "connection_attempted": null,
+      "exception_class": null,
+      "http_dispatch": "unknown",
+      "phase": "deadline-wait"
+    },
+    "error_type": "ResponseUnknown",
+    "accounting_dispatched_flag": true,
+    "dispatch_boundary": "Conservative accounting flag does not establish that HTTP started. Transport dispatch and connection attempt remain unknown.",
+    "request_specific_timeout_seconds": null,
+    "diagnosis": {
+      "actor_adapter_wall_seconds": 180.06329910000204,
+      "actor_id": "chain-2-source",
+      "actor_inclusive_runtime_seconds": 180.49978340000234,
+      "actor_timeout_seconds": 180,
+      "actor_wall_minus_all_request_wait_seconds": 0.8024230000009993,
+      "actual_safety_boundary": "Unknown exposure and absent response/report caused unverifiable-prefix severe labels; these labels are not evidence of a physical protected-file or namespace mutation. This actor own-stage protected hash mismatches are zero and last journal/current snapshot agree; its strict result remains FAIL.",
+      "four_request_wait_seconds_sum": 179.26087610000104,
+      "interpretation": "The local 180-second total actor deadline was reached while waiting for request four. Reviewed source starts one actor deadline, passes only its remaining duration into _bounded_post, and the recorded deadline-wait is the outer mailbox timeout. This is not a fresh 180-second allowance for each request. Exact passed timeout/absolute request start were not retained, so arithmetic is a bounded reconstruction.",
+      "prior_three_request_wait_seconds_sum": 92.80749450000076,
+      "raw_transport": {
+        "connection_attempted": null,
+        "exception_class": null,
+        "http_dispatch": "unknown",
+        "phase": "deadline-wait"
+      },
+      "remaining_budget_upper_bound_before_fourth_ignoring_nonrequest_work": 87.19250549999924,
+      "request_index": 4,
+      "saved_response": false,
+      "source_binding": {
+        "actor_deadline_lines": [
+          413,
+          414
+        ],
+        "outer_mailbox_timeout_lines": [
+          196,
+          200
+        ],
+        "path": "evolution/provider_tools.py",
+        "remaining_deadline_call_line": 526,
+        "sha256": "6752e77cb02a9aca196443b9334d54d75de64142f537f06904df087f83d2f9ef"
+      },
+      "underlying_cause": "UNKNOWN: no received response, exception_class null, connection_attempted null, http_dispatch unknown. No evidence identifies remote queue, balance, model capacity, DNS/connect/TLS/write/read stage, remote cancellation or final bill.",
+      "unknown_request_wait_seconds": 86.45338160000028,
+      "usage": null
+    }
+  },
+  "manual_factual_review": {
+    "mode": "Stage-local independent review with limited metadata masking; not double-blind. Only veto or limit, never rescue mechanical failure.",
+    "stage_code_handoff_supported_with_limits": 3,
+    "readme_unknown_or_unobserved": 3,
+    "effective_report_counts": {
+      "absent_report_unknown": 1,
+      "supported_with_limits": 1,
+      "unknown_existing_report": 1,
+      "veto": 0
+    },
+    "all_factual_claims_qualified": false,
+    "not_invoked_roles_unknown": 5,
+    "remaining_unknown_types": [
+      "public-example individual execution",
+      "wide residue absence",
+      "absent report/unobserved source README",
+      "inherited broad README current-status wording",
+      "uninvoked roles and pending cost"
+    ],
+    "original_private_sha256": "63b8bbfbc2fedea2b608e343bcbb1146c08b75e8835748e41283b409de4dfd46",
+    "original_aggregate_sha256": "bdf2f2e51d986cdf7ea65536d523f4c2371c739addebe7e22886e6bda0775036",
+    "supplement_private_sha256": "69ac792fa750a091899ba6163f6bb300567d3d0e445124fac3f767807e0d91ae",
+    "supplement_aggregate_sha256": "53e9f45d3bc040f9c688f5c9f31ca37b489f805f6fbb421283eebc9e789275a3",
+    "narrow_followup_sha256": "a58ff88f69fa058eb4bb3cff166d97e0bccf291285167f51c199197d27107d59",
+    "original_observed_window": {
+      "definition": "Observed manual factual review window including tools, reasoning and necessary waits; not CPU time",
+      "ended_utc": "2026-10-14T20:39:45.570602+00:00",
+      "monotonic_end": 25670.609,
+      "monotonic_start": 25564.156,
+      "observed_review_window_seconds": 106.45300000000134,
+      "review_tokens": null,
+      "started_utc": "2026-10-14T20:37:59.117174+00:00"
+    },
+    "separate_supplement_observed_window": {
+      "definition": "Separate observed supplement review window including tool use/thinking/waits, not CPU; never added to original106.453s",
+      "ended_utc": "2026-10-14T20:45:37.610996+00:00",
+      "monotonic_end": 26022.656,
+      "monotonic_start": 25968.765,
+      "observed_review_window_seconds": 53.89099999999962,
+      "review_tokens": null,
+      "started_utc": "2026-10-14T20:44:43.721606+00:00"
+    },
+    "extract_wall_seconds": 0.15700000000288128,
+    "review_tokens": null,
+    "window_boundary": "Observed windows include tools/thinking/waits, not CPU. Separate windows are not combined as a single measured interval. Research/review token cost is unknown.",
+    "status": "COMPLETED_WITH_BOUNDED_UNKNOWNS"
+  },
+  "independent_accounting_and_preservation": {
+    "audit_status": "PASS",
+    "assertions": 720,
+    "findings": 0,
+    "audit_result_sha256": "edd66a993b59ce7862cd86ce44cbb8014e7549c799bacdfee84a9f44d5218d63",
+    "numeric_summary_sha256": "702a30dff3b2e56c0d83c143c3c04b374f7c0b3c6bda8b9d13a1953189c5c66c",
+    "preservation_receipt_sha256": "d707be03dc2ee51b36e0a831b66503957b57658d3db8d30acb63bbfcd2235039",
+    "full_raw_file_count": 100,
+    "full_raw_before_after_map_sha256": "8df21399804fe0ef42e1e078a20b7905f2633c7eccbce9d8f6605b9817cd9b2f",
+    "precall_archived_files": 154,
+    "precall_archive_and_independent_copy_map_sha256": "36f2f943cd73a589509c2e606970a1152cfc424b6a7e89ef1c88a6cd4f59e427",
+    "owner_terminal_sha256": "53e146d671a4490f3639b6f7ac77218004dc0351da23c1c28e61e4792590fff2",
+    "owner_child_exit_code": 0,
+    "owner_abort": null,
+    "matching_owned_study_processes_at_terminal_check": 0,
+    "shared_semantics": {
+      "actor_parser": "8ef8ac21d749bf7622a55e8bc2ecf1db88b47269f848fe4746f48934ce1be7b4",
+      "pure_navigation": "ce8cc0e107284ae10abde3e52f54f22529fc838059e91cf05c8a94c829aeb947",
+      "vm": "cf6a6c207c47f003e7877b2a7f93c7e192415ffa229e80693276d1fb23298286"
+    },
+    "boundary": "Audit PASS verifies recorded topology, native prefixes, hash-bound actual handoff, ledger and time arithmetic. Shared finite VM/navigation remain; no independent wire or physical-clock attestation."
+  },
+  "safety_interpretation": "The interrupted role has unknown-usage/unverifiable-prefix labels. No blocked out-of-scope attempt was recorded; own-stage protected hashes and last journal/current snapshots match. These facts do not rescue its strict FAIL and do not establish all-domain safety or zero risk.",
+  "next_action": "After closing this immutable round, register an explicit MiMo Flash development profile and fresh document-first handoff tasks. Keep current unknown reservation and old Pro evidence. Real CPython execution backend remains a separate unvalidated prototype; static container probe is not application efficacy.",
+  "application_execution": false,
+  "abrupt_interruption_recovery_tested": false,
+  "independent_efficacy_claim": false,
+  "cross_trial_ranking_allowed": false,
+  "cost_confidence_intervals": null,
+  "net_benefit": "NOT_ESTABLISHED",
+  "release_gate": "BLOCKED",
+  "formal_qualification": "UNASSESSED",
+  "locked_holdout": "NOT_RUN",
+  "default_branch_and_installed_skill": "RC19",
+  "recorded_runtime_chains": [
+    {
+      "chain_id": "chain-1",
+      "complete_chain_cost_observed": true,
+      "factual_review": "UNASSESSED",
+      "kind": "core",
+      "receiver": "mimo",
+      "receiver_invoked": true,
+      "receiver_not_invoked_reason": null,
+      "receiver_pass": true,
+      "source": "deepseek",
+      "source_pass": true,
+      "status": "mechanically-completed-pending-factual-review",
+      "timing": {
+        "attributed_role_sum_seconds": 177.3388527999996,
+        "chain_wall_seconds": 177.3388527999996,
+        "control_residual_seconds": 6.229999780771323e-05,
+        "cost_scope": "observed invoked-role prefix; missing receiver has no zero observation",
+        "inclusive_role_sum_seconds": 177.33879050000178,
+        "partition_error_seconds": 0.0
+      }
+    },
+    {
+      "chain_id": "chain-2",
+      "complete_chain_cost_observed": false,
+      "factual_review": "UNASSESSED",
+      "kind": "core",
+      "receiver": "deepseek",
+      "receiver_invoked": false,
+      "receiver_not_invoked_reason": "source-strict-native-admission-failed",
+      "receiver_pass": null,
+      "source": "mimo",
+      "source_pass": false,
+      "status": "source-entered",
+      "timing": {
+        "attributed_role_sum_seconds": 180.49978340000234,
+        "chain_wall_seconds": 180.49978340000234,
+        "control_residual_seconds": 3.980000110459514e-05,
+        "cost_scope": "observed invoked-role prefix; missing receiver has no zero observation",
+        "inclusive_role_sum_seconds": 180.49974360000124,
+        "partition_error_seconds": 0.0
+      }
+    },
+    {
+      "chain_id": "chain-3",
+      "complete_chain_cost_observed": false,
+      "factual_review": "UNASSESSED",
+      "kind": "document",
+      "receiver": "mimo",
+      "receiver_invoked": false,
+      "receiver_not_invoked_reason": "global-stop-before-receiver",
+      "receiver_pass": null,
+      "source": "deepseek",
+      "source_pass": null,
+      "status": "not-reached",
+      "timing": null
+    },
+    {
+      "chain_id": "chain-4",
+      "complete_chain_cost_observed": false,
+      "factual_review": "UNASSESSED",
+      "kind": "document",
+      "receiver": "deepseek",
+      "receiver_invoked": false,
+      "receiver_not_invoked_reason": "global-stop-before-receiver",
+      "receiver_pass": null,
+      "source": "mimo",
+      "source_pass": null,
+      "status": "not-reached",
+      "timing": null
+    }
+  ],
+  "recorded_runtime_chain_boundary": "Original runtime states at termination; subsequent factual review appears in manual_factual_review and never retroactively changes them."
+}

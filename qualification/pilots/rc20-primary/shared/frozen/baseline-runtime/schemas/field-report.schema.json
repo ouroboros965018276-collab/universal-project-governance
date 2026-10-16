@@ -1,0 +1,348 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "sequence",
+    "recorded_at",
+    "runtime_version",
+    "task",
+    "status",
+    "change_mode",
+    "scope_guard",
+    "risk_level",
+    "active_rules",
+    "changed_files",
+    "validation",
+    "cleanup",
+    "structural_scope",
+    "integrity",
+    "handoff",
+    "feedback",
+    "workflow_id",
+    "epoch",
+    "event_id",
+    "change"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "sequence": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "recorded_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "runtime_version": {
+      "type": "string"
+    },
+    "task": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "complete",
+        "partial",
+        "blocked"
+      ]
+    },
+    "change_mode": {
+      "enum": [
+        "local",
+        "structural"
+      ]
+    },
+    "scope_guard": {
+      "enum": [
+        "local-only",
+        "task-bounded-responsible-layer"
+      ]
+    },
+    "risk_level": {
+      "enum": [
+        "trivial",
+        "low",
+        "medium",
+        "high",
+        "release"
+      ]
+    },
+    "active_rules": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "changed_files": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "validation": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "cleanup": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "structural_scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "canonical_layer",
+        "unrelated_changes",
+        "api_changes",
+        "architecture_changes",
+        "overreach_concern"
+      ],
+      "properties": {
+        "canonical_layer": {
+          "type": "string"
+        },
+        "unrelated_changes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "api_changes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "architecture_changes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "overreach_concern": {
+          "type": "boolean"
+        }
+      }
+    },
+    "integrity": {
+      "enum": [
+        "pass",
+        "fail",
+        "not-checked"
+      ]
+    },
+    "handoff": {
+      "enum": [
+        "not-required",
+        "created",
+        "updated",
+        "closed"
+      ]
+    },
+    "feedback": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "agent": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "family": {
+          "type": "string"
+        },
+        "model_id": {
+          "type": "string"
+        },
+        "scaffold_version": {
+          "type": "string"
+        }
+      }
+    },
+    "workflow_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "epoch": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "event_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "change": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "function",
+        "before",
+        "after",
+        "rationale",
+        "source",
+        "base_revision",
+        "result_revision",
+        "validation_revision",
+        "occurred_at",
+        "time_source",
+        "parent_event_id"
+      ],
+      "properties": {
+        "function": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "before": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "after": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "base_revision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "pattern": "^(unknown|[0-9a-f]{40}|sha256:[0-9a-f]{64})$"
+        },
+        "result_revision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "pattern": "^(unknown|[0-9a-f]{40}|sha256:[0-9a-f]{64})$"
+        },
+        "validation_revision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "pattern": "^(unknown|[0-9a-f]{40}|sha256:[0-9a-f]{64})$"
+        },
+        "time_source": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "occurred_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "parent_event_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        }
+      }
+    },
+    "start_change": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "function",
+        "before",
+        "after",
+        "rationale",
+        "source",
+        "base_revision",
+        "result_revision",
+        "validation_revision",
+        "occurred_at",
+        "time_source",
+        "parent_event_id"
+      ],
+      "properties": {
+        "function": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "before": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "after": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "base_revision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "pattern": "^(unknown|[0-9a-f]{40}|sha256:[0-9a-f]{64})$"
+        },
+        "result_revision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "pattern": "^(unknown|[0-9a-f]{40}|sha256:[0-9a-f]{64})$"
+        },
+        "validation_revision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "pattern": "^(unknown|[0-9a-f]{40}|sha256:[0-9a-f]{64})$"
+        },
+        "time_source": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "occurred_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "parent_event_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        }
+      },
+      "description": "Tool-owned immutable workflow start facts, retained beside the actual outcome."
+    }
+  }
+}

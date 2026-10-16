@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "kind": "independent-public-audit-summary",
+  "study_id": "upg-rc20-cross-provider-v1",
+  "audit_observed_at_utc": "2026-10-14T02:29:13.983917+00:00",
+  "protocol_sha256": "3089ee17b7e3fd2c9a06b6d69d79d0a68ff6727490372e789ce40d3ef1149e5e",
+  "evidence": {
+    "public_preregistration": "audits/rc20-cross-provider-v1.preregistration.json",
+    "public_preregistration_sha256": "f3c205bb8ae054ac29d15566f6c7729a404a0fb44ea3554fc4a7248befef291e",
+    "independent_audit_local": "eval-workspaces/rc20-api-independent-audit.result.v3.json",
+    "independent_audit_sha256": "dd7536eb43abdfb66a4f8e5fee414fcc5a30ab4a1ed2ef0c2889fdcc21122ee9",
+    "audit_script_sha256": "f8fdeb165b4a4c5d3b17dc64ab57ec49645a78938003e4ee2a516af2611572fa",
+    "audit_mock_tests": {
+      "passed": 13,
+      "failed": 0,
+      "source_sha256": "0f1f74886cb9f5169743ba90c3967189a223d0305383ec726fcc8dec84c91130"
+    },
+    "descriptive_statistics_local": "eval-workspaces/rc20-provider-paired-costs.result.v1.json",
+    "descriptive_statistics_sha256": "bec7fc014b3cf4eb42f4c2f5eee48b789c0c5936e8b5910ce5265ca8feab21dc",
+    "descriptive_helper_source_sha256": "de0e81b94f5efb431abf3af37c37a5799cce9857ad5cb8201ba05d8de277ff58",
+    "local_records": "Hash-bound private evidence is retained locally; source bodies and full file maps are not published."
+  },
+  "gates": {
+    "record_integrity": "PASS",
+    "research_validity": "BLOCKED",
+    "complete_registered_quality": "FAIL",
+    "net_benefit": "FAIL",
+    "formal_qualification": "UNASSESSED",
+    "population_noninferiority": "UNASSESSED"
+  },
+  "observations": {
+    "study_status": "completed",
+    "actors_planned_max": 54,
+    "actors_observed": 50,
+    "strict_passes": 15,
+    "strict_failures": 35,
+    "direct_actors": {
+      "registered": 42,
+      "observed": 42,
+      "trials_per_arm_per_model": 7,
+      "deepseek-flash": {"rc19_passes": 3, "attention_passes": 4, "full_rc20_passes": 6},
+      "mimo-v2.6-pro": {"rc19_passes": 0, "attention_passes": 0, "full_rc20_passes": 0}
+    },
+    "planned_handoff": {
+      "chains_registered": 6,
+      "chains_observed": 6,
+      "chains_completed": 0,
+      "source_actors": 6,
+      "source_strict_passes": 2,
+      "receiver_actors": 2,
+      "receiver_strict_passes": 0,
+      "receivers_not_invoked": 4,
+      "not_invoked_reason": "Source stage failed; no replacement receiver or additional chain was run."
+    },
+    "http_dispatches": 133,
+    "reported_tokens": 558652,
+    "unknown_calls": 0,
+    "incomplete_raw_usage_requests": 0,
+    "unsettled_complete_reported_tokens": 0,
+    "pending_reservations": 0,
+    "actual_round_wall_seconds": 312.422
+  },
+  "independent_checks": {
+    "frozen_identity_bindings": "PASS",
+    "native_api_to_tool_call_to_broker_journal_to_disk_static_regrade": "PASS",
+    "request_payload_hashes_rebuilt": 133,
+    "request_payload_hashes_observed": 133,
+    "api_response_ids_unique": true,
+    "source_snapshot_equals_receiver_initial_input": "PASS for both invoked receivers",
+    "fresh_receiver_journal_and_no_conversation_history": "PASS for both invoked receivers",
+    "original_files_guarded": 915,
+    "original_file_map_before_after_equal": true,
+    "correct_artifacts_with_failed_strict_quality": 0
+  },
+  "validity_blocker": {
+    "code": "api-v1-terminates-on-ordinary-negative-tool-feedback",
+    "adapter_sha256": "fbb59630b28e6796229940b0733bdef8f90f435e892dad3a2c1c52c009923e9b",
+    "ordinary_negative_feedback_actor_terminations": 9,
+    "repo_validate_failures": 8,
+    "validation_before_successful_edit": 1,
+    "validation_after_successful_edit": 7,
+    "patch_precondition_hash_mismatches_before_successful_edit": 1,
+    "api_policy": "Any broker ok:false ended the actor before another HTTP turn.",
+    "native_cli_policy": "Ordinary negative feedback can be returned to the model for bounded repair.",
+    "consequence": "Behavior-dependent loss of repair opportunities blocks UPG causal interpretation of arm differences. Counterfactual recovery was not measured. Original failures and costs remain."
+  },
+  "cost_estimates": {
+    "basis": "Peak prices with all input treated as cache misses; Decimal recomputation matches retained records.",
+    "deepseek": {"currency": "USD", "known_estimate": "0.1538097", "cap": "5"},
+    "mimo_account_alternatives": {
+      "CNY": {"known_estimate": "0.269775", "cap": "20"},
+      "USD": {"known_estimate": "0.039117375", "cap": "3"}
+    },
+    "unknown_reservation_estimate": "0",
+    "invoice_claim": false,
+    "currency_limit": "MiMo USD and CNY are parallel account assumptions, not two charges; no currency conversion or sum is asserted."
+  },
+  "source_candidate": {
+    "engineering_revision": "a0eba6adb557b6046f9e2dad1a22f0c0de8f4237",
+    "candidate_sha256": "95d6520f5c5a039ff586915ebd4a314715012e32c5e94cbd30fa0a46e55c6d57",
+    "current_canonical_model_matches_frozen_candidate": true,
+    "study_changed_governance_candidate": false
+  },
+  "limits": [
+    "API evidence is parsed and redacted JSON, not a wire capture; original HTTP body bytes are absent, so their recorded hashes cannot be recomputed.",
+    "Complete registered quality failed. Descriptive paired costs cannot establish net benefit.",
+    "API v1 is a separate scaffold and must not be pooled with the original OpenAI CLI study.",
+    "Direct tasks reuse the original seven instances. Planned-handoff design and targets were known to the implementer; neither is an independent new holdout.",
+    "Reported model IDs, token counts and estimates do not attest hidden provider attempts, underlying model selection or supplier invoices.",
+    "A subsequent separately frozen compatibility probe is a distinct study, not completion, replay or replacement of API v1."
+  ]
+}

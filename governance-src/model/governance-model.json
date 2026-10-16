@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "name": "universal-project-governance",
-  "version": "3.0.0-rc.19",
+  "version": "3.0.0-rc.20",
   "architecture": "compiled-governance",
   "principles": [
     "ONE_SEMANTIC_RULE_ONE_CANONICAL_DEFINITION",
@@ -44,6 +44,36 @@
     {
       "id": "STRUCTURAL_INTEGRATION",
       "statement": "Except for truly local low-risk edits, integrate at the smallest responsible canonical layer and remove superseded patch paths; structural mode never authorizes unrelated redesign, API change, migration, or cleanup outside task scope."
+    }
+  ],
+  "execution_guidance": [
+    {
+      "id": "decision_relevance",
+      "policy_ids": [
+        "TRUTH_CURRENT"
+      ],
+      "statement": "Keep only information current readers need for project use/maintenance/validation/takeover. Use the user's language; fit wording/format to task/readers. Deliver relevant outcomes/evidence/gaps once, with needed technical detail and why/when. Omit governance/process recitals; put task-rule explanations in project content only if project understanding needs them. No mechanical style rules or extra model polishing calls."
+    },
+    {
+      "id": "complete_change",
+      "policy_ids": [
+        "STRUCTURAL_INTEGRATION"
+      ],
+      "statement": "Keep contracts/safety/error handling; resolve affected consumers/tests and obsolete paths. Use current bytes/revisions and the tool's edit semantics; a fragment cannot replace a whole file. Change edge/error returns/exceptions only for the authorized goal. Minimize needless work, not diff size; reserve final validation/handoff budget. Priority: user intent; correctness/safety/truth; contracts/structure; maintainability/readability; cost."
+    },
+    {
+      "id": "evidence_fidelity",
+      "policy_ids": [
+        "EVIDENCE_AFFECTED"
+      ],
+      "statement": "Check claims against current code, contracts and validation. Preserve identifiers, input domains, numbers, references, negation and unknowns when rewriting/shortening; never present omitted facts or unverified completion as established."
+    },
+    {
+      "id": "task_scoped_reading",
+      "policy_ids": [
+        "EVIDENCE_AFFECTED"
+      ],
+      "statement": "Honor required reads; discover existing paths/anchors via indexes or bounded search before batching. Writable paths may be planned additions; listings/links alone are not read obligations. Trace implementations/contracts/consumers/tests; expand for dependencies, failures, stale/conflicting evidence or coverage gaps. Defer unrelated material. Recover interrupted/stale/contradictory state from project evidence. Indexes/labels/read budgets never prove coverage; unknowns stay unknown."
     }
   ],
   "risk_model": {
@@ -834,5 +864,29 @@
     "adoption_mode": "in-place",
     "continuity_mode": "handoff-or-reconstruct",
     "capability_handshake": "observe-before-assume"
-  }
+  },
+  "operational_guidance": [
+    {
+      "id": "tracked_state",
+      "policy_ids": [
+        "STRUCTURAL_INTEGRATION",
+        "HANDOFF_CONTINUITY"
+      ],
+      "on_field_reporting": true,
+      "statement": "For non-trivial or cross-session work, keep a stable workflow ID and minimal project_tool begin checkpoint when available. Start facts are immutable. Update only observed after-state, result/validation revisions and sourced occurrence time; Git committer time dates a commit, never work start. Keep unknowns explicit. Reuse evidence; follow the explicitly declared current-stage schema and retire superseded fields safely. Preserve required facts and unknowns in approved fields/evidence surfaces; if needed state cannot fit, disclose a bounded delivery gap instead of dropping it or adding fields/files merely to mirror policies. Structured state is canonical, Markdown rendered; no second history database. Use state_tool validation/render/compact/export as needed. When writable, keep one current handoff for unfinished work or actor/session transitions. Keep one validation source with run ID, scope, denominator, tested state, result and pending retest. Never overlap counts or equate focused passes with full regression. Validate state references against the project root. Order events by causal parents/revisions and persistent sequence; recorded_at is observation time. Preserve the previous change, validate tested state and reconcile stale handoffs with current truth. At tracked non-trivial boundaries, call project_tool finish when available with the same workflow ID and observed change. Keep unfinished stages partial/blocked, their ID active and stage history intact. Reporting on appends exactly one report; off advances bounded latest/previous without a ledger. Keep immutable workflow/status receipts: identical retries are idempotent, conflicts fail. Bound scopes/metadata/evidence; never include source bodies, secrets or private reasoning. Export and verify before epoch rotation; never reset sequence. Recheck binding. Helper gaps remain verification gaps, never backfilled historical success.",
+      "report_levels": [
+        "engineering",
+        "audit"
+      ]
+    },
+    {
+      "id": "recovery_tools",
+      "policy_ids": [
+        "HANDOFF_CONTINUITY"
+      ],
+      "on_field_reporting": false,
+      "statement": "Reconstruct UPG state and unresolved artifacts as part of the existing HANDOFF_CONTINUITY closure. Optional read-only scripts/state_tool.py recover <root> --scope <file> supports repeated scopes, explicit --handoff and a registered --git-binary. Carry deltas/references into the current handoff.",
+      "report_levels": []
+    }
+  ]
 }

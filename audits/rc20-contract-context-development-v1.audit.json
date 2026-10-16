@@ -1,0 +1,219 @@
+{
+  "schema_version": 1,
+  "study_id": "upg-rc20-contract-context-development-v1",
+  "recorded_at_utc": "2026-10-14T18:48:09.614132+00:00",
+  "protocol_sha256": "63b0fe49b450295f5b2c19a77fe4a898571aa8aea5f867e0be3d9561c6fccd2a",
+  "preflight": "rc20-contract-context-development-v1.preflight.json",
+  "preflight_sha256": "90990fb06b85c6dbee0241a02751e30c913a8ca2046320dc00c8710db1a1b54c",
+  "precall_publication_commit": "03032bfab2dd4a837e7404db35e7e8b158372b07",
+  "candidate_source_commit": "85838b9bcd248e0a39e8fc74bc250a43806456c6",
+  "baseline_revision": "bd4a4d5c1c6fb9fca829e410729879d1b01f05b9",
+  "scope": "Prior-data-informed, nonrandomized DEVELOPMENT context diagnosis only. One matched source task across contexts/providers. No receivers, documentation chain, independent efficacy, causal comparison, bootstrap or release inference.",
+  "status": "unknown-call-global-stop",
+  "quality": {
+    "registered_cells": 6,
+    "actual_actors": 4,
+    "strict_pass": 0,
+    "native_finish_attempts": 0,
+    "receivers": 0,
+    "missing_cells": [
+      {
+        "provider": "mimo",
+        "arm": "rc19",
+        "quality": null,
+        "cost": null,
+        "reason": "global unknown stop before invocation"
+      },
+      {
+        "provider": "mimo",
+        "arm": "attention",
+        "quality": null,
+        "cost": null,
+        "reason": "global unknown stop before invocation"
+      }
+    ]
+  },
+  "observed_cells": [
+    {
+      "provider": "deepseek",
+      "arm": "rc19",
+      "status": "request-budget-exhausted",
+      "requests": 12,
+      "actor_wall_seconds": 39.47879589999866,
+      "known_usage": {
+        "cached_tokens": 146304,
+        "input_tokens": 159649,
+        "output_tokens": 6395,
+        "reasoning_tokens": 4560,
+        "total_tokens": 166044
+      },
+      "strict_pass": false
+    },
+    {
+      "provider": "deepseek",
+      "arm": "attention",
+      "status": "request-budget-exhausted",
+      "requests": 12,
+      "actor_wall_seconds": 31.795691699997406,
+      "known_usage": {
+        "cached_tokens": 134784,
+        "input_tokens": 145893,
+        "output_tokens": 4586,
+        "reasoning_tokens": 3027,
+        "total_tokens": 150479
+      },
+      "strict_pass": false
+    },
+    {
+      "provider": "deepseek",
+      "arm": "full",
+      "status": "request-budget-exhausted",
+      "requests": 12,
+      "actor_wall_seconds": 119.27560330000051,
+      "known_usage": {
+        "cached_tokens": 156672,
+        "input_tokens": 163251,
+        "output_tokens": 19509,
+        "reasoning_tokens": 17835,
+        "total_tokens": 182760
+      },
+      "strict_pass": false
+    },
+    {
+      "provider": "mimo",
+      "arm": "full",
+      "status": "unknown-call-blocked",
+      "requests": 6,
+      "actor_wall_seconds": 180.1762247000006,
+      "known_usage": {
+        "cached_tokens": 46720,
+        "input_tokens": 60624,
+        "output_tokens": 4751,
+        "reasoning_tokens": 3403,
+        "total_tokens": 65375
+      },
+      "strict_pass": false
+    }
+  ],
+  "financial": {
+    "all_raw_known_components_estimate": {
+      "deepseek": {
+        "USD": "0.1772259"
+      },
+      "mimo": {
+        "CNY": "0.210378",
+        "USD": "0.030504810"
+      }
+    },
+    "artifact_inventory_complete": true,
+    "boundary": "Peak/all-input-miss estimates, not invoice; unknown reserves may overlap known charges; MiMo currency alternatives not summed; missing usage not zero.",
+    "committed_estimate": {
+      "deepseek": {
+        "USD": "0.1772259"
+      },
+      "mimo": {
+        "CNY": "0.210378",
+        "USD": "0.030504810"
+      }
+    },
+    "dispatched_http_requests": 42,
+    "elapsed_seconds": 372.20300000000134,
+    "known_reported_tokens": 564658,
+    "ledger_status": "unknown-call-global-stop",
+    "pending_reservations": 1,
+    "raw_incomplete_usage_requests": 1,
+    "raw_reported_total_tokens_subtotal": 564658,
+    "request_slots": 42,
+    "retained_unknown_reservation_estimate": {
+      "deepseek": {
+        "USD": "0"
+      },
+      "mimo": {
+        "CNY": "0.270195",
+        "USD": "0.039178275"
+      }
+    },
+    "transport_count_scope": "dispatched_http_requests counts receipt dispatched flags; only retained responses prove completed HTTP; unknown dispatch is not wire evidence.",
+    "unsettled_complete_reported_tokens": 0
+  },
+  "transport_evidence": "42 reserved slots, 41 saved responses and one response/HTTP-dispatch unknown. Receipt dispatched flags are not wire proof. Unknown reserve retained; prices are conservative estimates, not invoices.",
+  "independent_raw_audit": {
+    "status": "PASS",
+    "assertions": 1787,
+    "findings": 0,
+    "result_sha256": "210f3f3b60457a9f9e6aaf1f9887334f529bf35e1bfc0a08dcc503c5ae014911",
+    "auditor_sha256": "a5aa798f816fd47267c204ae8ebe675c57c163c19a43f8a40004917cdcf69d09",
+    "scope": "Frozen payload/native tool prefix/current disk/Decimal reservation accounting only; shared finite VM and pure Markdown parser disclosed, not a performance verdict."
+  },
+  "diagnosis": {
+    "safe_receipt_sha256": "6475997f6ba337122e5c9e65c611532f8ca0edebd442057a966264541ccbabb2",
+    "observations": [
+      "All three DeepSeek cells read the public contract, omitted its null branch and exhausted twelve request slots; no native finish.",
+      "Public contract shorthand None UNKNOWN does not fully specify null output prefix participation, case/type or non-null str coercion; public examples only show strings. This is a measurement-specification limitation, not proof that all errors were caused by the harness.",
+      "DeepSeek full also introduced an unregistered isinstance call; old VM and grades unchanged.",
+      "MiMo full had five known responses then a sixth request waited 64.581 seconds until the actor total 180-second deadline. HTTP dispatch, network/provider/capacity/balance cause unconfirmed.",
+      "No opposite public null rule or wire-text corruption was observed. Stage-one partial scope is explicit; no evidence that unsupported project_tool calls caused these failures."
+    ],
+    "future_action": "Complete the public text semantics from one canonical specification and test projections before another prospective run. Do not add a new governance rule, change models or regrade these observations to hide this gap."
+  },
+  "manual_factual_review": {
+    "status": "BOUNDED_MANUAL_FACTUAL_REVIEW_COMPLETE",
+    "counts": {
+      "current_static_fail_packets": 2,
+      "current_status_UNKNOWN_after_last_patch_packets": 4,
+      "current_validate_UNKNOWN_after_last_patch_packets": 2,
+      "file_claim_VETO_packets": 4,
+      "invoked_covered": 4,
+      "native_report_UNKNOWN": 4,
+      "native_report_absences": 4,
+      "native_report_attempts": 0,
+      "not_invoked": 2,
+      "not_invoked_reason": "Terminal global unknown stop before the trailing cells; no costs or quality imputed.",
+      "overall_factual_VETO_packets": 4,
+      "packets": 4,
+      "partial_project_and_pending_consumer_SUPPORTED_packets": 4,
+      "registered_cells": 6,
+      "whole_project_or_application_success_claims_observed": 0
+    },
+    "private_review_sha256": "5aaa3f0a9618ddc7c6a93362701979eb9353777b8e79458dbf33445a34afc9b9",
+    "safe_aggregate_sha256": "ba658b72dad97ba4e24b34f7a5b1b8f6f9562f7a276c3a6f88b5c1084b60bf14",
+    "limits": [
+      "Limited metadata blindness; identity map contents were not read.",
+      "All four native reports are absent and therefore UNKNOWN.",
+      "Four file-claim vetoes concern persisted core-completion claims contradicted by the public contract and observed source.",
+      "Project partial and consumer pending are legitimate source-stage boundaries.",
+      "Manual veto only; no mechanical score rescue, no missing-cell imputation and no efficacy conclusion.",
+      "No private task body, source text, opaque identity, provider/arm label, reasoning or credential is included."
+    ],
+    "review_cost": {
+      "extraction_is_separate_from_manual_review": true,
+      "extraction_wall_seconds": 0.22604449999926146,
+      "status": "UNKNOWN_NOT_MEASURED",
+      "tokens": null,
+      "wall_seconds": null
+    },
+    "effect": "Four persisted core-completion claims veto factual acceptance; ordinary project partial/consumer-pending statements remain supported. No mechanical FAIL rescue."
+  },
+  "preservation": {
+    "raw_files": 256,
+    "raw_map_sha256_before_after": "b0e445d52e1c9f796e5e00d7e0ac2621f02efdaeb141e4eb8e285985a3ae5629",
+    "frozen_source_and_external_inputs": 130,
+    "source_map_sha256_before_after": "8f9d05b232c23408be9172a57e7d55bc642d60933a39d2cd8da3afb0c13ce008",
+    "baseline_map_sha256_before_after": "2c173faf9c86237f24245adc28f05150b9998aabde3bdc0686653ed672c43db6",
+    "exact_source_copies_preserved": true,
+    "after_receipt_sha256": "7d50041a7987327e9f21e96bcd5ab2e6ada31ffa61b6ba42bce3326383e04246",
+    "owner_terminal_receipt_sha256": "46cd0e9c38bd6d4bffae0c70c7657a65862749a0a0c1218f85b03ad3ee7fb326",
+    "matching_run_process_count": 0,
+    "timing": "Before future candidate edits; frozen copies preserve the original measured source."
+  },
+  "application_execution": false,
+  "cost_comparison": "NOT_QUALIFIED; all observed tasks fail and two controls missing",
+  "net_benefit": "NOT_ESTABLISHED",
+  "release": "BLOCKED",
+  "formal_qualification": "UNASSESSED",
+  "locked_holdout": "NOT_RUN",
+  "default_main_and_installed_skill": "RC19",
+  "replay_resume_append": false,
+  "total_research_model_tokens": null,
+  "total_research_cost": null
+}

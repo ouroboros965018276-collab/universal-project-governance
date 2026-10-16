@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import hashlib
 import json
+import re
 from pathlib import Path
 import shutil
 import sys
@@ -33,13 +35,59 @@ def source_digest(src: Path) -> str:
     return h.hexdigest()
 
 
+def execution_guidance(model: dict) -> list:
+    """Validate optional canonical guidance before either generated surface."""
+    groups = model.get("execution_guidance", [])
+    if not isinstance(groups, list):
+        raise ValueError("execution_guidance must be a list")
+    policy_ids = {policy["id"] for policy in model["policies"]}
+    seen = set()
+    for group in groups:
+        if not isinstance(group, dict) or set(group) != {"id", "policy_ids", "statement"}:
+            raise ValueError("guidance requires id, policy_ids and statement")
+        identity, targets, statement = group["id"], group["policy_ids"], group["statement"]
+        if (not isinstance(identity, str) or re.fullmatch(r"[a-z][a-z0-9_]{0,63}", identity) is None
+                or identity in seen):
+            raise ValueError("guidance IDs must be unique stable identifiers")
+        if (not isinstance(targets, list) or not targets
+                or any(not isinstance(item, str) or item not in policy_ids for item in targets)
+                or len(set(targets)) != len(targets)):
+            raise ValueError("guidance must target existing policies exactly once")
+        if not isinstance(statement, str) or not statement.strip():
+            raise ValueError("guidance statement must be nonempty")
+        seen.add(identity)
+    return groups
+
+
+def operational_guidance(model: dict) -> list:
+    """Validate source-derived workflow routing without adding policy nodes."""
+    groups = model.get("operational_guidance", [])
+    if (not isinstance(groups, list) or any(not isinstance(group, dict)
+            or set(group) != {"id", "policy_ids", "on_field_reporting", "report_levels", "statement"}
+            or type(group["on_field_reporting"]) is not bool
+            or not isinstance(group["report_levels"], list)
+            or any(not isinstance(level, str) or level not in {"none", "change-note", "engineering", "audit"}
+                   for level in group["report_levels"])
+            or len(set(group["report_levels"])) != len(group["report_levels"]) for group in groups)):
+        raise ValueError("invalid operational_guidance")
+    execution_guidance(dict(model, execution_guidance=[
+        {key: group[key] for key in ("id", "policy_ids", "statement")} for group in groups]))
+    return groups
+
+
 def render_skill(src: Path, model: dict) -> str:
+    groups = execution_guidance(model)
+    operational_guidance(model)
     template = (src / "templates" / "SKILL.template.md").read_text(encoding="utf-8")
     hot = "\n".join("%d. **%s** — %s" % (i + 1, item["id"], item["statement"]) for i, item in enumerate(model["hot_path"]))
-    return template.replace("{{VERSION}}", model["version"]).replace("{{HOT_PATH}}", hot)
+    guidance = "\n\n".join("**%s** — %s" % (item["id"], item["statement"]) for item in groups)
+    return (template.replace("{{VERSION}}", model["version"]).replace("{{HOT_PATH}}", hot)
+            .replace("{{EXECUTION_GUIDANCE}}", guidance))
 
 
 def compile_index(src: Path, model: dict) -> dict:
+    # The loaded Skill carries global guidance; plans project selected base closures.
+    execution_guidance(model)
     ids = sorted(p["id"] for p in model["policies"])
     order = model.get("presentation", {}).get("policy_order", ids)
     if (not isinstance(order, list) or any(not isinstance(x, str) for x in order)
@@ -50,7 +98,8 @@ def compile_index(src: Path, model: dict) -> dict:
         item = read_json(path)
         profiles[item["id"]] = item
     task_schema = read_json(src / "schemas" / "task-context.schema.json")
-    return {
+    policies = copy.deepcopy(model["policies"])
+    result = {
         "schema_version": 1,
         "name": model["name"],
         "version": model["version"],
@@ -61,7 +110,7 @@ def compile_index(src: Path, model: dict) -> dict:
         "structural_integration": model["structural_integration"],
         "project_binding": model["project_binding"],
         "default_rules": model["default_rules"],
-        "policies": model["policies"],
+        "policies": policies,
         "presentation": {"policy_order": order},
         "profiles": profiles,
         "complexity_budget": model["complexity_budget"],
@@ -70,6 +119,10 @@ def compile_index(src: Path, model: dict) -> dict:
             "domains": task_schema["properties"]["domains"]["items"]["enum"],
         },
     }
+
+    if "operational_guidance" in model:
+        result["operational_guidance"] = copy.deepcopy(operational_guidance(model))
+    return result
 
 
 def write_text(path: Path, text_value: str):
@@ -89,7 +142,7 @@ def compile_runtime(repo: Path, output: Path):
     write_text(output / "VERSION.md", "# Version\n\nGenerated runtime: **%s**. Canonical version source: governance-src/model/governance-model.json.\n" % model["version"])
     write_text(output / "INTEGRITY.md",
         "# Runtime Integrity\n\nThis directory is compiler-generated. Do not edit it during normal project work. "
-        "Run python3 scripts/validate_integrity.py . Governance upgrades change canonical governance-src, "
+        "Run the verified Python 3.8+ executable with scripts/validate_integrity.py . Governance upgrades change canonical governance-src, "
         "then regenerate the runtime and rerun the complete release gates. The local manifest is tamper-evident, "
         "not an authorization boundary; VCS/CI/release digests remain external trust anchors.\n"
     )

@@ -1,5 +1,19 @@
 # Changelog
 
+## 3.0.0-rc.20 — 2026-10-14 — candidate
+
+- Integrates four canonical guidance groups for reader relevance, complete changes, evidence fidelity and task-scoped reading through the existing policy graph; required safety/quality closures remain protected.
+- Pins and acknowledges Caveman, Ponytail, Academic Humanizer, reverse-skill and SkillOpt with explicit adaptation/exclusion and acceptance mapping; no external persona or toolchain is automatically installed.
+- Routes maintenance through the existing module map and bounded link/anchor validation, with progressive expansion and stale-state recovery rather than whole-document loading.
+- Keeps current usage/state concise and links frozen historical evidence; no model-effectiveness or Stable claim follows from tests or document shortening.
+- Adds repository-only finite Python behavior contracts for new tool studies after public equivalent-program counterexamples exposed whole-module AST false negatives; preserves the aborted round and unchanged historical AST semantics. Supported syntax, bounds and finite-probe limits are explicit.
+- Compacts the generated core without removing policies; adds public path metadata, bounded probe-free diagnostics and fixed transport phase receipts to the repository API helper. New callers explicitly select native terminal reporting; legacy prompts and closed results keep their original identities. Handoff contracts require affected reads and preserve complete protected-byte checks.
+- Publishes the evidence manifest shape and free-prose document assertions with external factual review, actual-snapshot handoffs and an explicit 8192-token thinking profile; disabled/4096 compatibility remains available. Closed development failures retain their costs and grades.
+- On 2026-10-16, follows closed tool-task failures with explicit missing-path reads and guarded single-fragment edits in the repository engineering broker; current SHA, observed reads, batch bounds and replay proofs remain required. Canonical guidance distinguishes existing/planned paths and patch/replacement semantics, with budget for final validation and handoff. New source and qualification identities do not reinterpret the failed rounds or establish benefit.
+
+- Returns narrowly verified, unchanged-state engineering patch preflight errors to the model within existing budgets. Protected paths, partial writes and uncertain state remain terminal; rejected edits never count as task success. Clarifies optional fragment fields and distinct-path batches after the locked primary9 failures.
+
+
 ## 3.0.0-rc.19 — 2026-10-13 — candidate
 
 - Separates RC18 historical tail latency from reproduced preparation costs; retains the original paired outcome.

@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "study_id": "upg-rc20-context-independent-v1",
+  "scope": "仅披露 native 六臂研究的终止状态与独立原始证据审计；不包含跨提供商 API 研究结果。",
+  "maturity": "release-candidate",
+  "experiment": {
+    "status": "unknown-call-blocked",
+    "planned_dispatches": 84,
+    "dispatched": 12,
+    "known_strict_passes": 11,
+    "unknown_calls": 1,
+    "unrun_calls": 72,
+    "known_reported_tokens": 974746,
+    "unknown_call_tokens": null,
+    "complete_token_cost": null,
+    "net_benefit_gate": "FAIL",
+    "formal_qualification": "UNASSESSED",
+    "paired_cost_95_interval": null,
+    "interpretation": "收集不完整，不能形成完整配对成本区间、净收益证明或 Stable 结论。未知调用消耗不得按零计算；已知 token 仅为已完成 turn 的报告用量。"
+  },
+  "registration": {
+    "source_revision": "a0eba6adb557b6046f9e2dad1a22f0c0de8f4237",
+    "public_registration_revision": "f94580050545fe5ed620f32acd88e7b9494c7b6f",
+    "protocol_sha256": "a1ab764ddcbf0f161087ba86f559dbd5fa12774ba0732b0573b8f38e4f93542a",
+    "public_protocol_path": "evolution/protocol/rc20-context-independent-v1.json",
+    "public_protocol_sha256": "a7c54857ef02a2970f1f932b2ee0793392c7c128fe1498c3c142e24b739b1910",
+    "driver_sha256": "3352d5f186d1c2370986a79ca3bc0c0cb9829422e9a378dee9bb51a01c9c05f1",
+    "ci": {
+      "run_id": 38495775319,
+      "successful_jobs": 11,
+      "conclusion": "success",
+      "evidence_basis": "主任务已观察的发布前 CI 结果；本摘要未另发网络请求。"
+    }
+  },
+  "zero_inference_preflight_archive": {
+    "path": "eval-workspaces/rc20-context-preflight1-zero-inference",
+    "original_files": 328,
+    "added_metadata_files": 2,
+    "inference_dispatches": 0,
+    "driver_backup_path": "eval-workspaces/rc20-context-driver-preflight1.py",
+    "original_driver_sha256": "86ed15f0b1ff124e9276fe3c8b7b587419e777398d932eaa48292db2458da3ac",
+    "original_protocol_sha256": "ede3412355c62e5db435bd6828ff7d940c5bbf41ef6bb84ca4cea3232866000c",
+    "original_public_protocol_sha256": "72e2b30e938fee0ea605acf033e296ed6c1fb200733ef510905342d6fd955efd",
+    "supersession_metadata_sha256": "f51db7394b18b36deb15994c290ae28e817e2ea437d135da05b372dfe1483753",
+    "reason": "发送前审查发现只核对可变 freeze、未同时锚定已审协议的身份绑定缺口。原字节保留后修复 actual/freeze/protocol 交叉绑定，以相同候选、任务、矩阵和范围重新准备；不是新增推理轮次。"
+  },
+  "independent_raw_audit": {
+    "version": 2,
+    "audit_status": "PASS",
+    "assertions": 1131,
+    "original_files": 690,
+    "original_bytes_unchanged": true,
+    "original_bytes_map_sha256": "5d4d1ea7d7471cbc91a387174dbcff38913e25460868f3ac524611ae16b9b29e",
+    "result_path": "eval-workspaces/rc20-native-raw-audit.result.v2.json",
+    "result_sha256": "75468c76ed854f9a5a386f5473851ef24f61ef365d4fc98931f81bbf2026055d",
+    "previous_result_sha256": "c9a176ed76142826295e20a7bd5a8703cfb84489a1cba59ca118a709a2b0e68e",
+    "wall_seconds_by_version": {
+      "v1": 1.7173018,
+      "v2": 1.4843538
+    },
+    "wall_seconds_total": 3.2016556,
+    "audit_model_calls": 0,
+    "retained_global_unknown_fences": 1,
+    "interpretation": "审计 PASS 表示所核验原始记录和字节保持一致，不改变实验 net FAIL。"
+  },
+  "unknown_call_observation": {
+    "diagnostic": "Connection failed: error sending request",
+    "cli_exit_code": 1,
+    "stdout_events": 5,
+    "stdout_event_counts": {
+      "error": 1,
+      "item.completed": 1,
+      "thread.started": 1,
+      "turn.failed": 1,
+      "turn.started": 1
+    },
+    "completed_turn_usage": null,
+    "broker_operations": 0,
+    "actual_changed_files": 0,
+    "protected_changed_files": 0,
+    "receipt_status": "completed-identity-or-usage-unconfirmed",
+    "charge": "unknown",
+    "attribution": "仅记录已观察的发送失败。不能据此推断责任方、服务容量、账户余额或其他连接故障的因果关系。"
+  },
+  "continuity": {
+    "unknown_replay_or_append": false,
+    "historical_rc19_fail_outcomes_upgraded": false,
+    "historical_rc19_fences_removed": false,
+    "historical_evidence_rewritten": false,
+    "disclosure": "保留原 RC19 FAIL 结果与围栏；本摘要不公开私有任务正文、提示、私有推理、密钥或 690 项逐文件映射。"
+  }
+}

@@ -1,0 +1,154 @@
+{
+  "schema_version": 1,
+  "study_id": "upg-rc20-tools-thinking-development-v1",
+  "recorded_at_utc": "2026-10-14T18:05:16.211680+00:00",
+  "preflight": "rc20-tools-thinking-development-v1.preflight.json",
+  "protocol_sha256": "11ca27346df362d7d37b9801213a42368da6d859a64f7d9e570c87fb8d28ba06",
+  "preflight_sha256": "f17cb01337d77814b6b52bbd05a98e90f502ceaad9a83163e2364a81ab03a24f",
+  "candidate_source_commit": "85838b9bcd248e0a39e8fc74bc250a43806456c6",
+  "precall_publication_commit": "18b7ba6ce8cb9eb2ac64526b8edf0d959cf9c917",
+  "scope": "Exposed development, full candidate only. Thinking and output cap changed jointly. No baseline, independent efficacy, cross-round causal inference or Stable claim.",
+  "status": "unknown-call-global-stop",
+  "profile": "thinking-enabled-8192-v1",
+  "quality": {
+    "maximum_planned_actors": 20,
+    "actual_actors": 2,
+    "strict_pass": 0,
+    "native_finish_attempts": 0,
+    "receivers_invoked": 0,
+    "direct_actors_invoked": 0,
+    "document_chain_actors_invoked": 0,
+    "qualified_handoffs": 0,
+    "full_factual_review": "UNASSESSED"
+  },
+  "actor_diagnosis": [
+    {
+      "provider": "deepseek",
+      "status": "request-budget-exhausted",
+      "requests": 12,
+      "wall_seconds": 67.17330920000131,
+      "executed_tools": 15,
+      "validation_attempts": 4,
+      "all_validate_results_false": true,
+      "last_request": {
+        "elapsed_seconds": 9.276294199999029,
+        "response_artifact_retained": true,
+        "usage_available": true,
+        "transport": {
+          "connection_attempted": true,
+          "exception_class": null,
+          "http_dispatch": "response_received",
+          "phase": "complete"
+        }
+      },
+      "bounded_observation": "Repeated edits did not implement the public null/unknown rule; no terminal report."
+    },
+    {
+      "provider": "mimo",
+      "status": "unknown-call-blocked",
+      "requests": 4,
+      "wall_seconds": 180.07482999999957,
+      "executed_tools": 5,
+      "validation_attempts": 1,
+      "all_validate_results_false": true,
+      "last_request": {
+        "elapsed_seconds": 49.76840389999961,
+        "response_artifact_retained": false,
+        "usage_available": false,
+        "transport": {
+          "connection_attempted": null,
+          "exception_class": null,
+          "http_dispatch": "unknown",
+          "phase": "deadline-wait"
+        }
+      },
+      "bounded_observation": "Three known responses then fourth request reached actor deadline without saved response/usage. Network/provider/capacity/balance cause unconfirmed."
+    }
+  ],
+  "accounting": {
+    "all_raw_known_components_estimate": {
+      "deepseek": {
+        "USD": "0.0732117"
+      },
+      "mimo": {
+        "CNY": "0.113145",
+        "USD": "0.016406025"
+      }
+    },
+    "artifact_inventory_complete": true,
+    "boundary": "Peak/all-input-miss estimates, not invoice; unknown reserves may overlap known charges; MiMo currency alternatives not summed; missing usage not zero.",
+    "committed_estimate": {
+      "deepseek": {
+        "USD": "0.0732117"
+      },
+      "mimo": {
+        "CNY": "0.113145",
+        "USD": "0.016406025"
+      }
+    },
+    "dispatched_http_requests": 16,
+    "elapsed_seconds": 248.03099999999904,
+    "known_reported_tokens": 241092,
+    "ledger_status": "unknown-call-global-stop",
+    "pending_reservations": 1,
+    "raw_incomplete_usage_requests": 1,
+    "raw_reported_total_tokens_subtotal": 241092,
+    "request_slots": 16,
+    "retained_unknown_reservation_estimate": {
+      "deepseek": {
+        "USD": "0"
+      },
+      "mimo": {
+        "CNY": "0.229755",
+        "USD": "0.033314475"
+      }
+    },
+    "unsettled_complete_reported_tokens": 0
+  },
+  "accounting_dispatch_limit": "16 reserved request slots; 15 saved HTTP200 responses, one dispatch/response unknown. The inherited dispatched_http_requests field is not proof of final request HTTP dispatch.",
+  "original_independent_audit": {
+    "status": "FAIL",
+    "assertions": 743,
+    "findings": 17,
+    "result_sha256": "7ca0608e344abd858ea89054de57873d50f6ceffd6546242bc21e24d9329d22f",
+    "auditor_sha256": "35a66f7bab5478976052ba7e0fb92cc3d20dc13167ff436c285aee967d01713e",
+    "cause": "Auditor payload reconstruction omitted the sixth repo_finish tool. Sixteen request-hash mismatches produced one derived DeepSeek prefix finding. Original source/result retained."
+  },
+  "separate_readonly_binding_supplement": {
+    "sha256": "37e64bda832e4df7eec39c905cc6a7602b661480ce14a76a623b68cb4f68997d",
+    "exact_six_tool_payload_matches": 16,
+    "observed_executed_events_replayed": 20,
+    "namespace_protected_bytes_and_current_disk_match": true,
+    "scope": "Appends only the fixed omitted tool for request reconstruction; no task regrade, original FAIL rewrite, unknown-charge removal or physical-damage inference."
+  },
+  "evidence_preservation": {
+    "raw_files": 110,
+    "raw_map_sha256_before_after": "19b4fcc727e296109dde568b3e49e54f7d3cce229ece8be243df1a6e7943066e",
+    "source_and_audit_inputs": 124,
+    "source_map_sha256_before_after": "4be1a1e94fb579bc818429dc15594e7505ad884e2f5e4bea1f2558ea30ceba07",
+    "exact_source_copies_preserved": true,
+    "owner_terminal_receipt_sha256": "27418cec3a521b578cee2dc7e9eed812839370058acd6dc54a20d4c0ff7aeb45",
+    "matching_run_process_count": 0
+  },
+  "factual_review": {
+    "rubric_sha256": "be1cc7494d7565a805993cfe2c2430f809c29a53d487948bc1451754a3f537a1",
+    "extraction_receipt_sha256": "66d2ae7074cd11d68b77a63881971514e029391697b1b945616f61e393126835",
+    "observed_reports": 0,
+    "explicit_report_absences": 2,
+    "document_chains": "NOT_RUN",
+    "verdict": "UNASSESSED; absence is not factual PASS",
+    "review_tokens": null,
+    "review_seconds": null
+  },
+  "application_execution": false,
+  "billing_invoice_confirmed": false,
+  "research_and_conversation_tokens": null,
+  "research_and_conversation_cost": null,
+  "cost_comparison": "NOT_AVAILABLE",
+  "net_benefit": "NOT_ESTABLISHED",
+  "release": "BLOCKED",
+  "formal_qualification": "UNASSESSED",
+  "locked_holdout": "NOT_RUN",
+  "default_main_and_installed_skill": "RC19",
+  "replay_resume_append": false
+}

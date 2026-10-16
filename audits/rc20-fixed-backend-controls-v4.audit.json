@@ -1,0 +1,59 @@
+{
+  "release": "3.0.0-rc.20",
+  "observed_at_utc": "2026-10-15T21:25:41.548871+00:00",
+  "default_branch_and_local_install": "RC19 unchanged",
+  "net_benefit": "NOT_ESTABLISHED",
+  "formal_qualification": "UNASSESSED",
+  "locked_trial": "NOT_RUN",
+  "schema": "rc20-fixed-backend-control-audit-v1",
+  "status": "FIRST_RAW_FAIL_CLOSED_NO_REPLAY",
+  "scope": "Three public-development representative fixtures and fixed negative controls; zero model calls, no efficacy.",
+  "source_protocol_sha256": "fa4ad9fa574639b17cf704c959c2a1e5bc12e6461b3e01d6c648a459db49ef8b",
+  "observed": {
+    "pure_rows_completed": 3,
+    "backend_attempts": 1,
+    "backend_rows_completed": 0,
+    "original_terminal_unknown": true,
+    "original_first_reference_receipt": "NOT_EXECUTED",
+    "registered_total_rows": 32,
+    "model_provider_calls": 0
+  },
+  "first_audit": {
+    "process_exit_code": 1,
+    "report_sha256": "7c6030484284b2204f8214da471eaf6e997a1b3997c7efc83b8d40274196c6ed",
+    "first_error": {
+      "code": "TERMINAL_EXPECTATION_MISMATCH:status",
+      "phase": "ENTRY_OR_AUDIT_BODY",
+      "type": "AuditError"
+    },
+    "all_original_raw_files": 32,
+    "raw_before_after_exact": true,
+    "source_before_after_exact": true,
+    "original_reader_calls": 0,
+    "classification": "No reference/negative qualification established."
+  },
+  "bounded_diagnosis": {
+    "receipt_sha256": "63604d1409c8372e592ceb3b5dd6e2dbc1542e45adc4686b4e052f07f9f5bb9e",
+    "finding": "On Windows, subprocess.Popen emits a command string after stdlib list2cmdline; the frozen local audit hook required a list and rejects that legitimate Docker event.",
+    "evidence": "Original first reference is NOT_EXECUTED with first-image intent but no command receipt; a new pre-CreateProcess sentinel captures the native str/None event and the original guard AST rejects it.",
+    "new_probe_Docker_processes": 0,
+    "first_result_rewritten": false
+  },
+  "preparation_failures_retained": [
+    "First auditor source incorrectly expected combined original command/exit receipt; a new source identity adapted the two originals before any actual audit.",
+    "Root first source-check preparation omitted the paired error-label AST update; failed before grant/process. One corrected source-check entry invoked the first actual auditor once."
+  ],
+  "new_candidate_source_only": {
+    "protocol_sha256": "9e47519b34884d055cd71afc8a15946c73309e879ba5fe245b627cf698f6a0a0",
+    "independent_source_closure_sha256": "c79915c3a6be2694f5f0b3b2f99d60ebad6c590279640ad59a6aa9f9b493d29e",
+    "fixed32_rows_inputs_contracts40testIDs_and_budgets_unchanged": true,
+    "actual_started_at_this_snapshot": false
+  },
+  "preservation": {
+    "original_zip_sha256": "d57e27954455d96dc18ac9d09ea6f83f567a5eee1e61761ed1a5a8e8c94806c2",
+    "original_entries": 122,
+    "original_independent_byte_check_sha256": "f17bfc0d8e2151d416c2b72f4569115ec49a0d78f38cec9bbb1d73fca1c7224b",
+    "six_source_metadata_supplement_zip_sha256": "252a0000d3c6158d5961cd158c76675dbb06f32b3f84ca74c4fe1bfd73e95d58",
+    "supplement_independent_byte_check_sha256": "0065b120ce278ed2e31bf2aee8b4629eeae0583db791d533475eae449c3e5c81"
+  }
+}
