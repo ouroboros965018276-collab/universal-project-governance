@@ -684,6 +684,32 @@ def _api_quality(broker, before, final_text, native_trace, extra_failures, execu
     return result
 
 
+def _recoverable_engineering_patch(tool, arguments, result, event, task, before, after):
+    """Deliver only known preflight rejections with verified unchanged state.
+
+    This does not repair arguments or alter the original rejection/receipt. The
+    caller bounds feedback opportunities with its existing request/tool/deadline budgets.
+    """
+    errors = {
+        "ValueError: patch precondition hash mismatch",
+        "ValueError: patch path is protected or duplicated",
+        "ValueError: patch must make a nonempty bounded change",
+        "ValueError: old_text must occur exactly once in the current file",
+    }
+    if (tool != "repo_patch" or type(result) is not dict or set(result) != {"ok", "error"}
+            or result.get("ok") is not False or type(result.get("error")) is not str
+            or result["error"] not in errors
+            or before is None or after is None or before != after
+            or event.get("state_sha256") != after
+            or event.get("arguments_sha256") != sha(canonical(arguments))
+            or event.get("result_sha256") != sha(canonical(result))):
+        return False
+    operations = arguments.get("operations")
+    return (type(operations) is list and bool(operations)
+            and all(type(op) is dict and type(op.get("path")) is str
+                    and op["path"] in task["writable_files"] for op in operations))
+
+
 def _recoverable_tool_feedback(tool, arguments, result, event, task, execution_backend=None):
     """Recognize only the broker's two bounded, non-terminal negative results.
 
@@ -1669,6 +1695,15 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                         work_cutoff_reached = True
                         status = "work-deadline-settled-unfinished"
                         break
+                    before_patch_state = None
+                    if engineering and name == "repo_patch":
+                        try:
+                            before_patch_state = sha(canonical(broker.snapshot()))
+                        except (OSError, ValueError, UnicodeError):
+                            failures.append("api-tool-rejected:unverified-pre-patch-state")
+                            execution_state_unknown, execution_infrastructure_failed = True, True
+                            status = "execution-state-unknown-blocked"
+                            break
                     result = broker.call(name, args)
                     event = broker.events[-1]
                     trace = {"api_response_id": raw["id"], "api_model": raw["model"], "request_index": index,
@@ -1708,6 +1743,10 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                             status = "execution-state-unknown-blocked" if execution_state_unknown else "execution-infrastructure-blocked"
                             break
                         known_engineering_failure = engineering is not None and result.get("ok") is False
+                    if (engineering
+                            and _recoverable_engineering_patch(name, args, result, event, task,
+                                before_patch_state, current)):
+                        known_engineering_failure = True
                     if result.get("ok") is not True and not (known_engineering_failure if engineering else
                             _recoverable_tool_feedback(name, args, result, event, task, execution_backend)):
                         failures.append("api-tool-rejected:broker-denied")

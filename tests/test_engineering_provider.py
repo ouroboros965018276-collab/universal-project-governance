@@ -14,6 +14,7 @@ from unittest.mock import Mock, patch
 
 from test_provider_tools import _ProviderFixture, call, completion
 import evolution.provider_tools as lab
+from evolution import engineering_broker as real_engineering
 from evolution.tool_broker import RepoBroker, canonical, sha, tool_definitions, validate_task
 
 # Observed original baseline source, not a second implementation.
@@ -34,6 +35,9 @@ class EngineeringCandidateTests(_ProviderFixture, unittest.TestCase):
         self.validation_failed = False
         self.deny_patch = False
         self.tamper_state = False
+        self.real_patch = False
+        self.patch_fault = None
+        self.fail_next_snapshot = False
         owner = self
 
         class MockEngineeringBroker(RepoBroker):
@@ -57,9 +61,27 @@ class EngineeringCandidateTests(_ProviderFixture, unittest.TestCase):
                     return {'ok': False, 'error': 'registered scope denied'}
                 return super()._execute(name, args)
 
+        class RealPatchBroker(real_engineering.EngineeringBroker):
+            # Keep execution/grading synthetic while exercising real project
+            # reads, patch preflight, writes, snapshots and journal receipts.
+            _validate_task = staticmethod(validate_task)
+            validate = MockEngineeringBroker.validate
+
+            def snapshot(self):
+                if owner.fail_next_snapshot:
+                    owner.fail_next_snapshot = False
+                    raise ValueError('synthetic unverifiable pre-patch snapshot')
+                return super().snapshot()
+
+            def _execute(self, name, args):
+                if name == 'repo_patch' and owner.patch_fault:
+                    return owner.patch_fault(self, args)
+                return super()._execute(name, args)
+
         def create(root, task, git_binary, *, audit_file=None, max_calls=32,
                    deadline=None, execution_artifacts=None):
-            broker = MockEngineeringBroker(root, task, git_binary,
+            broker_type = RealPatchBroker if self.real_patch else MockEngineeringBroker
+            broker = broker_type(root, task, git_binary,
                          audit_file=audit_file, max_calls=max_calls, deadline=deadline)
             self.brokers.append((broker, execution_artifacts))
             return broker
@@ -183,6 +205,129 @@ class EngineeringCandidateTests(_ProviderFixture, unittest.TestCase):
         self.assertTrue(result['execution_state_unknown'])
         self.assertFalse(result['quality']['hard_pass'])
         self.assertEqual(result['usage']['total_tokens'],45)
+
+    def project_patch(self, index, operations):
+        return completion(index, [call('patch-'+str(index), 'repo_patch', {'operations': operations})])
+
+    def enable_real_patch(self):
+        self.real_patch = True
+        self.module.tool_definitions.side_effect = real_engineering.tool_definitions
+
+    def test_real_preflight_rejections_are_original_feedback_then_provider_repairs(self):
+        self.enable_real_patch()
+        operation = {'path': 'target.txt', 'old_sha256': sha(b'old\n'), 'new_text': 'fixed\n'}
+        bad_operations = [
+            [dict(operation, old_sha256='0'*64)],
+            [operation, operation],
+            [dict(operation, new_text='old\n')],
+            [dict(operation, old_text='absent')],
+        ]
+        errors = ['patch precondition hash mismatch', 'patch path is protected or duplicated',
+                  'patch must make a nonempty bounded change', 'old_text must occur exactly once in the current file']
+        steps = [self.read(1)]
+        for index, operations in enumerate(bad_operations, 2):
+            def reject(payload, index=index, operations=operations):
+                if index > 2:
+                    self.assertEqual(self.feedback(payload), {'ok': False, 'error': 'ValueError: '+errors[index-3]})
+                self.assertEqual((self.workspace/'target.txt').read_bytes(), b'old\n')
+                return self.project_patch(index, operations)
+            steps.append(reject)
+        def repair(payload):
+            self.assertEqual(self.feedback(payload), {'ok': False, 'error': 'ValueError: '+errors[-1]})
+            return self.project_patch(6, [operation])
+        result, count = self.run_steps(steps + [repair, self.validate_and_status(7), self.finish(8)])
+        self.assertEqual(count, 8)
+        self.assertTrue(result['quality']['hard_pass'])
+        self.assertEqual((self.workspace/'target.txt').read_bytes(), b'fixed\n')
+        events = result['tool_events']
+        for event, error in zip(events[1:5], errors):
+            self.assertEqual(event['result'], {'ok': False, 'error': 'ValueError: '+error})
+            self.assertEqual(event['state_sha256'], events[0]['state_sha256'])
+        self.assertEqual(len(result['api_tool_trace']), len(events))
+        self.assertEqual(real_engineering.files_from_receipt_journal(self.task, events),
+                         {'target.txt': 'fixed\n', 'contract.json': '{}\n'})
+
+    def test_safe_preflight_feedback_cannot_extend_request_budget(self):
+        self.enable_real_patch()
+        bad = {'path': 'target.txt', 'old_sha256': '0'*64, 'new_text': 'fixed\n'}
+        result, count = self.run_steps([self.read(1), self.project_patch(2, [bad])], max_requests=2)
+        self.assertEqual(count, 2)
+        self.assertFalse(result['quality']['hard_pass'])
+        self.assertEqual((self.workspace/'target.txt').read_bytes(), b'old\n')
+        self.assertEqual(len(result['tool_events']), 2)
+
+    def test_partial_write_shape_cannot_be_safe_preflight_feedback(self):
+        self.enable_real_patch()
+        self.patch_fault = lambda broker, args: {'ok': False,
+            'error': 'ValueError: patch precondition hash mismatch', 'changed': [],
+            'files': {}, 'write_state': 'partial-or-unverified'}
+        result, count = self.run_steps([self.read(1), self.patch_from_read(2, 'fixed\n')])
+        self.assertEqual(count, 2)
+        self.assertEqual(result['status'], 'unknown-tool-write-blocked')
+        self.assertTrue(result['execution_state_unknown'])
+
+    def test_failed_prepatch_snapshot_marks_unknown_without_calling_patch(self):
+        self.enable_real_patch()
+        def fail_snapshot(payload):
+            self.fail_next_snapshot = True
+            return self.project_patch(2, [{'path': 'target.txt', 'old_sha256': '0'*64, 'new_text': 'fixed\n'}])
+        result, count = self.run_steps([self.read(1), fail_snapshot])
+        self.assertEqual(count, 2)
+        self.assertEqual(result['status'], 'execution-state-unknown-blocked')
+        self.assertTrue(result['execution_state_unknown'])
+        self.assertEqual([e['tool'] for e in result['tool_events']], ['repo_read'])
+        self.assertEqual((self.workspace/'target.txt').read_bytes(), b'old\n')
+
+    def test_state_change_with_known_preflight_error_is_terminal(self):
+        self.enable_real_patch()
+        def drift(broker, args):
+            (self.workspace/'target.txt').write_bytes(b'drift\n')
+            return {'ok': False, 'error': 'ValueError: patch precondition hash mismatch'}
+        self.patch_fault = drift
+        result, count = self.run_steps([self.read(1), self.patch_from_read(2, 'fixed\n')])
+        self.assertEqual(count, 2)
+        self.assertEqual(result['status'], 'tool-contract-failed')
+        self.assertFalse(result['quality']['hard_pass'])
+
+    def test_duplicate_error_cannot_hide_later_protected_or_unregistered_path(self):
+        error = {'ok': False, 'error': 'ValueError: patch path is protected or duplicated'}
+        for path in ('contract.json', 'unregistered.txt'):
+            args = {'operations': [{'path': 'target.txt'}, {'path': 'target.txt'}, {'path': path}]}
+            event = {'state_sha256': 'a'*64, 'arguments_sha256': sha(canonical(args)),
+                     'result_sha256': sha(canonical(error))}
+            self.assertFalse(lab._recoverable_engineering_patch('repo_patch', args, error, event,
+                self.task, 'a'*64, 'a'*64))
+
+    def test_real_protected_batch_is_terminal_before_any_patch(self):
+        self.enable_real_patch()
+        operation = {'path': 'target.txt', 'old_sha256': '0'*64, 'new_text': 'fixed\n'}
+        protected = {'path': 'contract.json', 'old_sha256': sha(b'{}\n'), 'new_text': 'changed\n'}
+        result, count = self.run_steps([self.read(1), self.project_patch(2, [operation, protected])])
+        self.assertEqual(count, 2)
+        self.assertEqual(result['status'], 'tool-contract-failed')
+        self.assertEqual([e['tool'] for e in result['tool_events']], ['repo_read'])
+        self.assertEqual((self.workspace/'contract.json').read_bytes(), b'{}\n')
+
+    def test_known_error_requires_verified_both_snapshots_and_receipts(self):
+        args = {'operations': [{'path': 'target.txt'}]}
+        result = {'ok': False, 'error': 'ValueError: patch precondition hash mismatch'}
+        event = {'state_sha256': 'a'*64, 'arguments_sha256': sha(canonical(args)),
+                 'result_sha256': sha(canonical(result))}
+        for before, after in ((None, 'a'*64), ('a'*64, None), ('b'*64, 'a'*64)):
+            self.assertFalse(lab._recoverable_engineering_patch('repo_patch', args, result,
+                event, self.task, before, after))
+        for field in ('state_sha256', 'arguments_sha256', 'result_sha256'):
+            self.assertFalse(lab._recoverable_engineering_patch('repo_patch', args, result,
+                dict(event, **{field: None}), self.task, 'a'*64, 'a'*64))
+
+    def test_old_text_null_is_rejected_without_silent_normalization(self):
+        self.enable_real_patch()
+        operation = {'path': 'target.txt', 'old_sha256': sha(b'old\n'), 'new_text': 'fixed\n', 'old_text': None}
+        result, count = self.run_steps([self.read(1), self.project_patch(2, [operation])], max_requests=2)
+        self.assertEqual(count, 2)
+        self.assertEqual(result['schema_rejections'], 1)
+        self.assertEqual([e['tool'] for e in result['tool_events']], ['repo_read'])
+        self.assertEqual((self.workspace/'target.txt').read_bytes(), b'old\n')
 
     def test_unknown_execution_preserves_actor_pending_fence(self):
         self.validation_unknown=True

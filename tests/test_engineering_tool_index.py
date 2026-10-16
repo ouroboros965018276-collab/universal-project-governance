@@ -165,19 +165,23 @@ class EngineeringToolIndexTests(_ProviderFixture,unittest.TestCase):
         feedback = json.loads([m['content'] for m in payloads[2]['messages'] if m['role'] == 'tool'][-1])
         self.assertEqual(feedback['files']['pkg.py']['sha256'], sha(b'value = 2\n'))
 
-    def test_bad_fragment_stays_terminal_with_known_attempt_cost(self):
+    def test_bad_fragment_feedback_preserves_failed_quality_and_attempt_cost(self):
         operation = {'path': 'pkg.py', 'old_sha256': sha(b'value = 1\n'), 'old_text': 'missing', 'new_text': '2'}
-        result, _, actual, _ = self.produce([self.item()], following=[
+        result, payloads, actual, _ = self.produce([self.item()], following=[
             [call('bad-fragment', 'repo_patch', {'operations': [operation]})]])
-        self.assertEqual(result['status'], 'tool-contract-failed')
-        self.assertEqual(result['requests'], 2)
-        self.assertEqual(result['tool_attempts'], 2)
-        self.assertEqual(result['known_usage']['total_tokens'], 30)
+        self.assertEqual(result['status'], 'completed')
+        self.assertEqual(result['requests'], 3)
+        self.assertEqual(result['tool_attempts'], 3)
+        self.assertEqual(result['known_usage']['total_tokens'], 45)
         self.assertEqual(result['schema_rejections'], 0)
         self.assertEqual([row[1] for row in actual], ['repo_read', 'repo_patch'])
         self.assertFalse(result['tool_events'][-1]['result']['ok'])
         self.assertFalse(result['execution_state_unknown'])
-        self.assertIsNone(result['final_report'])
+        self.assertIsNotNone(result['final_report'])
+        self.assertEqual(result['quality']['task_success'], 0)
+        self.assertFalse(result['quality']['hard_pass'])
+        feedback = json.loads([m['content'] for m in payloads[2]['messages'] if m['role'] == 'tool'][-1])
+        self.assertEqual(feedback, result['tool_events'][-1]['result'])
         self.assertEqual((self.workspace / 'pkg.py').read_bytes(), b'value = 1\n')
         self.assertEqual(engineering.files_from_receipt_journal(self.task, result['tool_events']), self.task['initial_files'])
 

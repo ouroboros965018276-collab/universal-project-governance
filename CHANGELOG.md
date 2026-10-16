@@ -11,6 +11,8 @@
 - Publishes the evidence manifest shape and free-prose document assertions with external factual review, actual-snapshot handoffs and an explicit 8192-token thinking profile; disabled/4096 compatibility remains available. Closed development failures retain their costs and grades.
 - On 2026-10-16, follows closed tool-task failures with explicit missing-path reads and guarded single-fragment edits in the repository engineering broker; current SHA, observed reads, batch bounds and replay proofs remain required. Canonical guidance distinguishes existing/planned paths and patch/replacement semantics, with budget for final validation and handoff. New source and qualification identities do not reinterpret the failed rounds or establish benefit.
 
+- Returns narrowly verified, unchanged-state engineering patch preflight errors to the model within existing budgets. Protected paths, partial writes and uncertain state remain terminal; rejected edits never count as task success. Clarifies optional fragment fields and distinct-path batches after the locked primary9 failures.
+
 
 ## 3.0.0-rc.19 — 2026-10-13 — candidate
 
