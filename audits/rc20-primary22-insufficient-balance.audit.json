@@ -428,7 +428,7 @@
       }
     ],
     "structural_context_followup": {
-      "status": "ORIGINAL_SCANNER_NEUTRAL_PATH_REAL_DOCKER_VERIFIED_PROSPECTIVE_ENTRY_PREPARING",
+      "status": "EXISTING_NATIVE_ZERO_MODEL_PROOF_VERIFIED_TAIL_PREPARING",
       "cause": "full thinking and tool messages are resent at each actor request; input grows across settled tool turns",
       "same_conversation_reasoning_deletion_allowed": false,
       "direction": "one explicit deterministic project-fact checkpoint into a new conversation, same actor/project/task/baseline and cumulative budgets; no LLM summary",
@@ -732,6 +732,110 @@
           "model_calls": 0,
           "task_or_study_qualification_assessed": false
         }
+      },
+      "neutral_namespace_development_retest": {
+        "status": "FAILED_NATIVE_STAGE_EVIDENCE_UNKNOWN_NO_REPLAY",
+        "observed_at": "2026-10-18T20:51:25.284048+00:00",
+        "exec_session_id": 93600,
+        "start_exec_chunk_id": "dce29b",
+        "protocol_sha256": "d35116304fda9aae7b2b488dd9d41879127022aa91c762fbc75c7c5f570e266a",
+        "execution_plan_sha256": "11894604c9a87a2140c20fd308f900d17f98380a2da9246e9e301dca011637b6",
+        "binder_sha256": "b2a5b7f2a6dd84ad99e1032b845ca2af9590eb1c5ba714538078b855cba9bdf8",
+        "binder_exec_chunk_id": "3662b8",
+        "original_scanner_preserved": true,
+        "previous_failed_trial_reclassified": false,
+        "all12plans_reused": true,
+        "new_planners": 0,
+        "roles": 15,
+        "workflows": 9,
+        "only_new_bound_files": [
+          "protocol.json",
+          "commands.json",
+          "execution-plan.json"
+        ],
+        "tasks_source_system_disclosure_profile_budgets_and_score_unchanged": true,
+        "original54_or_first36_repeated": false,
+        "fresh_holdout_claim": false,
+        "quality_or_net_benefit_established": false,
+        "observation": {
+          "terminal_exists": true,
+          "request_slots": 24,
+          "known_reported_tokens": 749109,
+          "pending": 1,
+          "actor_publications": 2
+        },
+        "exit_code": 1,
+        "terminal_exec_chunk_id": "bcd0ee",
+        "terminal_sha256": "9945b873dc3738ed494a0e462a3d2cff309d120920c7afe78110ffbe4e11d196",
+        "ledger_sha256": "e2f2709bfb275771d1650e4408dc5d735a4fd35938f0f038844f2402a639e4d0",
+        "owner_closed_sha256": "942bb8f3be015cc857333f3aefb524829acecd007987f900f58629f17ead24f7",
+        "owner_exit_sha256": "64e7091155b292fa5e2c9c23da4e1ab9273f6f9a05974eeccee9e2bcd4500a4f",
+        "known_reported_api_tokens": 749109,
+        "api_request_slots": 24,
+        "pending_records": 1,
+        "first_error": {
+          "actor_id": "w004-source",
+          "exception_class": "StudyStop"
+        },
+        "owner_status": "UNKNOWN_NO_REPLAY",
+        "actual_process_exited": true,
+        "actual_exit_code": 1,
+        "native_evidence_diagnosis": {
+          "status": "KNOWN_STALE_FINAL_VALIDATION_FROM_METADATA_CORRECTIVE_RAW_NOT_RUN",
+          "diagnostic_sha256": "36caa1bf5f8c4b5838e683e5067b6be09b96c9c7ac1d861803665a4ac6ec6153",
+          "exception_class": "ValueError",
+          "phase": "native-raw-verification",
+          "consumer_guard": "mixed_cli_reader.py:139 native-current-known-project-execution-required",
+          "validation_present": true,
+          "last_validation_EXECUTED": true,
+          "last_validation_unknown_false": true,
+          "last_validation_state_equals_final_state": false,
+          "last_journal_state_equals_final_state": true,
+          "successful_patch_after_last_validation": true,
+          "completed_turn_usage_producer_report_only": 239197,
+          "usage_added_to_verified_total": false,
+          "original_pending_released": false,
+          "meaning": "Current final snapshot has no valid execution after last edit: quality FAIL. Original consumer incorrectly raises RAW/accounting UNKNOWN for this known failure. Every historical execution, ownership, raw hash, cleanup and timing check must still be independently verified.",
+          "model_reexecution_allowed_for_recovery": false,
+          "current_snapshot_validation_must_not_be_backfilled": true
+        },
+        "corrective_existing_native_read": {
+          "status": "RAW_VERIFIED_KNOWN_QUALITY_FAILURE_WITH_EXPLICIT_CORRECTION",
+          "exec_start_chunk_id": "2c0787",
+          "exec_session_id": 48101,
+          "actual_exit_code": 0,
+          "terminal_exec_chunk_id": "3d2246",
+          "verification_sha256": "d06a1e29f98cd20cd3cfad90e3724012e997ae6413147342099e1187a885e74f",
+          "canonical_helper_sha256": "dc52364eaadb12a48124657f97e9405a0fa48a173f38c74f17bd8efe53d70773",
+          "verified_native_reported_tokens": 239197,
+          "independent_task_pass": false,
+          "current_snapshot_validation": "NOT_RUN",
+          "wall_seconds": 9.96371939999517,
+          "model_calls": 0,
+          "project_executions": 0,
+          "original_pending_or_failed_trial_rewritten": false
+        }
+      },
+      "native_classification_control": {
+        "status": "PASS",
+        "cases": 7,
+        "exec_chunk_id": "ebdc13",
+        "verification_sha256": "cdc29bf7c532ee2de9db83bcf5d9073c9cf17487d08c52b2e267122e08e31cde",
+        "model_calls": 0,
+        "Docker_calls": 0,
+        "scope": "Actual helper, original pure file replay/strictCLI quality and unchanged transport/usage/clock AST; synthetic receipt verifier seam, not full RAW evidence."
+      },
+      "native_receipt_maintenance": {
+        "canonical_module": "evolution/native_cli_receipts.py",
+        "module_sha256": "dc52364eaadb12a48124657f97e9405a0fa48a173f38c74f17bd8efe53d70773",
+        "test_module": "tests/test_native_cli_receipts.py",
+        "test_module_sha256": "3100d889d44b879413dddb9cb4d093dc0a091b37b0cc3bbde24f9c457e1733bd",
+        "focused_methods": 5,
+        "focused_result": "PASS",
+        "initial_test_exec_chunk_id": "6fcf13",
+        "same_bytes_scope_move_and_import_verification_chunk_id": "2dbe7a",
+        "qualification_freeze_unchanged": "sha256:269a01eb4e9e52be7677d75e1c307fc78a7a2fc0d8f9f771c6c322deea8403a3",
+        "scope": "Offline evidence replay, outside the formal qualification freeze; helper bytes unchanged after location correction. No governance runtime/criteria or frozen sources changed."
       }
     }
   }
