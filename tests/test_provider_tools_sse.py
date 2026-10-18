@@ -873,6 +873,137 @@ class SSEActorTests(engineering_fixture.EngineeringCandidateTests):
             job.capture_chunk(b'x'*(api.MAX_RESPONSE_BYTES+2))
         self.assertEqual(job.snapshot()['body'], b'old')
 
+    def test_managed_polling_omits_body_and_freezes_only_once(self):
+        copies = []
+        class CountedBody(bytearray):
+            def __bytes__(self):
+                copies.append(len(self))
+                return memoryview(self).tobytes()
+        deadline = api.time.perf_counter()+10
+        job = api._ManagedRequest('deepseek', {'stream': True}, '', deadline, deadline)
+        job.state['body'] = CountedBody(b'x'*524288)
+        for unused in range(8):
+            self.assertNotIn('body', job.snapshot(include_body=False))
+        self.assertEqual(copies, [])
+        final = job.snapshot()
+        self.assertEqual(copies, [524288])
+        self.assertEqual((final['body_bytes_observed'], final['body_sha256']), (524288, sha(final['body'])))
+        original, observations = api._ManagedRequest.snapshot, []
+        def snapshot(request, **options):
+            observations.append(options.get('include_body', True))
+            return original(request, **options)
+        with patch.object(api._ManagedRequest, 'snapshot', snapshot):
+            result, payloads = self.run_sse([self.read(1)], actor_options={'max_requests': 1})
+        self.assertEqual(observations.count(True), 1)
+        self.assertGreaterEqual(observations.count(False), 1)
+        self.assertEqual((len(payloads), len(result['tool_events'])), (1, 1))
+        self.assertFalse(result['unknown_usage'])
+
+    def test_main_poll_memory_error_closes_dispatch_gate_without_claiming_worker_exit(self):
+        entered, release, jobs, dispatched = threading.Event(), threading.Event(), [], []
+        original = api._ManagedRequest.snapshot
+        def post(provider, payload, key, timeout, *, _managed):
+            _managed.observe('connect', True, 'not_started')
+            entered.set()
+            release.wait(4)
+            if _managed.begin_dispatch():
+                dispatched.append(True)
+        def snapshot(job, **options):
+            if not options.get('include_body', True):
+                jobs.append(job)
+                self.assertTrue(entered.wait(1))
+                raise MemoryError('synthetic main observation allocation')
+            return original(job, **options)
+        now = api.time.perf_counter()
+        try:
+            with patch.object(api, '_post', post), patch.object(api._ManagedRequest, 'snapshot', snapshot):
+                managed = api._managed_post('deepseek', {'stream': True}, '', now+5, now+10,
+                                           lambda kind, value: None)
+            settlement = managed['settlement']
+            self.assertEqual(managed['failure']['exception_class'], 'MemoryError')
+            self.assertTrue(settlement['attempt_dispatch_gate_closed'])
+            self.assertFalse(settlement['dispatch_started'])
+            self.assertFalse(settlement['worker_done'])
+            self.assertTrue(settlement['worker_alive_at_return'])
+            self.assertFalse(settlement['body_complete'])
+            self.assertEqual(dispatched, [])
+        finally:
+            release.set()
+            for job in jobs:
+                job.thread.join(1)
+        self.assertEqual(dispatched, [])
+        self.assertTrue(all(not job.thread.is_alive() for job in jobs))
+
+    def test_final_body_memory_error_keeps_actual_prefix_metadata_and_pending(self):
+        original, jobs = api._ManagedRequest.__init__, []
+        class UnfreezableBody(bytearray):
+            def __bytes__(self):
+                raise MemoryError('synthetic body allocation')
+        def init(job, *args, **kwargs):
+            original(job, *args, **kwargs)
+            job.state['body'] = UnfreezableBody()
+            jobs.append(job)
+        with patch.object(api._ManagedRequest, '__init__', init):
+            result, payloads = self.run_sse([self.read(1)])
+        outcome = self.after[0]
+        settlement = outcome['settlement']
+        self.assertEqual((len(payloads), len(self.before), len(self.after)), (1, 1, 1))
+        self.assertTrue(result['unknown_usage'])
+        self.assertIsNone(outcome['usage'])
+        self.assertEqual(outcome['transport']['exception_class'], 'MemoryError')
+        self.assertTrue(settlement['worker_done'])
+        self.assertFalse(settlement['worker_alive_at_return'])
+        self.assertTrue(settlement['body_complete'])
+        self.assertEqual(settlement['body_bytes_observed'], len(jobs[0].state['body']))
+        self.assertGreater(settlement['body_bytes_observed'], 0)
+        self.assertEqual(settlement['body_sha256'], sha(jobs[0].state['body']))
+        self.assertEqual(result['tool_events'], [])
+        self.assertTrue((self.artifacts/'requests/01.pending.json').exists())
+        self.assertFalse((self.artifacts/'requests/01.transport-sse.bin').exists())
+        self.assertFalse((self.artifacts/'requests/01.response.json').exists())
+
+    def test_main_capture_memory_error_retains_unknown_and_actual_worker_lifetime(self):
+        original_worker, original_write = api._ManagedRequest._worker, api._write_new
+        for stage, alive in (('headers', False), ('projection', False), ('projection', True)):
+            with self.subTest(stage=stage, worker_alive=alive):
+                self.artifacts = self.base/('memory-'+stage+'-'+str(alive))
+                self.before, self.after, self.loaded = [], [], []
+                release, jobs = threading.Event(), []
+                def worker(job):
+                    jobs.append(job)
+                    original_worker(job)
+                    if alive:
+                        release.wait(4)
+                def write(path, *args, **kwargs):
+                    if stage == 'headers' and path.name == '01.transport-headers.json':
+                        raise MemoryError('synthetic capture allocation')
+                    return original_write(path, *args, **kwargs)
+                try:
+                    with patch.object(api._ManagedRequest, '_worker', worker), patch.object(api, '_write_new', write), \
+                            patch.object(sse, 'project', side_effect=MemoryError('synthetic projection allocation')) as project:
+                        result, payloads = self.run_sse([self.read(1)])
+                    outcome = self.after[0]
+                    settlement = outcome['settlement']
+                    self.assertEqual((len(payloads), len(self.before), len(self.after)), (1, 1, 1))
+                    self.assertEqual(project.call_count, int(stage == 'projection'))
+                    self.assertTrue(result['unknown_usage'])
+                    self.assertIsNone(outcome['usage'])
+                    self.assertEqual(outcome['transport']['exception_class'], 'MemoryError')
+                    self.assertTrue(settlement['worker_done'])
+                    self.assertEqual(settlement['worker_alive_at_return'], alive)
+                    self.assertTrue(settlement['attempt_dispatch_gate_closed'])
+                    self.assertTrue(settlement['dispatch_started'])
+                    self.assertTrue(settlement['body_complete'])
+                    self.assertGreater(settlement['body_bytes_observed'], 0)
+                    self.assertEqual(settlement['capture_failure']['exception_class'], 'MemoryError')
+                    self.assertEqual(result['tool_events'], [])
+                    self.assertTrue((self.artifacts/'requests/01.pending.json').exists())
+                    self.assertFalse((self.artifacts/'requests/01.response.json').exists())
+                finally:
+                    release.set()
+                    for job in jobs:
+                        job.thread.join(1)
+
     def test_v3_large_request_admitted_and_over_cap_stops_before_key_reserve(self):
         result, payloads = self.run_sse([self.read(1)], actor_options={'system_context': 'x'*140000, 'max_requests': 1})
         self.assertGreater(len(canonical(payloads[0])), 131072)

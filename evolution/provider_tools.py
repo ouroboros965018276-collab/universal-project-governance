@@ -497,10 +497,18 @@ class _ManagedRequest:
             self.state["revision"] += 1
             self.condition.notify_all()
 
-    def snapshot(self):
+    def snapshot(self, *, include_body=True):
         with self.condition:
             value = dict(self.state)
-            value["body"] = bytes(value["body"])
+            body = value.pop("body")
+            if include_body:
+                value.update(body=None, body_bytes_observed=len(body), body_sha256=None, body_failure=None)
+                try:
+                    value["body_sha256"] = sha(body)
+                    value["body"] = bytes(body)
+                except MemoryError as error:
+                    value["body_failure"] = _transport("response-persist", error,
+                        value["connection_attempted"], value["http_dispatch"])
             return value
 
     def wait(self, seconds, revision):
@@ -538,18 +546,18 @@ def _managed_post(provider, payload, key, work_deadline, settlement_deadline, ca
     bounds shutdown but does not attest remote cancellation or thread cleanup.
     """
     job = _ManagedRequest(provider, payload, key, work_deadline, settlement_deadline)
-    header_saved, capture_failure = False, None
+    header_saved, capture_failure, main_memory_failure = False, None, False
     job.start()
     try:
         while True:
-            state = job.snapshot()
+            state = job.snapshot(include_body=False)
             if state["headers"] is not None and not header_saved:
                 status, headers = state["headers"]
                 try:
                     capture("headers", {"http_status": status, "headers": [list(pair) for pair in headers],
                         "headers_sha256": sha(canonical(headers)), "headers_bytes": len(canonical(headers)),
                         "observed_monotonic": state["headers_observed_monotonic"]})
-                except (OSError, ValueError, UnicodeError) as error:
+                except (OSError, ValueError, UnicodeError, MemoryError) as error:
                     capture_failure = _transport("response-persist", error, True, "response_received")
                     job.cancel_before_dispatch()
                 header_saved = True
@@ -562,6 +570,8 @@ def _managed_post(provider, payload, key, work_deadline, settlement_deadline, ca
                 break
             job.wait(min(work_deadline if now < work_deadline else settlement_deadline,
                          settlement_deadline) - now, state["revision"])
+    except MemoryError:
+        main_memory_failure = True
     finally:
         job.cancel_before_dispatch()  # Also applies when main persistence fails.
     if payload.get("stream") is True:
@@ -569,8 +579,15 @@ def _managed_post(provider, payload, key, work_deadline, settlement_deadline, ca
         # owned tail a bounded join inside the original observation window.
         remaining = settlement_deadline - time.perf_counter()
         if remaining > 0:
-            job.thread.join(min(1.0, remaining))
+            try:
+                job.thread.join(min(1.0, remaining))
+            except MemoryError:
+                main_memory_failure = True
     state = job.snapshot()
+    capture_failure = capture_failure or state["body_failure"]
+    if main_memory_failure:
+        capture_failure = capture_failure or _transport("response-persist", MemoryError(),
+            state["connection_attempted"], state["http_dispatch"])
     # Cover headers published between the last wait snapshot and the final fence.
     if state["headers"] is not None and not header_saved:
         status, headers = state["headers"]
@@ -578,10 +595,11 @@ def _managed_post(provider, payload, key, work_deadline, settlement_deadline, ca
             capture("headers", {"http_status": status, "headers": [list(pair) for pair in headers],
                 "headers_sha256": sha(canonical(headers)), "headers_bytes": len(canonical(headers)),
                 "observed_monotonic": state["headers_observed_monotonic"]})
-        except (OSError, ValueError, UnicodeError) as error:
+        except (OSError, ValueError, UnicodeError, MemoryError) as error:
             capture_failure = capture_failure or _transport("response-persist", error, True, "response_received")
     body, response, failure = state["body"], state["response"], state["failure"]
-    if state["headers"] is not None or body:
+    if (body is not None and (state["headers"] is not None or body)
+            and not (capture_failure and capture_failure["exception_class"] == "MemoryError")):
         try:
             if payload.get("stream") is True:
                 capture("sse-body", {"raw_body": body, "body_complete": response is not None,
@@ -592,7 +610,7 @@ def _managed_post(provider, payload, key, work_deadline, settlement_deadline, ca
                     "body_utf8": body.decode("utf-8", errors="replace"), "body_complete": response is not None,
                     "last_observed_monotonic": state["body_last_observed_monotonic"],
                     "response_completed_monotonic": state["response_completed_monotonic"]})
-        except (OSError, ValueError, UnicodeError) as error:
+        except (OSError, ValueError, UnicodeError, MemoryError) as error:
             capture_failure = capture_failure or _transport("response-persist", error, True, "response_received")
     if not state["done"]:
         failure = (_transport("worker-before-request", DeadlineBeforeDispatch(), state["connection_attempted"], "not_started")
@@ -610,7 +628,7 @@ def _managed_post(provider, payload, key, work_deadline, settlement_deadline, ca
         "attempt_dispatch_gate_closed": state["dispatch_closed"], "dispatch_started": state["dispatch_started"],
         "worker_done": state["done"], "worker_alive_at_return": job.thread.is_alive(),
         "last_observed_phase": state["phase"], "body_complete": response is not None,
-        "body_bytes_observed": len(body), "body_sha256": sha(body),
+        "body_bytes_observed": state["body_bytes_observed"], "body_sha256": state["body_sha256"],
         "work_deadline_monotonic": work_deadline, "settlement_deadline_monotonic": settlement_deadline,
         "headers_observed_monotonic": state["headers_observed_monotonic"],
         "body_last_observed_monotonic": state["body_last_observed_monotonic"],
@@ -1735,6 +1753,10 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                         actor_elapsed_before_transport_seconds=sampled-started,
                         actor_elapsed_after_transport_seconds=time.perf_counter()-started)
                     work_cutoff_reached = work_cutoff_reached or last_settlement["accounting_only"]
+                    if managed["failure"] is not None and managed["failure"]["exception_class"] == "MemoryError":
+                        # Preserve the observed managed tail; do not repeat a failed
+                        # capture/projection or admit model actions after memory loss.
+                        raise TransportFailure(managed["failure"])
                     if managed["response"] is None:
                         if not streaming or managed.get("raw_headers") is None:
                             raise TransportFailure(managed["failure"] or _transport("unobserved"))

@@ -3,11 +3,32 @@
   "observed_on": "2026-10-18",
   "status": "INCOMPLETE_NOT_ASSESSED",
   "candidate": "3.0.0-rc.20",
-  "comparison": ["fixed-rc19", "attention-control", "full-rc20"],
-  "registered_counts": {"workflows": 54, "actors": 66, "paired_blocks": 18, "families": 9},
-  "completed_counts": {"workflows": 34, "actors": 37},
-  "recorded_counts": {"workflows": 35, "actors": 38, "unknown_workflows": 1, "unknown_actors": 1},
-  "requests": {"slots": 198, "known_reported_tokens": 4998882, "pending": 1},
+  "comparison": [
+    "fixed-rc19",
+    "attention-control",
+    "full-rc20"
+  ],
+  "registered_counts": {
+    "workflows": 54,
+    "actors": 66,
+    "paired_blocks": 18,
+    "families": 9
+  },
+  "completed_counts": {
+    "workflows": 34,
+    "actors": 37
+  },
+  "recorded_counts": {
+    "workflows": 35,
+    "actors": 38,
+    "unknown_workflows": 1,
+    "unknown_actors": 1
+  },
+  "requests": {
+    "slots": 198,
+    "known_reported_tokens": 4998882,
+    "pending": 1
+  },
   "original_process": {
     "session_id": 21013,
     "exit_code": 0,
@@ -29,7 +50,11 @@
     "content_type": "application/json",
     "body_bytes": 138,
     "body_sha256": "6526d7d797378d955dbebd1360951476d80ba8d1e1ef9a07f9d1fa82398f3143",
-    "provider_error": {"code": "402", "type": "insufficient_balance", "message": "Insufficient account balance"},
+    "provider_error": {
+      "code": "402",
+      "type": "insufficient_balance",
+      "message": "Insufficient account balance"
+    },
     "body_complete": true,
     "worker_done": true,
     "transport_failure": null,
@@ -47,7 +72,11 @@
     "mimo_reported_output_tokens": 508145,
     "mimo_reported_cached_tokens": 1583744,
     "mimo_cache_adjusted_CNY": "44.030756",
-    "mimo_CNY_rates_per_million": {"input_hit": "0.25", "input_miss": "30", "output": "60"},
+    "mimo_CNY_rates_per_million": {
+      "input_hit": "0.25",
+      "input_miss": "30",
+      "output": "60"
+    },
     "pricing_source": "https://mimo.mi.com/models/zh-CN/mimo-v2.6-pro-ultraspeed",
     "price_reviewed_on": "2026-10-18",
     "scope": "Known usage only, not invoices. Currency alternatives are not summed. Original ledger conservatively ignores cache discounts; failed request billing remains unknown."
@@ -72,7 +101,7 @@
   },
   "subsequent_user_authorized_continuation": {
     "observed_on": "2026-10-18",
-    "status": "REMAINING_ONLY_RUNNING",
+    "status": "INTERRUPTED_AFTER_TWO_WORKFLOWS",
     "continuation_original_session_id": 36892,
     "continuation_protocol_sha256": "b6962e7d05580ee30e17cf686e311987bacdaadddff9ef800debd15329fd6609",
     "continuation_execution_plan_sha256": "6f0d0a0518488a0c1f1670d6d2e161e4f14c696dd0f8951129f47a9dfe7895bb",
@@ -82,7 +111,10 @@
     "original_planned_receivers_not_invoked": 2,
     "remaining_workflows": 20,
     "remaining_planned_actors": 27,
-    "fixed_denominator": {"workflows": 54, "actors": 66},
+    "fixed_denominator": {
+      "workflows": 54,
+      "actors": 66
+    },
     "original_failed_request_retained": true,
     "quality_and_cost_thresholds_unchanged": true,
     "sensitivity": "Exclude entire interrupted block b12, including all three conditions; favorable result must not depend solely on that block.",
@@ -101,6 +133,89 @@
       "use": "Research overhead only; never replaces original first 34 workflows."
     },
     "net_benefit": "NOT_ASSESSED",
+    "promotion_allowed": false,
+    "first_continuation_outcome": {
+      "completed_workflows": [
+        "w035",
+        "w036"
+      ],
+      "incomplete_actor": "w037-source",
+      "request_slots": 18,
+      "known_reported_tokens": 436829,
+      "pending": 1,
+      "error_type": "MemoryError",
+      "observed_HTTP_status": 200,
+      "response_body_published": false,
+      "settlement": null,
+      "usage": null,
+      "original_exit_code": 1,
+      "job_active_after": 0,
+      "terminal_sha256": "028223c31f4dd6c9f7faadd4b817e405d57b704fc64966370ed5d033383eca38",
+      "accounting_sha256": "a978c53812dc73fc5bc11ff660be574cd676b502a6b6a11a67ecd06371088c14"
+    }
+  },
+  "continuation_after_host_recovery": {
+    "observed_on": "2026-10-19 Asia/Shanghai",
+    "status": "RUNNING_REMAINING_W037_W054_ONLY",
+    "completed_workflows_reused": 36,
+    "completed_actor_records_reused": 39,
+    "remaining_workflows": 18,
+    "remaining_planned_actors": 25,
+    "original_session_id": 98055,
+    "protocol_sha256": "b8abc1d26e392c8c7f9410bccba4cf3e61db257db28d14aa17078a078171bc1f",
+    "execution_plan_sha256": "2acd57851ad7f8551d3cbffd2185355f9a5c7893dce33ab4218797d3b0ca0c1b",
+    "fixed_denominator": {
+      "actors": 66,
+      "workflows": 54
+    },
+    "health": {
+      "physical_available_bytes": 1083146240,
+      "original_image_present": true,
+      "commit_limit_bytes": 39614955520,
+      "docker_version": "29.8.1",
+      "D_free_bytes": 44805545984,
+      "committed_bytes": 36065546240
+    },
+    "repeated_preparation_or_calibration": false,
+    "original_unknown_costs_retained": true,
+    "sensitivity_excluded_whole_blocks": [
+      [
+        "b12"
+      ],
+      [
+        "b09",
+        "b12"
+      ]
+    ],
+    "net_benefit": "NOT_ASSESSED",
     "promotion_allowed": false
+  },
+  "adapter_resilience_update": {
+    "scope": "Canonical research adapter only; not copied into frozen/live comparison or installed Skill.",
+    "provider_tools_sha256": "4a7fa33ac8cf63bd78916471923fb99e220ca2f6946ca4c6564d475c6155f75a",
+    "tests_sha256": "b2115926146b7fdcdb6c7b58ea8f6b884c630adb0bb9f9a85e49e0a2b5c30454",
+    "change": "Metadata-only polling; one final body freeze; observed MemoryError preserves managed unknown settlement and actual worker lifecycle, with no retry or model actions.",
+    "focused_SSE": {
+      "tests": 14,
+      "original_tool": "a6b311",
+      "skipped": 0,
+      "elapsed_seconds": 4.907,
+      "errors": 0,
+      "failures": 0
+    },
+    "additional_existing_non_SSE_managed": {
+      "tests": 2,
+      "original_tool": "16a4e2",
+      "skipped": 0,
+      "elapsed_seconds": 0.151,
+      "errors": 0,
+      "methods": [
+        "test_ontime_chain_still_uses_original_request_and_tool_caps",
+        "test_partial_response_retains_request_and_actor_pending"
+      ],
+      "failures": 0
+    },
+    "verification": "Copies counted directly; allocation/capture faults injected without network. Old configuration identities/wire and HTTP402 diagnostics covered by the focused run.",
+    "limitations": "System-wide exhaustion may still prevent tiny allocations or receipt writes. Missing raw body/hash cannot become independent RAW PASS. Original w037 allocation site remains unknown; no empirical token/time benefit claimed."
   }
 }
