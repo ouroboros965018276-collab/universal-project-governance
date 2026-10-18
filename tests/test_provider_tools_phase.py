@@ -4,6 +4,7 @@ import hashlib
 import importlib
 import inspect
 import json
+import math
 from pathlib import Path
 import socket
 import subprocess
@@ -230,6 +231,25 @@ class ProviderPhaseBoundaryTests(unittest.TestCase):
             with self.subTest(value=value):
                 with self.assertRaises((ValueError, api.DeadlineBeforeDispatch)):
                     api._registered_actor_timing(value, 180, 100)
+        self.assertEqual(self.before, [])
+        self.assertEqual(self.keys, [])
+
+    def test_registered_clock_preserves_exact_constructed_deadline_across_float_binades(self):
+        for boundary in (2.0**16, 2.0**20):
+            for budget in (180, 600):
+                start = math.nextafter(boundary - budget/2, math.inf)
+                deadline = start + budget
+                timing = {'schema': api.ACTOR_TIMING_SCHEMA, 'started_monotonic': start,
+                    'work_deadline_monotonic': deadline}
+                with self.subTest(boundary=boundary, budget=budget):
+                    self.assertNotEqual(deadline - start, budget)
+                    accepted = api._registered_actor_timing(timing, budget, start + 1)
+                    self.assertEqual(accepted, timing)
+                    self.assertEqual(accepted['work_deadline_monotonic'], deadline)
+                    for direction in (math.inf, -math.inf):
+                        changed = dict(timing, work_deadline_monotonic=math.nextafter(deadline, direction))
+                        with self.assertRaises(ValueError):
+                            api._registered_actor_timing(changed, budget, start + 1)
         self.assertEqual(self.before, [])
         self.assertEqual(self.keys, [])
 

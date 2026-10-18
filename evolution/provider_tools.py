@@ -1018,7 +1018,7 @@ def _registered_actor_timing(value, timeout_seconds, observed):
             or not all(type(value[k]) in (int, float) and math.isfinite(value[k])
                        for k in ("started_monotonic", "work_deadline_monotonic"))
             or value["started_monotonic"] > observed
-            or value["work_deadline_monotonic"] - value["started_monotonic"] != timeout_seconds
+            or value["work_deadline_monotonic"] != value["started_monotonic"] + timeout_seconds
             or value["work_deadline_monotonic"] > observed + timeout_seconds):
         raise ValueError("registered actor clock cannot extend work")
     if value["work_deadline_monotonic"] <= observed:
