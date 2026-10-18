@@ -1041,7 +1041,39 @@
         "unblind_executed": false,
         "original_failed_owners_and_pending_rewritten": false,
         "original_favorable_primary_conclusion": "BLOCK",
-        "further_paid_calls_started": false
+        "further_paid_calls_started": false,
+        "separate_registry_order_corrective_audit": {
+          "status": "RAW_PASS",
+          "first_audit": false,
+          "reader_source": {
+            "path": "eval-workspaces\\rc20-final3-reader-registry-identity-correction-v1\\first_reader.py",
+            "sha256": "a00739af78f55d4a623fb4a4290c55ce97bfbaafe4563a66126700d4bda88357"
+          },
+          "report": {
+            "path": "eval-workspaces\\rc20-final3-reader-registry-identity-correction-v1\\corrective-first-use-01\\first-audit.json",
+            "sha256": "30880e3914e34c9ce7f631fe64664276f8621f38945f787954ba0afcb9729c7d"
+          },
+          "seal": {
+            "path": "eval-workspaces\\rc20-final3-reader-registry-identity-correction-v1\\corrective-first-use-01\\audit.seal.json",
+            "sha256": "a7c9c47084d7105c38dfb124ec8e9189572d17676f13cc0c6bde431bb479d13e"
+          },
+          "external_observed_exit": {
+            "path": "eval-workspaces\\rc20-final3-reader-registry-identity-correction-v1\\ROOT-CORRECTIVE-EXEC.json",
+            "sha256": "9600eca9d442d08c61f783697ce979d43c5de551f7ab7a10b73f5c7de3ff98ab"
+          },
+          "actual_root_start_chunk": "ddbb27",
+          "actual_root_exit_chunk": "8daec6",
+          "exit_code": 0,
+          "root_outer_seconds": 105.47090279997792,
+          "internal_reader_seconds": 105.04041300000972,
+          "outer_and_internal_overlap_not_summed": true,
+          "exception_observer_scope": "function,line,class only; no messages/locals; included in measured outer cost",
+          "raw_reader_reexecution": true,
+          "models_or_project_tools_reexecuted": false,
+          "failed_first_reader_report_or_seal_changed": false,
+          "original_two_pending_or_primary_BLOCK_changed": false,
+          "current_runtime_effect_inferred": false
+        }
       },
       "fixed_development_result": {
         "workflow_denominator": 9,
@@ -1078,5 +1110,69 @@
     "historical_audits_deleted": false,
     "runtime_or_experiment_identity_changed": false,
     "empirical_benefit_claim": false
+  },
+  "latest_canonical_revision": {
+    "observed_at": "2026-10-18T22:03:08.083838+00:00",
+    "source": {
+      "path": "governance-src\\model\\governance-model.json",
+      "sha256": "12b966ef944bf18f9e851bdfda84620298d977f8c6a0fb8d49e52630f5ebb7ca"
+    },
+    "qualification_fingerprint": "sha256:379038e4ce97b67252e3258160ec5b31b1eb132743cf1b77e2650eabafa132d6",
+    "generated_skill": {
+      "path": "universal-project-governance\\SKILL.md",
+      "sha256": "06e106ed1e43ade80ece0bb8c4c1b77acbd9676c856a4f39b13d8ecd60a986c7"
+    },
+    "skill_bytes": 7185,
+    "skill_lines": 52,
+    "previous_skill_bytes": 6976,
+    "policies": 16,
+    "hot_path": 8,
+    "guidance_groups": 4,
+    "new_core_changes": [
+      "Explicit last affected edit -> current validation before completion; later edits invalidate only affected evidence.",
+      "Check every explicit task obligation before finalizing.",
+      "Ordinary task protection covers installed Skill and its canonical source.",
+      "Planner warning distinguishes missing/partial risk facts from assessed zero; existing scope/report routes unchanged."
+    ],
+    "engineering_adapter_change": {
+      "source": {
+        "path": "evolution\\engineering_broker.py",
+        "sha256": "3f9b3211962a52edbf99534ab5fb5026db1c07869c6136de6f43544ee954aa01"
+      },
+      "kind": "completion_readiness_from_original_receipts",
+      "visible_in": "repo_status",
+      "auto_execute_or_change_scoring": false,
+      "frozen_sources_or_results_changed": false,
+      "scope": "required successful tools,current snapshot validation,current status only; never task-quality PASS"
+    },
+    "tests": {
+      "engineering_related_modules": {
+        "methods": 151,
+        "seconds": 54.887,
+        "exit_code": 0,
+        "source_chunk": "fa576f"
+      },
+      "risk_source_controls": {
+        "methods": 3,
+        "exit_code": 0,
+        "source_chunk": "21516c"
+      },
+      "full_repository": {
+        "methods": 1264,
+        "skipped": 3,
+        "seconds": 318.45,
+        "exit_code": 0,
+        "root_start_chunk": "4e17aa",
+        "root_exit_chunk": "601cad",
+        "session": 61735
+      },
+      "engineering_gates": {
+        "checks": 9,
+        "passed": 9,
+        "frozen_qualification": "379038e4ce97b67252e3258160ec5b31b1eb132743cf1b77e2650eabafa132d6"
+      }
+    },
+    "new_independent_real_model_effect": "NOT_RUN_new_identity_does_not_inherit_old_results",
+    "merged_or_installed": false
   }
 }

@@ -59,14 +59,14 @@
       "policy_ids": [
         "STRUCTURAL_INTEGRATION"
       ],
-      "statement": "Keep contracts/safety/error handling; resolve affected consumers/tests and obsolete paths. Use current bytes/revisions and the tool's edit semantics; a fragment cannot replace a whole file. Change edge/error returns/exceptions only for the authorized goal. Minimize needless work, not diff size; reserve final validation/handoff budget. Priority: user intent; correctness/safety/truth; contracts/structure; maintainability/readability; cost."
+      "statement": "Keep contracts/safety/error handling; resolve affected consumers/tests and obsolete paths. Use current bytes/revisions and the tool's edit semantics; a fragment cannot replace a whole file. Change edge/error returns/exceptions only for the authorized goal. Minimize needless work, not diff size; reserve final validation/handoff budget and check every explicit task obligation before finishing. Priority: user intent; correctness/safety/truth; contracts/structure; maintainability/readability; cost."
     },
     {
       "id": "evidence_fidelity",
       "policy_ids": [
         "EVIDENCE_AFFECTED"
       ],
-      "statement": "Write execution/validation claims only after observing results for the tested state; distinguish planned checks, failed checks and unknowns. Preserve identifiers, input domains, numbers, references, negation and evidence limits when shortening; never convert intended coverage into completed validation."
+      "statement": "Observe validation on the final affected state before claiming completion. Later edits invalidate affected evidence: rerun those checks before completion, or report pending checks and keep work unfinished. Preserve identifiers, input domains, numbers, references, negation and evidence limits when shortening; distinguish planned, failed and unknown checks from observed results."
     },
     {
       "id": "task_scoped_reading",

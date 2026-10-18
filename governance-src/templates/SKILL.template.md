@@ -18,7 +18,7 @@ Before the first edit, resolve this installed Skill and run `scripts/project_too
 
 {{EXECUTION_GUIDANCE}}
 
-Keep this Skill loaded; a plan is not standalone. With verified Python 3.8+, run `scripts/plan_governance.py --project-root <root> --context <context.json>` for context/binding/report health and task obligations. Windows: resolve `py -3` or its executable, never assume `python3`. Follow mode, scope guard, closures, evidence, report and handoff. Without helpers, resolve `policy-index.json` operations/domains/signals, dependencies and risk/report rules. Unknown optional profiles retain universal rules. Assess observable risk, not confidence.
+Keep this Skill loaded; a plan is not standalone. With verified Python 3.8+, run `scripts/plan_governance.py --project-root <root> --context <context.json>` for context/binding/report health and task obligations. Windows: resolve `py -3` or its executable, never assume `python3`. Follow mode, scope guard, closures, evidence, report and handoff. Without helpers, resolve `policy-index.json` operations/domains/signals, dependencies and risk/report rules. Unknown optional profiles retain universal rules. Assess observable risk, not confidence; missing facts remain unassessed.
 
 Batch known relevant reads/edits and independent checks. Reuse verified actual-byte receipts or still-current reads for after-state hashes; reread for stale/missing evidence, later edits, failed checks or required inspection. Cached bytes require matching source/tool/context identities.
 
@@ -34,6 +34,6 @@ Complete only with required checks and verified evidence on final affected behav
 
 Installation, receipts, matching behavior or tests prove neither historical loading nor causal benefit; missing activation receipts stay unknown. Measure matched baseline/attention-control/UPG prospectively with actual token/time/tool costs and cross-agent handoffs.
 
-Ordinary tasks must not edit generated governance runtime. Run `scripts/validate_integrity.py <skill-root>`; failure suspends authority. Authorized evolution needs external canonical source, a new version/candidate, regeneration, complexity/static checks, tests, installation validation and audit.
+Ordinary tasks must not edit this Skill's installed files or canonical governance source. Run `scripts/validate_integrity.py <skill-root>`; failure suspends authority. Explicitly authorized evolution needs external canonical source, a new version/candidate, regeneration, complexity/static checks, tests, installation validation and audit.
 
 For explicit removal, uninstall project state before the Skill: repository CLI, or `scripts/project_tool.py remove <root> --yes` then host Skills CLI. Respect project truth and specialized Skills; reuse canonical structures, never filename-driven parallel documents. One definition per rule; compiler absorbs complexity.

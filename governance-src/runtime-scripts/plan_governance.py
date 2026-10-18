@@ -168,6 +168,14 @@ def compile_plan(index: dict, ctx: dict) -> dict:
     unknown_profiles = sorted(set(ctx.get("profiles", [])) - set(index["profiles"]))
     if unknown_profiles:
         warnings.append("unknown optional profiles use universal task/risk rules: " + ", ".join(unknown_profiles))
+    assessed_risk = ctx.get("risk", {})
+    missing_risk = sorted(set(index["risk_model"]["dimensions"]) - set(assessed_risk))
+    if missing_risk:
+        assessment = "partially assessed" if assessed_risk else "unassessed"
+        warnings.append(
+            "risk %s; missing dimensions: %s; level/score are provisional (known facts only), not confirmed risk"
+            % (assessment, ", ".join(missing_risk))
+        )
 
     order = index.get("presentation", {}).get("policy_order", sorted(policies))
     if not isinstance(order, list) or len(order) != len(policies) or set(order) != set(policies):

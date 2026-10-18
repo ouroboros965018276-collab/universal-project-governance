@@ -114,6 +114,78 @@ class EngineeringBrokerTests(unittest.TestCase):
         self.assertEqual(result['evidence_broker_profile_id'], lab.PROFILE_ID)
         self.assertEqual(self.executor_calls, 1)
 
+    def test_status_readiness_exposes_missing_search_and_allows_in_budget_recovery(self):
+        self.task['required_tools'].insert(1, 'repo_search')
+        self.read_and_edit()
+        self.broker.call('repo_validate', {})
+        status = self.broker.call('repo_status', {})
+        ready = status['completion_readiness']
+        self.assertEqual(ready['missing_successful_required_tools'], ['repo_search'])
+        self.assertEqual(ready['current_validation'], 'PASSED')
+        self.assertTrue(ready['current_status'])
+        self.assertFalse(ready['required_evidence_ready'])
+        self.assertFalse(self.quality()['required_tools_ok'])
+        self.broker.call('repo_search', {'needle': 'VALUE'})
+        status = self.broker.call('repo_status', {})
+        self.assertTrue(status['completion_readiness']['required_evidence_ready'])
+        self.assertTrue(self.quality()['hard_pass'])
+        self.assertEqual(self.executor_calls, 1)
+
+    def test_status_readiness_marks_validation_stale_after_patch_without_executing(self):
+        self.read_and_edit()
+        self.broker.call('repo_validate', {})
+        self.broker.call('repo_read', {'paths': ['README.md']})
+        self.broker.call('repo_patch', {'operations': [{'path': 'README.md',
+            'old_sha256': self.before['README.md'], 'new_text': 'Current new value.\n'}]})
+        ready = self.broker.call('repo_status', {})['completion_readiness']
+        self.assertEqual(ready['missing_successful_required_tools'], [])
+        self.assertEqual(ready['current_validation'], 'STALE')
+        self.assertTrue(ready['current_status'])
+        self.assertFalse(ready['required_evidence_ready'])
+        self.assertEqual(ready['snapshot_sha256'], sha(canonical(self.broker.snapshot())))
+        self.assertFalse(self.quality()['hard_pass'])
+        self.assertEqual(self.executor_calls, 1)
+
+    def test_status_readiness_same_snapshot_passes_and_is_bound_in_journal(self):
+        self.read_and_edit()
+        self.broker.call('repo_validate', {})
+        status = self.broker.call('repo_status', {})
+        ready = status['completion_readiness']
+        self.assertEqual(ready['current_validation'], 'PASSED')
+        self.assertTrue(ready['current_status'])
+        self.assertEqual(ready['missing_successful_required_tools'], [])
+        self.assertTrue(ready['required_evidence_ready'])
+        self.assertEqual(self.broker.events[-1]['result_sha256'], sha(canonical(status)))
+        self.assertEqual(lab.completion_readiness_from_receipts(self.broker), ready)
+        self.assertTrue(self.quality()['hard_pass'])
+        self.assertEqual(self.executor_calls, 1)
+
+    def test_readiness_missing_status_does_not_invent_or_execute_one(self):
+        self.read_and_edit()
+        self.broker.call('repo_validate', {})
+        count = len(self.broker.events)
+        ready = lab.completion_readiness_from_receipts(self.broker)
+        self.assertEqual(ready['missing_successful_required_tools'], ['repo_status'])
+        self.assertEqual(ready['current_validation'], 'PASSED')
+        self.assertFalse(ready['current_status'])
+        self.assertFalse(ready['required_evidence_ready'])
+        self.assertEqual(len(self.broker.events), count)
+        self.assertEqual(self.executor_calls, 1)
+
+    def test_readiness_missing_or_tampered_validation_cannot_be_ready(self):
+        self.read_and_edit()
+        ready = self.broker.call('repo_status', {})['completion_readiness']
+        self.assertEqual(ready['current_validation'], 'NOT_RUN')
+        self.assertFalse(ready['required_evidence_ready'])
+        self.assertEqual(self.executor_calls, 0)
+        self.broker.call('repo_validate', {})
+        (self.base / 'execution/validation-001/result.json').unlink()
+        ready = self.broker.call('repo_status', {})['completion_readiness']
+        self.assertEqual(ready['current_validation'], 'UNKNOWN')
+        self.assertFalse(ready['required_evidence_ready'])
+        self.assertTrue(self.quality()['execution_state_unknown'])
+        self.assertEqual(self.executor_calls, 1)
+
     def test_existing_and_absent_creatable_reads_keep_exact_byte_history(self):
         self.task['writable_files'].append('pkg/new.py')
         result = self.broker.call('repo_read', {'paths': ['pkg/core.py', 'CONTRACT.json', 'pkg/new.py']})

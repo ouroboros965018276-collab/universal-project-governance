@@ -84,6 +84,47 @@ class ContextDisciplineTests(unittest.TestCase):
                 self.assertEqual(sum(c.startswith("Operational tracked_state: ")
                                      for c in plan["required_closures"]), 1)
 
+    def test_missing_or_empty_risk_is_provisional_without_escalating_local_work(self):
+        context = {"operation": "edit", "domains": ["code"]}
+        zeros = dict.fromkeys(self.model["risk_model"]["dimensions"], 0)
+        assessed = self.plan(dict(context, risk=zeros))
+        for supplied in (context, dict(context, risk={})):
+            with self.subTest(context=supplied):
+                plan = self.plan(supplied)
+                self.assertEqual({key: value for key, value in plan.items() if key != "warnings"},
+                                 {key: value for key, value in assessed.items() if key != "warnings"})
+                self.assertEqual(plan["risk_score"], 0)
+                self.assertEqual(plan["change_mode"], "local")
+                self.assertEqual(plan["report"], "none")
+                self.assertEqual(len(plan["warnings"]), 1)
+                self.assertIn("risk unassessed", plan["warnings"][0])
+                self.assertIn("provisional", plan["warnings"][0])
+                self.assertIn(", ".join(sorted(zeros)), plan["warnings"][0])
+
+    def test_fully_assessed_zero_risk_remains_confirmed_trivial_without_warning(self):
+        zeros = dict.fromkeys(self.model["risk_model"]["dimensions"], 0)
+        plan = self.plan({"operation": "edit", "domains": ["code"], "risk": zeros})
+        self.assertEqual((plan["risk_level"], plan["risk_score"]), ("trivial", 0))
+        self.assertEqual(plan["active_rules"], sorted(self.model["default_rules"]))
+        self.assertEqual(plan["warnings"], [])
+
+    def test_partial_risk_preserves_known_score_and_closures_but_warns_missing_facts(self):
+        for known, expected_score in (({"scope": 0}, 0), ({"scope": 2}, 2),
+                                      ({"scope": 2, "reversibility": 2}, 4)):
+            with self.subTest(known=known):
+                complete = dict.fromkeys(self.model["risk_model"]["dimensions"], 0)
+                complete.update(known)
+                context = {"operation": "edit", "domains": ["code"]}
+                partial = self.plan(dict(context, risk=known))
+                assessed = self.plan(dict(context, risk=complete))
+                self.assertEqual({key: value for key, value in partial.items() if key != "warnings"},
+                                 {key: value for key, value in assessed.items() if key != "warnings"})
+                self.assertEqual(partial["risk_score"], expected_score)
+                self.assertEqual(len(partial["warnings"]), 1)
+                self.assertIn("risk partially assessed", partial["warnings"][0])
+                missing = sorted(set(complete) - set(known))
+                self.assertIn(", ".join(missing), partial["warnings"][0])
+
     def test_global_guidance_reaches_skill_once_and_preserves_all_base_policy_definitions(self):
         skill = COMPILER.render_skill(SOURCE, self.model)
         index = COMPILER.compile_index(SOURCE, self.model)
