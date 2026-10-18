@@ -1281,6 +1281,45 @@
         "planners": 0,
         "real_agent_interruption_or_recovery_proved": false,
         "real_net_benefit_assessed": false
+      },
+      "actual_first_segment": {
+        "status": "FAILED_NO_REPLAY",
+        "raw_root": "C:\\Users\\96501\\.codex\\upg-experiments\\rc20-independent-engineering-six-condition-v1",
+        "completed_actor_ids": [
+          "w001-source",
+          "w002-source",
+          "w003-source"
+        ],
+        "requests": 18,
+        "reported_tokens": 164299,
+        "outer_wall_seconds": 113.40659240001696,
+        "terminal_sha256": "2febcd7115be607f1b364a2ac0bbc7d4650343bb6951cff80dbd0b67eb8135d1",
+        "ledger_sha256": "db74b922bea4c106f4ff6acc2e7101eac267c78551b6a19d936fb1209a0e4bbd",
+        "failed_receiver": "w003-receiver",
+        "failed_receiver_requests": 0,
+        "pending_requests": 0,
+        "owner_status": "UNKNOWN_NO_REPLAY",
+        "process_cleanup_observed": true,
+        "diagnosed_blocking_guard": "Frozen mixed collector rejects same-surface handoff; registered DeepSeek API to MiMo API is legitimate. Original source and result remain frozen. Exact original first throw position was not emitted.",
+        "continuation": "All remaining 33 roles only, same original registration, criteria, budgets and order; completed three must never be repeated. Separately labelled segmented evidence only."
+      },
+      "prefix_corrective_verification": {
+        "root_observed": {
+          "caller": "ROOT",
+          "exit_code": 0,
+          "model_calls": 0,
+          "outer_wall_seconds": 10.734982699999819,
+          "project_executions": 0,
+          "reader_sha256": "b8f35024589ec1c813f05f345f3690a607a87104ab4c195c8a7c646f4533991a",
+          "schema": "root-observed-prefix-corrective-exit-v1",
+          "source_before_after_exact": true,
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout_sha256": "f2fd284f022f1882780d57c10bc0ccbd8297c249e8e23773cceb5c9429d30533"
+        },
+        "root_observation_sha256": "8c5d269a2953d78b717b027f00d6251d88f10f4b025f999ea82752b0241409a8",
+        "verification_sha256": "a134b53af0e6be3a56ab6b91d4fe0b3cc001e3c0ce712ccc285e1c8ed92d3b7e",
+        "status": "PASS",
+        "claim_limit": "External corrective prefix evidence; does not change original failure or establish whole-trial benefit."
       }
     }
   }
