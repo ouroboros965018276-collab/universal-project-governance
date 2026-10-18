@@ -13,6 +13,8 @@
 
 - Returns narrowly verified, unchanged-state engineering patch preflight errors to the model within existing budgets. Protected paths, partial writes and uncertain state remain terminal; rejected edits never count as task success. Clarifies optional fragment fields and distinct-path batches after the locked primary9 failures.
 
+- Refines the existing evidence-fidelity guidance after two locked documentation vetoes: planned checks cannot become claimed execution; validation statements bind to observed results for the tested state. Regenerated candidate identity supersedes no historical result.
+
 
 ## 3.0.0-rc.19 — 2026-10-13 — candidate
 

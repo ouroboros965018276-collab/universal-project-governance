@@ -66,7 +66,7 @@
       "policy_ids": [
         "EVIDENCE_AFFECTED"
       ],
-      "statement": "Check claims against current code, contracts and validation. Preserve identifiers, input domains, numbers, references, negation and unknowns when rewriting/shortening; never present omitted facts or unverified completion as established."
+      "statement": "Write execution/validation claims only after observing results for the tested state; distinguish planned checks, failed checks and unknowns. Preserve identifiers, input domains, numbers, references, negation and evidence limits when shortening; never convert intended coverage into completed validation."
     },
     {
       "id": "task_scoped_reading",

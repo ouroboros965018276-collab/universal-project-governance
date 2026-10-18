@@ -1,14 +1,14 @@
 # Project State
 
-当前候选为 **3.0.0-rc.20 — Task Context and Complete Change Discipline**；默认分支与本地安装仍为 **RC19**，默认提交 `bd4a4d5c1c6fb9fca829e410729879d1b01f05b9`。RC20 尚未合并或安装，真实净收益未建立。观察日期：**2026-10-16 Asia/Shanghai**；精确工作开始时间未知。
+当前候选为 **3.0.0-rc.20 — Task Context and Complete Change Discipline**；默认分支与本地安装仍为 **RC19**，默认提交 `bd4a4d5c1c6fb9fca829e410729879d1b01f05b9`。RC20 尚未合并或安装，真实净收益未建立。观察日期：**2026-10-18 Asia/Shanghai**；精确工作开始时间未知。
 
 ## 当前能力与验证
 
-表达相关性、完整改动、事实保真和按需读取统一由[规范源](governance-src/model/governance-model.json)编译。针对最新失败，两个现有指引补足文件存在性、修改语义和收尾预算；新生成核心 **6,909 字节**，仍为四组指引、16 项政策、8 项 Hot Path、3 项默认规则和 18 个交付文件，规范身份 `3b84fc59…`、新资格身份 `904542bb…`。此前封存实测使用 `0049006f…`／`f78112d7…`，不能验证新候选。五个上游的版本、许可、适配及排除见[来源清单](third_party/upstream-sources.json)和[鸣谢](THIRD_PARTY_NOTICES.md)。仓库专用评测源码不随 Skill 交付。
+表达相关性、完整改动、事实保真和按需读取统一由[规范源](governance-src/model/governance-model.json)编译。针对最新失败，两个现有指引补足文件存在性、修改语义和收尾预算；当前生成核心 **6,976 字节**，仍为四组指引、16 项政策、8 项 Hot Path、3 项默认规则和 18 个交付文件，规范身份 `adefef22…`、资格身份 `74075f35…`。此前封存实测使用 `0049006f…`／`f78112d7…`，九族 v9 使用 `3b84fc59…`／`904542bb…`，均不能验证新候选。五个上游的版本、许可、适配及排除见[来源清单](third_party/upstream-sources.json)和[鸣谢](THIRD_PARTY_NOTICES.md)。仓库专用评测源码不随 Skill 交付。
 
 已推送提交 `b4831ccff1ee5ecf4a7ce0a334d6d9190611b504` 的 [11 项 CI](https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/38865162224) 全部通过，本地编译、治理、导航和仓库检查通过。这些是工程验证。[API 四阶段](audits/rc20-managed-api-four-phase-calibration-v4.audit.json)、[原生 CLI 正常及已知失败](audits/rc20-native-cli-public-calibration-v8.audit.json)和[四项公开工具契约控制](audits/rc20-public-tool-contract-controls-v3.audit.json)完成首次原始校验及独立字节保全；工具契约控制调用真实模型 **0 次**。它们不证明治理效果或净收益。
 
-该提交中的修复通过九项本地门禁和完整单元测试 **1,110 项（3 项跳过）**，新冻结身份如上。首次隔离测试入口缺少仓库导入路径，两模块导入失败；保留原结果，补足显式路径后的完整运行通过。独立代码复核发现的批次总量回归已修复闭合。[独立新鲜任务离线资格](audits/rc20-fresh-fixture-qualification-v3.audit.json)的 **154 项控制通过**，真实模型调用为 0；任务与评分正文仍未向候选作者暴露，独立新鲜任务的跨模型工程实测尚未开始。
+该提交中的修复通过九项本地门禁和完整单元测试 **1,110 项（3 项跳过）**，该提交使用历史冻结身份 `3b84fc59…`／`904542bb…`。首次隔离测试入口缺少仓库导入路径，两模块导入失败；保留原结果，补足显式路径后的完整运行通过。独立代码复核发现的批次总量回归已修复闭合。[独立新鲜任务离线资格](audits/rc20-fresh-fixture-qualification-v3.audit.json)的 **154 项控制通过**，真实模型调用为 0；任务与评分正文仍未向候选作者暴露，独立新鲜任务的跨模型工程实测尚未开始。
 
 [九族开发配对驱动](qualification/pilots/rc20-primary/README.md)及[v4 紧凑源码修订](qualification/pilots/rc20-primary-v4/README.md)可追溯重建。此前三项整合结果由一份[整合检查点审计](audits/rc20-development-integration-checkpoint-v1.audit.json)保存：
 
@@ -18,7 +18,7 @@
 - **四规则组消融**：首轮因读取器计数顺序不一致停止，原轮不重新判定。修复后的[新轮](audits/rc20-guidance-ablation-v2.audit.json)运行与首次原始审计退出 0，16 个角色原始证明通过，16 包、144 项要求全部独立初评锁定后才解盲。四组质量门槛均失败或未知，token／耗时比较均为未知，未证明规则组贡献；不能据此认定任何上游有利或有害。
 - **跨 API／CLI 公开接手**：此前[首轮读取异常](audits/rc20-public-mixed-first-failure-v3.audit.json)保留。命令数组读取修复后的新轮发生 CLI 连接发送失败；前两次工具调用成功，无完成回合用量。未观察到容量或余额错误，更深层网络原因未知。新公开校准轮复用身份一致的冻结源码与规划结果，使用新项目、协议和授权，已完成两个方向的两条自然工作流及四个角色，首次原始审计通过；完整运行约 140.60 秒，用量按模型分域记录，[独立字节保全及预算控制](audits/rc20-public-mixed-and-budget-calibrations-v1.audit.json)均已完成。它不证明语义质量、突发中断恢复或净收益，旧轮未知用量不清除。
 
-工具反馈修复通过 173 项针对性测试。随后完整本地回归运行 1,119 项（3 项跳过），发现一个仍要求旧终止行为的断言；按新契约更新后，该模块 13 项通过，仍断言未修复任务不能成功。首次失败日志保留，最终提交完整 CI 尚待确认。生成 Skill 和资格指纹没有改变；这些工程检查不改变上面的负面实测结论。
+[证据保真修订](audits/rc20-evidence-fidelity-refinement.audit.json)已生成并完成完整本地回归：运行 **1,119 项，3 项跳过，其余通过**；九项工程门禁通过。前一次回归中的旧终止行为断言失败已保留，修订后的用例继续验证未修复任务不能成功。当前新身份尚无真实效果结论；执行层修复提交 `0ff7198` 的 11 项 CI 已通过，新指引提交仍需自身 CI。后续先做六工作流公开真实校准，再进入完整对照、消融和独立未暴露任务。
 
 合并和安装要求完整组质量不劣于 RC19 与 attention control、无严重否决，报告 token 与完整工作流耗时均严格低于两组对照，并补足来源消融、真实跨 Agent 接手和独立未暴露验证。未知用量、意外中断、缺失耗时或超限阻止有利净收益结论。研究、人工及未观测总成本保持未知。正式资格 **UNASSESSED**，locked **NOT RUN**，不宣称 Stable。其他已曝光开发结果、首次失败及冻结实验限制保留在各自 [audits/](audits/)，不绑定为当前候选的有效性证明。
 

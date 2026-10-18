@@ -1,0 +1,49 @@
+{
+  "schema": "rc20-evidence-fidelity-candidate-refinement-v1",
+  "candidate": "3.0.0-rc.20",
+  "recorded_at_utc": "2026-10-18T00:42:11.632631+00:00",
+  "reason": "Locked primary9 full arm had two unsupported executed-validation declarations in maintained documentation.",
+  "change": "Refine existing evidence_fidelity statement to distinguish planned, failed and observed validation for the tested state. No added rule group.",
+  "identity": {
+    "model_sha256": "adefef22b1c9675f32e0160b2dc4e843a833c28937657a265a3dfd85667843d2",
+    "qualification_fingerprint": "sha256:74075f356a9d85202d2b44a73721b07ae233b487cdd6a552759aa6adc1ba7276",
+    "freeze_sha256": "b5a910d8da33234bb394e25c0729307a1a87a7668ab20989e0f1a219c2685b57",
+    "skill_sha256": "80bbf2534e5ef1608f2b29042fb1a49b881c098ebd489082f6e9d1aaf45c4b95",
+    "skill_bytes": 6976,
+    "runtime_files": 18,
+    "guidance_groups": 4,
+    "policies": 16,
+    "hot_path": 8,
+    "default_rules": 3
+  },
+  "verification": {
+    "full_regression": {
+      "tests_run": 1119,
+      "skipped": 3,
+      "result": "OK",
+      "seconds": 262.429,
+      "log_sha256": "a730cb4fc9207a7bdf287d959335905422105853e0ac56964ed283149d2d1965",
+      "source_identity_rechecked_20261018": true
+    },
+    "engineering_gates": {
+      "count": 9,
+      "result": "PASS",
+      "scope": "compiler/lint/qualification/freeze/repository/bundle/integrity/security/navigation",
+      "original_checkpoint": "eval-workspaces/rc20-current-checkpoint-20261016-v62"
+    },
+    "prior_full_run": {
+      "tests": 1119,
+      "result": "FAIL_ONE_OLD_TERMINAL_EXPECTATION",
+      "log_sha256": "d1e9bd43a188f98b18e65e6a1f3d3e9f0bc5c39388b22d889e2918f123987965",
+      "preserved": true
+    },
+    "new_revision_model_calls": 0
+  },
+  "limits": {
+    "primary9_closed_outcome_unchanged": true,
+    "new_real_outcome": "NOT_RUN",
+    "net_benefit": "UNPROVEN",
+    "formal_qualification": "UNASSESSED",
+    "default_merge_or_install_authorized_by_this_record": false
+  }
+}
