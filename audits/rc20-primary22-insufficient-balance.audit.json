@@ -428,7 +428,7 @@
       }
     ],
     "structural_context_followup": {
-      "status": "FINAL_COPIEDSOURCE_OFFLINE_PASS_REAL_RETEST_REGISTERED",
+      "status": "ORIGINAL_SCANNER_NEUTRAL_PATH_REAL_DOCKER_VERIFIED_PROSPECTIVE_ENTRY_PREPARING",
       "cause": "full thinking and tool messages are resent at each actor request; input grows across settled tool turns",
       "same_conversation_reasoning_deletion_allowed": false,
       "direction": "one explicit deterministic project-fact checkpoint into a new conversation, same actor/project/task/baseline and cumulative budgets; no LLM summary",
@@ -472,23 +472,7 @@
         "scope": "checkpoint/history only; original transport, project execution, Git, ledger and hard quality gates remain required",
         "controlled_phase_support_claim": false
       },
-      "new_profile_real_calls": 0,
       "installed_runtime_changed": false,
-      "next_comparison": {
-        "study_class": "DEVELOPMENT_RETEST_AFTER_CONTEXT_REMEDIATION",
-        "preregistration_sha256": "0da49a4d06a98400664d4ec6d3030fc5dfa21e6e40efec658a85232fb2388cd9",
-        "workflows": 9,
-        "roles": 15,
-        "same_three_families_retained": true,
-        "w002_capacity_development_exposed": true,
-        "fresh_independent_holdout_claim": false,
-        "models_started": 0,
-        "protocol_sha256": "9ad420caf59863cd286281dd9f12991893e6c44125a2ca82ee16eac57ec04699",
-        "execution_plan_sha256": "929dd16698704164543324f334b5aba07f7efb74445941e5f72797fed543289b",
-        "binding_exec_chunk_id": "6e33d9",
-        "planners_reexecuted": 0,
-        "existing_plans_reused": 12
-      },
       "canonical_sse_module_regression": {
         "tests": 107,
         "status": "PASS",
@@ -510,7 +494,244 @@
         "real_http_requests": 0,
         "real_project_execution": false,
         "existing_synthetic_execution_receipt_seam": true,
-        "scope": "final copied producer, ledger, native/checkpoint/project reader, hard quality derivation and cold/hot cache composition; no efficacy claim"
+        "scope": "final copied producer, ledger, native/checkpoint/project reader, hard quality derivation and cold/hot cache composition; no efficacy claim",
+        "mixed_stage_admission_exercised": false
+      },
+      "new_profile_real_calls_at_registration": 0,
+      "incremental_final_admission_control": {
+        "status": "PASS",
+        "receipt_sha256": "707cd4476ca56247b6517e75b2f97b45af0e63e6378c198d717adae04530ebbd",
+        "original_exec_chunk_id": "b69fed",
+        "exit_code": 0,
+        "cases": 5,
+        "model_requests": 0,
+        "scope": "actual new CP class/policy accepts; old or forged CP condition refuses; capacity old condition preserved; no repeated previous control"
+      },
+      "zero_dispatch_preparation_failures": {
+        "actual_request_slots": 0,
+        "failed_status_preserved": true,
+        "known_reported_tokens": 0,
+        "originals": {
+          "accounting": {
+            "path": "C:\\Users\\96501\\.codex\\upg-experiments\\rc20-fresh-context-checkpoint-b02-b04-retest-v2\\accounting.json",
+            "sha256": "a03c2582b065c7df5cfb0c214c6b1936438fc2969751f25d959630e1bd6298e0"
+          },
+          "owner_closed": {
+            "path": "C:\\Users\\96501\\.codex\\upg-experiments\\rc20-fresh-context-checkpoint-b02-b04-retest-v2-owner\\CLOSED.json",
+            "sha256": "d246f321d34a8aa59573e200be6a70bdda37ff726f5fa2e4755ac530366c616c"
+          },
+          "owner_exit": {
+            "path": "C:\\Users\\96501\\.codex\\upg-experiments\\rc20-fresh-context-checkpoint-b02-b04-retest-v2-supervisor\\owner-exit.json",
+            "sha256": "d231caba2476fe6eca994c027bc3f63ec81d2661e247216d20b8e96955f54c74"
+          },
+          "round_observation": {
+            "path": "C:\\Users\\96501\\.codex\\upg-experiments\\rc20-fresh-context-checkpoint-b02-b04-retest-v2-supervisor\\round-observation.json",
+            "sha256": "ad52595adb0761e9fe819ef744f6a7bcaf389b21b66d885786404d235311a868"
+          },
+          "terminal": {
+            "path": "C:\\Users\\96501\\.codex\\upg-experiments\\rc20-fresh-context-checkpoint-b02-b04-retest-v2\\terminal.json",
+            "sha256": "504462fadc2f5e328e8a7933a70106f81460f6cb224070b5c399fe11776b023d"
+          }
+        },
+        "outer_runtime_inclusive_seconds": 16.202454500002204,
+        "owner_and_outer_seconds_overlap_do_not_sum": true,
+        "owner_wall_seconds": 10.623967100007576,
+        "pending_count": 0,
+        "runtime_planner_and_Git_preparation_not_claimed_absent": true,
+        "study_not_started_at_provider": true
+      },
+      "corrective_existing_native_read": {
+        "status": "RAW_VERIFIED_WITH_EXPLICIT_CORRECTION",
+        "verification_sha256": "a619f88c18eda829722685abb63fca434a202982786e75b054ccd22c2cc65bf5",
+        "corrective_reader_sha256": "a65d62c1294d06205872ff658bafe801fc508194a84ea82567bf9980a4d53eca",
+        "record_projection_sha256": "07a6152ea5dda954a55da3d52fc2f1a01345fb28646c9f921e3e1c98766d5f98",
+        "original_exec_chunk_id": "ed2e96",
+        "exit_code": 0,
+        "tool_reported_wall_seconds": 4.8745483,
+        "independent_task_pass": false,
+        "reported_native_completed_turn_tokens": 124359,
+        "model_calls": 0,
+        "original_pending_or_failure_rewritten": false,
+        "original_study_favorable_restored": false,
+        "initial_corrective_reader_preparation_failure": {
+          "exec_chunk_id": "9c9a75",
+          "cause": "local socket.gethostname was incorrectly fenced as network",
+          "model_calls": 0,
+          "original_failure_retained": true
+        },
+        "shared_planner_contract_control": {
+          "status": "PASS",
+          "exec_chunk_id": "324112",
+          "receipt_sha256": "335e3d0eaedf7a5b8a3ceb79a12fec732852b078f4638f7e559effb744a233b8",
+          "model_calls": 0
+        }
+      },
+      "mechanical_failure_diagnosis": {
+        "actual_roles": 3,
+        "final_project_checks_passed_per_role": 2,
+        "final_project_checks_total_per_role": 2,
+        "missing_required_successful_tool": "repo_search",
+        "observed_successful_tools": [
+          "repo_read",
+          "repo_patch",
+          "repo_validate",
+          "repo_status"
+        ],
+        "final_validation_current": true,
+        "final_status_current_and_successful": true,
+        "failures": [
+          "required-current-real-tool-evidence-missing",
+          "final-validation-claim-invalid"
+        ],
+        "task_prompt_contains_repo_search_literal": [
+          false,
+          false,
+          false
+        ],
+        "API_initial_manifest_contains_required_tools": false,
+        "CLI_prompt_contains_generic_repo_search_name": true,
+        "CLI_prompt_contains_task_specific_required_tools_list": false,
+        "limitations": "Literal/structure checks cannot exclude natural-language synonymous search instructions; do not reclassify existing failures as compliance or success.",
+        "old_grades_or_requirements_changed": false,
+        "old_tool_calls_backfilled": false,
+        "next_direction": "Make the same registered tool obligations explicit to every arm; keep task bodies, scoring, budgets and plans unchanged. Previously called roles remain development evidence and are not same-condition primary controls under changed presentation."
+      },
+      "checkpoint_development_retest": {
+        "study_class": "DEVELOPMENT_RETEST_AFTER_CONTEXT_REMEDIATION",
+        "preregistration_sha256": "0da49a4d06a98400664d4ec6d3030fc5dfa21e6e40efec658a85232fb2388cd9",
+        "workflows": 9,
+        "roles": 15,
+        "same_three_families_retained": true,
+        "w002_capacity_development_exposed": true,
+        "fresh_independent_holdout_claim": false,
+        "models_started": 1,
+        "protocol_sha256": "f8d14a8a0fb067b05ce09f53c905ff0f1076c30135bddbedb9040a7dc49569a7",
+        "execution_plan_sha256": "e4a06ffae7e05f6f76f9f59b7af654e0ab2af824e78764d36c750ef46c27d187",
+        "binding_exec_chunk_id": "2628bd",
+        "planners_reexecuted": 0,
+        "existing_plans_reused": 12,
+        "execution_status": "FAILED_NO_REPLAY",
+        "exec_session_id": 3101,
+        "usage_source": "original v3 accounting.json; in-flight is not unknown until settled",
+        "observed_at": "2026-10-18T19:59:32.540312+00:00",
+        "known_reported_tokens_at_observation": 4690,
+        "request_slots_at_observation": 2,
+        "pending_at_observation": 1,
+        "exit_code": 1,
+        "known_api_reported_tokens": 145417,
+        "actual_api_requests": 12,
+        "api_roles_mechanically_passed": 0,
+        "api_roles_recorded": 2,
+        "native_roles_observed_completed": 1,
+        "native_observed_completed_turn_reported_tokens": 124359,
+        "native_reported_usage_committed": false,
+        "native_pending_count": 1,
+        "checkpoint_artifacts": 0,
+        "original_terminal_sha256": "be97000cf6b8d467ecc6666a478158c5357d13065a685ad6b279aa30ef4352d9",
+        "original_accounting_sha256": "4c3dcfab765f33e3db9b9208abde2370027e9f1971bfb76678e3f0ce886933bf",
+        "native_first_error_sha256": "5edee957bb7e757dfe6d25fa7fb6db17a41d23ce5d123a6795310d9e622d3c3c",
+        "first_error": "native-raw-verification ImportError: mixed_cli_reader imports absent shared planner verifier",
+        "owner_inclusive_wall_seconds": 151.40361380000832,
+        "outer_runtime_inclusive_seconds": 153.61329760000808,
+        "original_ledger_or_failed_status_rewritten": false
+      },
+      "registered_task_disclosure_retest": {
+        "status": "FAILED_EXECUTION_UNKNOWN_BEFORE_CONTAINER_START_NO_REPLAY",
+        "observed_at": "2026-10-18T20:35:14.958784+00:00",
+        "exec_session_id": 62630,
+        "protocol_sha256": "71235fdf488fff14bcc55dacd60df71374dfc77a57f801f16a7f863266b31b93",
+        "execution_plan_sha256": "dba3f2269b712e34a299baa8f3f95d89cc18025f45444fe064a3ce3efe8f7465",
+        "preregistration_sha256": "0a743d0e5fa08327c69fd5052e3cd293d70da3c6331c23b0666cc582bb022ac3",
+        "projection_sha256": "70ce3aaddd61da6688dc619ddfda96b6616ceb21f2956c9affe5a28313bf9297",
+        "projection_control_receipt_sha256": "3cab7190df0219dd97b894f740dfd521f9f9411782dd8d1125f624e69fa0691e",
+        "projection_control_exec_chunk_id": "a169cb",
+        "roles": 15,
+        "workflows": 9,
+        "arms": 3,
+        "system_context_and_full_native_prompt_changed": true,
+        "tasks_plans_rubric_budgets_or_scoring_changed": false,
+        "prior_three_roles_spliced_into_new_primary": false,
+        "old_failed_roles_remeasured_under_new_condition": true,
+        "all_12_plan_outputs_reused": true,
+        "new_planners": 0,
+        "original54_or_first36_repeated": false,
+        "fresh_independent_holdout_claim": false,
+        "known_reported_tokens_at_observation": 52290,
+        "request_slots_at_observation": 4,
+        "pending_at_observation": 0,
+        "quality_or_net_benefit_established": false,
+        "exit_code": 1,
+        "terminal_exec_chunk_id": "8d6d37",
+        "terminal_sha256": "20fe85dfa1c3d5debe53beda71226f7edd93eb0ad01055abf6c79770d657c1ba",
+        "ledger_sha256": "81c3226a7c5ae078f76cb5e3b8e18e078f40c79b04f5831e89294679cba817fa",
+        "closed_sha256": "ade9bf1073a5c649123a3acb0f2d83026479c08d0cddb6e910e5d12ab21600fc",
+        "owner_inclusive_seconds": 35.22357939998619,
+        "outer_seconds_overlapping_not_additive": 38.016742300009355,
+        "original_execution": {
+          "status": "TERMINAL_UNKNOWN",
+          "reason": "SENSITIVE_OUTPUT_REJECTED",
+          "container_started": false,
+          "checks_executed": false,
+          "container_removed": false,
+          "scratch_removed": true,
+          "result_sha256": "99016d80095a6c566663b9de88591480b14c6cc41245b380c4513e95920afe4b"
+        },
+        "external_owned_container_cleanup": {
+          "receipt_sha256": "91608209626328536141dd7a170caa85b7a7379dc3053c91f8acfe754c0e1fa8",
+          "absence_confirmed": true,
+          "initial_remove_result_unpublished": true,
+          "original_unknown_reclassified": false
+        }
+      },
+      "secret_boundary_correction": {
+        "status": "REJECTED_AND_REVERTED_AFTER_INDEPENDENT_SECURITY_REVIEW",
+        "cause": "Unbounded sk- lexical pattern matches inside public task- path. No unredacted inspect stream persisted or read.",
+        "isolated_python_sha256": "3792ebfcaef09e72219bac66ce08a5f7946196491c320468266c8b01cb3cd8ac",
+        "tests_sha256": "8b79a5965e01458891a9f942ed2ef82a197e335943a4db56e8ffe16eb9aa9d1d",
+        "focused_methods": 6,
+        "focused_result": "PASS",
+        "focused_exec_chunk_id": "a4e5b3",
+        "other_secret_branches_unknown_cleanup_scoring_changed": false,
+        "original_failure_or_study_restored": false,
+        "diagnostic_script_sha256": "0bc838ffaf8cc79c4a8c8d0b982c48d7296ca65e24ba346a759297ff496b4f8e",
+        "model_calls": 0,
+        "rejection_reason": "Global lexical boundary permits directly concatenated prefix+credential substring that original SECRET rejects. Public-path diagnostics do not justify weakening whole-output protection.",
+        "canonical_restored_sha256": "2fc136ffa4bb1ca0a99615c12278df36452257d093d8ec2aa9035a3dd4bf1c8d",
+        "tests_restored_sha256": "aa36fb4d91d1310d36a46399b5b2fa27ca4c74e50b9377b400cae20bedbf86b5",
+        "restored_bytes_equal_head": true,
+        "rejected_candidate_real_docker_diagnostic": {
+          "exec_session_id": 80210,
+          "terminal_chunk_id": "4be62c",
+          "diagnostic_sha256": "8b8fde2ae2c4de0c53b67e16d1aca01d572b4b88f51ac718a04b8e87295869dc",
+          "receipt_sha256": "53b73c25399543636cc175dc976ecc2ec43236ebc115ae5f98ea914192ea9b14",
+          "checks_total": 2,
+          "checks_passed": 2,
+          "container_removed": true,
+          "scratch_removed": true,
+          "model_calls": 0,
+          "same_fixed_inputs_except_execution_seconds": true,
+          "full_input_bytes_identical": false,
+          "original_failure_unchanged": true,
+          "study_or_task_reclassified": false
+        },
+        "replacement": "Use neutral machine-owned execution directory identifiers; original scanner, source snapshots, model prompts, contracts, budgets and quality criteria remain unchanged. One real zero-model diagnostic must validate this path before another paid cohort.",
+        "neutral_path_original_scanner_diagnostic": {
+          "status": "DIAGNOSTIC_EXECUTED_VERIFIED",
+          "exec_chunk_id": "0e2324",
+          "script_sha256": "a9fa2921f2d585919c19b02de111049b9fc91c065db243516a244756d336b64e",
+          "diagnostic_sha256": "f76d0c5256f2948fe228fc81e430f07eebe55ab1e153983408158d8252834669",
+          "receipt_sha256": "d5f8a3b5e2466d8b262a2f2773577c6942848db81f1d25a32fa71ee8aecd2eee",
+          "execution_status": "EXECUTED",
+          "unknown": false,
+          "checks_total": 2,
+          "checks_passed": 2,
+          "container_removed": true,
+          "scratch_removed": true,
+          "full_frozen_runner_input_bytes_identical": true,
+          "original_failure_unchanged": true,
+          "model_calls": 0,
+          "task_or_study_qualification_assessed": false
+        }
       }
     }
   }
