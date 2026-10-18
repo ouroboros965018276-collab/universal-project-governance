@@ -67,6 +67,40 @@
     "promotion_allowed": false,
     "Stable": false,
     "resume_regrade_or_partial_splice_authorized": false,
+    "authorization_scope": "Historical state at original process closure; superseded only for remaining workflows by subsequent_user_authorized_continuation below. No regrading authorized.",
     "main_and_local_install": "3.0.0-rc.19"
+  },
+  "subsequent_user_authorized_continuation": {
+    "observed_on": "2026-10-18",
+    "status": "REMAINING_ONLY_RUNNING",
+    "continuation_original_session_id": 36892,
+    "continuation_protocol_sha256": "b6962e7d05580ee30e17cf686e311987bacdaadddff9ef800debd15329fd6609",
+    "continuation_execution_plan_sha256": "6f0d0a0518488a0c1f1670d6d2e161e4f14c696dd0f8951129f47a9dfe7895bb",
+    "authorization": "User explicitly requested reuse of original 34/54 after recharge, without restarting completed workflows.",
+    "original_completed_workflows_reused": 34,
+    "original_actual_actor_records_reused": 37,
+    "original_planned_receivers_not_invoked": 2,
+    "remaining_workflows": 20,
+    "remaining_planned_actors": 27,
+    "fixed_denominator": {"workflows": 54, "actors": 66},
+    "original_failed_request_retained": true,
+    "quality_and_cost_thresholds_unchanged": true,
+    "sensitivity": "Exclude entire interrupted block b12, including all three conditions; favorable result must not depend solely on that block.",
+    "duplicate_full_restart_stopped": {
+      "completed_workflows": 4,
+      "partial_next_workflow": "w005",
+      "request_slots": 31,
+      "known_reported_tokens": 876827,
+      "pending": 0,
+      "inclusive_owner_wall_seconds": 974.8972269000078,
+      "original_exit_code": 1,
+      "job_active_after": 0,
+      "owned_process_handle_closed": true,
+      "owner_closed_sha256": "8fd3e93bcf3eca160fb37b2dd420119530e0d662e54e4a1bb37919c23af67dc1",
+      "accounting_sha256": "9df838970070cf1dec289bbb5121e6f0a70db59b17111dd4d64ae572b6c7d166",
+      "use": "Research overhead only; never replaces original first 34 workflows."
+    },
+    "net_benefit": "NOT_ASSESSED",
+    "promotion_allowed": false
   }
 }
