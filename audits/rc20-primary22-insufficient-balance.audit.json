@@ -1239,7 +1239,49 @@
       "paid_dispatches": 0,
       "execution_readiness": "INTEGRATION_IN_PROGRESS",
       "efficacy": "UNASSESSED",
-      "topology_is_not_independent_evidence": true
+      "topology_is_not_independent_evidence": true,
+      "portable_ci": {
+        "commit": "48657f31098e370faba005005a7993eaa0924c7d",
+        "workflow_run_id": 39171753627,
+        "jobs": 11,
+        "conclusion": "success"
+      },
+      "compiled_assets": {
+        "path": "eval-workspaces/rc20-six-condition-assets-v1/assets.json",
+        "sha256": "d8c830d794ec1b03c320e087f5017a808b28572f18a5e1b4233bdcec8e016154",
+        "baseline_fixed_git_bytes": true,
+        "full_runtime_18_files_equal_canonical": true,
+        "preparation_seconds": 1.6026925999904051,
+        "models": 0,
+        "planners": 0
+      },
+      "fixture_controls": {
+        "keeper_manifest_sha256": "c495a069b69a626bd0196d5531fd0819f5c1807127c0bcfaeb8a889d291c99ba",
+        "registry_sha256": "57f27f72c35c2450a77dba571fa04cc65434e306b0a90907b3a7bd5cc665a491",
+        "new_project_families": 4,
+        "stages": 6,
+        "registered_checks": 20,
+        "registered_unit_tests": 37,
+        "local_positive_lineages": 7,
+        "local_mutants_rejected": 35,
+        "real_docker_control_result": {
+          "path": "C:/Users/96501/.codex/upg-experiments/rc20-fixture-isolation-v1/result.json",
+          "sha256": "b50ca1a85d9e60f10b83f5e5685daf473bae73f71ecbd0036294db02c098b555",
+          "status": "PASS",
+          "actual_executions": 7,
+          "unique_positive_executions": 6,
+          "known_deletion_negative_executions": 1,
+          "known_deletion_negative_checks_passed": 0,
+          "known_deletion_negative_checks_total": 4,
+          "wall_seconds": 28.94810020001023,
+          "all_integrity_and_cleanup_complete": true,
+          "unknown": false
+        },
+        "models": 0,
+        "planners": 0,
+        "real_agent_interruption_or_recovery_proved": false,
+        "real_net_benefit_assessed": false
+      }
     }
   }
 }
