@@ -1371,7 +1371,152 @@
         "no_replay": true,
         "quality_or_net_benefit_assessed": false,
         "next_action": "Read-only native official workspace-routing diagnosis before further paid calls. Preserve five completed roles and unknown exposure; never replay this native or reinterpret unknown usage as zero."
+      },
+      "native_connection_recovery_observation": {
+        "items": {
+          "catalog": {
+            "path": "D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution\\eval-workspaces\\rc20-native-catalog-diagnostic-20261019-01\\observation.json",
+            "sha256": "247aca7c34b1429e36d62b3ac51475f3fa922d30cd5975879e33c16553c4f8c0",
+            "actual_observation": {
+              "schema": "root-native-model-catalog-diagnostic-v1",
+              "command": "debug models; original same provider and transport overrides; no inference command",
+              "original_command_sha256": "18e09322ed0a98bd82ae48ba6f6c5a70960dfdaf559569f9475dfe818036e0a3",
+              "executable": "C:\\Users\\96501\\.agent-environment\\runtimes\\codex-0.162.0-alpha.20\\bin\\codex.exe",
+              "exit_code": 0,
+              "timeout": false,
+              "wall_seconds": 0.7298214999900665,
+              "stdout_sha256": "e6176e013e95e73f892816d2001b04be338716d97eb101445564235eae61a31b",
+              "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "stdout_bytes": 561042,
+              "stderr_bytes": 0,
+              "inference_turns_requested": 0,
+              "task_or_fixture_sent": false,
+              "catalog_is_not_workspace_routing_or_inference_entitlement_proof": true,
+              "catalog_type": "dict",
+              "model_count": 9,
+              "requested_slug_present": true
+            }
+          },
+          "connectivity_inference": {
+            "path": "D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution\\eval-workspaces\\rc20-native-catalog-diagnostic-20261019-01\\inference-probe\\observation.json",
+            "sha256": "6c2e5a31bc39d6231d2055a31bbea477d5e598e8a7581844c48ae39e5dbb4e65",
+            "actual_observation": {
+              "schema": "root-native-connectivity-observation-v1",
+              "exit_code": 0,
+              "timeout": false,
+              "wall_seconds": 5.581828700000187,
+              "model_requested": "gpt-6-luna",
+              "completed_turns": 1,
+              "usage": {
+                "input_tokens": 9813,
+                "cached_input_tokens": 0,
+                "cache_write_input_tokens": 0,
+                "output_tokens": 15,
+                "reasoning_output_tokens": 0
+              },
+              "reported_total_tokens": 9828,
+              "inference_completed": true,
+              "error_events": [],
+              "tool_events": 0,
+              "task_or_fixture_sent": false,
+              "frozen_study_tasks_repeated": 0,
+              "stdout_sha256": "6a038fb7c80100c3316dafc623dec7bfc1f237f9c169c128f33883a5bb4f91e3",
+              "stderr_sha256": "f8f5c8c22a398d83df86614d733db87954b492e771b3f4227a3eddd1cdd10806",
+              "stdout_bytes": 352,
+              "stderr_bytes": 158
+            }
+          }
+        },
+        "old_native_unknown_exposure_unchanged": true,
+        "prior_frozen_trials_unchanged": true,
+        "study_tasks_repeated": 0,
+        "extra_research_tokens": 9828,
+        "extra_research_seconds": 6.311650199990254,
+        "scope": "Current single diagnostic turn completed; does not prove future capacity or task benefit. Recovery study remains separately registered; original failures remain failed."
+      },
+      "actual_native_recovery_segment": {
+        "status": "FAILED_NO_REPLAY",
+        "run_root": "C:\\Users\\96501\\.codex\\upg-experiments\\rc20-independent-engineering-six-condition-native-recovery-v1",
+        "ledger_sha256": "bb756a30ae45afcdd66d8952d82fbb4e058aca355a2945007f67cc5d375a451d",
+        "terminal_sha256": "029811d36df507b2a24e022c788bd4e6f591b1539d5d74c9bf3c8c1d60ec52b4",
+        "completed_actor_ids": [
+          "w004-receiver",
+          "w005-source",
+          "w006-source",
+          "w007-source",
+          "w007-receiver",
+          "w008-source",
+          "w008-receiver",
+          "w009-source",
+          "w010-source",
+          "w011-source",
+          "w011-receiver"
+        ],
+        "completed_current": 11,
+        "cumulative_completed": 16,
+        "API_request_rows": 79,
+        "API_dispatched_requests": 78,
+        "API_known_reported_tokens": 1061633,
+        "known_API_total_across_segments": 1508215,
+        "native_completed_reported_token_domains": {
+          "nativeCLI/openai-native-cli/gpt-6-luna": 487677
+        },
+        "native_completed_turns": 2,
+        "old_native_unknown_exposure_retained": true,
+        "partial_actor": "w012-source",
+        "partial_status": "transport-failed-not-invoked",
+        "partial_refusal_reason": "TimeoutError",
+        "partial_known_tokens": 146550,
+        "partial_tool_count": 7,
+        "partial_actor_requests": 7,
+        "partial_final_report_present": false,
+        "last_API_confirmed_not_invoked": true,
+        "last_HTTP_dispatch": "not_started",
+        "current_pending": 0,
+        "runtime_inclusive_seconds": 654.0906261999917,
+        "logical_round_inclusive_seconds": 974.1340869000105,
+        "physical_owned_child_exited": true,
+        "job_active_after": 0,
+        "quality_or_net_benefit_assessed": false,
+        "operator_exposure": "ROOT accidental over-broad diagnostic projection included current r4 public task/tool-event bodies; ROOT cannot grade. No private answers or credentials were printed; fresh fork-none graders remain required.",
+        "next_action": "Implement and independently verify explicit receipt-bound actor checkpoint recovery in the canonical API engine, then continue request8/tool8 with cumulative budgets. Preserve completed16 and prior6 successful calls; readiness never substitutes for an actual final report."
+      },
+      "actual_actor_checkpoint_prefix_audit": {
+        "status": "PASS",
+        "verification_sha256": "fc65f1c4a5e0435c3c30936a0c594e98785ea1ecbee832d55db65c030a7336f9",
+        "resume_prefix_proof_sha256": "9241ccacb5710d8ceec1290942c772e780eb2058df492e6fd46bdf1148db4e80",
+        "root_observed_exit_sha256": "be71fbb601f4b71564632400dc3c06b4e52b47124cb2da67f3b66425e3f7a3fe",
+        "first_attempt_status": "FAILED_RETAINED",
+        "first_attempt_seconds": 7.3938917,
+        "corrective_reader_active_seconds": 27.393839199998183,
+        "corrective_outer_wall_seconds": null,
+        "corrective_outer_measurement": "UNKNOWN_NOT_ZERO",
+        "necessary_repeated_readonly_native_actor": "w004-receiver",
+        "model_calls": 0,
+        "project_executions": 0,
+        "old_five_RAW_replayed": false,
+        "w012_task_pass": false,
+        "completed_actor_count_unchanged": 16
       }
     }
+  },
+  "actor_checkpoint_engine_validation": {
+    "tests_run": 1286,
+    "failures": 0,
+    "errors": 0,
+    "skips": 3,
+    "wall_seconds": 229.52140150000923,
+    "tested_source_map": {
+      "evolution/actor_checkpoint.py": "790548da1786fb750c7dd2709e967325ce08f13257c8aea2fbcf82577b834486",
+      "evolution/engineering_broker.py": "beae77fd84eb9331ac0dc473c0da1b443d835f01a9b1d1e8a703fdc5c19b7c1b",
+      "evolution/provider_tools.py": "1087b70b337681dab8e39325d8fe89d87122d13684f4840061c775a46a9e88eb",
+      "tests/test_actor_checkpoint.py": "3cf0b36c0cb12cf5b9e575d41ada136c419823f1c4a621d3b24f4c4c20c6d8cf",
+      "tests/test_engineering_broker.py": "cb933df7168af18e4023b44545eeca9fc983ffcdb8afb22ef7e2a1a609f81675"
+    },
+    "regression_result_sha256": "b4ae61ac297867d14dcee36bb6ba183982ca425a8233c7ef977ef462f94e3ddb",
+    "repository_checks_passed": 9,
+    "gates_result_sha256": "bedb294c7fc61c6134f820ad6443de3c1257fc61259a680731cdeec3225694e9",
+    "model_calls": 0,
+    "efficacy_claimed": false
   }
 }

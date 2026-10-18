@@ -265,6 +265,78 @@ class SSEActorTests(engineering_fixture.EngineeringCandidateTests):
                     api.context_checkpoint.facts(self.task, {p: sha(t.encode()) for p, t in self.task['initial_files'].items()},
                         checkpoint['facts']['current_files'], result['tool_events'][:2], bad, checkpoint['facts']['budgets'])
 
+    def test_resume_checkpoint_continues_counters_namespace_and_actual_model_finish(self):
+        # Explicit caller seam: independent validator and real broker integrity
+        # are tested separately; this control never attests a real prefix.
+        from evolution import actor_checkpoint
+        factory = self.module.create_broker.side_effect
+        for provider in ('deepseek', 'mimo'):
+            with self.subTest(provider=provider):
+                (self.workspace/'target.txt').write_bytes(b'old\n')
+                self.before, self.after, self.loaded, self.executions = [], [], [], []
+                self.artifacts = self.base/('resume-prefix-'+provider)
+                model = 'deepseek-v4-pro' if provider == 'deepseek' else 'mimo-v2.6-pro-ultraspeed'
+                prefix, old_payloads = self.run_sse(self.ready()[:2], provider, model=model,
+                    actor_options={'profile_id':api.ENGINEERING_CHECKPOINT_SSE_PROFILE}, connect_failure_at=3)
+                self.assertEqual((prefix['status'],prefix['requests'],prefix['tool_attempts']),('transport-failed-not-invoked',3,2))
+                self.assertIsNone(prefix['final_report'])
+                old = self.artifacts
+                inventory = {p.relative_to(old).as_posix():sha(p.read_bytes())for p in old.rglob('*')if p.is_file()}
+                outcomes = [json.loads((old/'requests'/('%02d.receipt.json'%i)).read_bytes())for i in range(1,4)]
+                seed = dict(policy_id=actor_checkpoint.POLICY_ID,checkpoint_sha256='a'*64,source_actor_id='synthetic-source',
+                    original_artifact_root=str(old),original_task_sha256=sha(canonical(self.task)),
+                    original_received_state={n:sha(t.encode())for n,t in self.task['initial_files'].items()},
+                    current_files={n:(self.workspace/n).read_text()for n in self.task['initial_files']},
+                    events=copy.deepcopy(prefix['tool_events']),traces=copy.deepcopy(prefix['api_tool_trace']),
+                    requests_used=3,tools_used=2,elapsed_seconds_used=10,schema_rejections_used=0,
+                    reasoning_continuations_used=0,connect_retries_used=0,conversation_index=1,checkpoint_count=1,
+                    previous_broker_chain_sha256=prefix['api_tool_trace'][-1]['chain_sha256'],
+                    previous_request_receipt_sha256=sha((old/'requests/03.receipt.json').read_bytes()),
+                    prior_request_receipts=[{'path':str(old/'requests'/('%02d.receipt.json'%i)),
+                        'sha256':sha((old/'requests'/('%02d.receipt.json'%i)).read_bytes())}for i in range(1,4)],
+                    prior_outcomes=outcomes,independently_verified_prefix={'path':'SYNTHETIC_CALLER_SEAM','sha256':'b'*64})
+                def restored(root,task,git,*,resume_checkpoint=None,**kwargs):
+                    broker=factory(root,task,git,**kwargs)
+                    if resume_checkpoint is not None:broker.events=copy.deepcopy(resume_checkpoint['events'])
+                    return broker
+                self.module.create_broker.side_effect=restored
+                self.artifacts=self.base/('resumed-'+provider);self.before,self.after,self.loaded=[],[],[]
+                work=completion(4,[call('read-1','repo_validate',{}),call('fresh-status','repo_status',{})])
+                now=api.time.perf_counter();clock={'schema':'collector-first-setup-absolute-work-deadline-v1',
+                    'started_monotonic':now,'work_deadline_monotonic':now+600}
+                try:
+                    with patch.object(actor_checkpoint,'validate_resume',return_value=seed):
+                        result,payloads=self.run_sse([work,self.finish(5)],provider,model=model,
+                            actor_options={'profile_id':api.ENGINEERING_CHECKPOINT_SSE_PROFILE,'resume_checkpoint':{'synthetic':True},'actor_timing':clock})
+                finally:self.module.create_broker.side_effect=factory
+                self.assertEqual(result['status'],'completed',result['quality'])
+                self.assertIs(result['quality']['hard_pass'],True)
+                self.assertEqual((result['requests'],result['segment_requests'],result['tool_attempts'],result['conversation_index']),(5,2,5,1))
+                self.assertEqual([v['request_index']for v in self.before],[4,5])
+                self.assertEqual(len(payloads),2)
+                self.assertEqual(len(payloads[0]['messages']),3)
+                self.assertEqual(payloads[0]['messages'][:2],old_payloads[0]['messages'][:2])
+                self.assertNotIn('mock non-private test field',payloads[0]['messages'][-1]['content'])
+                transition=json.loads((self.artifacts/'context-checkpoints/resume-01.json').read_bytes())
+                self.assertEqual(transition['facts']['budgets']['requests_used'],3)
+                self.assertEqual(transition['facts']['budgets']['tool_attempts_used'],2)
+                self.assertEqual(transition['effective_work_deadline_monotonic'],result['actor_timing']['work_deadline_monotonic']-10)
+                self.assertEqual([t['conversation_index']for t in result['api_tool_trace']],[0,0,1,1])
+                self.assertEqual(result['api_tool_trace'][2]['previous_chain_sha256'],seed['previous_broker_chain_sha256'])
+                self.assertEqual(result['known_usage']['total_tokens'],sum(r['usage']['total_tokens']for r in outcomes if r['usage'])+sum(r['usage']['total_tokens']for r in self.after))
+                self.assertEqual({p.relative_to(old).as_posix():sha(p.read_bytes())for p in old.rglob('*')if p.is_file()},inventory)
+                self.assertEqual(len(self.executions),1)
+
+    def test_resume_checkpoint_rejection_never_reserves_loads_key_or_dispatches(self):
+        from evolution import actor_checkpoint
+        now=api.time.perf_counter();clock={'schema':'collector-first-setup-absolute-work-deadline-v1','started_monotonic':now,'work_deadline_monotonic':now+600}
+        with patch.object(actor_checkpoint,'validate_resume',side_effect=ValueError('unverified synthetic prefix')) as validate:
+            with self.assertRaises(ValueError):
+                self.run_sse([],actor_options={'profile_id':api.ENGINEERING_CHECKPOINT_SSE_PROFILE,'resume_checkpoint':{'unverified':True},'actor_timing':clock})
+        validate.assert_called_once()
+        self.assertEqual((self.before,self.loaded,self.executions),([],[],[]))
+        self.assertFalse(self.artifacts.exists())
+
     def test_checkpoint_once_and_bootstrap_bounds_do_not_add_dispatches(self):
         for mode in ('once-hard-cap', 'bootstrap-too-large', 'known-failure-facts'):
             with self.subTest(mode=mode):
@@ -351,9 +423,10 @@ class SSEActorTests(engineering_fixture.EngineeringCandidateTests):
                 self.assertEqual(result['unknown_usage'], mode == 'unknown')
 
     def fake_https(self, steps, provider="deepseek", transform=None, broken=False, close_failure=False, on_eof=None,
-                   response_status=200, response_headers=None):
+                   response_status=200, response_headers=None, connect_failure_at=None):
         owner = self
         payloads = []
+        connections = 0
         class Response:
             status = response_status
             def __init__(self, body):
@@ -377,7 +450,10 @@ class SSEActorTests(engineering_fixture.EngineeringCandidateTests):
             def __init__(self, host, timeout):
                 self.timeout = timeout
             def connect(self):
-                pass
+                nonlocal connections
+                connections += 1
+                if connections == connect_failure_at:
+                    raise TimeoutError('synthetic confirmed pre-dispatch timeout')
             def request(self, method, path, body, headers):
                 payload = json.loads(body)
                 payloads.append(copy.deepcopy(payload))

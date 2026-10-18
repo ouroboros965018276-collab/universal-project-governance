@@ -1395,8 +1395,12 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
               before_request=None, after_request=None, profile_id=None, execution_backend=None, connect_retry_policy=None, tool_feedback_policy=None,
               broker_profile_id=None, controlled_local_stop_guard=None, settlement_policy=None,
               actor_timing=None, controlled_phase_stop_policy=None, controlled_phase_stop_guard=None,
-              reasoning_continuation_policy=None):
+              reasoning_continuation_policy=None, resume_checkpoint=None):
     """Run once on existing disk state; new actor => fresh artifact directory.
+
+    Explicit resume_checkpoint consumes one independently authenticated unfinished
+    engineering prefix and starts a new facts-only conversation. Request/tool/
+    active-work counters continue; no old tools or model response are executed.
 
     before_request(metadata) reserves the outer budget before dispatch and may
     raise to refuse. after_request(metadata) receives usage/unknown and the raw
@@ -1513,10 +1517,23 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
     max_input_bytes = (configuration["admission_limits"]["max_input_bytes"]
                        if profile_id in ENGINEERING_INPUT_PROFILES else MAX_INPUT_BYTES)
     checkpointing = profile_id == ENGINEERING_CHECKPOINT_SSE_PROFILE
+    if resume_checkpoint is not None and (not checkpointing or registered_timing is None or timeout_seconds != 600
+            or max_requests != 24 or controlled_local_stop_guard is not None or controlled_phase_stop_guard is not None):
+        raise ValueError("actor recovery requires explicit checkpoint engineering profile without a phase cut")
     task = copy.deepcopy(engineering.validate_task(task) if engineering else validate_task(task))
     root, artifacts = Path(root).resolve(), Path(artifact_dir).resolve()
     if artifacts == root or root in artifacts.parents:
         raise ValueError("artifacts must be outside the registered repository")
+    resume_seed = None
+    if resume_checkpoint is not None:
+        from evolution import actor_checkpoint
+        resume_seed = actor_checkpoint.validate_resume(resume_checkpoint, task=task, provider=provider,
+            model=model, system_context=system_context, configuration=configuration, root=root)
+        if resume_seed["requests_used"] >= max_requests or resume_seed["tools_used"] >= MAX_TOOLS or resume_seed["elapsed_seconds_used"] >= timeout_seconds:
+            raise ValueError("cumulative recovery budget leaves no dispatch/tool/active-work capacity")
+        original_artifacts = Path(resume_seed["original_artifact_root"]).resolve()
+        if artifacts == original_artifacts or artifacts in original_artifacts.parents or original_artifacts in artifacts.parents:
+            raise ValueError("recovery artifacts require a separate immutable namespace")
     artifacts.mkdir(parents=True, exist_ok=True)
     lock = artifacts / "actor.lock"
     try:
@@ -1529,22 +1546,28 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
         if any(path != lock for path in artifacts.iterdir()):
             raise ActorFence("existing actor artifacts/pending; no replay")
         started = time.perf_counter() if registered_timing is None else registered_timing["started_monotonic"]
-        deadline = started + timeout_seconds
+        deadline = started + timeout_seconds - (resume_seed["elapsed_seconds_used"] if resume_seed is not None else 0)
+        if resume_seed is not None and deadline <= time.perf_counter():
+            raise ValueError("cumulative actor active-work budget exhausted before recovery")
         settlement_deadline = deadline + SETTLEMENT_MAX_SECONDS if settlement_policy is not None else None
         input_identity = sha(canonical(task))
         # The caller must explicitly derive a stage-two task from received disk.
         # The actor never blesses drift by changing its input task.
         preliminary = (engineering.create_broker(root, task, git_binary, max_calls=MAX_TOOLS,
-            execution_artifacts=None) if engineering else RepoBroker(root, task, git_binary, max_calls=MAX_TOOLS))
-        received = preliminary.snapshot()
+            execution_artifacts=None, **({"resume_checkpoint": resume_seed} if resume_seed is not None else {})) if engineering else RepoBroker(root, task, git_binary, max_calls=MAX_TOOLS))
+        observed_received = preliminary.snapshot()
         expected_received = {name: sha(text.encode("utf-8")) for name, text in task["initial_files"].items()}
-        if received != expected_received:
+        received = expected_received if resume_seed is not None else observed_received
+        expected_current = ({name: sha(text.encode("utf-8")) for name, text in resume_seed["current_files"].items()}
+                            if resume_seed is not None else expected_received)
+        if observed_received != expected_current or resume_seed is not None and resume_seed["original_received_state"] != expected_received:
             raise ValueError("workspace namespace/bytes differ from exact input task; no dispatch")
         observed_text = {}
-        for name in task["initial_files"]:
+        current_text = resume_seed["current_files"] if resume_seed is not None else task["initial_files"]
+        for name in current_text:
             text = preliminary.path(name).read_bytes().decode("utf-8")
             observed_text[name] = text
-            if text != task["initial_files"][name]:
+            if text != current_text[name]:
                 raise ValueError("workspace differs from exact input task; no dispatch")
         entry = {"adapter": adapter_identity, "provider": provider, "model_requested": model, "task_id": task["id"],
                  "input_task_sha256": input_identity, "effective_task_sha256": sha(canonical(task)),
@@ -1571,6 +1594,13 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
         if checkpointing:
             entry.update(context_checkpoint_policy=context_checkpoint.POLICY_ID,
                 context_checkpoint_generator_sha256=sha(Path(context_checkpoint.__file__).read_bytes()))
+        if resume_seed is not None:
+            entry.update(actor_resume_checkpoint_policy=resume_seed["policy_id"],
+                actor_resume_checkpoint_sha256=resume_seed["checkpoint_sha256"],
+                prior_requests_used=resume_seed["requests_used"], prior_tool_attempts_used=resume_seed["tools_used"],
+                prior_active_seconds_used=resume_seed["elapsed_seconds_used"],
+                original_artifact_root=resume_seed["original_artifact_root"],
+                recovery_is_not_original_first_pass=True)
         if controlled_local_stop_guard is not None:
             entry["controlled_local_stop_policy"] = CONTROLLED_LOCAL_STOP_POLICY
         if registered_timing is not None:
@@ -1591,7 +1621,8 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
         backend_options = ({"execution_backend": execution_backend, "execution_artifacts": artifacts / "execution"}
             if execution_backend is not None else {})
         broker = (engineering.create_broker(root, task, git_binary, audit_file=artifacts / "broker.jsonl", max_calls=MAX_TOOLS,
-                    deadline=time.time() + max(0, deadline-time.perf_counter()), execution_artifacts=artifacts/"execution")
+                    deadline=time.time() + max(0, deadline-time.perf_counter()), execution_artifacts=artifacts/"execution",
+                    **({"resume_checkpoint": resume_seed} if resume_seed is not None else {}))
             if engineering else RepoBroker(root, task, git_binary, audit_file=artifacts / "broker.jsonl", max_calls=MAX_TOOLS,
                             deadline=time.time() + max(0, deadline - time.perf_counter()), **backend_options))
         definitions = {item["name"]: item for item in (engineering.tool_definitions() if engineering else
@@ -1635,7 +1666,42 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
         controlled_local_stop, last_calls, last_outcome_sha = None, [], None
         work_cutoff_reached, last_settlement = False, None
         last_finish_reason = None
-        for index in range(1, max_requests + 1):
+        recovery_transition = None
+        if resume_seed is not None:
+            prior = resume_seed["prior_outcomes"]
+            receipts = [copy.deepcopy(row["usage"]) for row in prior if row["usage"] is not None]
+            native_trace = copy.deepcopy(resume_seed["traces"])
+            seen_calls = {(row.get("conversation_index", 0), row["tool_call_id"]) for row in native_trace}
+            seen_responses = {row["api_response_id"] for row in prior if row.get("api_response_id") is not None}
+            reported_models = [row["model_reported"] for row in prior if row.get("model_reported") is not None]
+            request_count, tool_attempts = resume_seed["requests_used"], resume_seed["tools_used"]
+            schema_rejections = resume_seed["schema_rejections_used"]
+            reasoning_continuations, connect_retries = resume_seed["reasoning_continuations_used"], resume_seed["connect_retries_used"]
+            last_outcome_sha = resume_seed["previous_request_receipt_sha256"]
+            conversation_index = resume_seed["conversation_index"]
+            budgets = {"requests_used": request_count, "requests_limit": max_requests,
+                "tool_attempts_used": tool_attempts, "tools_limit": MAX_TOOLS,
+                "schema_rejections_used": schema_rejections, "schema_correction_limit": ENGINEERING_SCHEMA_CORRECTIONS,
+                "reasoning_continuations_used": reasoning_continuations, "connect_retries_used": connect_retries,
+                "actor_started_monotonic": started, "work_deadline_monotonic": deadline,
+                "settlement_deadline_monotonic": settlement_deadline}
+            facts = context_checkpoint.facts(task, received, broker.snapshot(), broker.events, native_trace, budgets)
+            messages = context_checkpoint.bootstrap(initial_messages, facts)
+            recovery_transition = {"schema": "engineering-context-recovery-transition-v1", "policy_id": resume_seed["policy_id"],
+                "checkpoint_index": 1, "from_conversation_index": 0, "to_conversation_index": 1,
+                "checkpoint_descriptor_sha256": resume_seed["checkpoint_sha256"],
+                "generator_source_sha256": entry["context_checkpoint_generator_sha256"],
+                "input_task_sha256": input_identity, "profile_configuration_sha256": entry["profile_configuration_sha256"],
+                "received_state_sha256": entry["received_state_sha256"], "system_context_sha256": entry["system_context_sha256"],
+                "initial_messages_sha256": sha(canonical(initial_messages)), "previous_request_index": request_count,
+                "previous_request_receipt_sha256": last_outcome_sha,
+                "previous_broker_chain_sha256": resume_seed["previous_broker_chain_sha256"], "broker_event_count": len(broker.events),
+                "prior_active_seconds_used": resume_seed["elapsed_seconds_used"], "segment_actor_timing": copy.deepcopy(registered_timing),
+                "effective_work_deadline_monotonic": deadline, "settlement_deadline_monotonic": settlement_deadline,
+                "facts": facts, "facts_sha256": sha(canonical(facts)), "checkpoint_user_content": messages[-1]["content"],
+                "bootstrap_messages_sha256": sha(canonical(messages)),
+                "independently_verified_prefix": copy.deepcopy(resume_seed["independently_verified_prefix"])}
+        for index in range(request_count + 1, max_requests + 1):
             remaining = deadline - time.perf_counter()
             if remaining <= 0:
                 status = "wall-budget-exhausted"
@@ -1649,6 +1715,15 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                 payload["reasoning_effort"] = settings["reasoning_effort"]
             if response_json_mode:
                 payload["response_format"] = {"type": "json_object"}
+            if recovery_transition is not None:
+                if len(canonical(payload)) > context_checkpoint.POLICY["max_bootstrap_bytes"]:
+                    status, refusal_reason = "input-byte-cap-not-invoked", "recovery-bootstrap-over-limit"
+                    break
+                recovery_transition.update(bootstrap_payload_utf8_bytes=len(canonical(payload)), bootstrap_payload_sha256=sha(canonical(payload)))
+                ref = "context-checkpoints/resume-01.json"
+                digest = _write_new(artifacts / ref, recovery_transition, key)
+                checkpoint_receipts.append({"checkpoint_index": 1, "ref": ref, "sha256": digest})
+                recovery_transition = None
             if (checkpointing and checkpoint_ready and not checkpoint_receipts
                     and len(canonical(payload)) >= context_checkpoint.POLICY["trigger_bytes"]):
                 try:
@@ -1711,6 +1786,9 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
             if checkpointing:
                 metadata.update(context_checkpoint_policy=context_checkpoint.POLICY_ID, conversation_index=conversation_index,
                     context_checkpoint_sha256=checkpoint_receipts[0]["sha256"] if checkpoint_receipts else None)
+            if resume_seed is not None:
+                metadata.update(actor_resume_checkpoint_policy=resume_seed["policy_id"],
+                    actor_resume_checkpoint_sha256=resume_seed["checkpoint_sha256"])
             if engineering:
                 metadata["broker_profile_id"] = broker_profile_id
             if settlement_policy is not None:
@@ -2332,6 +2410,11 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                                                      "finish_report_sha256": final_report_sha})
         if checkpointing:
             result.update(conversation_index=conversation_index, context_checkpoint_receipts=checkpoint_receipts)
+        if resume_seed is not None:
+            result.update(segment_requests=request_count-resume_seed["requests_used"],
+                cumulative_active_seconds=resume_seed["elapsed_seconds_used"]+time.perf_counter()-started,
+                prior_request_receipts=copy.deepcopy(resume_seed["prior_request_receipts"]),
+                independently_verified_prefix=copy.deepcopy(resume_seed["independently_verified_prefix"]))
         if settlement_policy is not None:
             # Even an earlier current validation PASS cannot convert a timed-out
             # actor or a late finish into successful work. This is pure grading.

@@ -170,12 +170,62 @@ class EngineeringBroker(RepoBroker):
     _validate_task = staticmethod(validate_task)
 
     def __init__(self, root, task, git_binary, *, audit_file=None, max_calls=32,
-                 deadline=None, execution_artifacts=None, receipt_events=None):
+                 deadline=None, execution_artifacts=None, receipt_events=None,
+                 resume_checkpoint=None):
         # Only the terminal CLI reader supplies receipt_events. Verify the full
         # journal before allowing missing files; no filesystem write is replayed.
+        if resume_checkpoint is not None and receipt_events is not None:
+            raise ValueError('a live resume cannot also be a receipt-only view')
+        resume = None
+        if resume_checkpoint is not None:
+            from evolution.actor_checkpoint import validate_seed
+            resume = validate_seed(resume_checkpoint, task=task, root=root)
+            initial = {name: sha(text.encode('utf-8')) for name, text in validate_task(task)['initial_files'].items()}
+            if (type(resume) is not dict or resume.get('original_task_sha256') != sha(canonical(task))
+                    or resume.get('original_received_state') != initial
+                    or type(resume.get('events')) is not list or type(resume.get('traces')) is not list
+                    or type(resume.get('tools_used')) is not int
+                    or not 0 < len(resume['events']) == len(resume['traces']) == resume['tools_used'] <= max_calls):
+                raise ValueError('resume must preserve the original task and complete bounded broker prefix')
+            previous = None
+            for event, trace in zip(resume['events'], resume['traces']):
+                signed = dict(trace); claimed = signed.pop('chain_sha256', None)
+                if (trace.get('previous_chain_sha256') != previous
+                        or trace.get('broker_sequence') != event.get('sequence')
+                        or trace.get('broker_event_sha256') != sha(canonical(event))
+                        or trace.get('arguments_sha256') != event.get('arguments_sha256')
+                        or trace.get('result_sha256') != event.get('result_sha256')
+                        or sha(canonical(signed)) != claimed):
+                    raise ValueError('resume broker hash chain differs')
+                previous = claimed
+            if resume.get('previous_broker_chain_sha256') != previous:
+                raise ValueError('resume broker chain tip differs')
+        restored_events = receipt_events if resume is None else resume['events']
         restored_files = (None if receipt_events is None else
                           files_from_receipt_journal(validate_task(task), receipt_events))
-        self._receipt_only = receipt_events is not None
+        if resume is not None:
+            restored_files = files_from_receipt_journal(task, restored_events)
+            expected = {name: sha(text.encode('utf-8')) for name, text in restored_files.items()}
+            if (restored_files != resume.get('current_files')
+                    or sha(canonical(expected)) != resume.get('current_state_sha256')):
+                raise ValueError('resume snapshot differs from confirmed original journal')
+        # Provider preflight supplies no new artifact directory and remains a
+        # read-only namespace/receipt view. Actual continuation supplies one.
+        self._receipt_only = receipt_events is not None or resume is not None and execution_artifacts is None
+        self._resume_event_count = 0 if resume is None else len(restored_events)
+        self._resume_execution_artifacts = None
+        if resume is not None:
+            old = Path(resume['original_artifact_root'])
+            if not old.is_absolute() or not old.is_dir():
+                raise ValueError('original resume artifact root is unavailable')
+            for part in (old, *old.parents):
+                info = part.lstat()
+                if stat.S_ISLNK(info.st_mode) or getattr(info, 'st_file_attributes', 0) & 1024:
+                    raise ValueError('original resume artifacts cannot use reparse paths')
+            old = old.resolve()
+            if audit_file is not None and Path(audit_file).resolve().is_relative_to(old):
+                raise ValueError('resumed broker cannot append to original artifacts')
+            self._resume_execution_artifacts = old / 'execution'
         self._confirmed_removed_paths = (set() if restored_files is None else
                                         set(task['initial_files']) - set(restored_files))
         self.project_execution_artifacts = Path(execution_artifacts) if execution_artifacts is not None else None
@@ -192,26 +242,39 @@ class EngineeringBroker(RepoBroker):
             project = Path(root).resolve()
             if self.project_execution_artifacts == project or project in self.project_execution_artifacts.parents:
                 raise ValueError('execution receipts must be outside project')
+            if resume is not None and (self.project_execution_artifacts.is_relative_to(old)
+                    or old.is_relative_to(self.project_execution_artifacts)):
+                raise ValueError('resumed execution receipts require a distinct new namespace')
         super().__init__(root, task, git_binary, audit_file=audit_file,
                          max_calls=max_calls, deadline=deadline)
         if self.project_execution_artifacts is not None:
             if not self.project_execution_artifacts.parent.is_dir():
                 raise ValueError('execution parent is unavailable')
-            if receipt_events is None:
+            if receipt_events is None and resume is None:
                 try:
                     self.project_execution_artifacts.mkdir()
                 except FileExistsError:
                     raise ValueError('execution directory already reserved; no replay') from None
-            elif not self.project_execution_artifacts.is_dir():
+            elif resume is None and not self.project_execution_artifacts.is_dir():
                 # A CLI may terminate without one repo_validate call. Keep its
                 # known NOT_RUN state without creating an execution directory.
                 if any(row['tool'] == 'repo_validate' for row in receipt_events):
                     raise ValueError('observed execution directory is missing')
         if restored_files is not None:
-            self.events = copy.deepcopy(receipt_events)
+            self.events = copy.deepcopy(restored_events)
             expected = {name: sha(text.encode('utf-8')) for name, text in restored_files.items()}
             if self.snapshot() != expected:
                 raise ValueError('current repository differs from confirmed journal')
+        if resume is not None:
+            _, _, unknown, _ = current_validation_from_receipts(self)
+            if unknown:
+                raise ValueError('resume original execution receipt is unconfirmed')
+            self.project_validation_count = sum(row['tool'] == 'repo_validate' for row in self.events)
+            if self.project_execution_artifacts is not None:
+                try:
+                    self.project_execution_artifacts.mkdir()
+                except FileExistsError:
+                    raise ValueError('resumed execution directory already reserved; no replay') from None
 
     def _required_snapshot_paths(self):
         return set(self.task['initial_files']) - self._confirmed_removed_paths
@@ -417,9 +480,10 @@ class EngineeringBroker(RepoBroker):
 
 
 def create_broker(root, task, git_binary, *, audit_file=None, max_calls=32,
-                  deadline=None, execution_artifacts=None):
+                  deadline=None, execution_artifacts=None, resume_checkpoint=None):
     return EngineeringBroker(root, task, git_binary, audit_file=audit_file,
-        max_calls=max_calls, deadline=deadline, execution_artifacts=execution_artifacts)
+        max_calls=max_calls, deadline=deadline, execution_artifacts=execution_artifacts,
+        resume_checkpoint=resume_checkpoint)
 
 
 def validate_execution_result(result, task, state_sha):
@@ -586,7 +650,9 @@ def _read_validation_at_snapshot(broker, event, files):
     if (event['state_sha256'] != state or execution is None or execution['unknown'] is not False
             or execution['status'] != 'EXECUTED' or event['arguments'] != {}):
         raise ValueError('historical execution summary is unknown')
-    path = broker.project_execution_artifacts / execution['receipt_ref']
+    original = (broker._resume_execution_artifacts
+                if event['sequence'] <= broker._resume_event_count else broker.project_execution_artifacts)
+    path = original / execution['receipt_ref']
     # The shared reader reopens receipt, input, dispatch argv and every fixed
     # command stream, and checks their hashes, isolation and cleanup evidence.
     checked, receipt, received_sha = project_executor.read_project_receipt(

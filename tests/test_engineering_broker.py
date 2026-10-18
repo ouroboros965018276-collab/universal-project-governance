@@ -104,6 +104,115 @@ class EngineeringBrokerTests(unittest.TestCase):
             'summary': 'Synthetic bounded project checks.', 'validation': 'passed',
             'helper_gap': 'project_tool unavailable in bounded broker'}), trace, [])
 
+    def resume_seed(self):
+        # These cases exercise broker continuation, not the separately tested
+        # independent checkpoint validator or its owned-seed admission.
+        admission = patch('evolution.actor_checkpoint.validate_seed',
+                          side_effect=lambda value, **kwargs: copy.deepcopy(value))
+        admission.start(); self.addCleanup(admission.stop)
+        traces, previous = [], None
+        for event in self.broker.events:
+            row = {'previous_chain_sha256': previous, 'broker_sequence': event['sequence'],
+                   'broker_event_sha256': sha(canonical(event)),
+                   'arguments_sha256': event['arguments_sha256'], 'result_sha256': event['result_sha256']}
+            row['chain_sha256'] = sha(canonical(row)); previous = row['chain_sha256']; traces.append(row)
+        files = lab.files_from_receipt_journal(self.task, self.broker.events)
+        return {'original_task_sha256': sha(canonical(self.task)),
+                'original_received_state': self.before, 'original_artifact_root': str(self.base),
+                'events': copy.deepcopy(self.broker.events), 'traces': traces,
+                'tools_used': len(traces), 'previous_broker_chain_sha256': previous,
+                'current_files': files, 'current_state_sha256': sha(canonical(self.broker.snapshot()))}
+
+    def resume_broker(self, seed, *, max_calls=32):
+        temp = tempfile.TemporaryDirectory(prefix='upg-engineering-resumed-')
+        self.addCleanup(temp.cleanup)
+        target = Path(temp.name).resolve()
+        return lab.create_broker(self.workspace, self.task, self.base / 'mock-git',
+            audit_file=target / 'broker.jsonl', deadline=time.time() + 60,
+            execution_artifacts=target / 'execution', max_calls=max_calls, resume_checkpoint=seed)
+
+    def test_resume_keeps_prefix_and_reads_old_validation_then_writes_new_receipt(self):
+        self.read_and_edit(); self.broker.call('repo_validate', {}); self.broker.call('repo_status', {})
+        seed = self.resume_seed(); old_audit = self.broker.audit_file.read_bytes()
+        old_receipt = (self.base / 'execution/validation-001/result.json').read_bytes()
+        resumed = self.resume_broker(seed)
+        self.assertFalse(resumed._receipt_only)
+        self.assertEqual(resumed.task['initial_files'], self.task['initial_files'])
+        self.assertEqual(resumed.events, seed['events'])
+        self.assertTrue(lab.completion_readiness_from_receipts(resumed)['required_evidence_ready'])
+        self.assertEqual(self.executor_calls, 1)
+        resumed.call('repo_read', {'paths': ['README.md']})
+        resumed.call('repo_patch', {'operations': [{'path': 'README.md',
+            'old_sha256': self.before['README.md'], 'new_text': 'Current new value.\n'}]})
+        self.assertEqual(lab.completion_readiness_from_receipts(resumed)['current_validation'], 'STALE')
+        result = resumed.call('repo_validate', {})
+        self.assertTrue(result['ok'])
+        self.assertEqual(result['execution']['receipt_ref'], 'validation-002/result.json')
+        self.assertTrue((resumed.project_execution_artifacts / 'validation-002/result.json').is_file())
+        self.assertTrue(lab.current_validation_from_receipts(resumed)[0]['ok'])
+        self.assertEqual(resumed.events[:len(seed['events'])], seed['events'])
+        self.assertEqual(json.loads(resumed.audit_file.read_bytes().splitlines()[0])['sequence'], len(seed['events']) + 1)
+        self.assertEqual(self.broker.audit_file.read_bytes(), old_audit)
+        self.assertEqual((self.base / 'execution/validation-001/result.json').read_bytes(), old_receipt)
+        self.assertEqual(self.executor_calls, 2)
+
+    def test_resume_preflight_is_read_only_and_does_not_reset_tool_budget(self):
+        self.read_and_edit(); self.broker.call('repo_validate', {})
+        seed = self.resume_seed()
+        view = lab.create_broker(self.workspace, self.task, self.base / 'mock-git', resume_checkpoint=seed)
+        self.assertEqual(view.snapshot(), self.broker.snapshot())
+        with self.assertRaisesRegex(ValueError, 'receipt view'):
+            view.call('repo_read', {'paths': ['README.md']})
+        resumed = self.resume_broker(seed, max_calls=4)
+        self.assertTrue(resumed.call('repo_read', {'paths': ['README.md']})['ok'])
+        self.assertEqual(resumed.events[-1]['sequence'], 4)
+        self.assertFalse(resumed.call('repo_validate', {})['ok'])
+        self.assertEqual(self.executor_calls, 1)
+
+    def test_resume_rejects_changed_identity_snapshot_and_hash_chain(self):
+        self.read_and_edit(); seed = self.resume_seed()
+        for field, replacement in [('original_task_sha256', '0' * 64),
+                                   ('original_received_state', {}), ('current_files', {}),
+                                   ('previous_broker_chain_sha256', '0' * 64)]:
+            with self.subTest(field=field):
+                bad = copy.deepcopy(seed); bad[field] = replacement
+                with self.assertRaises(ValueError): self.resume_broker(bad)
+        bad = copy.deepcopy(seed); bad['traces'][0]['broker_event_sha256'] = '0' * 64
+        with self.assertRaises(ValueError): self.resume_broker(bad)
+        self.assertEqual(self.executor_calls, 0)
+
+    def test_resume_rejects_unowned_dict_before_broker_actions(self):
+        with self.assertRaises(ValueError):
+            lab.create_broker(self.workspace, self.task, self.base / 'mock-git',
+                              resume_checkpoint={'events': []})
+        self.assertEqual(self.executor_calls, 0)
+
+    def test_resume_requires_old_validation_integrity_and_disjoint_new_artifacts(self):
+        self.read_and_edit(); self.broker.call('repo_validate', {}); seed = self.resume_seed()
+        self.integrity_ok = False
+        with self.assertRaisesRegex(ValueError, 'execution receipt'):
+            self.resume_broker(seed)
+        self.integrity_ok = True
+        with self.assertRaisesRegex(ValueError, 'distinct new namespace'):
+            lab.create_broker(self.workspace, self.task, self.base / 'mock-git',
+                execution_artifacts=self.base / 'new-execution', resume_checkpoint=seed)
+        with self.assertRaisesRegex(ValueError, 'append to original'):
+            lab.create_broker(self.workspace, self.task, self.base / 'mock-git',
+                audit_file=self.base / 'new-audit.jsonl', resume_checkpoint=seed)
+        self.assertEqual(self.executor_calls, 1)
+
+    def test_resume_preserves_confirmed_removals_without_reinitializing_files(self):
+        self.broker.call('repo_read', {'paths': ['README.md']})
+        self.broker.call('repo_patch', {'operations': [{'path': 'README.md',
+            'old_sha256': self.before['README.md'], 'new_text': None}]})
+        seed = self.resume_seed(); resumed = self.resume_broker(seed)
+        self.assertFalse((self.workspace / 'README.md').exists())
+        self.assertEqual(resumed.snapshot(), self.broker.snapshot())
+        self.assertTrue(resumed.call('repo_patch', {'operations': [{'path': 'README.md',
+            'old_sha256': None, 'new_text': 'Restored current documentation.\n'}]})['ok'])
+        self.assertEqual(resumed.events[-1]['sequence'], 3)
+        self.assertEqual(resumed.task['initial_files']['README.md'], 'Current old value.\n')
+
     def test_current_success_has_no_implicit_executor_run(self):
         self.read_and_edit()
         self.assertTrue(self.broker.call('repo_validate', {})['ok'])
