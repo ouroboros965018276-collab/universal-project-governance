@@ -6,7 +6,7 @@
 
 表达相关性、完整改动、事实保真和按需读取由[规范源](governance-src/model/governance-model.json)统一编译。当前生成核心 **6,976 字节**，四组指引、16 项政策、8 项 Hot Path、3 项默认规则和 18 个交付文件；规范身份 `adefef22…`，资格指纹 `74075f35…`。五个上游的固定来源、许可、适配与排除记录见 [选择性来源映射](docs/upstream-rule-map.md)及[许可记录](third_party/notices/README.md)。实验适配器不随 Skill 交付。
 
-最新[两模型流式校准诊断](audits/rc20-source16-mimo-null-role.audit.json)保留本轮失败：8 次请求全部记账、无待结算；DeepSeek 完成任务并通过机械检查，MiMo 首次响应的官方 `role: null` 增量占位被适配器误判。适配器与独立读取器的结果因此不一致；具体首抛点因原驱动隐藏异常详情而仍属推断。本轮整体未通过，未执行语义盲评或净收益分析。修正只进入新源码与新试验，不能拼接不同轮次的成功。流式实现 `69f01b6` 的 [11 项 CI](https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/39104148874) 全部通过，工程检查不代替效果证据。
+最新[两模型流式校准](audits/rc20-source17-latency-and-quality.audit.json)已完成 9 次请求的本地记账、无待结算，但两组独立首次语义评审均未通过：DeepSeek 机械检查通过，README 遗漏精确接口类型；MiMo 在 600 秒任务时限内没有修改源码。MiMo 约 98.7% 的时间用于 API 请求，后续输入增量约 88.4% 来自工具调用必须回传的推理历史。下一步只在新实验配置中关闭同一 MiMo Pro 的深度推理，保留预算与质量标准；该结果不授予全量试验、合并或安装。此前[增量空角色误判](audits/rc20-source16-mimo-null-role.audit.json)已修复，原失败记录保留。
 
 最近[九族配对实测](audits/rc20-primary14-incomplete-transport.audit.json)在第 27 个流程因 HTTP 响应体 `IncompleteRead` 中断。预注册分母仍为 **54 个流程／66 个角色**；已发布 26 个流程、29 个角色记录，第 157 次请求用量与费用未知。原失败、待定预留和未完成范围全部保留；首次整体审计、语义盲评和净收益分析的前置条件未满足。事后确认原 23 个容器及 69 个临时路径不存在，不追认业务成功。较早的[非流式两模型校准及四角色中断控制](audits/rc20-reasoning-input-budget-diagnosis-v1.audit.json)是历史记录，不构成当前净收益证明。
 

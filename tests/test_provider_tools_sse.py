@@ -396,6 +396,186 @@ class SSEActorTests(engineering_fixture.EngineeringCandidateTests):
         self.assertEqual(transport['max_raw_body_bytes'], 8388608)
         self.assertEqual(api.MAX_INPUT_BYTES, 131072)
 
+    def test_hybrid_config_changes_only_identity_and_mimo_mode_preserving_legacy_bytes(self):
+        legacy = {
+            api.THINKING_PROFILE: '4f4307e6e479eeb852a4d1a7bb358a7e64917467cae0fa11fe4063db1d47d1df',
+            api.FLASH_THINKING_PROFILE: 'f5ae975f21072974c9da04da33e8081a2e2fc44be6769c2cbe8c36e82d58081b',
+            api.FLASH_DISABLED_PROFILE: 'a11dd520a6f62837f3bfab36468653c418d0caf80c7f0d658b5231429633919e',
+            api.DEEPSEEK_PRO_FLASH_DISABLED_PROFILE: 'db21a61c86bb3398f9b9568cdb290482407115dfc1ac0be3c21b8fb62ac8ced6',
+            api.ENGINEERING_REASONING_PROFILE: '03de3880a6d3e6114a5321687722e987c39419db55cc7855e2d4e833d009d5df',
+            api.ENGINEERING_REASONING_INPUT_PROFILE: 'd56ad83d4e7339c59c9f2f782f91241e538af1eddb158fc3f1d5373b53fd5ce3',
+            api.ENGINEERING_REASONING_SSE_PROFILE: '2ab5077064140b8a909534f6da85af18b985c6c01e64ec5c7596e4e9cd95b63b',
+        }
+        self.assertEqual(api.ENGINEERING_REASONING_PROFILES, (api.ENGINEERING_REASONING_PROFILE,
+            api.ENGINEERING_REASONING_INPUT_PROFILE, api.ENGINEERING_REASONING_SSE_PROFILE))
+        expected = api.profile_configuration(api.ENGINEERING_REASONING_SSE_PROFILE)
+        expected['profile_id'] = 'thinking-hybrid-engineering-pro-16384-sse-v1'
+        expected['providers']['mimo']['thinking'] = 'disabled'
+        hybrid = api.profile_configuration(api.ENGINEERING_HYBRID_SSE_PROFILE)
+        self.assertEqual(hybrid, expected)
+        self.assertNotIn(sha(canonical(hybrid)), legacy.values())
+        hybrid['providers']['deepseek']['reasoning_effort'] = 'low'
+        hybrid['providers']['mimo']['thinking'] = 'enabled'
+        hybrid['transport']['providers']['mimo']['stream'] = False
+        self.assertEqual(api.profile_configuration(api.ENGINEERING_HYBRID_SSE_PROFILE), expected)
+        self.assertEqual({p: sha(canonical(api.profile_configuration(p))) for p in legacy}, legacy)
+
+    def test_hybrid_actual_wire_binds_modes_and_preserves_full_returned_history(self):
+        # Returned opaque text is never stripped, including a synthetic field
+        # returned despite disabled mode. This asserts replay, not server mode.
+        reasoning = 'full synthetic opaque field\n' + '\u4e2d\u6587/\\"\n' * 1000 + 'tail'
+        identity = sha(canonical(api.profile_configuration(api.ENGINEERING_HYBRID_SSE_PROFILE)))
+        for provider, mode in (('deepseek', 'enabled'), ('mimo', 'disabled')):
+            with self.subTest(provider=provider):
+                self.artifacts = self.base/('hybrid-' + provider)
+                (self.workspace/'target.txt').write_bytes(b'old\n')
+                self.before, self.after, self.loaded, self.executions = [], [], [], []
+                def opaque(step):
+                    def reply(payload):
+                        native = step(payload) if callable(step) else copy.deepcopy(step)
+                        native['choices'][0]['message']['reasoning_content'] = reasoning
+                        return native
+                    return reply
+                result, payloads = self.run_sse([opaque(step) for step in self.ready()+[self.finish(4)]],
+                    provider, actor_options={'profile_id': api.ENGINEERING_HYBRID_SSE_PROFILE, 'thinking': mode})
+                self.assertEqual(result['status'], 'completed')
+                self.assertTrue(result['quality']['hard_pass'])
+                self.assertFalse(result['unknown_usage'])
+                self.assertEqual((result['requests'], result['tool_attempts'], len(self.executions)), (4, 5, 1))
+                self.assertEqual(result['known_usage']['total_tokens'], 60)
+                self.assertEqual((len(self.before), len(self.after)), (4, 4))
+                self.assertEqual(self.loaded, [provider])  # Synthetic fixture loader, cached once per actor.
+                for i, payload in enumerate(payloads, 1):
+                    self.assertEqual(payload['thinking'], {'type': mode})
+                    self.assertEqual(payload['model'], 'deepseek-v4-pro' if provider == 'deepseek' else 'mimo-v2.6-pro')
+                    self.assertTrue(payload['stream'])
+                    self.assertEqual(payload['max_tokens' if provider == 'deepseek' else 'max_completion_tokens'], 16384)
+                    self.assertEqual(payload.get('reasoning_effort'), 'high' if provider == 'deepseek' else None)
+                    self.assertEqual(payload.get('stream_options'), {'include_usage': True} if provider == 'deepseek' else None)
+                    if provider == 'mimo':
+                        self.assertNotIn('reasoning_effort', payload)
+                    self.assertEqual(self.before[i-1]['request_payload_sha256'], sha(canonical(payload)))
+                    self.assertEqual([m['reasoning_content'] for m in payload['messages'] if m['role'] == 'assistant'],
+                                     [reasoning]*(i-1))
+                    raw = (self.artifacts/('requests/%02d.transport-sse.bin' % i)).read_bytes()
+                    record = json.loads((self.artifacts/('requests/%02d.response.json' % i)).read_bytes())
+                    self.assertEqual(record['body_sha256'], sha(raw))
+                    self.assertEqual(record['response'], sse.project(raw, body_complete=True)['response'])
+                    self.assertEqual(record['response']['choices'][0]['message']['reasoning_content'], reasoning)
+                    self.assertFalse((self.artifacts/('requests/%02d.pending.json' % i)).exists())
+                for metadata in [result, *self.before, *self.after]:
+                    self.assertEqual(metadata['profile_id'], api.ENGINEERING_HYBRID_SSE_PROFILE)
+                    self.assertEqual(metadata['profile_configuration_sha256'], identity)
+                    self.assertEqual(metadata['thinking'], mode)
+                    self.assertEqual(metadata['reasoning_effort_requested'], 'high' if provider == 'deepseek' else None)
+                    self.assertEqual(metadata['max_input_bytes'], 524288)
+                    self.assertEqual(metadata['transport_profile_id'], sse.TRANSPORT_PROFILE)
+                    self.assertIsNone(metadata['connect_retry_policy'])
+                self.assertEqual((result['max_requests'], result['max_tools'], result['timeout_seconds'],
+                                  result['settlement_max_seconds'], result['schema_correction_limit']), (24, 32, 600, 600, 1))
+                self.assertTrue(all(item['settlement']['worker_done'] for item in self.after))
+
+    def test_hybrid_rejects_mismatched_settings_limits_and_retry_before_reserve_or_key(self):
+        changes = ({'thinking': 'enabled'}, {'model': 'mimo-v2.6-flash'},
+                   {'response_json_mode': True}, {'max_requests': 25}, {'timeout_seconds': 601},
+                   {'settlement_policy': None}, {'connect_retry_policy': api.CONNECT_RETRY_POLICY},
+                   {'broker_profile_id': None}, {'execution_backend': 'docker-cpython-finite-v1'})
+        for change in changes:
+            options = dict(provider='mimo', model='mimo-v2.6-pro', thinking='disabled',
+                profile_id=api.ENGINEERING_HYBRID_SSE_PROFILE, settlement_policy=api.SETTLEMENT_POLICY,
+                max_requests=24, timeout_seconds=600)
+            options.update(change)
+            with self.subTest(change=change), self.assertRaises(ValueError):
+                self.new_actor(**options)
+        self.assertEqual((self.before, self.after, self.loaded), ([], [], []))
+        self.module.create_broker.assert_not_called()
+
+    def test_hybrid_retains_large_input_admission_and_original_slot_bound(self):
+        options = {'profile_id': api.ENGINEERING_HYBRID_SSE_PROFILE, 'thinking': 'disabled',
+                   'system_context': 'x'*140000, 'max_requests': 1}
+        result, payloads = self.run_sse([self.read(1)], 'mimo', actor_options=options)
+        self.assertEqual(result['requests'], 1)
+        self.assertEqual(len(result['tool_events']), 1)
+        self.assertEqual(len(self.after), 1)
+        self.assertGreater(len(canonical(payloads[0])), 131072)
+        self.assertLess(len(canonical(payloads[0])), 524288)
+        self.assertFalse(result['quality']['hard_pass'])
+        self.artifacts = self.base/'hybrid-over-input'
+        self.before, self.after, self.loaded = [], [], []
+        options['system_context'] = 'x'*524288
+        result, payloads = self.run_sse([], 'mimo', actor_options=options)
+        self.assertEqual(result['status'], 'input-byte-cap-not-invoked')
+        self.assertEqual((self.before, self.after, self.loaded, payloads), ([], [], [], []))
+
+    def test_hybrid_native_terminal_and_tool_budget_are_unchanged(self):
+        cases = (
+            ('plain-finish', completion(1, content='Task complete'), 'api-finish-rejected:required-native-terminal-call'),
+            ('tool-budget', completion(1, [call('read-'+str(i), 'repo_read', {'paths': ['target.txt']})
+                                          for i in range(33)]), 'api-tool-rejected:invalid-assistant-envelope'),
+        )
+        for label, native, failure in cases:
+            with self.subTest(case=label):
+                self.artifacts = self.base/('hybrid-' + label)
+                self.before, self.after, self.loaded = [], [], []
+                native['choices'][0]['message']['reasoning_content'] = None
+                result, payloads = self.run_sse([native], 'mimo', actor_options={
+                    'profile_id': api.ENGINEERING_HYBRID_SSE_PROFILE, 'thinking': 'disabled'})
+                self.assertEqual(result['status'], 'tool-contract-failed')
+                self.assertIn(failure, result['quality']['failures'])
+                self.assertFalse(result['unknown_usage'])
+                self.assertEqual((len(payloads), len(self.after)), (1, 1))
+                self.assertEqual(result['tool_events'], [])
+                self.assertIsNone(result['final_report'])
+
+    def test_hybrid_unknown_stream_accounts_observed_usage_without_retry_or_action(self):
+        result, payloads = self.run_sse([self.read(1)], 'mimo', broken=True,
+            actor_options={'profile_id': api.ENGINEERING_HYBRID_SSE_PROFILE, 'thinking': 'disabled'})
+        self.assertEqual(result['status'], 'unknown-call-blocked')
+        self.assertTrue(result['unknown_usage'])
+        self.assertEqual(result['known_usage']['total_tokens'], 15)
+        self.assertEqual((len(payloads), len(self.before), len(self.after)), (1, 1, 1))
+        self.assertEqual(result['tool_events'], [])
+        self.assertTrue((self.artifacts/'actor.pending.json').exists())
+        self.assertTrue((self.artifacts/'requests/01.pending.json').exists())
+
+    def test_hybrid_late_finish_only_accounts_without_accepting_terminal_report(self):
+        now = [100.0]
+        with patch.object(api.time, 'perf_counter', side_effect=lambda: now[0]):
+            result, payloads = self.run_sse([self.finish(1)], 'mimo', on_eof=lambda: now.__setitem__(0, 701.0),
+                actor_options={'profile_id': api.ENGINEERING_HYBRID_SSE_PROFILE, 'thinking': 'disabled'})
+        self.assertEqual(result['status'], 'work-deadline-settled-unfinished')
+        self.assertFalse(result['unknown_usage'])
+        self.assertEqual(result['known_usage']['total_tokens'], 15)
+        self.assertFalse(result['quality']['hard_pass'])
+        self.assertIsNone(result['final_report'])
+        self.assertEqual(result['tool_events'], [])
+        self.assertEqual((len(payloads), len(self.after)), (1, 1))
+        self.assertTrue(self.after[0]['settlement']['accounting_only'])
+
+    def test_hybrid_phase_stop_reconstructs_sse_and_binds_new_configuration(self):
+        started = api.time.perf_counter()
+        def guard(evidence):
+            identity = api._write_new(self.artifacts/'control/phase-stop-authorization.json',
+                dict(evidence, kind='controlled-phase-stop-authorization'))
+            return api.ControlledPhaseStopRequested('control/phase-stop-authorization.json', identity)
+        result, payloads = self.run_sse([self.read(1)], 'mimo', actor_options={
+            'profile_id': api.ENGINEERING_HYBRID_SSE_PROFILE, 'thinking': 'disabled',
+            'actor_timing': {'schema': api.ACTOR_TIMING_SCHEMA, 'started_monotonic': started,
+                             'work_deadline_monotonic': started+600},
+            'controlled_phase_stop_policy': 'before-first-repository-tool-delivery-v1',
+            'controlled_phase_stop_guard': guard})
+        self.assertEqual(result['status'], 'controlled-phase-stop-unfinished')
+        self.assertEqual((len(payloads), len(self.after)), (1, 1))
+        self.assertEqual(result['tool_events'], [])
+        self.assertFalse(result['quality']['hard_pass'])
+        for change in ({'profile_configuration_sha256': sha(canonical(api.profile_configuration(api.ENGINEERING_REASONING_SSE_PROFILE)))},
+                       {'transport_profile_id': 'wrong'}, {'max_input_bytes': 131072}):
+            metadata = dict(self.before[0], **change)
+            with self.subTest(change=change), self.assertRaises(ValueError):
+                api._phase_cut_evidence('before-first-repository-tool-delivery-v1',
+                    'validated-batch-before-tool-delivery', metadata, self.brokers[0][0], [],
+                    [call('x', 'repo_read', {'paths': ['target.txt']})], self.artifacts, {}, '', '', 1)
+
     def test_real_raw_byte_cap_retains_exact_prefix_and_unknown_reserve(self):
         raw = b':' + b'x' * sse.MAX_RAW_BYTES
         result, payloads = self.run_sse([self.read(1)], transform=lambda unused: raw)
