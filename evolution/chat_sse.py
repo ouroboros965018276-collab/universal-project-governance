@@ -218,7 +218,7 @@ class ChatSSE:
             self._fail("sse-projection-byte-limit")
 
     def _delta(self, delta):
-        if "role" in delta and delta["role"] != "assistant":
+        if "role" in delta and delta["role"] not in (None, "assistant"):
             self.message_valid = False
         for name, attr in (("content", "content"), ("reasoning_content", "reasoning")):
             part = delta.get(name)

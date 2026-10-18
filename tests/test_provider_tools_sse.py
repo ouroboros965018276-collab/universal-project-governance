@@ -51,6 +51,36 @@ def wire(native, provider="deepseek"):
     return b": keep-alive\r\n\r\n" + b"".join(event(part) for part in parts) + event(b"[DONE]")
 
 
+def nullable_role_wire(body):
+    """Fresh official-shaped MiMo placeholders; never reads a real response."""
+    rebuilt, first = [], True
+    for block in body.split(b'\r\n\r\n'):
+        if not block.startswith(b'data: {'):
+            rebuilt.append(block)
+            continue
+        value = json.loads(block[6:])
+        if value['choices']:
+            delta = value['choices'][0]['delta']
+            if first:
+                first = False
+                original = dict(delta)
+                value['choices'][0]['delta'] = {'role': 'assistant', 'content': '',
+                    'reasoning_content': None, 'tool_calls': None}
+                rebuilt.append(b'data: '+canonical(value))
+                for field, text in (('reasoning_content', original.get('reasoning_content')),
+                                    ('content', original.get('content') or 'public synthetic content')):
+                    extra = copy.deepcopy(value)
+                    extra['choices'][0]['delta'] = {'role': None, 'content': None,
+                        'reasoning_content': None, 'tool_calls': None, field: text}
+                    rebuilt.append(b'data: '+canonical(extra))
+                continue
+            delta['role'] = None
+            for key in ('content', 'reasoning_content', 'tool_calls'):
+                delta.setdefault(key, None)
+        rebuilt.append(b'data: '+canonical(value))
+    return b'\r\n\r\n'.join(rebuilt)
+
+
 class SSEProjectionTests(unittest.TestCase):
     def native(self):
         return completion(1, [call("tool-0", "repo_read", {"paths": ["中文.py"]})], content="你好")
@@ -66,6 +96,21 @@ class SSEProjectionTests(unittest.TestCase):
                 parser = sse.ChatSSE()
                 parser.feed(raw[:split]); parser.feed(raw[split:])
                 self.assertEqual(parser.report(body_complete=True), expected)
+
+    def test_official_mimo_nullable_role_reasoning_content_tools_and_finish(self):
+        native = self.native()
+        raw = nullable_role_wire(wire(native, 'mimo'))
+        self.assertIn(b'"role":null', raw)
+        result = sse.project(raw, body_complete=True)
+        self.assertTrue(result['terminal_complete'])
+        self.assertTrue(result['sse']['message_valid'])
+        self.assertEqual(result['response']['choices'][0]['message'], native['choices'][0]['message'])
+        for wrong_role in ('user', 7):
+            invalid = event(chunk({'role': wrong_role}, finish='stop', usage=USAGE))+event(b'[DONE]')
+            rejected = sse.project(invalid, body_complete=True)
+            self.assertTrue(rejected['terminal_complete'])
+            self.assertFalse(rejected['sse']['message_valid'])
+            self.assertEqual(rejected['response']['usage'], USAGE)
 
     def test_interleaved_tool_names_and_arguments_keep_indexes(self):
         fields = [
