@@ -99,7 +99,7 @@ class ProviderPhaseBoundaryTests(unittest.TestCase):
         return api.ControlledPhaseStopRequested('control/phase-stop-authorization.json', identity)
 
     def run_fake(self, policy=None, guard=None, timing=True, maximum=12, profile=None):
-        reasoning = profile == api.ENGINEERING_REASONING_PROFILE
+        reasoning = profile in api.ENGINEERING_REASONING_PROFILES
         timeout = 600 if reasoning else 180
         kwargs = {'response_json_mode': False, 'thinking': 'enabled' if reasoning else 'disabled', 'before_request': self.pre, 'after_request': self.post, 'profile_id': profile or api.DEEPSEEK_PRO_FLASH_DISABLED_PROFILE, 'execution_backend': api.ENGINEERING_BACKEND, 'broker_profile_id': api.ENGINEERING_PROFILE, 'connect_retry_policy': api.CONNECT_RETRY_POLICY, 'settlement_policy': api.SETTLEMENT_POLICY, 'max_requests': maximum, 'timeout_seconds': timeout}
         if timing:
@@ -170,6 +170,30 @@ class ProviderPhaseBoundaryTests(unittest.TestCase):
                     {}, '', '', 13)
         self.assertEqual(self.before, [])
         self.assertEqual(self.keys, [])
+
+    def test_reasoning_v2_thirteenth_slot_phase_stop_binds_new_configuration_and_input_cap(self):
+        self.batches = [[('repo_read', {})] for _ in range(12)] + [[('repo_patch', {}), ('repo_validate', {}), ('repo_status', {})]]
+        result = self.run_fake('first-confirmed-repo-patch-request-tail-v1', maximum=24,
+            profile=api.ENGINEERING_REASONING_INPUT_PROFILE)
+        self.assertEqual(result['status'], 'controlled-phase-stop-unfinished')
+        self.assertEqual((result['requests'], result['max_requests'], result['timeout_seconds']), (13, 24, 600))
+        self.assertEqual(result['max_input_bytes'], 524288)
+        self.assertEqual(len(self.after), 13)
+        self.assertEqual(len(self.callbacks), 1)
+        metadata = self.callbacks[0]['request_metadata']
+        self.assertEqual(metadata['profile_configuration_sha256'],
+            api.sha(api.canonical(api.profile_configuration(api.ENGINEERING_REASONING_INPUT_PROFILE))))
+        self.assertEqual(metadata['max_input_bytes'], 524288)
+        self.assertEqual(self.callbacks[0]['request_tail_event_count'], 3)
+        self.assertFalse(self.callbacks[0]['next_request_reserved'])
+        self.assertFalse(self.callbacks[0]['next_request_dispatched'])
+        self.assertIsNone(result['quality']['task_success'])
+        for change in ({'max_input_bytes': 131072}, {'profile_configuration_sha256':
+                api.sha(api.canonical(api.profile_configuration(api.ENGINEERING_REASONING_PROFILE)))}):
+            with self.subTest(change=change), self.assertRaises(ValueError):
+                api._phase_cut_evidence('first-confirmed-repo-patch-request-tail-v1',
+                    'complete-request-tool-tail', dict(metadata, **change), SimpleNamespace(events=[]), [],
+                    [{'function': {'name': 'repo_patch'}}], self.artifacts, {}, '', '', 13)
 
     def test_schema_invalid_batch_does_not_deliver_or_cut(self):
         self.batches = [[('repo_read', {'extra': 1}), ('repo_patch', {})], [('repo_read', {})]]

@@ -4,29 +4,21 @@
 
 ## 当前能力与验证
 
-表达相关性、完整改动、事实保真和按需读取统一由[规范源](governance-src/model/governance-model.json)编译。针对最新失败，两个现有指引补足文件存在性、修改语义和收尾预算；当前生成核心 **6,976 字节**，仍为四组指引、16 项政策、8 项 Hot Path、3 项默认规则和 18 个交付文件，规范身份 `adefef22…`、资格身份 `74075f35…`。此前封存实测使用 `0049006f…`／`f78112d7…`，九族 v9 使用 `3b84fc59…`／`904542bb…`，均不能验证新候选。五个上游的版本、许可、适配及排除见[来源清单](third_party/upstream-sources.json)和[鸣谢](THIRD_PARTY_NOTICES.md)。仓库专用评测源码不随 Skill 交付。
+表达相关性、完整改动、事实保真和按需读取由[规范源](governance-src/model/governance-model.json)统一编译。当前生成核心 **6,976 字节**，四组指引、16 项政策、8 项 Hot Path、3 项默认规则和 18 个交付文件；规范身份 `adefef22…`，资格指纹 `74075f35…`。五个上游的固定来源、许可、适配与排除记录见 [选择性来源映射](docs/upstream-rule-map.md)及[许可记录](third_party/notices/README.md)。实验适配器不随 Skill 交付。
 
-历史提交 `b4831ccff1ee5ecf4a7ce0a334d6d9190611b504` 的 [11 项 CI](https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/38865162224) 全部通过，当时本地编译、治理、导航和仓库检查通过。这些是工程验证。[API 四阶段](audits/rc20-managed-api-four-phase-calibration-v4.audit.json)、[原生 CLI 正常及已知失败](audits/rc20-native-cli-public-calibration-v8.audit.json)和[四项公开工具契约控制](audits/rc20-public-tool-contract-controls-v3.audit.json)完成首次原始校验及独立字节保全；工具契约控制调用真实模型 **0 次**。它们不证明治理效果或净收益。
+最近的[两模型真实工具校准及四角色中断控制](audits/rc20-reasoning-input-budget-diagnosis-v1.audit.json)均已关闭，首次原始校验与最终账本核验通过。两模型轮 12 次请求全部结算，已知报告用量 **257,899 token**，关闭记录发布前约 **607.69 秒**；两个盲审包、18 项要求的初评先全部锁定，再揭盲：**MiMo 完整通过，DeepSeek 为未完成／UNKNOWN**。DeepSeek 在约 208.50 秒时触发旧的 131,072 字节请求上限，未更新 README、验证或收尾；未耗尽 600 秒，也未观察到余额或容量错误。当前已增加显式 v2 工程配置，仅将请求体上限设为 524,288 字节；64 项针对性测试通过。原失败、v1／默认配置及项目文件、工具和证据读取限制保留；新轮须统一注册该配置。
 
-该提交中的修复通过九项本地门禁和完整单元测试 **1,110 项（3 项跳过）**，该提交使用历史冻结身份 `3b84fc59…`／`904542bb…`。首次隔离测试入口缺少仓库导入路径，两模块导入失败；保留原结果，补足显式路径后的完整运行通过。独立代码复核发现的批次总量回归已修复闭合。[独立新鲜任务离线资格](audits/rc20-fresh-fixture-qualification-v3.audit.json)的 **154 项控制通过**，真实模型调用为 0；任务与评分正文仍未向候选作者暴露，独立新鲜任务的跨模型工程实测尚未开始。
+四角色控制验证了两家模型在首次工具调用前、首次修改后两个固定边界的原始证据闭包；6 次请求结算、无待定预留。它没有接手方，不能证明任务质量、真实接手或净收益。最近代码提交 `7a59f93` 的 [11 项 CI](https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/39088085914) 通过；这些工程检查不代替真实效果证据。
 
-[九族开发配对驱动](qualification/pilots/rc20-primary/README.md)及[v4 紧凑源码修订](qualification/pilots/rc20-primary-v4/README.md)可追溯重建。此前三项整合结果由一份[整合检查点审计](audits/rc20-development-integration-checkpoint-v1.audit.json)保存：
+合并与安装仍须完成：
 
-- **九族 v4**：运行与首次原始审计均退出 0，61 个角色原始证明通过、5 个未调用角色保留。首次盲评打包混淆注册中断与实际中断而失败，未完成评分锁；不能据此得出质量或净收益。8,495 项原件归档完成独立字节核验。新 helper 及完整 66 包合成控制经非作者复核，旧轮不重新提取或评分。
-- **九族 v6**：[源码](qualification/pilots/rc20-primary-v6/README.md)对应的新轮运行及首次原始审计退出 0，62 个角色原始证明通过、4 个未调用。六名独立评审完成 66 包、522 项要求，全部初评锁定后才解盲；[固定分析原始结果与只读诊断](audits/rc20-primary6-closed-negative-development-v1.audit.json)为负，三臂工作流通过数均为 0，完整组有两项严重否决，主 token 与耗时均为未知。失败来自真实工具契约使用、预算和时限，未发现消费器状态不兼容或模型容量问题；35 次读取未创建路径，两项严重否决均误将片段当整文件替换。当前源码据此改进读取与显式片段修改契约；已锁定初评和原负面结果不变，不能使用已知成本片段宣称节省。
-- **九族 v9**：[冻结源码](qualification/pilots/rc20-primary-v8/README.md)可逐字重建。修复运行观察链后，新轮运行和首次原始审计均退出 0，65 个角色原始证明通过、1 个未调用。六组独立盲审的 66 包、522 项要求先全部锁定再揭盲；[固定分析](audits/rc20-primary9-closed-negative-development-v1.audit.json)仍为负，三组工作流通过数均为 0。393 次请求均已结算，已知报告用量为 3,864,253 token，完整轮次约 4,284.76 秒；任务未通过，不能据成本片段宣称节省。前一轮 v8 意外中断的原件、2,208,115 已知 token 和一笔未知用量保留。诊断确认共享适配器会在反馈前终止可恢复补丁错误；当前修复仅允许已验证未改变状态的有限预检拒绝返回给模型，保留原预算和安全边界，尚未启动下一轮付费实验。
-- **四规则组消融**：首轮因读取器计数顺序不一致停止，原轮不重新判定。修复后的[新轮](audits/rc20-guidance-ablation-v2.audit.json)运行与首次原始审计退出 0，16 个角色原始证明通过，16 包、144 项要求全部独立初评锁定后才解盲。四组质量门槛均失败或未知，token／耗时比较均为未知，未证明规则组贡献；不能据此认定任何上游有利或有害。
-- **跨 API／CLI 公开接手**：此前[首轮读取异常](audits/rc20-public-mixed-first-failure-v3.audit.json)保留。命令数组读取修复后的新轮发生 CLI 连接发送失败；前两次工具调用成功，无完成回合用量。未观察到容量或余额错误，更深层网络原因未知。新公开校准轮复用身份一致的冻结源码与规划结果，使用新项目、协议和授权，已完成两个方向的两条自然工作流及四个角色，首次原始审计通过；完整运行约 140.60 秒，用量按模型分域记录，[独立字节保全及预算控制](audits/rc20-public-mixed-and-budget-calibrations-v1.audit.json)均已完成。它不证明语义质量、突发中断恢复或净收益，旧轮未知用量不清除。
+- 固定 RC19、attention control 和完整组的同条件配对；完整组质量不劣、无严重否决，报告 token 和完整工作流耗时均严格低于两组对照。
+- 当前候选的四规则组消融、真实 API／CLI 跨 Agent 接手，以及独立未暴露任务验证。
+- 生成一致性、完整性、安装副本身份及有效加载核验。
 
-[证据保真修订](audits/rc20-evidence-fidelity-refinement.audit.json)已生成并完成完整本地回归：运行 **1,119 项，3 项跳过，其余通过**；九项工程门禁通过。前一次回归中的旧终止行为断言失败已保留，修订后的用例继续验证未修复任务不能成功。指引提交 `7b8c32c` 的 [11 项 CI](https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/39083750962) 已通过；显式工程推理配置提交 `cf155ec` 的 [11 项 CI](https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/39085553433) 也已通过。
+未知用量、缺失耗时、意外中断或超限不能作为零成本或成功。研究、人工及未观测总成本保持未知。正式资格 **UNASSESSED**，locked **NOT RUN**，不宣称 Stable。
 
-[六工作流公开真实校准](audits/rc20-public-six-feedback-negative-v1.audit.json)已结束：两家模型、三组条件共 66 次请求结算，754,759 个已知报告 token，关闭记录发布前约 521.83 秒；6 个角色的首次原始校验通过。三组独立盲审完成 6 包、54 项要求，初评全部锁定后揭盲，完整工作流通过 **0/6**，完整组有一项事实性否决。五个工作流耗尽 12 次请求；另一个耗尽 8,192 个输出 token，未调用收尾工具。只接受特定 Unicode 类别字面写法的文档检查还存在语义误拒，下一轮必须先修正测量有效性，再验证独立的推理执行配置；原始失败、初评和费用保留，不重新判定。当前未证明真实净收益；完整配对、消融、真实跨 Agent 接手和独立未暴露实测仍未完成。
-
-合并和安装要求完整组质量不劣于 RC19 与 attention control、无严重否决，报告 token 与完整工作流耗时均严格低于两组对照，并补足来源消融、真实跨 Agent 接手和独立未暴露验证。未知用量、意外中断、缺失耗时或超限阻止有利净收益结论。研究、人工及未观测总成本保持未知。正式资格 **UNASSESSED**，locked **NOT RUN**，不宣称 Stable。其他已曝光开发结果、首次失败及冻结实验限制保留在各自 [audits/](audits/)，不绑定为当前候选的有效性证明。
-
-随后[两模型推理能力校准](audits/rc20-two-pro-reasoning-prefix-v1.audit.json)因原始响应解析而失败关闭：DeepSeek 的 7 次请求完成任务，4 项机械检查及首次原始校验通过；关闭后的独立诊断初评先锁后揭盲，DeepSeek 的 9 项语义要求通过，MiMo 因证据缺口为 UNKNOWN。MiMo 的第二次响应为 69,115 字节，被误用的 64 KiB 项目文件解析上限拒绝。原轮保留 116,009 个已知结算 token 和一笔未知预留，不重新结算或评分为成功。当前修复分离原生响应解析、保留一致的主用量计数，并增加显式一次推理截断续接；172 项 provider 相关测试及 24 项结算测试通过，真实效果尚待新轮验证。
-
-下一次准备在模型调用前触发时钟拒绝，API 请求为 0。[时钟修正](audits/rc20-clock-entry-correction-v1.audit.json)以原始开始时间加预算精确核对截止时间，避免浮点逆减误拒；无容差、不延长时限。17 项阶段测试和 27 项独立时钟控制通过，原零调用失败保留；此项仍不是效果证据。
+此前的[完整九族配对](audits/rc20-primary9-closed-negative-development-v1.audit.json)、[来源消融](audits/rc20-guidance-ablation-v2.audit.json)和[六工作流校准](audits/rc20-public-six-feedback-negative-v1.audit.json)均未证明收益。[跨 API／CLI 公开校准](audits/rc20-public-mixed-and-budget-calibrations-v1.audit.json)只验证了运行、原始记录与预算闭包。[长响应与可选用量修正](audits/rc20-two-pro-reasoning-prefix-v1.audit.json)、[截止时间修正](audits/rc20-clock-entry-correction-v1.audit.json)保留对应首次失败。历史原件、首次评分和未知用量均冻结在各自审计中，不重新判定或绑定为当前有效性证明；早期轮次入口见[开发集成检查点](audits/rc20-development-integration-checkpoint-v1.audit.json)。
 
 ## 最近一次重要发布：RC19
 
@@ -41,6 +33,6 @@ PR #19 于 **2026-10-11T21:35:40Z** 合并，提交 `29cf112b4629d6b90504b079e95
 ## 接手入口
 
 - 按任务定位实现、契约、消费者和测试：[MODULE_MAP.md](MODULE_MAP.md)。
-- 发布及资格：[PUBLISHING.md](PUBLISHING.md)、[qualification/README.md](qualification/README.md)。仓库专用实验适配器不随 Skill 安装，边界见[工程契约](docs/rc20-behavior-contracts.md)。
+- 发布及资格：[PUBLISHING.md](PUBLISHING.md)、[qualification/README.md](qualification/README.md)。实验边界见[工程契约](docs/rc20-behavior-contracts.md)。
 - 本地未完成工作使用既有 `.governance/handoff.json`；它不随 Skill 交付，也不替代版本化政策或冻结证据。
 - 重要历史及设计原因：[CHANGELOG.md](CHANGELOG.md)、[DECISIONS.md](DECISIONS.md)。

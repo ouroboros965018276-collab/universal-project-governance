@@ -70,6 +70,9 @@ DEEPSEEK_PRO_FLASH_DISABLED_PROFILE_SETTINGS = {
     "mimo": {"model": "mimo-v2.6-flash", "thinking": "disabled", "output_cap": 8192, "reasoning_effort": None},
 }
 ENGINEERING_REASONING_PROFILE = "thinking-enabled-engineering-pro-16384-v1"
+ENGINEERING_REASONING_INPUT_PROFILE = "thinking-enabled-engineering-pro-16384-v2"
+ENGINEERING_REASONING_PROFILES = (ENGINEERING_REASONING_PROFILE, ENGINEERING_REASONING_INPUT_PROFILE)
+ENGINEERING_REASONING_INPUT_MAX_BYTES = 524288
 ENGINEERING_REASONING_PROFILE_SETTINGS = {
     "deepseek": {"model": "deepseek-v4-pro", "thinking": "enabled", "output_cap": 16384, "reasoning_effort": "high"},
     "mimo": {"model": "mimo-v2.6-pro", "thinking": "enabled", "output_cap": 16384, "reasoning_effort": None},
@@ -96,11 +99,11 @@ def profile_configuration(profile_id):
     Rates are per million tokens; MiMo currencies are alternatives, never
     summed or converted. No ledger or transport selection happens here.
     """
-    if type(profile_id) is not str or profile_id not in {THINKING_PROFILE, FLASH_THINKING_PROFILE, FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE, ENGINEERING_REASONING_PROFILE}:
+    if type(profile_id) is not str or profile_id not in {THINKING_PROFILE, FLASH_THINKING_PROFILE, FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE, *ENGINEERING_REASONING_PROFILES}:
         raise ValueError("unknown explicit provider profile")
     flash = profile_id in {FLASH_THINKING_PROFILE, FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE}
     deepseek_pro_disabled = profile_id == DEEPSEEK_PRO_FLASH_DISABLED_PROFILE
-    engineering_reasoning = profile_id == ENGINEERING_REASONING_PROFILE
+    engineering_reasoning = profile_id in ENGINEERING_REASONING_PROFILES
     deepseek_pro = deepseek_pro_disabled or engineering_reasoning
     configuration = {"profile_id": profile_id,
         "providers": copy.deepcopy(ENGINEERING_REASONING_PROFILE_SETTINGS if engineering_reasoning else
@@ -124,6 +127,8 @@ def profile_configuration(profile_id):
     if engineering_reasoning:
         configuration["admission_limits"] = {"max_requests": ENGINEERING_REASONING_MAX_REQUESTS,
             "timeout_seconds": ENGINEERING_REASONING_MAX_SECONDS, "max_tools": MAX_TOOLS}
+        if profile_id == ENGINEERING_REASONING_INPUT_PROFILE:
+            configuration["admission_limits"]["max_input_bytes"] = ENGINEERING_REASONING_INPUT_MAX_BYTES
         configuration["price_evidence"]["mimo_thinking_mode"] = "https://mimo.mi.com/docs/en-US/quick-start/usage-guide/other/deep-thinking"
         configuration["price_evidence"]["mimo_pro"] = "https://mimo.mi.com/models/en-US/mimo-v2.6-pro"
     return configuration
@@ -620,7 +625,7 @@ def _usage(raw, *, profile_id=None):
     if cached is not None and (type(cached) is not int or not 0 <= cached <= raw["prompt_tokens"]):
         return None
     if reasoning is not None and (type(reasoning) is not int or not 0 <= reasoning <= raw["completion_tokens"]):
-        if profile_id != ENGINEERING_REASONING_PROFILE:
+        if profile_id not in ENGINEERING_REASONING_PROFILES:
             return None
         # This optional subset cannot invalidate consistent billable totals.
         # Keep the provider's original count in raw evidence; never clamp it.
@@ -1031,11 +1036,13 @@ def _phase_cut_evidence(policy, phase, metadata, broker, native_trace, calls,
     """Read known durable raw once; no broker operation or project execution."""
     import stat
     request_limit = 12
-    if metadata.get("profile_id") == ENGINEERING_REASONING_PROFILE:
-        configuration = profile_configuration(ENGINEERING_REASONING_PROFILE)
+    if metadata.get("profile_id") in ENGINEERING_REASONING_PROFILES:
+        configuration = profile_configuration(metadata["profile_id"])
         if (metadata.get("profile_configuration_sha256") != sha(canonical(configuration))
                 or metadata.get("broker_profile_id") != ENGINEERING_PROFILE
-                or metadata.get("execution_backend") != ENGINEERING_BACKEND):
+                or metadata.get("execution_backend") != ENGINEERING_BACKEND
+                or (metadata["profile_id"] == ENGINEERING_REASONING_INPUT_PROFILE
+                    and metadata.get("max_input_bytes") != configuration["admission_limits"]["max_input_bytes"])):
             raise ValueError("phase boundary reasoning profile is not bound")
         request_limit = configuration["admission_limits"]["max_requests"]
     if (PHASE_STOP_POLICIES.get(policy) != phase or type(request_count) is not int
@@ -1229,17 +1236,19 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
     schema correction after a durably recorded whole-batch non-execution;
     scope/envelope refusals, unknown writes/execution or missing receipts stop.
     The default and finite-VM profiles do not use that correction policy.
-    Only the opt-in engineering reasoning profile admits up to 24 request slots
+    Only the opt-in engineering reasoning profiles admit up to 24 request slots
     and 600 work seconds. Callers must choose those limits explicitly; default
     arguments and every earlier profile remain bounded by 12 slots/180 seconds.
     Its optional reasoning_continuation_policy may request one continuation of
     an otherwise empty length-truncated thinking response. This consumes the
     next existing slot, preserves opaque history and never executes a tool or
     submits a report by itself; other missing native finishes still stop.
+    The v2 profile alone admits 524288 canonical request bytes; all earlier
+    profiles and file/tool/artifact reads retain their existing bounds.
     """
     if provider not in ENDPOINTS or not isinstance(model, str) or not model.strip():
         raise ValueError("allowlisted provider and explicit model are required")
-    engineering_reasoning = profile_id == ENGINEERING_REASONING_PROFILE
+    engineering_reasoning = profile_id in ENGINEERING_REASONING_PROFILES
     if engineering_reasoning and (broker_profile_id != ENGINEERING_PROFILE or execution_backend != ENGINEERING_BACKEND):
         raise ValueError("engineering reasoning requires the explicit project profile/backend")
     request_limit = ENGINEERING_REASONING_MAX_REQUESTS if engineering_reasoning else 12
@@ -1267,7 +1276,7 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
     if broker_profile_id is not None:
         if (type(broker_profile_id) is not str or broker_profile_id != ENGINEERING_PROFILE
                 or execution_backend != ENGINEERING_BACKEND
-                or profile_id not in {DEEPSEEK_PRO_FLASH_DISABLED_PROFILE, ENGINEERING_REASONING_PROFILE}
+                or profile_id not in {DEEPSEEK_PRO_FLASH_DISABLED_PROFILE, *ENGINEERING_REASONING_PROFILES}
                 or not callable(before_request) or not callable(after_request)
                 or tool_feedback_policy is not None):
             raise ValueError("engineering requires an explicit supported profile/backend, durable callbacks and no VM language feedback")
@@ -1288,7 +1297,7 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
             or execution_backend != "docker-cpython-finite-v1"):
         raise ValueError("public language feedback requires its explicit policy and finite backend")
     if connect_retry_policy is not None and (type(connect_retry_policy) is not str or connect_retry_policy != CONNECT_RETRY_POLICY
-            or profile_id not in (FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE, ENGINEERING_REASONING_PROFILE)
+            or profile_id not in (FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE, *ENGINEERING_REASONING_PROFILES)
             or not callable(before_request) or not callable(after_request)):
         raise ValueError("connect retry requires an explicit supported profile and durable budget callbacks")
     if execution_backend is not None and engineering is None:
@@ -1306,6 +1315,8 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
         if (response_json_mode is not False or thinking != settings["thinking"] or model != settings["model"]):
             raise ValueError("explicit thinking profile/provider/model/mode mismatch")
         output_cap = settings["output_cap"]
+    max_input_bytes = (configuration["admission_limits"]["max_input_bytes"]
+                       if profile_id == ENGINEERING_REASONING_INPUT_PROFILE else MAX_INPUT_BYTES)
     task = copy.deepcopy(engineering.validate_task(task) if engineering else validate_task(task))
     root, artifacts = Path(root).resolve(), Path(artifact_dir).resolve()
     if artifacts == root or root in artifacts.parents:
@@ -1347,9 +1358,11 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                  "output_cap": output_cap, "timeout_seconds": timeout_seconds, "application_execution": False}
         if settings is not None:
             entry.update(profile_id=profile_id, reasoning_effort_requested=settings["reasoning_effort"])
-        if profile_id in {FLASH_THINKING_PROFILE, FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE, ENGINEERING_REASONING_PROFILE}:
+        if profile_id in {FLASH_THINKING_PROFILE, FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE, *ENGINEERING_REASONING_PROFILES}:
             entry.update(profile_configuration_sha256=sha(canonical(configuration)),
                          deadline_telemetry_schema=DEADLINE_TELEMETRY_SCHEMA)
+        if profile_id == ENGINEERING_REASONING_INPUT_PROFILE:
+            entry["max_input_bytes"] = max_input_bytes
         if execution_backend is not None:
             entry.update(execution_backend=execution_backend, application_execution=True,
                 application_execution_scope="Only registered finite Python behavior probes after the unchanged VM gate; not whole-application tests, deployment or arbitrary commands. Document-only stages do not execute Python.")
@@ -1371,7 +1384,7 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                 settlement_scope="Only account the same in-flight HTTPS attempt; no late tools, report, success or new dispatch. Inclusive wall includes settlement.")
         if tool_feedback_policy is not None:
             entry["tool_feedback_policy"] = tool_feedback_policy
-        if profile_id in {FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE, ENGINEERING_REASONING_PROFILE}:
+        if profile_id in {FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE, *ENGINEERING_REASONING_PROFILES}:
             entry["connect_retry_policy"] = connect_retry_policy
         actor_pending = artifacts / "actor.pending.json"
         backend_options = ({"execution_backend": execution_backend, "execution_artifacts": artifacts / "execution"}
@@ -1425,7 +1438,7 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                 payload["reasoning_effort"] = settings["reasoning_effort"]
             if response_json_mode:
                 payload["response_format"] = {"type": "json_object"}
-            if len(canonical(payload)) > MAX_INPUT_BYTES:
+            if len(canonical(payload)) > max_input_bytes:
                 status = "input-byte-cap-not-invoked"
                 break
             request_id = uuid.uuid4().hex
@@ -1439,13 +1452,15 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                     work_deadline_monotonic=deadline, settlement_deadline_monotonic=settlement_deadline)
             if settings is not None:
                 metadata.update(profile_id=profile_id, thinking=thinking, reasoning_effort_requested=settings["reasoning_effort"])
-            if profile_id in {FLASH_THINKING_PROFILE, FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE, ENGINEERING_REASONING_PROFILE}:
+            if profile_id in {FLASH_THINKING_PROFILE, FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE, *ENGINEERING_REASONING_PROFILES}:
                 metadata["profile_configuration_sha256"] = entry["profile_configuration_sha256"]
+            if profile_id == ENGINEERING_REASONING_INPUT_PROFILE:
+                metadata["max_input_bytes"] = max_input_bytes
             if tool_feedback_policy is not None:
                 metadata["tool_feedback_policy"] = tool_feedback_policy
             if execution_backend is not None:
                 metadata["execution_backend"] = execution_backend
-            if profile_id in {FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE, ENGINEERING_REASONING_PROFILE}:
+            if profile_id in {FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE, *ENGINEERING_REASONING_PROFILES}:
                 metadata.update(connect_retry_policy=connect_retry_policy, retry_of_request_id=next_retry_parent)
                 next_retry_parent = None
             if controlled_local_stop_guard is not None:
@@ -1538,7 +1553,7 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                     if managed["response"] is None:
                         raise TransportFailure(managed["failure"] or _transport("unobserved"))
                     code, headers, body = managed["response"]
-                elif profile_id in {FLASH_THINKING_PROFILE, FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE, ENGINEERING_REASONING_PROFILE}:
+                elif profile_id in {FLASH_THINKING_PROFILE, FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE, *ENGINEERING_REASONING_PROFILES}:
                     sampled = time.perf_counter()
                     passed_timeout = deadline - sampled
                     deadline_telemetry = {"schema_version": DEADLINE_TELEMETRY_SCHEMA,

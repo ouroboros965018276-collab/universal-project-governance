@@ -228,6 +228,95 @@ class EngineeringCandidateTests(_ProviderFixture, unittest.TestCase):
                 for item in self.after:
                     self.assertEqual(item['deadline_telemetry']['actor_timeout_seconds'], 600)
 
+    def test_reasoning_v2_configuration_adds_only_explicit_request_body_bound(self):
+        original = lab.profile_configuration(lab.ENGINEERING_REASONING_PROFILE)
+        self.assertEqual(sha(canonical(original)), '03de3880a6d3e6114a5321687722e987c39419db55cc7855e2d4e833d009d5df')
+        config = lab.profile_configuration(lab.ENGINEERING_REASONING_INPUT_PROFILE)
+        expected = copy.deepcopy(original)
+        expected['profile_id'] = 'thinking-enabled-engineering-pro-16384-v2'
+        expected['admission_limits']['max_input_bytes'] = 524288
+        self.assertEqual(config, expected)
+        self.assertEqual(lab.MAX_INPUT_BYTES, 131072)
+        config['admission_limits']['max_input_bytes'] = 1
+        self.assertEqual(lab.profile_configuration(lab.ENGINEERING_REASONING_INPUT_PROFILE), expected)
+        self.assertEqual(lab.profile_configuration(lab.ENGINEERING_REASONING_PROFILE), original)
+
+    def test_reasoning_v2_replays_large_native_history_without_changing_v1_request_cap(self):
+        for provider in ('deepseek', 'mimo'):
+            for profile in lab.ENGINEERING_REASONING_PROFILES:
+                with self.subTest(provider=provider, profile=profile):
+                    (self.workspace/'target.txt').write_bytes(b'old\n')
+                    self.artifacts = self.base/(provider + '-' + profile)
+                    self.loaded, self.before, self.after = [], [], []
+                    self.executions, self.brokers = [], []
+                    steps = self.ready()+[self.finish(4)]
+                    payloads = []
+                    def post(actual, payload, key, timeout):
+                        payloads.append(copy.deepcopy(payload))
+                        index = len(self.before)
+                        step = steps[index-1]
+                        response = step(payload) if callable(step) else copy.deepcopy(step)
+                        if index <= 2:
+                            response['choices'][0]['message']['reasoning_content'] = 'r' * 90000
+                        return 200, {}, canonical(response)
+                    with patch.object(lab, '_bounded_post', side_effect=post):
+                        result = self.new_actor(provider=provider,
+                            model=lab.ENGINEERING_REASONING_PROFILE_SETTINGS[provider]['model'],
+                            profile_id=profile, thinking='enabled', max_requests=24, timeout_seconds=600)
+                    if profile == lab.ENGINEERING_REASONING_PROFILE:
+                        self.assertEqual(result['status'], 'input-byte-cap-not-invoked')
+                        self.assertEqual(result['requests'], 2)
+                        self.assertNotIn('max_input_bytes', result)
+                        self.assertTrue(all('max_input_bytes' not in item for item in self.before+self.after))
+                        continue
+                    self.assertTrue(result['quality']['hard_pass'], result['quality'])
+                    self.assertEqual(result['requests'], 4)
+                    self.assertGreater(len(canonical(payloads[2])), 131072)
+                    self.assertEqual([message['reasoning_content'] for message in payloads[2]['messages']
+                        if message['role'] == 'assistant'], ['r' * 90000, 'r' * 90000])
+                    identity = sha(canonical(lab.profile_configuration(profile)))
+                    for item in [result]+self.before+self.after:
+                        self.assertEqual(item['max_input_bytes'], 524288)
+                        self.assertEqual(item['profile_configuration_sha256'], identity)
+                    for metadata, payload in zip(self.before, payloads):
+                        self.assertEqual(metadata['input_utf8_bytes'], len(canonical(payload)))
+                        self.assertEqual(metadata['request_payload_sha256'], sha(canonical(payload)))
+                    saved = json.loads((self.artifacts/'requests/01.response.json').read_bytes())
+                    self.assertEqual(saved['response']['choices'][0]['message']['reasoning_content'], 'r' * 90000)
+
+    def test_reasoning_v2_exact_request_byte_boundary_precedes_reservation_and_credentials(self):
+        for provider in ('deepseek', 'mimo'):
+            baseline_bytes = None
+            for case in ('baseline', 'exact', 'excess'):
+                with self.subTest(provider=provider, case=case):
+                    self.artifacts = self.base/(provider + '-boundary-' + case)
+                    self.loaded, self.before, self.after = [], [], []
+                    payloads = []
+                    def post(actual, payload, key, timeout):
+                        payloads.append(canonical(payload))
+                        return 200, {}, canonical(completion(1))
+                    size = 0 if case == 'baseline' else 524288 - baseline_bytes + (case == 'excess')
+                    with patch.object(lab, '_bounded_post', side_effect=post) as dispatch:
+                        result = self.new_actor(provider=provider,
+                            model=lab.ENGINEERING_REASONING_PROFILE_SETTINGS[provider]['model'],
+                            profile_id=lab.ENGINEERING_REASONING_INPUT_PROFILE, thinking='enabled',
+                            system_context='x' * size)
+                    if case == 'excess':
+                        dispatch.assert_not_called()
+                        self.assertEqual(result['status'], 'input-byte-cap-not-invoked')
+                        self.assertEqual(result['requests'], 0)
+                        self.assertEqual((self.loaded, self.before, self.after), ([], [], []))
+                        self.assertFalse((self.artifacts/'requests').exists())
+                        self.assertFalse((self.artifacts/'actor.started.json').exists())
+                    else:
+                        self.assertEqual(dispatch.call_count, 1)
+                        self.assertEqual(result['requests'], 1)
+                        if case == 'baseline':
+                            baseline_bytes = len(payloads[0])
+                        else:
+                            self.assertEqual(len(payloads[0]), 524288)
+                            self.assertEqual(self.before[0]['input_utf8_bytes'], 524288)
+
     def test_reasoning_profile_can_spend_the_thirteenth_slot_without_changing_tool_bound(self):
         steps = [self.read(index) for index in range(1, 11)] + [self.patch_from_read(11, 'fixed\n'),
             self.validate_and_status(12), self.finish(13)]
