@@ -428,7 +428,7 @@
       }
     ],
     "structural_context_followup": {
-      "status": "EXISTING_NATIVE_ZERO_MODEL_PROOF_VERIFIED_TAIL_PREPARING",
+      "status": "ALL_FIXED_DEVELOPMENT_WORKFLOWS_OBSERVED_PUBLICATION_GATE_FAILED_NO_MORE_CALLS",
       "cause": "full thinking and tool messages are resent at each actor request; input grows across settled tool turns",
       "same_conversation_reasoning_deletion_allowed": false,
       "direction": "one explicit deterministic project-fact checkpoint into a new conversation, same actor/project/task/baseline and cumulative budgets; no LLM summary",
@@ -836,7 +836,232 @@
         "same_bytes_scope_move_and_import_verification_chunk_id": "2dbe7a",
         "qualification_freeze_unchanged": "sha256:269a01eb4e9e52be7677d75e1c307fc78a7a2fc0d8f9f771c6c322deea8403a3",
         "scope": "Offline evidence replay, outside the formal qualification freeze; helper bytes unchanged after location correction. No governance runtime/criteria or frozen sources changed."
+      },
+      "fixed_tail_continuation": {
+        "status": "FAILED_NATIVE_SCOPE_TRACE_UNKNOWN_NO_REPLAY",
+        "observed_at": "2026-10-18T21:26:22.541588+00:00",
+        "exec_session_id": 7698,
+        "start_exec_chunk_id": "bd8d82",
+        "binding_exec_chunk_id": "182193",
+        "read_only_source_admission_exec_chunk_id": "9dd326",
+        "protocol_sha256": "e9e53f8f95ca8636d89be604e836c02d400ca97e6f24248d8a2cda408104913e",
+        "execution_plan_sha256": "cf87dca640b243db9cbd1b0fbaa95b7bf0dc9e56bc18846ad4bdfa20e52cb1e9",
+        "routing_manifest_sha256": "2ca85c1308fbe1d5284b58cc15ed803177ec405fd442b76a7ee14739fb365edd",
+        "actual_sealed_source_is_authority_not_mutable_overlay": true,
+        "mixed_manifest_sha256": "844db31c6eb09dd9e09298ef9c15bb43148c8ed135d00ffa3e54a367301709e2",
+        "mixed_seal_sha256": "7f583c97bfc7be4d736594fcff72f813c41091dbe9585b48e90cfac9ee38e710",
+        "study_manifest_sha256": "cbad470e0284ca4383649e08ec5883d1da7ead73dfcd67de135680f39fb0e189",
+        "study_seal_sha256": "5831a7ae43f5a06dcb94541a8588b35fe90df7c0fd397048149e60d86b6990f6",
+        "tail_workflows": [
+          "w006",
+          "w007",
+          "w008",
+          "w010",
+          "w011",
+          "w012"
+        ],
+        "tail_planned_roles": 10,
+        "full_planned_roles": 15,
+        "full_workflow_denominator": 9,
+        "prefix_actual_actor_ids_never_redispatched": [
+          "w002-source",
+          "w003-source",
+          "w004-source"
+        ],
+        "source_failed_receiver_ids_uninvoked": [
+          "w003-receiver",
+          "w004-receiver"
+        ],
+        "prefix_outer_runtime_seconds": 461.64075469999807,
+        "corrective_reader_seconds": 9.96371939999517,
+        "inherited_elapsed_seconds": 471.60447409999324,
+        "prefix_tokens_slots_and_currencies_deducted": true,
+        "original_failed_study_restored": false,
+        "original_favorable_primary_conclusion": "BLOCK",
+        "composition_assessed": false,
+        "quality_or_net_benefit_established": false,
+        "observation": {
+          "terminal_exists": true,
+          "request_slots": 11,
+          "known_reported_tokens": 121249,
+          "pending": 1
+        },
+        "actual_exit_code": 1,
+        "terminal_exec_chunk_id": "512ad8",
+        "terminal_sha256": "1472155ff4380cb97a08b245e2c64a555fb066f9a392eed791154a6d0580b371",
+        "ledger_sha256": "dd4546be74e025432c17ebb50a04ed86764d38f49ecc60d1883443139df77010",
+        "owner_closed_sha256": "b1a367b30f2e9bbf1cef537667adc60712afb998a3c9954f843266105fd10d99",
+        "owner_exit_sha256": "3d6a8b6b255da1c121d3cf3ae9fad825e0e733d3635f1931c45497f150276ec2",
+        "known_api_tokens": 121249,
+        "api_request_slots": 11,
+        "pending_native_records": 1,
+        "first_error": {
+          "actor_id": "w008-source",
+          "exception_class": "StudyStop"
+        },
+        "native_scope_trace_diagnosis": {
+          "diagnostic_sha256": "9fda9cbb7fc4219aa6e246feb0cd8358aca9b6e5596e2c728a35209b43468318",
+          "consumer_sha256": "baaf76a5a2015eae6f144bcbc8bcfe1911bf52b579158a718f0d170ad2b809a4",
+          "consumer_guard": "native_journal:strict-native-journal-mismatch",
+          "producer_completed_turn_reported_tokens_not_independently_verified": 71369,
+          "observed_tools": [
+            "repo_read",
+            "repo_search",
+            "repo_status"
+          ],
+          "mutating_tools_observed": false,
+          "first_read_public_static_rejection": "ValueError: path is outside the registered tool scope",
+          "subsequent_transport_closed": true,
+          "broker_events": 1,
+          "full_turn_nonexecution_or_usage_verification": "UNASSESSED",
+          "quality_pass_claimed": false,
+          "original_pending_released": false,
+          "new_model_calls_for_diagnosis": 0
+        },
+        "corrective_existing_native_read": {
+          "status": "RAW_VERIFIED_KNOWN_QUALITY_FAILURE_WITH_EXPLICIT_CORRECTION",
+          "verification_sha256": "3dbf8602359b479722193b8de086e9f97963c926eac91f4c613dbe58d0fdf762",
+          "actual_exec_chunk_id": "50b733",
+          "actual_exit_code": 0,
+          "verified_native_reported_tokens": 71369,
+          "independent_task_pass": false,
+          "scope_ok": false,
+          "current_snapshot_validation": "NOT_RUN",
+          "wall_seconds": 2.579533599986462,
+          "model_calls": 0,
+          "project_executions": 0,
+          "original_pending_or_failed_trial_rewritten": false,
+          "guard_scope": "Exact original raw hashes and fully closed read-only refusal chain only; no generic transport-closed or scope-error admission.",
+          "preparation_failure": {
+            "exec_chunk_id": "4da163",
+            "exception_class": "FileNotFoundError",
+            "phase": "obsolete canonical helper location before View/RAW reader",
+            "original_wrapper_preserved": true,
+            "retry_delta": "Same helper bytes at evolution path; new output directory only.",
+            "actual_raw_body_repeated": false
+          }
+        }
+      },
+      "final_three_continuation": {
+        "binding_leaf": "eval-workspaces/rc20-neutral-fixed-final-three-continuation-v1",
+        "protocol_sha256": "1c39bbdd6effe94ca3403f38e528d716cb74a5f045ce73fb8dc5ad53cb513ba2",
+        "execution_plan_sha256": "f92bcb0f6e813f73b2d55748ca0e84e2feed0cf6f06cab786b21609f0b5e803f",
+        "root_tool_chunk": "3935bb",
+        "session_id": 47688,
+        "status": "CLOSED_KNOWN_CHILD_BUT_FIRST_INDEPENDENT_READER_FAILED",
+        "read_only_admission": "3911b5 PASS340sources",
+        "selected_workflows": [
+          "w010",
+          "w011",
+          "w012"
+        ],
+        "planned_roles": 5,
+        "inherited_elapsed_seconds": 587.9397742999718,
+        "prefix_rerun": false,
+        "prior_failed_owners_rewritten": false,
+        "original_primary_conclusion": "BLOCK",
+        "actual_outer_exit_code": 0,
+        "actual_outer_exit_chunk": "17b200",
+        "owner_exit": {
+          "path": "C:\\Users\\96501\\.codex\\upg-experiments\\rc20-tool-contract-final3-v1-supervisor\\owner-exit.json",
+          "sha256": "c1ca5986655437da3d3f965adacf8c30635eb7c6de8a843a4e274f171b78e4c7"
+        },
+        "terminal": {
+          "path": "C:\\Users\\96501\\.codex\\upg-experiments\\rc20-tool-contract-final3-v1\\terminal.json",
+          "sha256": "debaa4feb48bb295794ac9215d98e1d294c5946b29523cc69396a5457a526671"
+        },
+        "ledger": {
+          "path": "C:\\Users\\96501\\.codex\\upg-experiments\\rc20-tool-contract-final3-v1\\accounting.json",
+          "sha256": "3698bec1b406cba179f0dcb2da05d14ff212c46f72a53a8290b5292f64de5f1c"
+        },
+        "round_observation": {
+          "path": "C:\\Users\\96501\\.codex\\upg-experiments\\rc20-tool-contract-final3-v1-supervisor\\round-observation.json",
+          "sha256": "a20b6029ee62d631fafa97da1b31ef1eb68d605ec61871e0117f3f88d25ec6ec"
+        },
+        "owner_closed": {
+          "path": "C:\\Users\\96501\\.codex\\upg-experiments\\rc20-tool-contract-final3-v1-owner\\CLOSED.json",
+          "sha256": "1fa0c4b6b3bdd0089fb255e4e5f261a6c27665ad24f762903eecaee88717ef61"
+        },
+        "API_request_slots": 31,
+        "API_known_reported_tokens": 840654,
+        "native_executions": 1,
+        "native_completed_turn_reported_tokens_inline_verified": 110359,
+        "pending_count": 0,
+        "outer_runtime_seconds": 545.1978506000014,
+        "inherited_seconds_once": 587.9397742999718,
+        "cumulative_outer_and_prior_correctives_seconds": 1133.1376248999732,
+        "source_and_receiver_mechanical_results": {
+          "w010-source": true,
+          "w011-source": false,
+          "w011-receiver": "UNINVOKED_known_source_failure",
+          "w012-source": true,
+          "w012-receiver": false
+        },
+        "first_independent_reader": {
+          "status": "FAILED_NOT_RETRIED",
+          "actual_root_chunk": "c500ef",
+          "exit_code": 1,
+          "report": {
+            "path": "C:\\Users\\96501\\.codex\\upg-experiments\\rc20-tool-contract-final3-v1-firstaudit\\first-audit.json",
+            "sha256": "15c4b080d69420209261a472155cbe013dfa8173366110372088404ec95fb097"
+          },
+          "seal": {
+            "path": "C:\\Users\\96501\\.codex\\upg-experiments\\rc20-tool-contract-final3-v1-firstaudit\\audit.seal.json",
+            "sha256": "9ccadf50566746d9d9e51d10b96c5e1a3a99a378bb9e980417800fb8683e81ad"
+          },
+          "external_exit": {
+            "path": "D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution\\eval-workspaces\\rc20-neutral-three-owner-postprocess-v1\\READER-EXIT.actual.json",
+            "sha256": "1bef355d74edd3cdb2254a198e468a0f0fec252f0c452b2f7668878493e473bf"
+          },
+          "error": {
+            "exception_class": "ValueError",
+            "phase": "sole-reader-body"
+          },
+          "reader_source_unchanged": true,
+          "inputs_unchanged": true,
+          "wall_seconds": 2.8787557000177912
+        },
+        "postprocess_composition_executed": false,
+        "additional_blind_grading_executed": false,
+        "unblind_executed": false,
+        "original_failed_owners_and_pending_rewritten": false,
+        "original_favorable_primary_conclusion": "BLOCK",
+        "further_paid_calls_started": false
+      },
+      "fixed_development_result": {
+        "workflow_denominator": 9,
+        "planned_roles": 15,
+        "actual_roles": 10,
+        "known_source_failure_receivers_uninvoked": 5,
+        "mechanical_workflow_passes": 2,
+        "mechanical_quality_is_not_semantic_blind_quality": true,
+        "API_requests_all_three_segments": 66,
+        "API_known_reported_tokens_all_three_segments": 1711012,
+        "native_reported_tokens_by_execution": [
+          239197,
+          71369,
+          110359
+        ],
+        "native_tokens_are_a_separate_measurement_domain": true,
+        "complete_runtime_including_three_outers_and_necessary_readers_seconds": 1136.016380599991,
+        "prior_original_pending_count_retained": 2,
+        "qualified_net_benefit": "NOT_ESTABLISHED",
+        "formal_qualification": "UNASSESSED",
+        "locked_holdout": "NOT_RUN",
+        "original_primary": "BLOCK",
+        "primary_FAILED_or_pending_states_are_not_repaired_by_sidecars": true,
+        "semantic_blind_grades_and_unblind": "NOT_EXECUTED_fixed_gates_already_fail",
+        "total_research_cost_or_break_even": "UNKNOWN",
+        "merge_default_or_install_allowed": false,
+        "additional_paid_work": "NONE"
       }
     }
+  },
+  "current_state_navigation_cleanup": {
+    "current_state_bytes_before": 10702,
+    "current_state_bytes_after": 4887,
+    "historical_audits_deleted": false,
+    "runtime_or_experiment_identity_changed": false,
+    "empirical_benefit_claim": false
   }
 }
