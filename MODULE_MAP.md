@@ -37,7 +37,7 @@ flowchart LR
 
 ## Skill 与计划的边界
 
-Skill 保留全部全局义务；plan 是任务投影，按原 policy 闭包和已解析报告/现有 reporting 状态选取 `operational_guidance`，每块只出现一次。无 helper 仍使用完整 Skill 与手工 index 路由，非平凡工作不得因上下文漏报跳过工作流。旧六条件收集器 [context_campaign](evolution/context_campaign.py) 保留原 inline 契约及[旧实验测试](tests/test_context_campaign.py)，不用于新路由。来源、未知费用和独立证据范围见[选择性映射](docs/upstream-rule-map.md)。
+Skill 保留全部全局义务；plan 是任务投影，按原 policy 闭包和已解析报告/现有 reporting 状态选取 `operational_guidance`，每块只出现一次。无 helper 仍使用完整 Skill 与手工 index 路由，非平凡工作不得因上下文漏报跳过工作流。旧六条件收集器 [context_campaign](evolution/context_campaign.py) 保留原 inline 契约及[旧实验测试](tests/test_context_campaign.py)，不用于新路由。 新真实工程对照的六条件、路由、预算和角色身份统一来自 [engineering_study](evolution/engineering_study.py)，由[拓扑与真实 RC19 差异测试](tests/test_engineering_study.py)约束；纯元数据通过不授予模型执行或收益结论。来源、未知费用和独立证据范围见[选择性映射](docs/upstream-rule-map.md)。
 
 ## 公共接口改动
 
