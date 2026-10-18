@@ -1,0 +1,197 @@
+{
+  "schema": "rc20-source18-hybrid-tool-contract-audit-v1",
+  "recorded_at_utc": "2026-10-18T08:01:04.608620+00:00",
+  "status": "NOT_PASS",
+  "scope": "Two exposed public development capability workflows; this is not an independent holdout, governance treatment effect or Stable qualification",
+  "tested_canonical_commit": "d0a241ebc07c6e9b21163a0aaa83bfc863cd43ac",
+  "ci_run": 39107840711,
+  "ci_all11_success_observed": true,
+  "runtime_candidate": "3.0.0-rc.20",
+  "runtime_or_frozen_completion_standard_changed": false,
+  "source": {
+    "manifest_sha256": "1c536c567eab65d57cbba5a3af3d19a548ddf477b27d7c1d1832cccca93d4c49",
+    "seal_sha256": "b3151e78882c5b4d288234f7565ef3952949cf260f17c17d2a98f784356faca8",
+    "profile": "thinking-hybrid-engineering-pro-16384-sse-v1",
+    "configuration_sha256": "46637727f794a961b18190bcd008f2e7149f323d50d2c9d4dfed2aa9afebef36",
+    "request_mode_change": "same MiMo Pro requested thinking disabled; DSPro enabled/high unchanged",
+    "budgets": "600 work +600 accounting-only settlement peractor;24requests;32tools;16384output;524288input;no retry"
+  },
+  "planned_roles": 2,
+  "complete_accounting_records": 2,
+  "requests": 22,
+  "pending": 0,
+  "original_denominator_reduced": false,
+  "closure": {
+    "parent_exit": 0,
+    "job_active_after": 0,
+    "owned_handle_closed": true,
+    "owner_wall_before_closed_publication_seconds": 492.5194140000094,
+    "parent_exit_sha256": "f44c8c240dd631c6886c7eec13779b931cabb25fc0240ad9e25f586ca92973dd",
+    "closed_sha256": "3890ff795b98fa81279a7a33988efd992beb453486e8eba2bc0c2fc0e1c49665",
+    "terminal_sha256": "873f5a0df783651b8f20647231100baac29ca8d9675876332706e1e1b70189bb",
+    "accounting_sha256": "03829aadcf78d7b39cc534982c209f9a95795b494f1218afedb5c592f447beff",
+    "final_native_ledger_sha256": "365d3d4147b922257facfcaee6486b0f6f275464a1dd34e4e18cddd29bc3b0c3",
+    "final_native_ledger_status": "PASS"
+  },
+  "quality": {
+    "procedure": "Two NEW independent fork-none reviewers,9requirements each, both firstdecisions locked before unblind with unchangedhelper",
+    "extract_sha256": "1ac37b9020832ee656e97a16aa084ea7593b6455f3922f4e09d55aec49241951",
+    "first_lock_sha256": "9b1f571818e26ba6df744f33060303ba47f242c3bd97c8bf29f6acb49a3e255a",
+    "unblind_sha256": "2de79d9f76c7df60322fd2bd9b8b6dbf1dd88759ed49b16ff1d697ed662aa3eb",
+    "decision_sha256": {
+      "panel1": "bfd385e6bd95d2ece1aee2c2ef54b0eb6e32368e5bb39f823c81d80b2eec0d8a",
+      "panel2": "e2ccfe5fd1a0fb1dfcfa0a8869776cb86d20f723799091d58a89923570fb43c2"
+    },
+    "no_regrade_or_old_success_splice": true
+  },
+  "actors": [
+    {
+      "actor_id": "w001-source",
+      "provider": "deepseek",
+      "model": "deepseek-v4-pro",
+      "thinking_requested": "enabled",
+      "status": "completed",
+      "actor_wall_seconds": 284.1740062000026,
+      "workflow_wall_seconds_before_observation": 289.5171646999952,
+      "requests": 11,
+      "tool_attempts": 19,
+      "usage_reported": {
+        "cached_tokens": 247808,
+        "input_tokens": 253317,
+        "output_tokens": 26237,
+        "reasoning_tokens": 23063,
+        "total_tokens": 279554
+      },
+      "unknown_usage": false,
+      "mechanical_pass": true,
+      "locked_first_semantic": "PASS",
+      "final_report_present": true,
+      "schema_rejections": 0,
+      "quality_failures": [],
+      "validation_checks": {
+        "passed": 4,
+        "total": 4
+      },
+      "actor_result_sha256": "a180fd24a13c01f6dfb9f2583dc8ee799273d5e99e87102e31bfd64c2b7646cf",
+      "first_RAW_sha256": "bdd354677012efb7593bb2f3eec07ba0ae3c43401e52c1449c7002f2c0821cf7"
+    },
+    {
+      "actor_id": "w002-source",
+      "provider": "mimo",
+      "model": "mimo-v2.6-pro",
+      "thinking_requested": "disabled",
+      "status": "tool-contract-failed",
+      "actor_wall_seconds": 197.59901320000063,
+      "workflow_wall_seconds_before_observation": 201.8886538000079,
+      "requests": 11,
+      "tool_attempts": 14,
+      "usage_reported": {
+        "cached_tokens": 93184,
+        "input_tokens": 105562,
+        "output_tokens": 6589,
+        "reasoning_tokens": 0,
+        "total_tokens": 112151
+      },
+      "unknown_usage": false,
+      "mechanical_pass": false,
+      "locked_first_semantic": "FAIL",
+      "final_report_present": false,
+      "schema_rejections": 2,
+      "quality_failures": [
+        "project-check-failed:unit",
+        "project-check-failed:cli-ok",
+        "api-tool-rejected:schema-correction-budget",
+        "actor-not-completed:tool-contract-failed",
+        "required-current-real-tool-evidence-missing",
+        "final-validation-claim-invalid"
+      ],
+      "validation_checks": {
+        "passed": 2,
+        "total": 4
+      },
+      "actor_result_sha256": "cea9ad3a674b754856ceffe2d5e1fcc740f0d8170b84f0d038c5ab92fb078803",
+      "first_RAW_sha256": "c6ad75f25e10c3bbfd91531ad076eace35fd225ac95812f0f0bd630f355bf537"
+    }
+  ],
+  "descriptive_previous_public_cohort_comparison": {
+    "previous_audit": "audits/rc20-source17-latency-and-quality.audit.json",
+    "limit": "One public pair per configuration with stochasticmodel/service variation; not a causal or matched governance-effect estimate. Quality differs, so faster failed work is not netbenefit.",
+    "previous_reported_tokens": 198099,
+    "current_reported_tokens": 391705,
+    "total_token_change_percent": 97.731942,
+    "MiMo_token_change_percent": 8.535677,
+    "MiMo_workflow_wall_change_percent": -67.130912,
+    "owner_wall_change_percent": -36.815153
+  },
+  "failure_diagnosis": {
+    "original_safe_report_sha256": "33b2bdfab5e03da561c826211ebd7a6f9d50d799ba7e804e21e29ee33d515d5b",
+    "exact_rejections": [
+      {
+        "request_index": 4,
+        "tool": "repo_patch",
+        "json_parse_ok": true,
+        "missing_required": [
+          {
+            "pointer": "/operations/0/path",
+            "expected_type": "string"
+          }
+        ],
+        "operation_keys": [
+          "new_text",
+          "old_sha256",
+          "old_text"
+        ],
+        "batch_executed": false,
+        "schema_rejection_sequence": 1,
+        "correction_permitted": true
+      },
+      {
+        "request_index": 11,
+        "tool": "repo_patch",
+        "json_parse_ok": true,
+        "missing_required": [
+          {
+            "pointer": "/operations/0/path",
+            "expected_type": "string"
+          },
+          {
+            "pointer": "/operations/1/path",
+            "expected_type": "string"
+          }
+        ],
+        "operation_keys": [
+          "new_text",
+          "old_sha256",
+          "old_text"
+        ],
+        "batch_executed": false,
+        "schema_rejection_sequence": 2,
+        "correction_permitted": false
+      }
+    ],
+    "transport_boundary": "Both rejected responses HTTP 200; SSE done/message_valid/usage_observed true. No observed transport truncation or JSON escaping cause.",
+    "feedback_causal_boundary": "Request 05 supplied path and executed successfully after rejection 04. Rejection 11 is a later recurrence; it is false to say schema was absent or first correction never succeeded. Outbound request bodies were not persisted; exact feedback bytes were inferred from manifest-matching frozen source, not read from an outbound payload.",
+    "tab_boundary": {
+      "source_observation": "Last successfully written core computes display width for tabs, but output appends original cell plus padding rather than expanded content.",
+      "source_tab_literal_character_codes": [
+        92,
+        116
+      ],
+      "interpretation": "Correct Python tab escape in source; no double escaping root cause. Request 11 attempted related repair but missing path kept the whole batch from broker execution.",
+      "causal_limit": "Semantic omission and argument-shape failure are separate observed chains. Better feedback alone does not establish a semantic PASS."
+    },
+    "original_artifact_preservation": {
+      "files": 113,
+      "changed": 0,
+      "manifest_sha256": "d8c1b96e0011ce702c442fbe27cff31637c957cffca77f55bb76cfe289bc9494"
+    }
+  },
+  "prospective_fix": "Clarify required operationpath and add deterministic missing-required pointers to existing single schema-correction feedback. No inferred paths, auto-repair, extra retry or scoring relaxation. This usability change is not a proven semantic cure.",
+  "accounting_boundary": "Providerreported usage/localreservation closure; invoices, all research/human costs and prior primary14 pending157 remain unknown. CNY/USD are not added together.",
+  "promotion": {
+    "full54_allowed": false,
+    "merge_or_install_allowed_by_this_result": false,
+    "net_benefit_established": false,
+    "formal_qualification": "UNASSESSED"
+  }
+}

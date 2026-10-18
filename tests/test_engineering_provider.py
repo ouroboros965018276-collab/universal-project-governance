@@ -543,6 +543,128 @@ class EngineeringCandidateTests(_ProviderFixture, unittest.TestCase):
         self.assertEqual(result['tool_events'],[])
         self.assertEqual(result['tool_attempts'],2)
 
+    def test_missing_patch_path_feedback_identifies_field_before_valid_correction(self):
+        observed = []
+        invalid = completion(2, [call('missing-path', 'repo_patch', {'operations': [
+            {'old_sha256': sha(b'old\n'), 'new_text': 'fixed\n'}]}),
+            call('validation-not-admitted', 'repo_validate', {})])
+        def corrected(payload):
+            feedback = [json.loads(message['content']) for message in payload['messages'][-2:]]
+            observed.append((feedback, (self.workspace/'target.txt').read_bytes(), list(self.executions),
+                             [event['tool'] for event in self.brokers[-1][0].events]))
+            return completion(3, [call('corrected-path', 'repo_patch', {'operations': [
+                {'path': 'target.txt', 'old_sha256': sha(b'old\n'), 'new_text': 'fixed\n'}]})])
+        result, count = self.run_steps([self.read(1), invalid, corrected,
+                                       self.validate_and_status(4), self.finish(5)])
+        self.assertEqual(count, 5)
+        feedback, contents, executions, events = observed[0]
+        self.assertEqual(feedback[0]['missing_required'], ['/operations/0/path'])
+        self.assertEqual(feedback[1]['missing_required'], [])
+        self.assertEqual(feedback[0]['inputSchema'], tool_definitions()[2]['inputSchema'])
+        self.assertTrue(all(item['batch_executed'] is False for item in feedback))
+        self.assertEqual(feedback[0]['remaining_schema_corrections'], 0)
+        self.assertEqual((contents, executions, events), (b'old\n', [], ['repo_read']))
+        self.assertTrue(result['quality']['hard_pass'])
+        self.assertEqual(result['schema_rejections'], 1)
+        self.assertEqual([event['tool'] for event in result['tool_events']],
+                         ['repo_read', 'repo_patch', 'repo_validate', 'repo_status'])
+
+    def test_repeated_missing_patch_path_still_exhausts_one_correction(self):
+        observed = []
+        def invalid(index):
+            return completion(index, [call('missing-path-'+str(index), 'repo_patch', {'operations': [
+                {'old_sha256': sha(b'old\n'), 'new_text': 'fixed\n'}]})])
+        def repeated(payload):
+            observed.append(json.loads(payload['messages'][-1]['content']))
+            return invalid(2)
+        result, count = self.run_steps([invalid(1), repeated])
+        self.assertEqual((count, result['schema_rejections'], result['tool_attempts']), (2, 2, 2))
+        self.assertEqual(observed[0]['missing_required'], ['/operations/0/path'])
+        self.assertEqual(observed[0]['remaining_schema_corrections'], 0)
+        self.assertEqual(result['status'], 'tool-contract-failed')
+        self.assertIn('api-tool-rejected:schema-correction-budget', result['quality']['failures'])
+        self.assertEqual(result['tool_events'], [])
+        self.assertEqual(self.executions, [])
+        self.assertEqual((self.workspace/'target.txt').read_bytes(), b'old\n')
+        record = json.loads((self.artifacts/'schema-rejections/02.json').read_bytes())
+        self.assertFalse(record['correction_permitted'])
+
+    def test_required_field_feedback_indexes_operations_without_submitted_values(self):
+        observed = []
+        submitted = 'submitted-private-value'
+        bad = completion(1, [call('missing-fields', 'repo_patch', {'operations': [
+            {'old_sha256': submitted, 'new_text': submitted, submitted: submitted},
+            {'path': 'target.txt', 'new_text': submitted}, {}]})])
+        def inspect(payload):
+            observed.append(json.loads(payload['messages'][-1]['content']))
+            return self.finish(2)
+        result, count = self.run_steps([bad, inspect])
+        self.assertEqual(count, 2)
+        feedback = observed[0]
+        self.assertEqual(feedback['missing_required'], ['/operations/0/path',
+            '/operations/1/old_sha256', '/operations/2/path',
+            '/operations/2/old_sha256', '/operations/2/new_text'])
+        self.assertNotIn(submitted, json.dumps(feedback))
+        self.assertEqual(feedback['inputSchema'], tool_definitions()[2]['inputSchema'])
+        self.assertEqual(result['tool_events'], [])
+
+    def test_required_diagnostics_are_bounded_and_do_not_judge_validity(self):
+        schema = real_engineering.tool_definitions()[2]['inputSchema']
+        valid = {'operations': [{'path': 'target.txt', 'old_sha256': sha(b'old\n'), 'new_text': 'fixed\n'}]}
+        self.assertTrue(lab._schema(valid, schema))
+        self.assertEqual(lab._missing_required_pointers(valid, schema), [])
+        for invalid in ({'operations': 'submitted-private-value'}, dict(valid, extra='submitted-private-value'),
+                        {'operations': [dict(valid['operations'][0], new_text=42)]}):
+            self.assertFalse(lab._schema(invalid, schema))
+            self.assertEqual(lab._missing_required_pointers(invalid, schema), [])
+        many = lab._missing_required_pointers({'operations': [{} for unused in range(20)]}, schema)
+        self.assertEqual(len(many), 16)
+        self.assertEqual(many[:3], ['/operations/0/path', '/operations/0/old_sha256', '/operations/0/new_text'])
+        self.assertEqual(many[-1], '/operations/5/path')
+        nested, value = {'type': 'object', 'required': ['leaf'], 'properties': {'leaf': {'type': 'string'}}}, {}
+        for unused in range(40):
+            nested = {'type': 'object', 'properties': {'child': nested}}
+            value = {'child': value}
+        self.assertEqual(lab._missing_required_pointers(value, nested), [])
+        escaped = {'type': 'object', 'properties': {'a/b~c': {'type': 'string'}}, 'required': ['a/b~c']}
+        self.assertEqual(lab._missing_required_pointers({}, escaped), ['/a~1b~0c'])
+        class CountedArray(list):
+            visited = 0
+            def __iter__(self):
+                for item in super().__iter__():
+                    self.visited += 1
+                    yield item
+        wide = CountedArray([valid['operations'][0]] * 10000)
+        self.assertEqual(lab._missing_required_pointers({'operations': wide}, schema), [])
+        self.assertLessEqual(wide.visited, 256)
+
+    def test_other_schema_rejections_keep_full_schema_with_empty_required_diagnostics(self):
+        observed = []
+        malformed = call('malformed-json', 'repo_read', {})
+        malformed['function']['arguments'] = '{'
+        calls = [call('wrong-type', 'repo_patch', {'operations': [
+            {'path': 'target.txt', 'old_sha256': sha(b'old\n'), 'new_text': 42}]}),
+            call('extra-field', 'repo_status', {'submitted-private-name': 'submitted-private-value'}),
+            call('wrong-array-type', 'repo_patch', {'operations': 'submitted-private-value'}), malformed]
+        def inspect(payload):
+            observed.extend(json.loads(message['content']) for message in payload['messages'][-len(calls):])
+            return self.finish(2)
+        result, count = self.run_steps([completion(1, calls), inspect])
+        self.assertEqual(count, 2)
+        self.assertEqual(len(observed), len(calls))
+        schemas = {item['name']: item['inputSchema'] for item in tool_definitions()}
+        for feedback, item in zip(observed, calls):
+            self.assertEqual(feedback['missing_required'], [])
+            self.assertEqual(feedback['inputSchema'], schemas[item['function']['name']])
+            self.assertNotIn('submitted-private-', json.dumps(feedback))
+        self.assertEqual(result['tool_events'], [])
+
+    def test_engineering_patch_contract_explicitly_requires_each_operation_fields(self):
+        for instruction in (real_engineering.public_instruction(), real_engineering.cli_public_instruction(),
+                            real_engineering.tool_definitions()[2]['description']):
+            self.assertIn('Each repo_patch operation requires path, old_sha256 and new_text', instruction)
+            self.assertIn('no implicit current file', instruction)
+
     def test_scope_denial_is_terminal_without_schema_feedback(self):
         self.deny_patch=True
         result,count=self.run_steps([self.read(1),self.patch_from_read(2,'fixed\n')])

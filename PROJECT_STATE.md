@@ -6,7 +6,7 @@
 
 表达相关性、完整改动、事实保真和按需读取由[规范源](governance-src/model/governance-model.json)统一编译。当前生成核心 **6,976 字节**，四组指引、16 项政策、8 项 Hot Path、3 项默认规则和 18 个交付文件；规范身份 `adefef22…`，资格指纹 `74075f35…`。五个上游的固定来源、许可、适配与排除记录见 [选择性来源映射](docs/upstream-rule-map.md)及[许可记录](third_party/notices/README.md)。实验适配器不随 Skill 交付。
 
-最新[两模型流式校准](audits/rc20-source17-latency-and-quality.audit.json)已完成 9 次请求的本地记账、无待结算，但两组独立首次语义评审均未通过：DeepSeek 机械检查通过，README 遗漏精确接口类型；MiMo 在 600 秒任务时限内没有修改源码。MiMo 约 98.7% 的时间用于 API 请求，后续输入增量约 88.4% 来自工具调用必须回传的推理历史。下一步只在新实验配置中关闭同一 MiMo Pro 的深度推理，保留预算与质量标准；该结果不授予全量试验、合并或安装。此前[增量空角色误判](audits/rc20-source16-mimo-null-role.audit.json)已修复，原失败记录保留。
+最新[两模型公开校准](audits/rc20-source18-hybrid-tool-contract.audit.json)已完成 22 次请求的本地记账、无待结算；独立首次盲评已锁定后解盲。DeepSeek 机械检查及 9 项语义要求全部通过；关闭深度推理后的 MiMo 用时缩短，但两次补丁缺少路径字段，且仍有制表符输出缺陷，未通过机械或语义验收。MiMo 报告 token 较[上一轮](audits/rc20-source17-latency-and-quality.audit.json)增加约 8.5%，不能据速度宣布收益。下一步只改善必填字段说明和错误定位，保留一次纠错、原预算与完成标准；该轮不授予全量试验、合并或安装。
 
 最近[九族配对实测](audits/rc20-primary14-incomplete-transport.audit.json)在第 27 个流程因 HTTP 响应体 `IncompleteRead` 中断。预注册分母仍为 **54 个流程／66 个角色**；已发布 26 个流程、29 个角色记录，第 157 次请求用量与费用未知。原失败、待定预留和未完成范围全部保留；首次整体审计、语义盲评和净收益分析的前置条件未满足。事后确认原 23 个容器及 69 个临时路径不存在，不追认业务成功。较早的[非流式两模型校准及四角色中断控制](audits/rc20-reasoning-input-budget-diagnosis-v1.audit.json)是历史记录，不构成当前净收益证明。
 

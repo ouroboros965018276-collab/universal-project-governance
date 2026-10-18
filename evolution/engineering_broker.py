@@ -79,6 +79,7 @@ def _public_instruction(*, native_finish):
             'Read affected files before edits, preserve protected files, run current validation and inspect Git status. '
             'initial_paths lists existing files; writable_files also includes paths allowed to be created. '
             'repo_read returns text and SHA for existing files; a currently absent writable path returns exists=false, text=null and sha256=null. '
+            'Each repo_patch operation requires path, old_sha256 and new_text; there is no implicit current file. '
             'In this project profile only, repo_patch new_text=null removes an existing writable file after a current read and exact prior SHA; '
             'without old_text, a string replaces the entire file, never a fragment or diff. Preserve all required contents in the replacement; '
             'use old_sha256=null only to create a currently absent writable file. No-op replacements and stale SHA values are rejected. '
@@ -126,7 +127,8 @@ def tool_definitions():
                 'description': 'Optional exact nonempty fragment occurring exactly once in the current existing file. '
                                'Requires its current SHA/read; only that fragment is replaced by string new_text. '
                                'Omit for whole-file replacement, creation or file deletion.'}
-            item['description'] += (' Use at most one operation per path in a batch. Omit old_text entirely rather than setting it to null. '
+            item['description'] += (' Each repo_patch operation requires path, old_sha256 and new_text; there is no implicit current file. '
+                                    'Use at most one operation per path in a batch. Omit old_text entirely rather than setting it to null. '
                                     'Without old_text, new_text is the entire replacement file, never a fragment or diff; preserve required contents. '
                                     'Optional old_text selects a unique exact fragment in an existing file; the current read/SHA remains required '
                                     'and all bytes outside that occurrence are preserved. '

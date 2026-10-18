@@ -634,6 +634,44 @@ def _schema(value, schema, depth=0):
     return True
 
 
+def _missing_required_pointers(value, schema):
+    """Bounded diagnostics only; _schema alone decides validity.
+
+    Pointer field names come only from the registered schema, never submitted
+    keys or values. Array indexes identify the actual submitted operation.
+    """
+    missing = []
+    visited = 0
+
+    def visit(item, shape, pointer, depth):
+        nonlocal visited
+        if depth > 32 or len(missing) >= 16 or visited >= 256:
+            return
+        visited += 1
+        kind = shape.get("type")
+        kinds = kind if isinstance(kind, list) else [kind]
+        if isinstance(item, dict) and "object" in kinds:
+            for name in shape.get("required", []):
+                if name not in item:
+                    missing.append(pointer + "/" + name.replace("~", "~0").replace("/", "~1"))
+                    if len(missing) >= 16 or visited >= 256:
+                        return
+            for name, child_schema in shape.get("properties", {}).items():
+                if name in item:
+                    visit(item[name], child_schema,
+                          pointer + "/" + name.replace("~", "~0").replace("/", "~1"), depth + 1)
+                    if len(missing) >= 16 or visited >= 256:
+                        return
+        elif isinstance(item, list) and "array" in kinds:
+            for index, child in enumerate(item):
+                visit(child, shape.get("items", {}), pointer + "/" + str(index), depth + 1)
+                if len(missing) >= 16 or visited >= 256:
+                    return
+
+    visit(value, schema, "", 0)
+    return missing
+
+
 def _native_response_json(body):
     """Decode a bounded API body independently of repository artifact limits."""
     if type(body) is not bytes or len(body) > MAX_RESPONSE_BYTES:
@@ -936,7 +974,7 @@ def _model_tool_content(tool, arguments, result, event, task, execution_backend,
     return canonical(view).decode("utf-8")
 
 
-def _engineering_batch(calls, definitions, seen_calls, key, task):
+def _engineering_batch(calls, definitions, seen_calls, key, task, *, missing_required=None):
     """Pure prevalidation: no broker calls, disk writes, callbacks or replay.
 
     Only argument JSON/schema failures receive bounded correction feedback.
@@ -976,6 +1014,8 @@ def _engineering_batch(calls, definitions, seen_calls, key, task):
                     raise ValueError("engineering write scope denied")
             if not _schema(args, definitions[name]["inputSchema"]):
                 rejected.append(item["id"])
+                if missing_required is not None:
+                    missing_required[item["id"]] = _missing_required_pointers(args, definitions[name]["inputSchema"])
         parsed.append({"call_id": item["id"], "tool": name,
                        "arguments_utf8_sha256": sha(arguments.encode("utf-8"))})
     return parsed, rejected
@@ -1837,7 +1877,9 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                 break
             if engineering:
                 try:
-                    batch, rejected = _engineering_batch(calls, definitions, seen_calls, key, task)
+                    missing_required = {}
+                    batch, rejected = _engineering_batch(calls, definitions, seen_calls, key, task,
+                                                         missing_required=missing_required)
                     if rejected:
                         schema_rejections += 1
                         state = sha(canonical(broker.snapshot()))
@@ -1858,6 +1900,7 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                                 "batch_executed": False, "rejected": item["call_id"] in rejected,
                                 "correction_permitted": True, "use_new_call_ids": True,
                                 "remaining_schema_corrections": ENGINEERING_SCHEMA_CORRECTIONS-schema_rejections,
+                                "missing_required": missing_required.get(item["call_id"], []),
                                 "inputSchema": definitions[item["tool"]]["inputSchema"]}
                             messages.append({"role": "tool", "tool_call_id": item["call_id"],
                                              "content": canonical(content).decode("utf-8")})
