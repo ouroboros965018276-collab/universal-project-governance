@@ -1101,6 +1101,17 @@
         "total_research_cost_or_break_even": "UNKNOWN",
         "merge_default_or_install_allowed": false,
         "additional_paid_work": "NONE"
+      },
+      "retrospective_composition": {
+        "root_chunk": "0a0b46",
+        "actual_exit_chunk": "273394",
+        "exit_code": 0,
+        "adapter_sha256": "8ed1dcb16a45d290d1bad29a6eb63bdf73e9e4991e32ccd0025eb9d3214c78fc",
+        "composition_sha256": "d077601caec845f79329430af71b942cb4e31442ee76a15cc023884264826185",
+        "original_pending_count": 2,
+        "inclusive_seconds": 1241.4872833999689,
+        "new_runtime_effect_inferred": false,
+        "semantic_grading_or_unblind_executed": false
       }
     }
   },
@@ -1115,9 +1126,9 @@
     "observed_at": "2026-10-18T22:03:08.083838+00:00",
     "source": {
       "path": "governance-src\\model\\governance-model.json",
-      "sha256": "12b966ef944bf18f9e851bdfda84620298d977f8c6a0fb8d49e52630f5ebb7ca"
+      "sha256": "ea045482f1bc6ccf0243ea6bcf6c8cda3005d758b390a68f4fec6bafcc6a67a6"
     },
-    "qualification_fingerprint": "sha256:379038e4ce97b67252e3258160ec5b31b1eb132743cf1b77e2650eabafa132d6",
+    "qualification_fingerprint": "sha256:f08db03a558dfb87e508b018e70acc634a6a83c6ae3d8afdc29f938d94a8c36e",
     "generated_skill": {
       "path": "universal-project-governance\\SKILL.md",
       "sha256": "06e106ed1e43ade80ece0bb8c4c1b77acbd9676c856a4f39b13d8ecd60a986c7"
@@ -1169,10 +1180,46 @@
       "engineering_gates": {
         "checks": 9,
         "passed": 9,
-        "frozen_qualification": "379038e4ce97b67252e3258160ec5b31b1eb132743cf1b77e2650eabafa132d6"
+        "frozen_qualification": "f08db03a558dfb87e508b018e70acc634a6a83c6ae3d8afdc29f938d94a8c36e"
       }
     },
     "new_independent_real_model_effect": "NOT_RUN_new_identity_does_not_inherit_old_results",
-    "merged_or_installed": false
+    "merged_or_installed": false,
+    "pre_portable_normalization": {
+      "model_worktree_sha256": "12b966ef944bf18f9e851bdfda84620298d977f8c6a0fb8d49e52630f5ebb7ca",
+      "qualification_fingerprint": "sha256:379038e4ce97b67252e3258160ec5b31b1eb132743cf1b77e2650eabafa132d6",
+      "local_engineering_checks_passed": true,
+      "CI_run": 39170561255,
+      "CI_source_job": 117802531965,
+      "CI_source_errors": [
+        "generated-runtime drift: integrity/manifest.json",
+        "generated-runtime drift: policy-index.json"
+      ],
+      "cause": "ROOT Path.write_text translated two sources to CRLF while Git .gitattributes committed LF; raw source digest differed.",
+      "source_content_changed_by_correction": false
+    },
+    "portable_correction": {
+      "root_chunk": "87caf4",
+      "source_and_template_bytes_match_Git_HEAD": true,
+      "line_endings": "LF",
+      "generated_skill_semantics_or_bytes_changed": false,
+      "integrity_and_freeze_regenerated": true,
+      "new_live_calls_started": false,
+      "engineering_rechecks": {
+        "passed": 9,
+        "failed": 0,
+        "compiler": "c22107",
+        "freeze": "bfc895",
+        "repository": "a23df1",
+        "security": "4c716c",
+        "remaining_chunks": [
+          "82cc6f",
+          "ef2b96",
+          "3dacdf",
+          "d893b1",
+          "b2cb79"
+        ]
+      }
+    }
   }
 }

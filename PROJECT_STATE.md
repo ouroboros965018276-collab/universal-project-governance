@@ -4,7 +4,7 @@
 
 ## 当前能力与事实入口
 
-表达相关性、完整改动、事实保真和按需读取由[规范源](governance-src/model/governance-model.json)统一编译。生成核心为 7,185 字节，16 项政策、8 项 Hot Path、四组指引和 18 个交付文件；规范身份 `12b966ef…`，正式资格指纹 `379038e4…`。五个上游的固定来源、许可、适配和排除见[来源映射](docs/upstream-rule-map.md)及[许可记录](third_party/notices/README.md)。实验适配器不随 Skill 交付。
+表达相关性、完整改动、事实保真和按需读取由[规范源](governance-src/model/governance-model.json)统一编译。生成核心为 7,185 字节，16 项政策、8 项 Hot Path、四组指引和 18 个交付文件；规范身份 `ea045482…`，正式资格指纹 `f08db03a…`。五个上游的固定来源、许可、适配和排除见[来源映射](docs/upstream-rule-map.md)及[许可记录](third_party/notices/README.md)。实验适配器不随 Skill 交付。
 
 源码、契约、消费者和测试按[模块索引](MODULE_MAP.md)定位；不需要为局部修改读取整篇研究历史。当前实验结果及全部原始身份以[本轮审计](audits/rc20-primary22-insufficient-balance.audit.json)为准。
 

@@ -30,12 +30,12 @@
     "qualification/analyze.py",
     "qualification/round_manifest.py"
   ],
-  "governance_model_sha256": "sha256:12b966ef944bf18f9e851bdfda84620298d977f8c6a0fb8d49e52630f5ebb7ca",
+  "governance_model_sha256": "sha256:ea045482f1bc6ccf0243ea6bcf6c8cda3005d758b390a68f4fec6bafcc6a67a6",
   "hash_algorithm_revision": "repo-relative-posix-v2",
-  "qualification_fingerprint": "sha256:379038e4ce97b67252e3258160ec5b31b1eb132743cf1b77e2650eabafa132d6",
+  "qualification_fingerprint": "sha256:f08db03a558dfb87e508b018e70acc634a6a83c6ae3d8afdc29f938d94a8c36e",
   "qualification_protocol_sha256": "sha256:464fcdb23f0b107e9c53149ae377945ff8417615dc47d4c9895a76c088fdddd3",
   "runner_sha256": "sha256:b90fdc5dbd8238684c7e9816ea677fcf9b3d38a6c7ef5ca337c7e628fb1f238a",
-  "runtime_tree_sha256": "sha256:1e85ec5c14414587953506d05327f41d1c03ff9d38067f142ecfdab240292444",
+  "runtime_tree_sha256": "sha256:5c7037fa05104e5143e3680d7b2f3b589ccfbeffda82f56d4222251efe6f5090",
   "schema_version": 3,
   "state": "real-agent-test-freeze",
   "version": "3.0.0-rc.20"
