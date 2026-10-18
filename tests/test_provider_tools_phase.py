@@ -97,10 +97,12 @@ class ProviderPhaseBoundaryTests(unittest.TestCase):
         identity = api._write_new(self.artifacts / 'control/phase-stop-authorization.json', expected)
         return api.ControlledPhaseStopRequested('control/phase-stop-authorization.json', identity)
 
-    def run_fake(self, policy=None, guard=None, timing=True, maximum=12):
-        kwargs = {'response_json_mode': False, 'thinking': 'disabled', 'before_request': self.pre, 'after_request': self.post, 'profile_id': api.DEEPSEEK_PRO_FLASH_DISABLED_PROFILE, 'execution_backend': api.ENGINEERING_BACKEND, 'broker_profile_id': api.ENGINEERING_PROFILE, 'connect_retry_policy': api.CONNECT_RETRY_POLICY, 'settlement_policy': api.SETTLEMENT_POLICY, 'max_requests': maximum}
+    def run_fake(self, policy=None, guard=None, timing=True, maximum=12, profile=None):
+        reasoning = profile == api.ENGINEERING_REASONING_PROFILE
+        timeout = 600 if reasoning else 180
+        kwargs = {'response_json_mode': False, 'thinking': 'enabled' if reasoning else 'disabled', 'before_request': self.pre, 'after_request': self.post, 'profile_id': profile or api.DEEPSEEK_PRO_FLASH_DISABLED_PROFILE, 'execution_backend': api.ENGINEERING_BACKEND, 'broker_profile_id': api.ENGINEERING_PROFILE, 'connect_retry_policy': api.CONNECT_RETRY_POLICY, 'settlement_policy': api.SETTLEMENT_POLICY, 'max_requests': maximum, 'timeout_seconds': timeout}
         if timing:
-            kwargs['actor_timing'] = {'schema': api.ACTOR_TIMING_SCHEMA, 'started_monotonic': 90.0, 'work_deadline_monotonic': 270.0}
+            kwargs['actor_timing'] = {'schema': api.ACTOR_TIMING_SCHEMA, 'started_monotonic': 90.0, 'work_deadline_monotonic': 90.0 + timeout}
         if policy is not None:
             kwargs.update(controlled_phase_stop_policy=policy, controlled_phase_stop_guard=self.guard if guard is None else guard)
         with mock.patch.object(api.importlib, 'import_module', side_effect=lambda name: self.engineering if name == 'evolution.engineering_broker' else (_ for _ in ()).throw(AssertionError(name))), mock.patch.object(api.time, 'perf_counter', side_effect=lambda: self.now), mock.patch.object(api, '_managed_post', side_effect=self.transport), mock.patch.object(subprocess, 'Popen', side_effect=AssertionError('external process forbidden')), mock.patch.object(socket, 'create_connection', side_effect=AssertionError('network forbidden')):
@@ -128,6 +130,45 @@ class ProviderPhaseBoundaryTests(unittest.TestCase):
         self.assertEqual(self.callbacks[0]['successful_patch_count'], 1)
         self.assertEqual(len(self.after), 12)
         self.assertEqual(result['known_usage']['total_tokens'], 24)
+
+    def test_reasoning_profile_thirteenth_slot_first_patch_stops_at_real_phase_boundary(self):
+        self.batches = [[('repo_read', {})] for _ in range(12)] + [[('repo_patch', {}), ('repo_validate', {}), ('repo_status', {})]]
+        result = self.run_fake('first-confirmed-repo-patch-request-tail-v1', maximum=24,
+            profile=api.ENGINEERING_REASONING_PROFILE)
+        self.assertEqual(result['status'], 'controlled-phase-stop-unfinished')
+        self.assertEqual(result['requests'], 13)
+        self.assertEqual(result['max_requests'], 24)
+        self.assertEqual(result['timeout_seconds'], 600)
+        self.assertEqual(result['known_usage']['total_tokens'], 26)
+        self.assertEqual(len(self.after), 13)
+        self.assertEqual(len(self.callbacks), 1)
+        evidence = self.callbacks[0]
+        self.assertEqual(evidence['request_metadata']['profile_id'], api.ENGINEERING_REASONING_PROFILE)
+        self.assertEqual(evidence['request_metadata']['profile_configuration_sha256'],
+            api.sha(api.canonical(api.profile_configuration(api.ENGINEERING_REASONING_PROFILE))))
+        self.assertEqual(evidence['api_requests_observed'], 13)
+        self.assertEqual(evidence['request_tail_event_count'], 3)
+        self.assertEqual(evidence['successful_patch_count'], 1)
+        self.assertEqual([row['tool'] for row in result['api_tool_trace'][-3:]],
+            ['repo_patch', 'repo_validate', 'repo_status'])
+        self.assertIsNone(result['quality']['task_success'])
+        self.assertTrue((self.artifacts / 'actor.pending.json').is_file())
+
+    def test_phase_boundary_cannot_borrow_reasoning_limit_from_unbound_profile_or_legacy_metadata(self):
+        base = {'profile_id': api.ENGINEERING_REASONING_PROFILE,
+            'profile_configuration_sha256': api.sha(api.canonical(api.profile_configuration(api.ENGINEERING_REASONING_PROFILE))),
+            'broker_profile_id': api.ENGINEERING_PROFILE, 'execution_backend': api.ENGINEERING_BACKEND,
+            'request_index': 13}
+        for metadata in (dict(base, profile_configuration_sha256='0' * 64),
+                dict(base, broker_profile_id='wrong'), dict(base, execution_backend='wrong'),
+                dict(base, profile_id=api.DEEPSEEK_PRO_FLASH_DISABLED_PROFILE)):
+            with self.subTest(metadata=metadata), self.assertRaises(ValueError):
+                api._phase_cut_evidence('first-confirmed-repo-patch-request-tail-v1',
+                    'complete-request-tool-tail', metadata, SimpleNamespace(events=[]), [],
+                    [{'function': {'name': 'repo_patch'}}], self.artifacts,
+                    {}, '', '', 13)
+        self.assertEqual(self.before, [])
+        self.assertEqual(self.keys, [])
 
     def test_schema_invalid_batch_does_not_deliver_or_cut(self):
         self.batches = [[('repo_read', {'extra': 1}), ('repo_patch', {})], [('repo_read', {})]]

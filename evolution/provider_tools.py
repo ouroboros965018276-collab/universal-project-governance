@@ -69,6 +69,13 @@ DEEPSEEK_PRO_FLASH_DISABLED_PROFILE_SETTINGS = {
     "deepseek": {"model": "deepseek-v4-pro", "thinking": "disabled", "output_cap": 8192, "reasoning_effort": None},
     "mimo": {"model": "mimo-v2.6-flash", "thinking": "disabled", "output_cap": 8192, "reasoning_effort": None},
 }
+ENGINEERING_REASONING_PROFILE = "thinking-enabled-engineering-pro-16384-v1"
+ENGINEERING_REASONING_PROFILE_SETTINGS = {
+    "deepseek": {"model": "deepseek-v4-pro", "thinking": "enabled", "output_cap": 16384, "reasoning_effort": "high"},
+    "mimo": {"model": "mimo-v2.6-pro", "thinking": "enabled", "output_cap": 16384, "reasoning_effort": None},
+}
+ENGINEERING_REASONING_MAX_REQUESTS = 24
+ENGINEERING_REASONING_MAX_SECONDS = 600
 CONNECT_RETRY_POLICY = "confirmed-pre-http-connect-once-v1"
 CONNECT_RETRY_EXCEPTIONS = frozenset({"TimeoutError", "gaierror", "ConnectionRefusedError", "ConnectionResetError"})
 PUBLIC_LANGUAGE_FEEDBACK_POLICY = "public-finite-language-reminder-v1"
@@ -84,16 +91,19 @@ def profile_configuration(profile_id):
     Rates are per million tokens; MiMo currencies are alternatives, never
     summed or converted. No ledger or transport selection happens here.
     """
-    if type(profile_id) is not str or profile_id not in {THINKING_PROFILE, FLASH_THINKING_PROFILE, FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE}:
+    if type(profile_id) is not str or profile_id not in {THINKING_PROFILE, FLASH_THINKING_PROFILE, FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE, ENGINEERING_REASONING_PROFILE}:
         raise ValueError("unknown explicit provider profile")
     flash = profile_id in {FLASH_THINKING_PROFILE, FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE}
     deepseek_pro_disabled = profile_id == DEEPSEEK_PRO_FLASH_DISABLED_PROFILE
-    return {"profile_id": profile_id,
-        "providers": copy.deepcopy(DEEPSEEK_PRO_FLASH_DISABLED_PROFILE_SETTINGS if deepseek_pro_disabled else
+    engineering_reasoning = profile_id == ENGINEERING_REASONING_PROFILE
+    deepseek_pro = deepseek_pro_disabled or engineering_reasoning
+    configuration = {"profile_id": profile_id,
+        "providers": copy.deepcopy(ENGINEERING_REASONING_PROFILE_SETTINGS if engineering_reasoning else
+            DEEPSEEK_PRO_FLASH_DISABLED_PROFILE_SETTINGS if deepseek_pro_disabled else
             FLASH_DISABLED_PROFILE_SETTINGS if profile_id == FLASH_DISABLED_PROFILE else
             FLASH_THINKING_PROFILE_SETTINGS if flash else THINKING_PROFILE_SETTINGS),
         "prices": {"deepseek": {"USD": ({"input_hit": ".044", "input_miss": "1.32", "output": "3.96"}
-                if deepseek_pro_disabled else {"input_hit": ".006", "input_miss": ".30", "output": "1.20"})},
+                if deepseek_pro else {"input_hit": ".006", "input_miss": ".30", "output": "1.20"})},
             "mimo": ({"CNY": {"input_hit": ".02", "input_miss": "1", "output": "2"},
                        "USD": {"input_hit": ".0028", "input_miss": ".14", "output": ".28"}} if flash else
                       {"CNY": {"input_hit": ".025", "input_miss": "3", "output": "6"},
@@ -102,10 +112,16 @@ def profile_configuration(profile_id):
             "mimo": "https://mimo.mi.com/docs/price",
             **({"mimo_flash": "https://mimo.mi.com/models/en-US/mimo-v2.6-flash"} if flash else {}),
             **({"deepseek_thinking_mode": "https://api-docs.deepseek.com/guides/thinking_mode/",
-                "deepseek_model_version": "DeepSeek-V4-Pro-0813"} if deepseek_pro_disabled else {}),
+                "deepseek_model_version": "DeepSeek-V4-Pro-0813"} if deepseek_pro else {}),
             "basis": ("DeepSeek-V4-Pro-0813 peak-rate estimate (off-peak rates are half; no time-based rate selection here); MiMo reviewed realtime rates per million tokens. Estimates, not invoices or provider billing caps. MiMo currency alternatives are not summed."
-                if deepseek_pro_disabled else
+                if deepseek_pro else
                 "DeepSeek peak-rate estimate (off-peak rates are half; no time-based rate selection here); MiMo reviewed realtime rates per million tokens. Estimates, not invoices or provider billing caps. MiMo currency alternatives are not summed.")}}
+    if engineering_reasoning:
+        configuration["admission_limits"] = {"max_requests": ENGINEERING_REASONING_MAX_REQUESTS,
+            "timeout_seconds": ENGINEERING_REASONING_MAX_SECONDS, "max_tools": MAX_TOOLS}
+        configuration["price_evidence"]["mimo_thinking_mode"] = "https://mimo.mi.com/docs/en-US/quick-start/usage-guide/other/deep-thinking"
+        configuration["price_evidence"]["mimo_pro"] = "https://mimo.mi.com/models/en-US/mimo-v2.6-pro"
+    return configuration
 
 
 class ActorFence(RuntimeError):
@@ -971,8 +987,16 @@ def _phase_cut_evidence(policy, phase, metadata, broker, native_trace, calls,
                         artifacts, received, outcome_sha, response_sha, request_count):
     """Read known durable raw once; no broker operation or project execution."""
     import stat
+    request_limit = 12
+    if metadata.get("profile_id") == ENGINEERING_REASONING_PROFILE:
+        configuration = profile_configuration(ENGINEERING_REASONING_PROFILE)
+        if (metadata.get("profile_configuration_sha256") != sha(canonical(configuration))
+                or metadata.get("broker_profile_id") != ENGINEERING_PROFILE
+                or metadata.get("execution_backend") != ENGINEERING_BACKEND):
+            raise ValueError("phase boundary reasoning profile is not bound")
+        request_limit = configuration["admission_limits"]["max_requests"]
     if (PHASE_STOP_POLICIES.get(policy) != phase or type(request_count) is not int
-            or not 1 <= request_count <= 12 or metadata["request_index"] != request_count
+            or not 1 <= request_count <= request_limit or metadata["request_index"] != request_count
             or type(calls) is not list or not calls
             or any(call.get("function", {}).get("name") == FINISH_TOOL for call in calls)
             or len(native_trace) != len(broker.events)):
@@ -1153,21 +1177,29 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
     its strict native arguments reach the unchanged artifact quality grader.
     requests counts bounded transport slots; per-request receipts separately
     record connection attempts and HTTP non-dispatch/uncertainty. Only the
-    explicit disabled Flash or Pro/Flash profile may enable one proven connect-only retry,
+    explicit disabled Flash, Pro/Flash or engineering reasoning profile may enable one proven connect-only retry,
     acknowledged by the outer ledger, within the original slot/wall budgets.
     broker_profile_id=stdlib-python-project-v1 selects a distinct engineering
-    identity, fixed Pro/Flash model profile, explicit project execution backend
+    identity, explicit Pro/Flash or Pro reasoning profile, project execution backend
     and mandatory durable-budget callback contract. It permits one argument-
     schema correction after a durably recorded whole-batch non-execution;
     scope/envelope refusals, unknown writes/execution or missing receipts stop.
     The default and finite-VM profiles do not use that correction policy.
+    Only the opt-in engineering reasoning profile admits up to 24 request slots
+    and 600 work seconds. Callers must choose those limits explicitly; default
+    arguments and every earlier profile remain bounded by 12 slots/180 seconds.
     """
     if provider not in ENDPOINTS or not isinstance(model, str) or not model.strip():
         raise ValueError("allowlisted provider and explicit model are required")
-    if type(max_requests) is not int or not 1 <= max_requests <= 12:
-        raise ValueError("max_requests must be in [1,12]")
-    if type(timeout_seconds) not in (int, float) or not 0 < timeout_seconds <= 180:
-        raise ValueError("timeout_seconds must be in (0,180]")
+    engineering_reasoning = profile_id == ENGINEERING_REASONING_PROFILE
+    if engineering_reasoning and (broker_profile_id != ENGINEERING_PROFILE or execution_backend != ENGINEERING_BACKEND):
+        raise ValueError("engineering reasoning requires the explicit project profile/backend")
+    request_limit = ENGINEERING_REASONING_MAX_REQUESTS if engineering_reasoning else 12
+    seconds_limit = ENGINEERING_REASONING_MAX_SECONDS if engineering_reasoning else 180
+    if type(max_requests) is not int or not 1 <= max_requests <= request_limit:
+        raise ValueError("max_requests must be in [1,%d]" % request_limit)
+    if type(timeout_seconds) not in (int, float) or not 0 < timeout_seconds <= seconds_limit:
+        raise ValueError("timeout_seconds must be in (0,%d]" % seconds_limit)
     registered_timing = (_registered_actor_timing(actor_timing, timeout_seconds, time.perf_counter())
                          if actor_timing is not None else None)
     if registered_timing is not None and (broker_profile_id != ENGINEERING_PROFILE or settlement_policy != SETTLEMENT_POLICY):
@@ -1187,10 +1219,10 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
     if broker_profile_id is not None:
         if (type(broker_profile_id) is not str or broker_profile_id != ENGINEERING_PROFILE
                 or execution_backend != ENGINEERING_BACKEND
-                or profile_id != DEEPSEEK_PRO_FLASH_DISABLED_PROFILE
+                or profile_id not in {DEEPSEEK_PRO_FLASH_DISABLED_PROFILE, ENGINEERING_REASONING_PROFILE}
                 or not callable(before_request) or not callable(after_request)
                 or tool_feedback_policy is not None):
-            raise ValueError("engineering requires its fixed profile/backend, durable callbacks and no VM language feedback")
+            raise ValueError("engineering requires an explicit supported profile/backend, durable callbacks and no VM language feedback")
         engineering = importlib.import_module("evolution.engineering_broker")
         if engineering.PROFILE_ID != ENGINEERING_PROFILE or engineering.BACKEND_ID != ENGINEERING_BACKEND:
             raise ValueError("engineering module identity mismatch")
@@ -1204,9 +1236,9 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
             or execution_backend != "docker-cpython-finite-v1"):
         raise ValueError("public language feedback requires its explicit policy and finite backend")
     if connect_retry_policy is not None and (type(connect_retry_policy) is not str or connect_retry_policy != CONNECT_RETRY_POLICY
-            or profile_id not in (FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE)
+            or profile_id not in (FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE, ENGINEERING_REASONING_PROFILE)
             or not callable(before_request) or not callable(after_request)):
-        raise ValueError("connect retry requires explicit disabled profile and durable budget callbacks")
+        raise ValueError("connect retry requires an explicit supported profile and durable budget callbacks")
     if execution_backend is not None and engineering is None:
         from evolution.isolated_python import EXECUTION_BACKEND
         if type(execution_backend) is not str or execution_backend != EXECUTION_BACKEND or profile_id not in {FLASH_THINKING_PROFILE, FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE}:
@@ -1263,7 +1295,7 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                  "output_cap": output_cap, "timeout_seconds": timeout_seconds, "application_execution": False}
         if settings is not None:
             entry.update(profile_id=profile_id, reasoning_effort_requested=settings["reasoning_effort"])
-        if profile_id in {FLASH_THINKING_PROFILE, FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE}:
+        if profile_id in {FLASH_THINKING_PROFILE, FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE, ENGINEERING_REASONING_PROFILE}:
             entry.update(profile_configuration_sha256=sha(canonical(configuration)),
                          deadline_telemetry_schema=DEADLINE_TELEMETRY_SCHEMA)
         if execution_backend is not None:
@@ -1285,7 +1317,7 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                 settlement_scope="Only account the same in-flight HTTPS attempt; no late tools, report, success or new dispatch. Inclusive wall includes settlement.")
         if tool_feedback_policy is not None:
             entry["tool_feedback_policy"] = tool_feedback_policy
-        if profile_id in {FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE}:
+        if profile_id in {FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE, ENGINEERING_REASONING_PROFILE}:
             entry["connect_retry_policy"] = connect_retry_policy
         actor_pending = artifacts / "actor.pending.json"
         backend_options = ({"execution_backend": execution_backend, "execution_artifacts": artifacts / "execution"}
@@ -1352,13 +1384,13 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                     work_deadline_monotonic=deadline, settlement_deadline_monotonic=settlement_deadline)
             if settings is not None:
                 metadata.update(profile_id=profile_id, thinking=thinking, reasoning_effort_requested=settings["reasoning_effort"])
-            if profile_id in {FLASH_THINKING_PROFILE, FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE}:
+            if profile_id in {FLASH_THINKING_PROFILE, FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE, ENGINEERING_REASONING_PROFILE}:
                 metadata["profile_configuration_sha256"] = entry["profile_configuration_sha256"]
             if tool_feedback_policy is not None:
                 metadata["tool_feedback_policy"] = tool_feedback_policy
             if execution_backend is not None:
                 metadata["execution_backend"] = execution_backend
-            if profile_id in {FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE}:
+            if profile_id in {FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE, ENGINEERING_REASONING_PROFILE}:
                 metadata.update(connect_retry_policy=connect_retry_policy, retry_of_request_id=next_retry_parent)
                 next_retry_parent = None
             if controlled_local_stop_guard is not None:
@@ -1449,7 +1481,7 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                     if managed["response"] is None:
                         raise TransportFailure(managed["failure"] or _transport("unobserved"))
                     code, headers, body = managed["response"]
-                elif profile_id in {FLASH_THINKING_PROFILE, FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE}:
+                elif profile_id in {FLASH_THINKING_PROFILE, FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE, ENGINEERING_REASONING_PROFILE}:
                     sampled = time.perf_counter()
                     passed_timeout = deadline - sampled
                     deadline_telemetry = {"schema_version": DEADLINE_TELEMETRY_SCHEMA,

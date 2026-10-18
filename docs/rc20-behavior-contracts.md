@@ -227,6 +227,14 @@ primitive 返回状态还必须与实际收据原始字节一致，不能单凭�
 
 ## 显式标准库 Python 工程配置
 
+工程 API 可显式选择 `thinking-enabled-engineering-pro-16384-v1`：DeepSeek
+`deepseek-v4-pro` 开启 thinking/high，MiMo `mimo-v2.6-pro` 开启 thinking；
+每次输出上限 16,384 token，调用方可注册至多 24 请求、600 秒工作时间和 32 工具。
+默认参数及此前配置仍为 12 请求、180 秒；该配置只准入显式工程 backend 和持久预算回调。
+历史 reasoning 字段原样传回，工具选择保持 auto，不新增未知请求重试。
+配置、费率估计和预算绑定进新收据；旧轮身份、结果和未知费用不重算。提高上限只解决执行
+可行性，不能作为质量或成本收益证据；各实验条件须使用同一已注册配置。
+
 `stdlib-python-project-v1` 使用独立身份 `official-chat-api-registered-project-v1` 和
 `docker-cpython-project-v1`，复用原 API 循环及受控文件操作。只接受固定 Pro/Flash
 模型配置、持久预算回调和注册任务；默认及有限 VM 配置保持原义，旧结果不重评。
@@ -272,7 +280,8 @@ primitive 返回状态还必须与实际收据原始字节一致，不能单凭�
 该路径不能清除先前未知、补写意图或把中断算成成功。
 
 API 可另行显式选择 `settlement_policy="work-deadline-accounting-only-settlement-600s-v1"`，
-使用身份 `official-chat-api-registered-project-settlement-v1`。工作预算仍至多 180 秒；
+使用身份 `official-chat-api-registered-project-settlement-v1`。此前配置工作预算至多 180 秒，
+上述显式工程推理配置至多 600 秒；
 截止后只观察同一在途请求，绝对观察截止为原工作截止加 600 秒，不新增请求、工具或成功报告。
 完整迟到响应可结算一次用量，但任务为 `work-deadline-settled-unfinished`，成功标记为 false，
 actor pending 保留。worker 只发布有界内存观测，主线程负责原始收据和 accounting；

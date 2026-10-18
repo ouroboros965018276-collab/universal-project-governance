@@ -158,6 +158,139 @@ class EngineeringCandidateTests(_ProviderFixture, unittest.TestCase):
         request = json.loads((self.artifacts/'requests/01.pending.json').read_text()) if (self.artifacts/'requests/01.pending.json').exists() else json.loads((self.artifacts/'requests/01.receipt.json').read_text())
         self.assertEqual(request['reservation_receipt_sha256'], 'c'*64)
 
+    def test_reasoning_profile_configuration_is_explicit_independent_and_legacy_configs_unchanged(self):
+        original = (lab.THINKING_PROFILE, lab.FLASH_THINKING_PROFILE,
+            lab.FLASH_DISABLED_PROFILE, lab.DEEPSEEK_PRO_FLASH_DISABLED_PROFILE)
+        # Exact earlier identities are already pinned in provider tests; these
+        # direct copies additionally ensure no shared nested settings/rates.
+        before = {name: canonical(lab.profile_configuration(name)) for name in original}
+        config = lab.profile_configuration(lab.ENGINEERING_REASONING_PROFILE)
+        self.assertEqual(config['providers'], {
+            'deepseek': {'model': 'deepseek-v4-pro', 'thinking': 'enabled', 'output_cap': 16384, 'reasoning_effort': 'high'},
+            'mimo': {'model': 'mimo-v2.6-pro', 'thinking': 'enabled', 'output_cap': 16384, 'reasoning_effort': None}})
+        self.assertEqual(config['admission_limits'], {'max_requests': 24, 'timeout_seconds': 600, 'max_tools': 32})
+        self.assertEqual(config['prices']['deepseek'], lab.profile_configuration(lab.DEEPSEEK_PRO_FLASH_DISABLED_PROFILE)['prices']['deepseek'])
+        self.assertEqual(config['prices']['mimo'], lab.profile_configuration(lab.THINKING_PROFILE)['prices']['mimo'])
+        config['providers']['mimo']['model'] = 'mutated'
+        config['prices']['deepseek']['USD']['output'] = '0'
+        config['admission_limits']['max_requests'] = 999
+        fresh = lab.profile_configuration(lab.ENGINEERING_REASONING_PROFILE)
+        self.assertEqual(fresh['providers']['mimo']['model'], 'mimo-v2.6-pro')
+        self.assertEqual(fresh['admission_limits']['max_requests'], 24)
+        self.assertEqual({name: canonical(lab.profile_configuration(name)) for name in original}, before)
+
+    def test_reasoning_profile_uses_native_tools_opaque_history_and_hash_bound_budget(self):
+        for provider in ('deepseek', 'mimo'):
+            with self.subTest(provider=provider):
+                (self.workspace/'target.txt').write_bytes(b'old\n')
+                self.artifacts = self.base/('reasoning-' + provider)
+                self.loaded, self.before, self.after = [], [], []
+                self.executions, self.brokers = [], []
+                identity = sha(canonical(lab.profile_configuration(lab.ENGINEERING_REASONING_PROFILE)))
+                steps = self.ready()+[self.finish(4)]
+                def post(actual, payload, key, timeout):
+                    self.assertEqual(actual, provider)
+                    self.assertEqual(payload['model'], 'deepseek-v4-pro' if provider == 'deepseek' else 'mimo-v2.6-pro')
+                    self.assertEqual(payload['thinking'], {'type': 'enabled'})
+                    self.assertEqual(payload['max_tokens' if provider == 'deepseek' else 'max_completion_tokens'], 16384)
+                    self.assertEqual(payload['tool_choice'], 'auto')
+                    self.assertNotIn('temperature', payload)
+                    self.assertNotIn('top_p', payload)
+                    self.assertNotIn('response_format', payload)
+                    if provider == 'deepseek':
+                        self.assertEqual(payload['reasoning_effort'], 'high')
+                    else:
+                        self.assertNotIn('reasoning_effort', payload)
+                    for message in payload['messages']:
+                        if message['role'] == 'assistant':
+                            self.assertEqual(message['reasoning_content'], 'mock non-private test field')
+                    pending = json.loads((self.artifacts/'requests'/('%02d.pending.json' % len(self.before))).read_bytes())
+                    self.assertEqual(pending['profile_configuration_sha256'], identity)
+                    step = steps[len(self.before)-1]
+                    return 200, {}, canonical(step(payload) if callable(step) else step)
+                with patch.object(lab, '_bounded_post', side_effect=post):
+                    result = self.new_actor(provider=provider,
+                        model='deepseek-v4-pro' if provider == 'deepseek' else 'mimo-v2.6-pro',
+                        profile_id=lab.ENGINEERING_REASONING_PROFILE, thinking='enabled',
+                        max_requests=24, timeout_seconds=600)
+                self.assertTrue(result['quality']['hard_pass'], result)
+                self.assertEqual(result['max_requests'], 24)
+                self.assertEqual(result['timeout_seconds'], 600)
+                self.assertEqual(result['max_tools'], 32)
+                self.assertEqual(result['requests'], 4)
+                self.assertEqual(result['schema_rejections'], 0)
+                for item in [result] + self.before + self.after:
+                    self.assertEqual(item['profile_configuration_sha256'], identity)
+                    self.assertEqual(item['profile_id'], lab.ENGINEERING_REASONING_PROFILE)
+                    self.assertEqual(item['thinking'], 'enabled')
+                    self.assertEqual(item['output_cap'], 16384)
+                    self.assertIsNone(item['connect_retry_policy'])
+                for item in self.after:
+                    self.assertEqual(item['deadline_telemetry']['actor_timeout_seconds'], 600)
+
+    def test_reasoning_profile_can_spend_the_thirteenth_slot_without_changing_tool_bound(self):
+        steps = [self.read(index) for index in range(1, 11)] + [self.patch_from_read(11, 'fixed\n'),
+            self.validate_and_status(12), self.finish(13)]
+        result, count = self.run_steps(steps, profile_id=lab.ENGINEERING_REASONING_PROFILE,
+            thinking='enabled', max_requests=24, timeout_seconds=600)
+        self.assertEqual(count, 13)
+        self.assertEqual(result['requests'], 13)
+        self.assertEqual(result['max_tools'], 32)
+        self.assertTrue(result['quality']['hard_pass'])
+
+    def test_reasoning_profile_does_not_raise_default_limits_or_admit_other_backends(self):
+        valid = {'profile_id': lab.ENGINEERING_REASONING_PROFILE, 'thinking': 'enabled'}
+        cases = [dict(valid, max_requests=25), dict(valid, max_requests=True),
+            dict(valid, timeout_seconds=601), dict(valid, timeout_seconds=float('nan')),
+            dict(valid, timeout_seconds=float('inf')), dict(valid, thinking='disabled'),
+            dict(valid, model='deepseek-flash'), dict(valid, broker_profile_id=None),
+            dict(valid, execution_backend='docker-cpython-finite-v1'),
+            {'max_requests': 13}, {'timeout_seconds': 181},
+            dict(valid, tool_feedback_policy=lab.PUBLIC_LANGUAGE_FEEDBACK_POLICY)]
+        for kwargs in cases:
+            with self.subTest(kwargs=kwargs), patch.object(lab, '_post') as post, self.assertRaises(ValueError):
+                self.new_actor(**kwargs)
+            post.assert_not_called()
+        self.assertEqual((self.loaded, self.before, self.after), ([], [], []))
+        self.assertFalse(self.artifacts.exists())
+        result, count = self.run_steps(self.ready()+[self.finish(4)], **valid)
+        self.assertEqual(result['max_requests'], 12)
+        self.assertEqual(result['timeout_seconds'], 180)
+        self.assertEqual(count, 4)
+
+    def test_reasoning_connect_retry_requires_durable_ack_and_uses_same_payload_within_budget(self):
+        payloads = []
+        steps = self.ready()+[self.finish(5)]
+        def acknowledge(metadata):
+            self.after.append(metadata)
+            return {'policy': lab.CONNECT_RETRY_POLICY, 'connect_retry_authorized': True,
+                'prior_request_id': metadata['request_id'], 'prior_request_index': metadata['request_index'],
+                'request_payload_sha256': metadata['request_payload_sha256'],
+                'input_task_sha256': metadata['input_task_sha256'],
+                'prior_receipt_sha256': metadata['receipt_sha256']}
+        self.account = acknowledge
+        def post(provider, payload, key, timeout):
+            payloads.append(canonical(payload))
+            index = len(self.before)
+            if index == 1:
+                raise lab.TransportFailure({'phase': 'connect', 'exception_class': 'TimeoutError',
+                    'connection_attempted': True, 'http_dispatch': 'not_started'})
+            step = steps[index-2]
+            return 200, {}, canonical(step(payload) if callable(step) else step)
+        with patch.object(lab, '_bounded_post', side_effect=post):
+            result = self.new_actor(profile_id=lab.ENGINEERING_REASONING_PROFILE, thinking='enabled',
+                max_requests=24, timeout_seconds=600, connect_retry_policy=lab.CONNECT_RETRY_POLICY)
+        self.assertTrue(result['quality']['hard_pass'])
+        self.assertEqual(result['requests'], 5)
+        self.assertEqual(payloads[0], payloads[1])
+        self.assertNotEqual(self.before[0]['request_id'], self.before[1]['request_id'])
+        self.assertEqual(self.before[1]['retry_of_request_id'], self.before[0]['request_id'])
+        self.assertTrue(self.after[0]['not_invoked'])
+        self.assertFalse(self.after[0]['unknown'])
+        self.assertEqual(result['usage']['total_tokens'], 60)
+        self.assertEqual(result['max_requests'], 24)
+        self.assertEqual(result['timeout_seconds'], 600)
+
     def test_schema_rejection_prevalidates_entire_batch_then_bounded_correction(self):
         invalid = self.patch_from_read(2, 'fixed\n')
         def batch(payload):
