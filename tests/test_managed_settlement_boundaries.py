@@ -125,12 +125,14 @@ class SettlementBoundaryCases(unittest.TestCase):
 class ActorPersistenceBoundaryCases(prior.SettlementActorTests):
     def test_response_parse_crossing_work_cutoff_never_consumes_message(self):
         fake=prior.FakeHTTPS(API.canonical(self.finish(1)),[0.0])
-        original=API.normalize
-        def normalize(mode,text):
-            result=original(mode,text)
-            if 'mock-response-1'in text:fake.clock[0]=181.0
+        original=API._native_response_json
+        def parse_response(body):
+            result=original(body)
+            if b'mock-response-1'in body:fake.clock[0]=181.0
             return result
-        with patch.object(API,'normalize',side_effect=normalize):result=self.run_https(fake)
+        with patch.object(API,'_native_response_json',side_effect=parse_response) as parse:
+            result=self.run_https(fake)
+        self.assertEqual(parse.call_count,1)
         self.assertEqual(result['status'],'work-deadline-settled-unfinished')
         self.assertFalse(result['quality']['task_success'])
         self.assertIsNone(result['final_report'])
