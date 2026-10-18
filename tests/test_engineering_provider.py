@@ -243,7 +243,7 @@ class EngineeringCandidateTests(_ProviderFixture, unittest.TestCase):
 
     def test_reasoning_v2_replays_large_native_history_without_changing_v1_request_cap(self):
         for provider in ('deepseek', 'mimo'):
-            for profile in lab.ENGINEERING_REASONING_PROFILES:
+            for profile in (lab.ENGINEERING_REASONING_PROFILE, lab.ENGINEERING_REASONING_INPUT_PROFILE):
                 with self.subTest(provider=provider, profile=profile):
                     (self.workspace/'target.txt').write_bytes(b'old\n')
                     self.artifacts = self.base/(provider + '-' + profile)

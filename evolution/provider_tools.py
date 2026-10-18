@@ -1,4 +1,4 @@
-"""Official non-streaming Chat API actors over the existing bounded broker.
+"""Official Chat API actors over the existing bounded broker.
 
 No credential environment/configuration/CLI interface exists. Callers inject a
 key loader and per-request budget callbacks. This file never imports a vault.
@@ -31,6 +31,7 @@ sys.path.insert(0, str(REPO))
 from evolution.tool_broker import RepoBroker, TOOLS, canonical, normalize, sha, tool_definitions, validate_task
 from evolution.tool_broker import SEMANTIC_DIAGNOSTIC_CODES, SEMANTIC_DIAGNOSTIC_LIMIT
 from evolution.tool_codex import FINAL_SCHEMA
+from evolution import chat_sse
 
 ADAPTER = "official-chat-api-bounded-repo-broker-v5"
 ENGINEERING_PROFILE = "stdlib-python-project-v1"
@@ -71,7 +72,9 @@ DEEPSEEK_PRO_FLASH_DISABLED_PROFILE_SETTINGS = {
 }
 ENGINEERING_REASONING_PROFILE = "thinking-enabled-engineering-pro-16384-v1"
 ENGINEERING_REASONING_INPUT_PROFILE = "thinking-enabled-engineering-pro-16384-v2"
-ENGINEERING_REASONING_PROFILES = (ENGINEERING_REASONING_PROFILE, ENGINEERING_REASONING_INPUT_PROFILE)
+ENGINEERING_REASONING_SSE_PROFILE = "thinking-enabled-engineering-pro-16384-v3"
+ENGINEERING_REASONING_PROFILES = (ENGINEERING_REASONING_PROFILE, ENGINEERING_REASONING_INPUT_PROFILE,
+                                ENGINEERING_REASONING_SSE_PROFILE)
 ENGINEERING_REASONING_INPUT_MAX_BYTES = 524288
 ENGINEERING_REASONING_PROFILE_SETTINGS = {
     "deepseek": {"model": "deepseek-v4-pro", "thinking": "enabled", "output_cap": 16384, "reasoning_effort": "high"},
@@ -127,10 +130,16 @@ def profile_configuration(profile_id):
     if engineering_reasoning:
         configuration["admission_limits"] = {"max_requests": ENGINEERING_REASONING_MAX_REQUESTS,
             "timeout_seconds": ENGINEERING_REASONING_MAX_SECONDS, "max_tools": MAX_TOOLS}
-        if profile_id == ENGINEERING_REASONING_INPUT_PROFILE:
+        if profile_id in {ENGINEERING_REASONING_INPUT_PROFILE, ENGINEERING_REASONING_SSE_PROFILE}:
             configuration["admission_limits"]["max_input_bytes"] = ENGINEERING_REASONING_INPUT_MAX_BYTES
         configuration["price_evidence"]["mimo_thinking_mode"] = "https://mimo.mi.com/docs/en-US/quick-start/usage-guide/other/deep-thinking"
         configuration["price_evidence"]["mimo_pro"] = "https://mimo.mi.com/models/en-US/mimo-v2.6-pro"
+    if profile_id == ENGINEERING_REASONING_SSE_PROFILE:
+        configuration["transport"] = {"transport_profile_id": chat_sse.TRANSPORT_PROFILE,
+            "providers": {"deepseek": {"stream": True, "stream_options": {"include_usage": True}},
+                          "mimo": {"stream": True}},
+            "max_raw_body_bytes": chat_sse.MAX_RAW_BYTES, "max_sse_event_bytes": chat_sse.MAX_EVENT_BYTES,
+            "max_sse_blocks": chat_sse.MAX_BLOCKS, "max_assembled_response_bytes": chat_sse.MAX_PROJECTION_BYTES}
     return configuration
 
 
@@ -254,10 +263,30 @@ def _write_new(path, value, secret=""):
     return sha(data)
 
 
+def _write_sse_raw(path, data, secret, projection):
+    """Original binary only: never silently redact evidence and call it raw."""
+    if type(data) is not bytes or len(data) > chat_sse.MAX_RAW_BYTES:
+        raise ValueError("invalid bounded SSE raw")
+    text = data.decode("utf-8", errors="replace")
+    if _redact(text, secret) != text or _redact(projection, secret) != projection:
+        raise ValueError("SSE raw requires secret redaction")
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("xb") as stream:
+        stream.write(data)
+        stream.flush()
+        os.fsync(stream.fileno())
+    return sha(data)
+
+
 def _post(provider, payload, key, timeout, *, _managed=None):
     """One direct HTTPS request. No proxies from env, redirects or retries."""
     host, path = ENDPOINTS[provider]
     headers = {"Content-Type": "application/json", "Accept": "application/json"}
+    streaming = payload.get("stream") is True
+    if streaming:
+        headers["Accept"] = "text/event-stream"
+    response_limit = chat_sse.MAX_RAW_BYTES if streaming else MAX_RESPONSE_BYTES
     headers["Authorization" if provider == "deepseek" else "api-key"] = "Bearer " + key if provider == "deepseek" else key
     deadline, connection, failure, received = time.perf_counter() + timeout, None, None, None
     phase, connection_attempted, dispatch = "payload-serialize", False, "not_started"
@@ -292,13 +321,20 @@ def _post(provider, payload, key, timeout, *, _managed=None):
         response_headers = dict(header_items)
         phase = "response-body"
         if _managed is None:
-            body = response.read(MAX_RESPONSE_BYTES + 1)
+            body = response.read(response_limit + 1)
         else:
             _managed.observe(phase, connection_attempted, dispatch)
             chunks, count = [], 0
-            while count <= MAX_RESPONSE_BYTES:
-                maximum = min(65536, MAX_RESPONSE_BYTES + 1 - count)
-                chunk = response.read1(maximum)
+            while count <= response_limit:
+                maximum = min(65536, response_limit + 1 - count)
+                try:
+                    chunk = response.read1(maximum)
+                except http.client.IncompleteRead as error:
+                    if streaming and type(error.partial) is bytes and error.partial:
+                        if len(error.partial) > maximum:
+                            raise ResponseUnknown("invalid-bounded-response-chunk") from None
+                        _managed.capture_chunk(error.partial)
+                    raise
                 if type(chunk) is not bytes or len(chunk) > maximum:
                     raise ResponseUnknown("invalid-bounded-response-chunk")
                 if not chunk:
@@ -309,7 +345,7 @@ def _post(provider, payload, key, timeout, *, _managed=None):
                 chunks.append(chunk)
                 count += len(chunk)
             body = b"".join(chunks)
-        if len(body) > MAX_RESPONSE_BYTES:
+        if len(body) > response_limit:
             raise ResponseUnknown("response-size-limit")
         received = status, response_headers, body
         if _managed is not None:
@@ -418,7 +454,11 @@ class _ManagedRequest:
             observed = time.perf_counter()
             if observed > self.settlement_deadline:
                 raise TimeoutError("body-after-settlement-deadline")
-            if len(self.state["body"]) + len(chunk) > MAX_RESPONSE_BYTES + 1:
+            limit = chat_sse.MAX_RAW_BYTES if self.payload.get("stream") is True else MAX_RESPONSE_BYTES + 1
+            if len(self.state["body"]) + len(chunk) > limit:
+                # Retain exactly the permitted prefix, never cap+1 binary.
+                if self.payload.get("stream") is True:
+                    self.state["body"].extend(chunk[:max(0, limit - len(self.state["body"]))])
                 raise ResponseUnknown("response-size-limit")
             self.state["body"].extend(chunk)
             self.state["body_last_observed_monotonic"] = observed
@@ -502,6 +542,12 @@ def _managed_post(provider, payload, key, work_deadline, settlement_deadline, ca
                          settlement_deadline) - now, state["revision"])
     finally:
         job.cancel_before_dispatch()  # Also applies when main persistence fails.
+    if payload.get("stream") is True:
+        # done is a published worker state, not proof of thread exit. Give the
+        # owned tail a bounded join inside the original observation window.
+        remaining = settlement_deadline - time.perf_counter()
+        if remaining > 0:
+            job.thread.join(min(1.0, remaining))
     state = job.snapshot()
     # Cover headers published between the last wait snapshot and the final fence.
     if state["headers"] is not None and not header_saved:
@@ -515,10 +561,15 @@ def _managed_post(provider, payload, key, work_deadline, settlement_deadline, ca
     body, response, failure = state["body"], state["response"], state["failure"]
     if state["headers"] is not None or body:
         try:
-            capture("body", {"body_sha256": sha(body), "body_bytes": len(body),
-                "body_utf8": body.decode("utf-8", errors="replace"), "body_complete": response is not None,
-                "last_observed_monotonic": state["body_last_observed_monotonic"],
-                "response_completed_monotonic": state["response_completed_monotonic"]})
+            if payload.get("stream") is True:
+                capture("sse-body", {"raw_body": body, "body_complete": response is not None,
+                    "last_observed_monotonic": state["body_last_observed_monotonic"],
+                    "response_completed_monotonic": state["response_completed_monotonic"]})
+            else:
+                capture("body", {"body_sha256": sha(body), "body_bytes": len(body),
+                    "body_utf8": body.decode("utf-8", errors="replace"), "body_complete": response is not None,
+                    "last_observed_monotonic": state["body_last_observed_monotonic"],
+                    "response_completed_monotonic": state["response_completed_monotonic"]})
         except (OSError, ValueError, UnicodeError) as error:
             capture_failure = capture_failure or _transport("response-persist", error, True, "response_received")
     if not state["done"]:
@@ -526,8 +577,11 @@ def _managed_post(provider, payload, key, work_deadline, settlement_deadline, ca
             if not state["dispatch_started"] else
             _transport("connection-close" if response is not None else "deadline-wait", None,
                 state["connection_attempted"], "response_received" if state["headers"] is not None else "may_have_started"))
+    if payload.get("stream") is True and (not state["done"] or job.thread.is_alive() or not state["dispatch_closed"]):
+        failure = failure or _transport("connection-close", None, state["connection_attempted"],
+            "response_received" if state["headers"] is not None else "may_have_started")
     observed = time.perf_counter()
-    return {"response": response, "failure": capture_failure or failure, "settlement": {
+    result = {"response": response, "failure": capture_failure or failure, "settlement": {
         "policy": SETTLEMENT_POLICY, "max_seconds": SETTLEMENT_MAX_SECONDS,
         "accounting_only": observed >= work_deadline,
         "work_closed": observed >= work_deadline,
@@ -541,6 +595,9 @@ def _managed_post(provider, payload, key, work_deadline, settlement_deadline, ca
         "response_completed_monotonic": state["response_completed_monotonic"],
         "capture_failure": capture_failure, "transport_failure": failure,
         "settlement_limit_reached": observed >= settlement_deadline}}
+    if payload.get("stream") is True:
+        result.update(raw_body=body, raw_headers=state["headers"])
+    return result
 
 
 def _schema(value, schema, depth=0):
@@ -1041,8 +1098,10 @@ def _phase_cut_evidence(policy, phase, metadata, broker, native_trace, calls,
         if (metadata.get("profile_configuration_sha256") != sha(canonical(configuration))
                 or metadata.get("broker_profile_id") != ENGINEERING_PROFILE
                 or metadata.get("execution_backend") != ENGINEERING_BACKEND
-                or (metadata["profile_id"] == ENGINEERING_REASONING_INPUT_PROFILE
-                    and metadata.get("max_input_bytes") != configuration["admission_limits"]["max_input_bytes"])):
+                or (metadata["profile_id"] in {ENGINEERING_REASONING_INPUT_PROFILE, ENGINEERING_REASONING_SSE_PROFILE}
+                    and metadata.get("max_input_bytes") != configuration["admission_limits"]["max_input_bytes"])
+                or (metadata["profile_id"] == ENGINEERING_REASONING_SSE_PROFILE
+                    and metadata.get("transport_profile_id") != chat_sse.TRANSPORT_PROFILE)):
             raise ValueError("phase boundary reasoning profile is not bound")
         request_limit = configuration["admission_limits"]["max_requests"]
     if (PHASE_STOP_POLICIES.get(policy) != phase or type(request_count) is not int
@@ -1094,6 +1153,16 @@ def _phase_cut_evidence(policy, phase, metadata, broker, native_trace, calls,
             or settlement.get("body_complete") is not True or settlement.get("capture_failure") is not None
             or settlement.get("transport_failure") is not None):
         raise ValueError("phase boundary transport tail is unknown or late")
+    if metadata.get("profile_id") == ENGINEERING_REASONING_SSE_PROFILE:
+        ref = "requests/%02d.transport-sse.bin" % request_count
+        original = owned(ref, chat_sse.MAX_RAW_BYTES)
+        projected = chat_sse.project(original, body_complete=True)
+        if (response.get("transport_profile_id") != chat_sse.TRANSPORT_PROFILE
+                or response.get("projection_schema") != chat_sse.PROJECTION_SCHEMA
+                or response.get("raw_body_ref") != ref or response.get("body_sha256") != sha(original)
+                or response.get("body_bytes") != len(original) or not projected["terminal_complete"]
+                or response.get("response") != projected["response"] or response.get("sse") != projected["sse"]):
+            raise ValueError("phase boundary SSE projection differs")
     snapshot = broker.snapshot()
     current = sha(canonical(snapshot))
     if any(name not in broker.task["writable_files"] and snapshot.get(name) != sha(text.encode("utf-8"))
@@ -1243,12 +1312,17 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
     an otherwise empty length-truncated thinking response. This consumes the
     next existing slot, preserves opaque history and never executes a tool or
     submits a report by itself; other missing native finishes still stop.
-    The v2 profile alone admits 524288 canonical request bytes; all earlier
+    The v2/v3 profiles admit 524288 canonical request bytes; all earlier
     profiles and file/tool/artifact reads retain their existing bounds.
+    V3 alone selects bounded SSE with original binary evidence and requires
+    managed settlement; it never enables a connection retry.
     """
     if provider not in ENDPOINTS or not isinstance(model, str) or not model.strip():
         raise ValueError("allowlisted provider and explicit model are required")
     engineering_reasoning = profile_id in ENGINEERING_REASONING_PROFILES
+    streaming = profile_id == ENGINEERING_REASONING_SSE_PROFILE
+    if streaming and (settlement_policy != SETTLEMENT_POLICY or connect_retry_policy is not None):
+        raise ValueError("SSE requires managed settlement and no connect retry")
     if engineering_reasoning and (broker_profile_id != ENGINEERING_PROFILE or execution_backend != ENGINEERING_BACKEND):
         raise ValueError("engineering reasoning requires the explicit project profile/backend")
     request_limit = ENGINEERING_REASONING_MAX_REQUESTS if engineering_reasoning else 12
@@ -1316,7 +1390,7 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
             raise ValueError("explicit thinking profile/provider/model/mode mismatch")
         output_cap = settings["output_cap"]
     max_input_bytes = (configuration["admission_limits"]["max_input_bytes"]
-                       if profile_id == ENGINEERING_REASONING_INPUT_PROFILE else MAX_INPUT_BYTES)
+                       if profile_id in {ENGINEERING_REASONING_INPUT_PROFILE, ENGINEERING_REASONING_SSE_PROFILE} else MAX_INPUT_BYTES)
     task = copy.deepcopy(engineering.validate_task(task) if engineering else validate_task(task))
     root, artifacts = Path(root).resolve(), Path(artifact_dir).resolve()
     if artifacts == root or root in artifacts.parents:
@@ -1361,8 +1435,10 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
         if profile_id in {FLASH_THINKING_PROFILE, FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE, *ENGINEERING_REASONING_PROFILES}:
             entry.update(profile_configuration_sha256=sha(canonical(configuration)),
                          deadline_telemetry_schema=DEADLINE_TELEMETRY_SCHEMA)
-        if profile_id == ENGINEERING_REASONING_INPUT_PROFILE:
+        if profile_id in {ENGINEERING_REASONING_INPUT_PROFILE, ENGINEERING_REASONING_SSE_PROFILE}:
             entry["max_input_bytes"] = max_input_bytes
+        if streaming:
+            entry["transport_profile_id"] = chat_sse.TRANSPORT_PROFILE
         if execution_backend is not None:
             entry.update(execution_backend=execution_backend, application_execution=True,
                 application_execution_scope="Only registered finite Python behavior probes after the unchanged VM gate; not whole-application tests, deployment or arbitrary commands. Document-only stages do not execute Python.")
@@ -1434,6 +1510,8 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
             payload = {"model": model, "messages": messages, "tools": tools, "tool_choice": "auto", "stream": False,
                        "thinking": {"type": thinking},
                        "max_tokens" if provider == "deepseek" else "max_completion_tokens": output_cap}
+            if streaming:
+                payload.update(configuration["transport"]["providers"][provider])
             if settings is not None and settings["reasoning_effort"] is not None:
                 payload["reasoning_effort"] = settings["reasoning_effort"]
             if response_json_mode:
@@ -1454,8 +1532,10 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                 metadata.update(profile_id=profile_id, thinking=thinking, reasoning_effort_requested=settings["reasoning_effort"])
             if profile_id in {FLASH_THINKING_PROFILE, FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE, *ENGINEERING_REASONING_PROFILES}:
                 metadata["profile_configuration_sha256"] = entry["profile_configuration_sha256"]
-            if profile_id == ENGINEERING_REASONING_INPUT_PROFILE:
+            if profile_id in {ENGINEERING_REASONING_INPUT_PROFILE, ENGINEERING_REASONING_SSE_PROFILE}:
                 metadata["max_input_bytes"] = max_input_bytes
+            if streaming:
+                metadata["transport_profile_id"] = chat_sse.TRANSPORT_PROFILE
             if tool_feedback_policy is not None:
                 metadata["tool_feedback_policy"] = tool_feedback_policy
             if execution_backend is not None:
@@ -1530,6 +1610,7 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
             request_started = time.perf_counter()
             request_count += 1
             response_sha, usage, raw, request_error, overrun = None, None, None, None, {}
+            sse_report, semantic_failure = None, False
             transport, not_invoked = _transport("unobserved"), False
             deadline_telemetry = None
             managed, capture_receipts = None, []
@@ -1538,6 +1619,14 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
             try:
                 if settlement_policy is not None:
                     def capture(kind, value):
+                        nonlocal sse_report
+                        if kind == "sse-body":
+                            value = dict(value)
+                            binary = value.pop("raw_body")
+                            sse_report = chat_sse.project(binary, body_complete=value["body_complete"])
+                            binary_ref = "requests/%02d.transport-sse.bin" % index
+                            binary_sha = _write_sse_raw(artifacts / binary_ref, binary, key, sse_report["response"])
+                            value.update(raw_body_ref=binary_ref, raw_body_sha256=binary_sha, raw_body_bytes=len(binary))
                         relative = "requests/%02d.transport-%s.json" % (index, kind)
                         capture_sha = _write_new(artifacts / relative, dict(metadata, capture_kind=kind, capture=value), key)
                         capture_receipts.append({"kind": kind, "receipt_ref": relative, "receipt_sha256": capture_sha})
@@ -1551,8 +1640,12 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                         actor_elapsed_after_transport_seconds=time.perf_counter()-started)
                     work_cutoff_reached = work_cutoff_reached or last_settlement["accounting_only"]
                     if managed["response"] is None:
-                        raise TransportFailure(managed["failure"] or _transport("unobserved"))
-                    code, headers, body = managed["response"]
+                        if not streaming or managed.get("raw_headers") is None:
+                            raise TransportFailure(managed["failure"] or _transport("unobserved"))
+                        code, rows = managed["raw_headers"]
+                        headers, body = dict(rows), managed["raw_body"]
+                    else:
+                        code, headers, body = managed["response"]
                 elif profile_id in {FLASH_THINKING_PROFILE, FLASH_DISABLED_PROFILE, DEEPSEEK_PRO_FLASH_DISABLED_PROFILE, *ENGINEERING_REASONING_PROFILES}:
                     sampled = time.perf_counter()
                     passed_timeout = deadline - sampled
@@ -1568,20 +1661,31 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                     code, headers, body = _bounded_post(provider, payload, key, deadline - time.perf_counter())
                 transport = _transport("response-decode", connection_attempted=True, http_dispatch="response_received")
                 decode_failure = None
-                try:
-                    raw = _native_response_json(body)
-                except (ValueError, UnicodeError) as error:
-                    decode_failure = _transport("response-decode", error, True, "response_received")
-                    raw = {"unparsed_response": body.decode("utf-8", errors="replace")}
+                if streaming:
+                    sse_report = sse_report or chat_sse.project(body, body_complete=last_settlement["body_complete"])
+                    raw = sse_report["response"]
+                    if (not sse_report["terminal_complete"] or not chat_sse.headers_valid(code, managed["raw_headers"][1])):
+                        decode_failure = _transport("response-decode", ResponseUnknown(), True, "response_received")
+                    semantic_failure = not sse_report["sse"]["message_valid"]
+                else:
+                    try:
+                        raw = _native_response_json(body)
+                    except (ValueError, UnicodeError) as error:
+                        decode_failure = _transport("response-decode", error, True, "response_received")
+                        raw = {"unparsed_response": body.decode("utf-8", errors="replace")}
                 transport["phase"] = "response-persist"
                 response_record = {"http_status": code, "body_sha256": sha(body), "body_bytes": len(body), "response": raw,
                     "request_id_header": next((value for name, value in headers.items() if name.casefold() in {"x-request-id", "request-id"}), None)}
                 if engineering:
                     response_record.update(adapter=adapter_identity, broker_profile_id=broker_profile_id,
                         execution_backend=execution_backend, request_id=request_id)
+                if streaming:
+                    response_record.update(transport_profile_id=chat_sse.TRANSPORT_PROFILE,
+                        projection_schema=chat_sse.PROJECTION_SCHEMA, raw_body_ref="requests/%02d.transport-sse.bin" % index,
+                        sse=sse_report["sse"])
                 # For the opt-in path, preserve already verified components even
                 # if the subsequent durable response write or close fails.
-                if settlement_policy is not None and decode_failure is None:
+                if settlement_policy is not None and (decode_failure is None or streaming):
                     usage = _usage(raw.get("usage"), profile_id=profile_id) if isinstance(raw, dict) else None
                     if usage is not None:
                         receipts.append(usage)
@@ -1599,6 +1703,10 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                 transport["phase"] = "response-envelope"
                 if managed is not None and managed["failure"] is not None:
                     raise TransportFailure(managed["failure"])
+                if streaming and (last_settlement.get("worker_done") is not True
+                        or last_settlement.get("worker_alive_at_return") is not False
+                        or last_settlement.get("attempt_dispatch_gate_closed") is not True):
+                    raise TransportFailure(_transport("connection-close", None, True, "response_received"))
                 if (code != 200 or not isinstance(raw, dict) or usage is None
                         or not isinstance(raw.get("id"), str) or not raw["id"]
                         or not isinstance(raw.get("model"), str) or not raw["model"]
@@ -1613,14 +1721,20 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                         or not isinstance(choice.get("finish_reason"), str)
                         or message.get("content") is not None and not isinstance(message["content"], str)
                         or message.get("tool_calls") is not None and not isinstance(message["tool_calls"], list)):
-                    raise ResponseUnknown("invalid-assistant-envelope")
+                    if streaming:
+                        semantic_failure = True
+                    else:
+                        raise ResponseUnknown("invalid-assistant-envelope")
                 if settings is not None:
                     reasoning = message.get("reasoning_content")
                     if (reasoning is not None and not isinstance(reasoning, str)
                             or _redact(reasoning, key) != reasoning):
                         # Never replay an edited reasoning value or expose a
                         # returned credential. Usage/response evidence remains.
-                        raise ResponseUnknown("unreplayable-reasoning-content")
+                        if streaming:
+                            semantic_failure = True
+                        else:
+                            raise ResponseUnknown("unreplayable-reasoning-content")
                 transport["phase"] = "complete"
             except BaseException as error:
                 request_error = _exception_class(error)
@@ -1677,6 +1791,10 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                 work_cutoff_reached = True
                 status = "work-deadline-settled-unfinished"
                 break  # Usage was accounted once; never consume this late message.
+            if semantic_failure:
+                failures.append("api-tool-rejected:invalid-assistant-envelope")
+                status = "tool-contract-failed"
+                break  # Terminal billing remains known; no model action admitted.
             reported_models.append(raw["model"])
             calls = message.get("tool_calls") or []
             last_calls = calls
