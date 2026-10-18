@@ -1019,7 +1019,22 @@
           },
           "reader_source_unchanged": true,
           "inputs_unchanged": true,
-          "wall_seconds": 2.8787557000177912
+          "wall_seconds": 2.8787557000177912,
+          "static_adapter_diagnosis": {
+            "reviewer": "rc20_revision_independent_review",
+            "kind": "CONFIRMED_STATIC_ORDER_COMPARISON_DEFECT_ACTUAL_FIRST_THROW_UNKNOWN",
+            "source": "eval-workspaces/rc20-neutral-three-owner-postprocess-v1/first_reader.py",
+            "line": 170,
+            "reader_source_sha256": "54879dd7388b0a88c4f64f730536fad4f4a1ae1efd2f5a1ce88f97a382086452",
+            "producer_source": "assembled-study/collector.py:141",
+            "source_registry": "study_contract.py:55",
+            "cause": "Canonical JSON actor_registry key order places receiver before source; fixed_registry inserts source before receiver. Direct list equality rejects the same registry membership.",
+            "actual_traceback_line_or_message_preserved": false,
+            "raw_body_replayed": false,
+            "failed_report_or_seal_rewritten": false,
+            "quality_or_accounting_pass_inferred": false,
+            "future_action": "Preserve frozen failure. Fix order-insensitive identity comparison with duplicate/cardinality checks in a future separately identified reader; no effect claim from that repair."
+          }
         },
         "postprocess_composition_executed": false,
         "additional_blind_grading_executed": false,
