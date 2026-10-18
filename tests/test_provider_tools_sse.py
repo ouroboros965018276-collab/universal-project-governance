@@ -205,6 +205,151 @@ class SSEProjectionTests(unittest.TestCase):
 class SSEActorTests(engineering_fixture.EngineeringCandidateTests):
     # The inherited focused engineering controls also guard legacy behavior.
 
+    def test_checkpoint_profile_is_explicit_and_preserves_capacity_configuration(self):
+        prior = api.profile_configuration(api.ENGINEERING_ULTRASPEED_CAPACITY_SSE_PROFILE)
+        self.assertEqual(sha(canonical(prior)), '6a3b378982dd17b11e9dc5daa3204f36df8d35087993ffccbe8c0b99f5f029c7')
+        expected = copy.deepcopy(prior)
+        expected.update(profile_id=api.ENGINEERING_CHECKPOINT_SSE_PROFILE,
+                        context_checkpoint=copy.deepcopy(api.context_checkpoint.POLICY))
+        self.assertEqual(api.profile_configuration(api.ENGINEERING_CHECKPOINT_SSE_PROFILE), expected)
+        self.assertEqual(expected['context_checkpoint']['trigger_bytes'], 262144)
+        self.assertEqual(expected['context_checkpoint']['max_checkpoints'], 1)
+        self.assertEqual(expected['admission_limits']['max_input_bytes'], 524288)
+        self.assertNotIn('context_checkpoint', prior)
+
+    def test_checkpoint_two_conversations_keep_actor_budget_evidence_and_id_namespaces(self):
+        for provider in ('deepseek', 'mimo'):
+            with self.subTest(provider=provider):
+                self.artifacts = self.base/('checkpoint-' + provider)
+                self.before, self.after, self.loaded, self.executions = [], [], [], []
+                (self.workspace/'target.txt').write_bytes(b'old\n')
+                first = completion(1, [call('reused', 'repo_read', {'paths': ['target.txt', 'contract.json']})])
+                second = completion(2, [call('patch', 'repo_patch', {'operations': [
+                    {'path': 'target.txt', 'old_sha256': sha(b'old\n'), 'new_text': 'fixed\n'}]})])
+                for step in (first, second): step['choices'][0]['message']['reasoning_content'] = 'synthetic reasoning ' * 7000
+                third = completion(3, [call('reused', 'repo_validate', {}), call('status', 'repo_status', {})])
+                result, payloads = self.run_sse([first, second, third, self.finish(4)], provider,
+                    model='deepseek-v4-pro' if provider == 'deepseek' else 'mimo-v2.6-pro-ultraspeed',
+                    actor_options={'profile_id': api.ENGINEERING_CHECKPOINT_SSE_PROFILE})
+                self.assertEqual(result['status'], 'completed', result['quality'])
+                self.assertIs(result['quality']['hard_pass'], True, result['quality'])
+                for proof in (result, result['quality']):
+                    if 'independent_task_pass' in proof:
+                        self.assertIs(proof['independent_task_pass'], True)
+                self.assertEqual((result['requests'], result['tool_attempts'], result['conversation_index']), (4, 5, 1))
+                self.assertEqual(len(result['context_checkpoint_receipts']), 1)
+                self.assertEqual([m['conversation_index'] for m in self.before], [0, 0, 1, 1])
+                self.assertEqual(len(payloads[2]['messages']), 3)
+                self.assertEqual(payloads[2]['messages'][:2], payloads[0]['messages'])
+                self.assertEqual([m['role'] for m in payloads[2]['messages']], ['system', 'user', 'user'])
+                self.assertNotIn('synthetic reasoning', payloads[2]['messages'][-1]['content'])
+                self.assertEqual(result['api_tool_trace'][0]['tool_call_id'], result['api_tool_trace'][2]['tool_call_id'])
+                self.assertEqual([t['conversation_index'] for t in result['api_tool_trace']], [0, 0, 1, 1])
+                ref = result['context_checkpoint_receipts'][0]
+                raw = (self.artifacts/ref['ref']).read_bytes(); checkpoint = json.loads(raw)
+                self.assertEqual(sha(raw), ref['sha256'])
+                self.assertEqual(checkpoint['previous_request_receipt_sha256'], self.after[1]['receipt_sha256'])
+                self.assertEqual(checkpoint['previous_broker_chain_sha256'], result['api_tool_trace'][1]['chain_sha256'])
+                self.assertEqual(checkpoint['bootstrap_payload_sha256'], sha(canonical(payloads[2])))
+                self.assertEqual(checkpoint['facts']['budgets']['requests_used'], 2)
+                self.assertEqual(checkpoint['facts']['budgets']['tool_attempts_used'], 2)
+                self.assertEqual(checkpoint['facts']['budgets']['work_deadline_monotonic'], result['work_deadline_monotonic'])
+                self.assertTrue(all(m['work_deadline_monotonic'] == result['work_deadline_monotonic'] for m in self.before))
+                self.assertEqual(len({id(b) for b, _ in self.brokers[-2:]}), 2) # admission view + one executing broker
+                self.assertEqual(len(self.loaded), 1)
+                self.assertEqual(len(self.after), 4)
+                self.assertTrue(all((self.artifacts/'requests'/('%02d.response.json'%i)).exists() for i in range(1, 5)))
+                self.assertFalse(list(self.artifacts.rglob('*.pending.json')))
+                bad = copy.deepcopy(result['api_tool_trace'][:2]); bad[0]['chain_sha256'] = '0'*64
+                with self.assertRaises(ValueError):
+                    api.context_checkpoint.facts(self.task, {p: sha(t.encode()) for p, t in self.task['initial_files'].items()},
+                        checkpoint['facts']['current_files'], result['tool_events'][:2], bad, checkpoint['facts']['budgets'])
+
+    def test_checkpoint_once_and_bootstrap_bounds_do_not_add_dispatches(self):
+        for mode in ('once-hard-cap', 'bootstrap-too-large', 'known-failure-facts'):
+            with self.subTest(mode=mode):
+                self.artifacts = self.base/mode; self.before, self.after, self.loaded, self.executions = [], [], [], []
+                steps = [completion(i, [call('status-'+str(i), 'repo_status', {})]) for i in range(1, 7)]
+                for step in steps: step['choices'][0]['message']['reasoning_content'] = 'r'*150000
+                options = {'profile_id': api.ENGINEERING_CHECKPOINT_SSE_PROFILE}
+                if mode == 'bootstrap-too-large': options['system_context'] = 'public synthetic context '*12000
+                if mode == 'known-failure-facts':
+                    self.validation_failed = True
+                    self.git_status.return_value.stdout = b' M target.txt\n'
+                    diagnostics = [{'check': 'public-synthetic', 'stdout': 'expected failure detail', 'stderr': 'public failure'}]
+                    steps = [self.read(1), self.validate_and_status(2), completion(3, [call('finish', 'repo_finish',
+                        {'summary': 'Known unfinished public fixture', 'validation': 'failed',
+                         'helper_gap': 'project_tool unavailable in bounded broker'})])]
+                    for step in steps[:2]: step['choices'][0]['message']['reasoning_content'] = 'r'*150000
+                    observed = steps[1]
+                    def retain_failure(payload):
+                        broker = self.brokers[-1][0]; original = broker.validate
+                        def validate():
+                            value = original(); value['diagnostics'] = copy.deepcopy(diagnostics)
+                            value['execution'].update(receipt_ref='validation-001/result.json', receipt_sha256='a'*64,
+                                                      container_removed=True, scratch_removed=True)
+                            return value
+                        broker.validate = validate
+                        return observed
+                    steps[1] = retain_failure
+                result, payloads = self.run_sse(steps, actor_options=options)
+                if mode == 'known-failure-facts':
+                    self.assertEqual((result['status'], result['requests'], len(self.executions)), ('completed', 3, 1))
+                    self.assertFalse(result['quality']['hard_pass'])
+                    facts = json.loads((self.artifacts/'context-checkpoints/01.json').read_bytes())['facts']
+                    self.assertEqual(facts['latest_validation']['diagnostics'], diagnostics)
+                    self.assertEqual(facts['latest_validation']['receipt_ref'], 'validation-001/result.json')
+                    self.assertEqual(facts['latest_validation']['receipt_sha256'], 'a'*64)
+                    self.assertTrue(facts['latest_validation']['container_removed'])
+                    self.assertTrue(facts['latest_validation']['scratch_removed'])
+                    self.assertIn('latest-validation-known-fail', facts['risks'])
+                    self.assertEqual(facts['latest_status']['stdout'], ' M target.txt\n')
+                    self.assertIsNone(facts['latest_status']['stderr']) # The broker reports a hash, not this body.
+                    self.assertFalse(result['unknown_usage'])
+                    continue
+                self.assertEqual(result['status'], 'input-byte-cap-not-invoked')
+                self.assertFalse(result['unknown_usage'])
+                self.assertEqual(len(result['context_checkpoint_receipts']), int(mode == 'once-hard-cap'))
+                self.assertEqual(result['requests'], 6 if mode == 'once-hard-cap' else 1)
+                self.assertEqual(len(payloads), result['requests'])
+                self.assertTrue(all(len(canonical(p)) <= 524288 for p in payloads))
+                self.assertEqual(result['known_usage']['total_tokens'], result['requests']*15)
+                self.assertFalse(list(self.artifacts.rglob('*.pending.json')))
+
+    def test_checkpoint_never_refreshes_unknown_contract_or_partial_write(self):
+        for mode in ('unknown', 'contract', 'partial-write', 'length', 'same-conversation-duplicate', 'late'):
+            with self.subTest(mode=mode):
+                self.artifacts = self.base/('checkpoint-refuse-' + mode)
+                self.before, self.after, self.loaded, self.executions = [], [], [], []
+                (self.workspace/'target.txt').write_bytes(b'old\n')
+                self.patch_fault = None
+                first = self.read(1); first['choices'][0]['message']['reasoning_content'] = 'r'*150000
+                second = completion(2, [call('patch', 'repo_patch', {'operations': [
+                    {'path': 'target.txt', 'old_sha256': sha(b'old\n'), 'new_text': 'fixed\n'}]})])
+                second['choices'][0]['message']['reasoning_content'] = 'r'*150000
+                if mode == 'unknown': second['usage'].pop('total_tokens')
+                elif mode == 'contract': second['choices'][0]['message']['tool_calls'][0]['function']['name'] = 'unregistered'
+                elif mode == 'length': second['choices'][0]['finish_reason'] = 'length'
+                elif mode == 'same-conversation-duplicate': second['choices'][0]['message']['tool_calls'][0]['id'] = 'read-1'
+                elif mode == 'partial-write':
+                    self.enable_real_patch()
+                    self.patch_fault = lambda broker, arguments: {'ok': False, 'changed': [], 'files': {},
+                        'write_state': 'partial-or-unverified', 'error': 'synthetic partial write'}
+                if mode == 'late':
+                    now = [100.0]
+                    with patch.object(api.time, 'perf_counter', side_effect=lambda: now[0]):
+                        result, payloads = self.run_sse([first], on_eof=lambda: now.__setitem__(0, 701.0),
+                            actor_options={'profile_id': api.ENGINEERING_CHECKPOINT_SSE_PROFILE})
+                else:
+                    result, payloads = self.run_sse([first, second], actor_options={'profile_id': api.ENGINEERING_CHECKPOINT_SSE_PROFILE})
+                self.assertEqual(len(payloads), 1 if mode == 'late' else 2)
+                self.assertNotEqual(result['status'], 'completed')
+                self.assertEqual(result['context_checkpoint_receipts'], [])
+                self.assertFalse((self.artifacts/'context-checkpoints').exists())
+                self.assertEqual(result['conversation_index'], 0)
+                self.assertFalse(result['quality']['hard_pass'])
+                self.assertEqual(result['unknown_usage'], mode == 'unknown')
+
     def fake_https(self, steps, provider="deepseek", transform=None, broken=False, close_failure=False, on_eof=None,
                    response_status=200, response_headers=None):
         owner = self

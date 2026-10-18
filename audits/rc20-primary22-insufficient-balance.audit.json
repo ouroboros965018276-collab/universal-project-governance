@@ -306,7 +306,7 @@
     }
   },
   "post_result_candidate_revision": {
-    "status": "IMPLEMENTED_OFFLINE_CHECKED_EMPIRICAL_NOT_RUN",
+    "status": "REAL_FOLLOWUPS_BLOCKED_CONTEXT_INPUT_GROWTH",
     "candidate": "3.0.0-rc.20",
     "reason": "Observed high-risk data-boundary VETO and all29 tool-contract failures ending at provider output length; no revision of original decisions.",
     "governance_model_file_sha256": "1ec318f18d9cd7188635f9370dcc045bb764252bd3cc97bef3ed73882363d9ce",
@@ -353,8 +353,165 @@
       ]
     },
     "first54_or_model_calls_repeated": false,
-    "same_variant_followup_paid_batches_started": false,
+    "same_variant_followup_paid_batches_started": true,
     "new_candidate_empirical_qualification": "UNASSESSED",
-    "promotion_authorized": false
+    "promotion_authorized": false,
+    "real_followups": [
+      {
+        "identity": "fresh-capacity-invariants-v1",
+        "planned_workflows": 12,
+        "planned_roles": 18,
+        "actual_actor_ids": [
+          "w001-source"
+        ],
+        "requests": 4,
+        "reported_token_domain": "API/deepseek/deepseek-v4-pro",
+        "known_reported_tokens": 37762,
+        "pending_requests": 0,
+        "owner_status": "UNKNOWN_NO_REPLAY",
+        "original_session_exit_code": 1,
+        "cause": "ROOT cache integration omitted os.path.lexists import; provider completed, then original RAW verifier NameError",
+        "original_study_favorable": "PERMANENTLY_BLOCKED_UNEXPECTED_INTERRUPTION",
+        "preserved_result_reexecuted": false,
+        "corrected_existing_RAW": {
+          "sha256": "b2c6982a7f83c8db9d65bba28bf65e05d195e35a45eb6b3ccea0c82070d05a68",
+          "raw_integrity": true,
+          "accounting_complete": true,
+          "mechanical_pass": false,
+          "extra_verification_wall_seconds": 4.323489400005201,
+          "model_calls": 0
+        },
+        "later_unselected_b01": [
+          "w005-source",
+          "w009-source"
+        ],
+        "later_unselected_status": "UNINVOKED"
+      },
+      {
+        "identity": "fresh-capacity-invariants-followup-b02-b04-v1",
+        "preregistration_sha256": "e9c1ae646a0e2f69bb762863520292ae70a93e9c74254c3c19ef4a7890a2940c",
+        "selection": "all wholly uninvoked complete b02/b03/b04 fixed before further paid call",
+        "planned_workflows": 9,
+        "planned_roles": 15,
+        "actual_actor_ids": [
+          "w002-source"
+        ],
+        "arm": "attention",
+        "requests": 17,
+        "reported_token_domain": "API/mimo/mimo-v2.6-pro-ultraspeed",
+        "known_reported_tokens": 1390049,
+        "known_input_tokens": 1274472,
+        "known_output_tokens": 115577,
+        "known_reasoning_tokens": 107805,
+        "known_cached_tokens": 1145024,
+        "tool_attempts": 20,
+        "schema_rejections": 1,
+        "pending_requests": 0,
+        "result_status": "input-byte-cap-not-invoked",
+        "last_sent_input_bytes": 523418,
+        "input_cap_bytes": 524288,
+        "next_request_sent": false,
+        "unknown_usage": false,
+        "execution_state_unknown": false,
+        "execution_infrastructure_failed": false,
+        "work_deadline_reached": false,
+        "owner_status": "UNKNOWN_NO_REPLAY",
+        "original_session_exit_code": 1,
+        "job_active_after": 0,
+        "job_query_after_confirmed": true,
+        "study_favorable": "PERMANENTLY_BLOCKED_UNEXPECTED_INTERRUPTION",
+        "terminal_sha256": "ef5aa90a4c03473a683b1234fc2597c9b69435df5c88ed32abed88db199c49ec",
+        "ledger_sha256": "f0fbeaba7efac2b47efd809d17d13d69c1180bc78d1778348b1337bae33605f3",
+        "actor_record_sha256": "10c56e6123fcbc294c7ed83da73aa2e51f87b8e9121b45ec0a7bb464d7ce62ae",
+        "first_RAW_or_blind_grading_run": false,
+        "handoffs_assessed": false
+      }
+    ],
+    "structural_context_followup": {
+      "status": "FINAL_COPIEDSOURCE_OFFLINE_PASS_REAL_RETEST_REGISTERED",
+      "cause": "full thinking and tool messages are resent at each actor request; input grows across settled tool turns",
+      "same_conversation_reasoning_deletion_allowed": false,
+      "direction": "one explicit deterministic project-fact checkpoint into a new conversation, same actor/project/task/baseline and cumulative budgets; no LLM summary",
+      "soft_trigger_bytes": 262144,
+      "hard_input_cap_bytes": 524288,
+      "max_checkpoints": 1,
+      "old_profiles_must_remain_unchanged": true,
+      "new_rules_or_core_duplication": false,
+      "empirical_equivalence": "NOT_ESTABLISHED",
+      "original_studies_restored": false,
+      "further_favorable_population_shrinking_allowed": false,
+      "sources": [
+        "https://mimo.mi.com/docs/en-US/quick-start/usage-guide/other/deep-thinking",
+        "https://mimo.mi.com/docs/en-US/quick-start/error-codes",
+        "https://api-docs.deepseek.com/guides/thinking_mode/"
+      ],
+      "profile_id": "thinking-enabled-engineering-ultraspeed-strict-dslow32768-mimo65536-checkpoint-once-sse-v1",
+      "configuration_sha256": "0d204c60bf968839d183954286e871aba0b168ed1b144a6cf1dae219e082af56",
+      "api_sha256": "48b0b416019c0ce8c571a6eec3e44348ee168d0c0f5803bc28c3ae18bf9fa38e",
+      "facts_module_sha256": "c885c64ba7b5a3f0536385d50c8d57cae1bbf54f6a1764b103c1ba78252eab5f",
+      "tests_sha256": "1d653cc8c649dc30244feb2f153135bc3e8c3c168019470a7b43a3a3113e1f64",
+      "legacy_configuration_identities_preserved": 10,
+      "default_profile_changed": false,
+      "initial_focused_methods": 6,
+      "affected_methods_only_rechecked": true,
+      "synthetic_success_hard_quality_gate": {
+        "deepseek": "PASS",
+        "mimo": "PASS"
+      },
+      "fixture_correction": {
+        "initial_failure": "invalid existing helper_gap enum in added synthetic known-failure fixture",
+        "original_failure_retained": true,
+        "affected_method_after_fixture_fix": "PASS"
+      },
+      "independent_reader": {
+        "status": "FOCUSED_SYNTHETIC_PASS",
+        "source_sha256": "0b2536f216e34a15fad7b7f2643132cec3fbf6a0de981a2ed87ac98aa2ff87b0",
+        "synthetic_methods": 10,
+        "actual_model_calls": 0,
+        "old_RAW_replayed": false,
+        "scope": "checkpoint/history only; original transport, project execution, Git, ledger and hard quality gates remain required",
+        "controlled_phase_support_claim": false
+      },
+      "new_profile_real_calls": 0,
+      "installed_runtime_changed": false,
+      "next_comparison": {
+        "study_class": "DEVELOPMENT_RETEST_AFTER_CONTEXT_REMEDIATION",
+        "preregistration_sha256": "0da49a4d06a98400664d4ec6d3030fc5dfa21e6e40efec658a85232fb2388cd9",
+        "workflows": 9,
+        "roles": 15,
+        "same_three_families_retained": true,
+        "w002_capacity_development_exposed": true,
+        "fresh_independent_holdout_claim": false,
+        "models_started": 0,
+        "protocol_sha256": "9ad420caf59863cd286281dd9f12991893e6c44125a2ca82ee16eac57ec04699",
+        "execution_plan_sha256": "929dd16698704164543324f334b5aba07f7efb74445941e5f72797fed543289b",
+        "binding_exec_chunk_id": "6e33d9",
+        "planners_reexecuted": 0,
+        "existing_plans_reused": 12
+      },
+      "canonical_sse_module_regression": {
+        "tests": 107,
+        "status": "PASS",
+        "wall_seconds": 12.897,
+        "exec_session_id": 67271,
+        "exit_code": 0,
+        "overlaps_focused_methods": true,
+        "real_model_calls": 0
+      },
+      "final_copiedsource_control": {
+        "status": "PASS",
+        "schema": "checkpoint-final-copiedsource-fakehttp-control-v1",
+        "receipt_sha256": "56c0723f3a8b46a36cc0bba0a6b5a7a590b833d5d71a80465eebdb31cd4187b6",
+        "original_exec_chunk_id": "0522aa",
+        "exit_code": 0,
+        "tool_reported_wall_seconds": 5.6358652,
+        "requests": 8,
+        "providers": 2,
+        "real_http_requests": 0,
+        "real_project_execution": false,
+        "existing_synthetic_execution_receipt_seam": true,
+        "scope": "final copied producer, ledger, native/checkpoint/project reader, hard quality derivation and cold/hot cache composition; no efficacy claim"
+      }
+    }
   }
 }
