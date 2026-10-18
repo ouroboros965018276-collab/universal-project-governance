@@ -38,17 +38,17 @@ class DispatchSnapshotRace(unittest.TestCase):
             def close(self):pass
         real_snapshot,real_wait=API._ManagedRequest.snapshot,API._ManagedRequest.wait
         first=[True]
-        def snapshot(job):
+        def snapshot(job, *, include_body=True):
             if threading.get_ident()==main_id and first[0]:
                 first[0]=False;jobs.append(job)
                 self.assertTrue(entered.wait(1))
-                stale=real_snapshot(job)
+                stale=real_snapshot(job,include_body=include_body)
                 self.assertFalse(stale['dispatch_started'])
                 connect_release.set();self.assertTrue(sent.wait(1))
-                self.assertTrue(real_snapshot(job)['dispatch_started'])
+                self.assertTrue(real_snapshot(job,include_body=include_body)['dispatch_started'])
                 clock[0]=180.0
                 return stale
-            return real_snapshot(job)
+            return real_snapshot(job,include_body=include_body)
         def wait(job,seconds,revision):
             waits.append(seconds)
             if real_snapshot(job)['dispatch_started']and clock[0]>=180:
