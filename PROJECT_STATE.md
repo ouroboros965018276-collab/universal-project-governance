@@ -6,9 +6,9 @@
 
 表达相关性、完整改动、事实保真和按需读取由[规范源](governance-src/model/governance-model.json)统一编译。当前生成核心 **6,976 字节**，四组指引、16 项政策、8 项 Hot Path、3 项默认规则和 18 个交付文件；规范身份 `adefef22…`，资格指纹 `74075f35…`。五个上游的固定来源、许可、适配与排除记录见 [选择性来源映射](docs/upstream-rule-map.md)及[许可记录](third_party/notices/README.md)。实验适配器不随 Skill 交付。
 
-最近的[两模型真实工具校准及四角色中断控制](audits/rc20-reasoning-input-budget-diagnosis-v1.audit.json)均已关闭，首次原始校验与最终账本核验通过。两模型轮 12 次请求全部结算，已知报告用量 **257,899 token**，关闭记录发布前约 **607.69 秒**；两个盲审包、18 项要求的初评先全部锁定，再揭盲：**MiMo 完整通过，DeepSeek 为未完成／UNKNOWN**。DeepSeek 在约 208.50 秒时触发旧的 131,072 字节请求上限，未更新 README、验证或收尾；未耗尽 600 秒，也未观察到余额或容量错误。当前已增加显式 v2 工程配置，仅将请求体上限设为 524,288 字节；64 项针对性测试通过。原失败、v1／默认配置及项目文件、工具和证据读取限制保留；新轮须统一注册该配置。
+最新[九族配对实测](audits/rc20-primary14-incomplete-transport.audit.json)在第 27 个流程因 HTTP 响应体 `IncompleteRead` 中断。预注册分母仍为 **54 个流程／66 个角色**；已发布 26 个流程、29 个角色记录，第 157 次请求用量与费用未知。请求线程已退出，但收集器在保存该角色记录前触发严格账务门槛并异常停止。原失败、待定预留和未完成范围全部保留；首次整体审计、语义盲评和净收益分析的前置条件未满足。事后确认原 23 个容器及 69 个临时路径不存在，不追认业务成功。
 
-四角色控制验证了两家模型在首次工具调用前、首次修改后两个固定边界的原始证据闭包；6 次请求结算、无待定预留。它没有接手方，不能证明任务质量、真实接手或净收益。最近代码提交 `7a59f93` 的 [11 项 CI](https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/39088085914) 通过；这些工程检查不代替真实效果证据。
+此前[两模型校准及四角色中断控制](audits/rc20-reasoning-input-budget-diagnosis-v1.audit.json)保留其原结果：MiMo 完整通过，DeepSeek 因旧请求体上限未完成；中断控制没有接手方。v2 配置只扩大请求体上限，64 项针对性测试通过；本次断流请求低于旧上限，属于不同故障。v2 基线 `b4cd99b` 的 [11 项 CI](https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/39089066768) 全部通过。这些工程记录均不证明真实净收益。
 
 合并与安装仍须完成：
 
