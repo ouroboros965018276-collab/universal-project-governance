@@ -8,7 +8,7 @@
 
 最新[两模型公开校准](audits/rc20-source19-capability-and-environment.audit.json)完成 19 次请求记账、无待结算，owner 正常关闭；首次盲评全锁定后解盲。DeepSeek 机械及 9 项语义要求全部通过；关闭推理的 MiMo 仍两次遗漏补丁路径与 SHA，在执行验证前声称已检查，并留下实现缺陷，机械失败且语义 **VETO**。准确字段反馈未防止错误复发，当前配置不满足全量试验门槛。此前 Docker 故障中断的 5 次调用及成本单独保留；释放项目存储空间、恢复引擎并验证后使用新 cohort，没有重跑或重评原失败。
 
-[上一轮](audits/rc20-source18-hybrid-tool-contract.audit.json)及[深度推理耗时诊断](audits/rc20-source17-latency-and-quality.audit.json)保留原结果。后续优先核验模型容量、推理配置和工具格式能力；不得以速度抵消质量否决或放宽完成标准。
+[UltraSpeed 可用性与工具格式核验](audits/rc20-ultraspeed-native-compatibility.audit.json)的两次公开单请求均正常关闭，共报告 1,345 token；启用推理及 strict 后，约 3.1 秒返回符合原 schema 的虚拟补丁调用，未执行工具。新研究配置保留旧配置与本地校验；真实任务质量、同条件成本与持续容量仍未证明。[上一轮](audits/rc20-source18-hybrid-tool-contract.audit.json)及[深度推理耗时诊断](audits/rc20-source17-latency-and-quality.audit.json)保留原结果；不得以速度抵消质量否决或放宽完成标准。
 
 最近[九族配对实测](audits/rc20-primary14-incomplete-transport.audit.json)在第 27 个流程因 HTTP 响应体 `IncompleteRead` 中断。预注册分母仍为 **54 个流程／66 个角色**；已发布 26 个流程、29 个角色记录，第 157 次请求用量与费用未知。原失败、待定预留和未完成范围全部保留；首次整体审计、语义盲评和净收益分析的前置条件未满足。事后确认原 23 个容器及 69 个临时路径不存在，不追认业务成功。较早的[非流式两模型校准及四角色中断控制](audits/rc20-reasoning-input-budget-diagnosis-v1.audit.json)是历史记录，不构成当前净收益证明。
 

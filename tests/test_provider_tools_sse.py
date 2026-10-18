@@ -249,13 +249,13 @@ class SSEActorTests(engineering_fixture.EngineeringCandidateTests):
                     raise OSError('synthetic close failure')
         return patch.object(api.http.client, 'HTTPSConnection', Connection), payloads
 
-    def run_sse(self, steps, provider="deepseek", actor_options=None, **kwargs):
+    def run_sse(self, steps, provider="deepseek", actor_options=None, model=None, **kwargs):
         control, payloads = self.fake_https(steps, provider, **kwargs)
         options = dict(profile_id=api.ENGINEERING_REASONING_SSE_PROFILE, thinking='enabled',
                        settlement_policy=api.SETTLEMENT_POLICY, timeout_seconds=600, max_requests=24)
         options.update(actor_options or {})
         with control:
-            result = self.new_actor(provider=provider, model='deepseek-v4-pro' if provider == 'deepseek' else 'mimo-v2.6-pro',
+            result = self.new_actor(provider=provider, model=model or ('deepseek-v4-pro' if provider == 'deepseek' else 'mimo-v2.6-pro'),
                                     **options)
         return result, payloads
 
@@ -395,6 +395,192 @@ class SSEActorTests(engineering_fixture.EngineeringCandidateTests):
         self.assertEqual(v3, v2)
         self.assertEqual(transport['max_raw_body_bytes'], 8388608)
         self.assertEqual(api.MAX_INPUT_BYTES, 131072)
+
+    def test_ultraspeed_strict_configuration_preserves_old_identity_and_bounds(self):
+        self.assertEqual(sha(canonical(api.profile_configuration(api.ENGINEERING_HYBRID_SSE_PROFILE))),
+                         '46637727f794a961b18190bcd008f2e7149f323d50d2c9d4dfed2aa9afebef36')
+        prior = api.profile_configuration(api.ENGINEERING_REASONING_SSE_PROFILE)
+        configuration = api.profile_configuration(api.ENGINEERING_ULTRASPEED_STRICT_SSE_PROFILE)
+        self.assertEqual(configuration['profile_id'], 'thinking-enabled-engineering-ultraspeed-strict-16384-sse-v1')
+        expected = copy.deepcopy(prior['providers'])
+        expected['deepseek']['strict_tools'] = False
+        expected['mimo'].update(model='mimo-v2.6-pro-ultraspeed', strict_tools=True)
+        self.assertEqual(configuration['providers'], expected)
+        self.assertIs(configuration['providers']['deepseek']['strict_tools'], False)
+        self.assertIs(configuration['providers']['mimo']['strict_tools'], True)
+        self.assertEqual(configuration['prices'], dict(prior['prices'],
+            mimo={'USD': {'input_hit': '.036', 'input_miss': '4.35', 'output': '8.7'}}))
+        self.assertEqual(configuration['price_evidence']['mimo'],
+                         'https://mimo.mi.com/models/en-US/mimo-v2.6-pro-ultraspeed')
+        self.assertEqual(configuration['price_evidence']['mimo_price_reviewed_on'], '2026-10-18')
+        self.assertNotIn('mimo_pro', configuration['price_evidence'])
+        self.assertEqual(configuration['transport'], prior['transport'])
+        self.assertEqual(configuration['admission_limits'], {'max_requests': 24, 'timeout_seconds': 600,
+            'max_tools': 32, 'max_input_bytes': 524288})
+        self.assertEqual(configuration['price_evidence']['deepseek'], prior['price_evidence']['deepseek'])
+        original = copy.deepcopy(configuration)
+        configuration['providers']['mimo']['strict_tools'] = False
+        configuration['prices']['mimo']['USD']['output'] = '0'
+        configuration['transport']['providers']['mimo']['stream'] = False
+        self.assertEqual(api.profile_configuration(api.ENGINEERING_ULTRASPEED_STRICT_SSE_PROFILE), original)
+
+    def test_ultraspeed_strict_owned_wire_changes_only_mimo_model_and_function_flag(self):
+        self.enable_real_patch()  # Original engineering schemas and patches; execution remains the fixture stub.
+        reasoning = 'opaque synthetic enabled reasoning\n' + '\u4e2d\u6587/\\"\n' * 1000 + 'tail'
+        configuration = api.profile_configuration(api.ENGINEERING_ULTRASPEED_STRICT_SSE_PROFILE)
+        parameters = {item['name']: item['inputSchema']
+                      for item in engineering_fixture.real_engineering.tool_definitions()}
+        parameters[api.FINISH_TOOL] = api.FINAL_SCHEMA
+        operation = parameters['repo_patch']['properties']['operations']['items']
+        self.assertNotIn('old_text', operation['required'])
+        self.assertEqual(operation['properties']['old_text']['type'], 'string')
+        for provider in ('deepseek', 'mimo'):
+            observed = []
+            prior_model = 'deepseek-v4-pro' if provider == 'deepseek' else 'mimo-v2.6-pro'
+            for label, profile, model in (
+                    ('prior', api.ENGINEERING_REASONING_SSE_PROFILE, prior_model),
+                    ('strict', api.ENGINEERING_ULTRASPEED_STRICT_SSE_PROFILE,
+                     configuration['providers'][provider]['model'])):
+                with self.subTest(provider=provider, profile=profile):
+                    self.artifacts = self.base/('ultraspeed-wire-' + provider + '-' + label)
+                    (self.workspace/'target.txt').write_bytes(b'old\n')
+                    self.before, self.after, self.loaded, self.executions = [], [], [], []
+                    def opaque(step):
+                        def reply(payload):
+                            native = step(payload) if callable(step) else copy.deepcopy(step)
+                            native['choices'][0]['message']['reasoning_content'] = reasoning
+                            return native
+                        return reply
+                    result, payloads = self.run_sse([opaque(step) for step in self.ready()+[self.finish(4)]],
+                        provider, model=model, actor_options={'profile_id': profile, 'thinking': 'enabled'})
+                    self.assertEqual((result['status'], result['requests'], result['tool_attempts'], len(self.executions)),
+                                     ('completed', 4, 5, 1))
+                    self.assertTrue(result['quality']['hard_pass'])
+                    self.assertEqual(result['known_usage']['total_tokens'], 60)
+                    self.assertEqual((len(self.before), len(self.after), self.loaded), (4, 4, [provider]))
+                    for index, payload in enumerate(payloads, 1):
+                        self.assertNotIn('strict', payload)
+                        self.assertEqual(payload['thinking'], {'type': 'enabled'})
+                        self.assertEqual(payload.get('reasoning_effort'), 'high' if provider == 'deepseek' else None)
+                        if provider == 'mimo':
+                            self.assertNotIn('reasoning_effort', payload)
+                        self.assertEqual({tool['function']['name']: tool['function']['parameters']
+                                          for tool in payload['tools']}, parameters)
+                        self.assertEqual(len(payload['tools']), 6)
+                        for tool in payload['tools']:
+                            if label == 'strict' and provider == 'mimo':
+                                self.assertIs(tool['function']['strict'], True)
+                            else:
+                                self.assertNotIn('strict', tool['function'])
+                        self.assertEqual([m['reasoning_content'] for m in payload['messages'] if m['role'] == 'assistant'],
+                                         [reasoning]*(index-1))
+                        self.assertEqual(self.before[index-1]['request_payload_sha256'], sha(canonical(payload)))
+                        record = json.loads((self.artifacts/('requests/%02d.response.json' % index)).read_bytes())
+                        self.assertEqual(record['response']['choices'][0]['message']['reasoning_content'], reasoning)
+                        self.assertFalse((self.artifacts/('requests/%02d.pending.json' % index)).exists())
+                    for metadata in [result, *self.before, *self.after]:
+                        self.assertEqual(metadata['model_requested'], model)
+                        self.assertEqual(metadata['profile_configuration_sha256'], sha(canonical(api.profile_configuration(profile))))
+                        self.assertEqual(metadata['thinking'], 'enabled')
+                        self.assertEqual(metadata['max_input_bytes'], 524288)
+                        self.assertEqual(metadata['transport_profile_id'], sse.TRANSPORT_PROFILE)
+                        self.assertIsNone(metadata['connect_retry_policy'])
+                    self.assertEqual((result['max_requests'], result['max_tools'], result['output_cap'],
+                        result['timeout_seconds'], result['settlement_max_seconds']), (24, 32, 16384, 600, 600))
+                    observed.append(copy.deepcopy(payloads))
+            restored = observed[1]
+            for payload in restored:
+                payload['model'] = prior_model
+                for tool in payload['tools']:
+                    tool['function'].pop('strict', None)
+            self.assertEqual(canonical(restored), canonical(observed[0]))
+
+    def test_ultraspeed_strict_mismatches_refuse_before_reservation_or_credentials(self):
+        for provider, model in (('deepseek', 'deepseek-v4-pro'), ('mimo', 'mimo-v2.6-pro-ultraspeed')):
+            for change in ({'model': 'mimo-v2.6-pro'}, {'model': 'mimo-v2.6-flash'}, {'thinking': 'disabled'},
+                           {'response_json_mode': True}, {'max_requests': 25}, {'timeout_seconds': 601},
+                           {'settlement_policy': None}, {'connect_retry_policy': api.CONNECT_RETRY_POLICY},
+                           {'broker_profile_id': None}, {'execution_backend': 'docker-cpython-finite-v1'}):
+                options = dict(provider=provider, model=model, thinking='enabled',
+                    profile_id=api.ENGINEERING_ULTRASPEED_STRICT_SSE_PROFILE,
+                    settlement_policy=api.SETTLEMENT_POLICY, max_requests=24, timeout_seconds=600)
+                options.update(change)
+                with self.subTest(provider=provider, change=change), self.assertRaises(ValueError):
+                    self.new_actor(**options)
+        self.assertEqual((self.before, self.after, self.loaded), ([], [], []))
+        self.module.create_broker.assert_not_called()
+
+    def test_ultraspeed_strict_does_not_normalize_missing_path_or_optional_old_text(self):
+        self.enable_real_patch()
+        for label, invalid, missing, optional in (
+                ('path', {'old_sha256': sha(b'old\n'), 'new_text': 'fixed\n'}, ['/operations/0/path'], {}),
+                ('null-fragment', {'path': 'target.txt', 'old_sha256': sha(b'old\n'),
+                                   'new_text': 'fixed\n', 'old_text': None}, [], {'old_text': 'old\n'})):
+            with self.subTest(case=label):
+                self.artifacts = self.base/('ultraspeed-schema-' + label)
+                (self.workspace/'target.txt').write_bytes(b'old\n')
+                self.before, self.after, self.loaded, self.executions = [], [], [], []
+                rejected = completion(2, [call('bad-patch', 'repo_patch', {'operations': [invalid]}),
+                    call('not-admitted-validation', 'repo_validate', {})])
+                def corrected(payload):
+                    feedback = [json.loads(message['content']) for message in payload['messages'][-2:]]
+                    self.assertEqual(feedback[0]['missing_required'], missing)
+                    self.assertEqual(feedback[0]['inputSchema'],
+                        next(item['inputSchema'] for item in engineering_fixture.real_engineering.tool_definitions()
+                             if item['name'] == 'repo_patch'))
+                    self.assertTrue(all(item['batch_executed'] is False for item in feedback))
+                    self.assertEqual(feedback[0]['remaining_schema_corrections'], 0)
+                    self.assertEqual((self.workspace/'target.txt').read_bytes(), b'old\n')
+                    self.assertEqual(self.executions, [])
+                    return self.project_patch(3, [dict(path='target.txt', old_sha256=sha(b'old\n'),
+                        new_text='fixed\n', **optional)])
+                result, payloads = self.run_sse([self.read(1), rejected, corrected,
+                    self.validate_and_status(4), self.finish(5)], 'mimo', model='mimo-v2.6-pro-ultraspeed',
+                    actor_options={'profile_id': api.ENGINEERING_ULTRASPEED_STRICT_SSE_PROFILE})
+                self.assertEqual((len(payloads), result['schema_rejections']), (5, 1))
+                self.assertTrue(result['quality']['hard_pass'])
+                self.assertEqual([entry['tool'] for entry in result['tool_events']],
+                                 ['repo_read', 'repo_patch', 'repo_validate', 'repo_status'])
+
+    def test_ultraspeed_strict_retains_original_input_and_slot_admission(self):
+        options = {'profile_id': api.ENGINEERING_ULTRASPEED_STRICT_SSE_PROFILE,
+                   'system_context': 'x'*140000, 'max_requests': 1}
+        result, payloads = self.run_sse([self.read(1)], 'mimo', model='mimo-v2.6-pro-ultraspeed', actor_options=options)
+        self.assertEqual((result['requests'], len(self.after), len(result['tool_events'])), (1, 1, 1))
+        self.assertGreater(len(canonical(payloads[0])), 131072)
+        self.assertLess(len(canonical(payloads[0])), 524288)
+        self.artifacts = self.base/'ultraspeed-over-input'
+        self.before, self.after, self.loaded = [], [], []
+        options['system_context'] = 'x'*524288
+        result, payloads = self.run_sse([], 'mimo', model='mimo-v2.6-pro-ultraspeed', actor_options=options)
+        self.assertEqual(result['status'], 'input-byte-cap-not-invoked')
+        self.assertEqual((self.before, self.after, self.loaded, payloads), ([], [], [], []))
+
+    def test_ultraspeed_strict_unknown_and_late_finish_only_account_without_action(self):
+        options = {'profile_id': api.ENGINEERING_ULTRASPEED_STRICT_SSE_PROFILE}
+        result, payloads = self.run_sse([self.read(1)], 'mimo', model='mimo-v2.6-pro-ultraspeed',
+            broken=True, actor_options=options)
+        self.assertEqual(result['status'], 'unknown-call-blocked')
+        self.assertTrue(result['unknown_usage'])
+        self.assertEqual(result['known_usage']['total_tokens'], 15)
+        self.assertEqual((len(payloads), len(self.before), len(self.after)), (1, 1, 1))
+        self.assertEqual(result['tool_events'], [])
+        self.assertTrue((self.artifacts/'actor.pending.json').exists())
+        self.assertTrue((self.artifacts/'requests/01.pending.json').exists())
+        self.artifacts = self.base/'ultraspeed-late'
+        self.before, self.after, self.loaded = [], [], []
+        now = [100.0]
+        with patch.object(api.time, 'perf_counter', side_effect=lambda: now[0]):
+            result, payloads = self.run_sse([self.finish(1)], 'mimo', model='mimo-v2.6-pro-ultraspeed',
+                on_eof=lambda: now.__setitem__(0, 701.0), actor_options=options)
+        self.assertEqual(result['status'], 'work-deadline-settled-unfinished')
+        self.assertFalse(result['unknown_usage'])
+        self.assertEqual(result['known_usage']['total_tokens'], 15)
+        self.assertEqual((len(payloads), len(self.after)), (1, 1))
+        self.assertTrue(self.after[0]['settlement']['accounting_only'])
+        self.assertFalse(result['quality']['hard_pass'])
+        self.assertIsNone(result['final_report'])
+        self.assertEqual(result['tool_events'], [])
 
     def test_hybrid_config_changes_only_identity_and_mimo_mode_preserving_legacy_bytes(self):
         legacy = {
