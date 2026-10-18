@@ -205,16 +205,17 @@ class SSEProjectionTests(unittest.TestCase):
 class SSEActorTests(engineering_fixture.EngineeringCandidateTests):
     # The inherited focused engineering controls also guard legacy behavior.
 
-    def fake_https(self, steps, provider="deepseek", transform=None, broken=False, close_failure=False, on_eof=None):
+    def fake_https(self, steps, provider="deepseek", transform=None, broken=False, close_failure=False, on_eof=None,
+                   response_status=200, response_headers=None):
         owner = self
         payloads = []
         class Response:
-            status = 200
+            status = response_status
             def __init__(self, body):
                 self.body, self.offset = body, 0
                 self.length = len(body) + int(broken)
             def getheaders(self):
-                return [('content-type', 'text/event-stream; charset=utf-8')]
+                return response_headers if response_headers is not None else [('content-type', 'text/event-stream; charset=utf-8')]
             def read1(self, maximum):
                 if self.offset == len(self.body):
                     if on_eof:
@@ -367,6 +368,98 @@ class SSEActorTests(engineering_fixture.EngineeringCandidateTests):
         self.assertEqual(len(payloads), 1)
         self.assertTrue(self.after[0]['settlement']['worker_done'])
         self.assertFalse(self.after[0]['settlement']['worker_alive_at_return'])
+
+    def test_complete_http_json_rejection_preserves_reason_and_unknown_accounting(self):
+        rejection = {'error': {'code': '402', 'type': 'insufficient_balance',
+                               'message': 'Insufficient account balance'}}
+        for provider in ('deepseek', 'mimo'):
+            with self.subTest(provider=provider):
+                self.artifacts = self.base/('http-rejection-' + provider)
+                self.before, self.after, self.loaded = [], [], []
+                result, payloads = self.run_sse([self.read(1)], provider,
+                    model='deepseek-v4-pro' if provider == 'deepseek' else 'mimo-v2.6-pro-ultraspeed',
+                    actor_options={'profile_id': api.ENGINEERING_ULTRASPEED_STRICT_SSE_PROFILE},
+                    response_status=402, response_headers=[('Content-Type', 'application/json')],
+                    transform=lambda unused: canonical(rejection))
+                response = json.loads((self.artifacts/'requests/01.response.json').read_bytes())
+                receipt = json.loads((self.artifacts/'requests/01.receipt.json').read_bytes())
+                expected = dict(rejection['error'], phase='provider-rejection', http_status=402)
+                self.assertEqual(response['provider_rejection'], expected)
+                self.assertEqual(receipt['provider_rejection'], expected)
+                self.assertEqual(self.after[0]['provider_rejection'], expected)
+                self.assertEqual(receipt['transport']['phase'], 'provider-rejection')
+                self.assertEqual(receipt['error_type'], 'ProviderRejected')
+                self.assertEqual(receipt['transport']['http_dispatch'], 'response_received')
+                self.assertTrue(receipt['settlement']['body_complete'])
+                self.assertIsNone(receipt['settlement']['transport_failure'])
+                self.assertIsNone(receipt['usage'])
+                self.assertIsNone(result['usage'])
+                self.assertTrue(all(value is None for value in result['known_usage'].values()))
+                self.assertTrue(result['unknown_usage'])
+                self.assertEqual(result['status'], 'unknown-call-blocked')
+                self.assertEqual((len(payloads), len(self.before), len(self.after)), (1, 1, 1))
+                self.assertEqual(result['tool_events'], [])
+                self.assertIsNone(result['final_report'])
+                self.assertTrue((self.artifacts/'actor.pending.json').exists())
+                self.assertTrue((self.artifacts/'requests/01.pending.json').exists())
+
+    def test_partial_or_unrecognized_http_error_never_becomes_zero_usage(self):
+        body = canonical({'error': {'code': '402', 'type': 'insufficient_balance', 'message': 'balance'}})
+        for name, raw, status, media, broken in (
+                ('interrupted', body, 402, 'application/json', True),
+                ('truncated-json', body[:-1], 402, 'application/json', False),
+                ('unknown-media', body, 402, 'text/plain', False),
+                ('not-http-rejection', body, 200, 'application/json', False)):
+            with self.subTest(name=name):
+                self.artifacts = self.base/('unknown-http-' + name)
+                self.before, self.after, self.loaded = [], [], []
+                result, payloads = self.run_sse([self.read(1)], response_status=status,
+                    response_headers=[('content-type', media)], broken=broken,
+                    transform=lambda unused, raw=raw: raw)
+                receipt = json.loads((self.artifacts/'requests/01.receipt.json').read_bytes())
+                self.assertNotIn('provider_rejection', receipt)
+                self.assertIsNone(receipt['usage'])
+                self.assertIsNone(result['usage'])
+                self.assertTrue(all(value is None for value in result['known_usage'].values()))
+                self.assertTrue(result['unknown_usage'])
+                self.assertEqual(result['status'], 'unknown-call-blocked')
+                self.assertEqual(len(payloads), 1)
+                self.assertEqual(result['tool_events'], [])
+                self.assertTrue((self.artifacts/'requests/01.pending.json').exists())
+                if broken:
+                    self.assertFalse(receipt['settlement']['body_complete'])
+                    self.assertEqual(receipt['settlement']['transport_failure']['exception_class'], 'IncompleteRead')
+
+    def test_http_rejection_diagnostic_redacts_before_utf8_cap_and_whitelists_fields(self):
+        # The credential begins just before the cap: truncating first would leak its prefix.
+        message = 'x'*1018 + SECRET + '\nBearer synthetic-authorization-token ' + '中'*600
+        body = canonical({'error': {'code': '402', 'type': 'insufficient_balance', 'message': message,
+                                    'request': {'authorization': SECRET}}})
+        diagnostic = api._provider_rejection(402, [('Content-Type', 'application/json; charset="UTF-8"')],
+            body, complete=True, secret=SECRET)
+        self.assertEqual(set(diagnostic), {'phase', 'http_status', 'code', 'type', 'message'})
+        self.assertLessEqual(len(diagnostic['message'].encode('utf-8')), 1024)
+        self.assertNotIn(SECRET, canonical(diagnostic).decode())
+        self.assertNotIn(SECRET[:6], diagnostic['message'])
+        full = api._provider_rejection(402, [('Content-Type', 'application/json')],
+            canonical({'error': {'message': '\nBearer synthetic-authorization-token ' + SECRET + '中'*600}}),
+            complete=True, secret=SECRET)
+        self.assertNotIn('synthetic-authorization-token', full['message'])
+        self.assertNotIn('\n', full['message'])
+        self.assertNotIn(SECRET, full['message'])
+        full['message'].encode('utf-8')
+
+    def test_http_rejection_diagnostic_rejects_malformed_or_unconfirmed_json(self):
+        headers = [('Content-Type', 'application/json')]
+        for body in (b'{"error":{"code":"402","code":"other"}}', b'{"error":{"message":"\xff"}}',
+                     b'{"error":{"message":"x"}}' + b' '*16384,
+                     b'{"error":{"message":NaN}}', b'{"error":{"message":{"nested":"value"}}}'):
+            with self.subTest(body=body[:60]):
+                self.assertIsNone(api._provider_rejection(402, headers, body, complete=True))
+        good = canonical({'error': {'code': '402', 'message': 'balance'}})
+        self.assertIsNone(api._provider_rejection(402, headers, good, complete=False))
+        self.assertIsNone(api._provider_rejection(402, headers + [('Content-Encoding', 'gzip')], good, complete=True))
+        self.assertIsNone(api._provider_rejection(402, [('Content-Type', 'application/json; charset=latin1')], good, complete=True))
 
     def test_missing_done_and_close_failure_are_unknown_with_observed_usage(self):
         for mode in ('done', 'close'):

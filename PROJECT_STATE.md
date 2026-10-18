@@ -6,15 +6,17 @@
 
 表达相关性、完整改动、事实保真和按需读取由[规范源](governance-src/model/governance-model.json)统一编译。当前生成核心 **6,976 字节**，四组指引、16 项政策、8 项 Hot Path、3 项默认规则和 18 个交付文件；规范身份 `adefef22…`，资格指纹 `74075f35…`。五个上游的固定来源、许可、适配与排除记录见 [选择性来源映射](docs/upstream-rule-map.md)及[许可记录](third_party/notices/README.md)。实验适配器不随 Skill 交付。
 
-最新 [source21 真实工具与公开质量校准](audits/rc20-source21-real-backend-and-public-quality.audit.json)完成两模型、15 次请求，报告 394,673 token、无待结算，总耗时约 389 秒。固定镜像和 C 盘挂载的前置验收通过，容器及临时源码清理已确认。首次独立盲审全锁定后解盲：DeepSeek 九项全部通过；MiMo 功能检查通过，但 README 的 Unicode 示例和验证次数存在错误，四项语义要求未通过，无严重否决。不能宣称净收益或晋升。
+公开校准基线 [source21](audits/rc20-source21-real-backend-and-public-quality.audit.json)完成两模型、15 次请求，报告 394,673 token、无待结算，总耗时约 389 秒。固定镜像和 C 盘挂载的前置验收通过，容器及临时源码清理已确认。首次独立盲审全锁定后解盲：DeepSeek 九项全部通过；MiMo 功能检查通过，但 README 的 Unicode 示例和验证次数存在错误，四项语义要求未通过，无严重否决。不能宣称净收益或晋升。
 
-按用户要求停止反复公开校准，下一步固定 RC19、attention control 和完整组进行收益对照。已知文档失败作为开发基线保留，不重评为通过；对照后的质量、安全、token、完整工作流耗时及独立接手门槛不变。[此前宿主中断](audits/rc20-source21-host-capacity.audit.json)的四次调用和备份／回退记录仍冻结；用户释放资源后引擎已恢复，新入口先验收工具再产生模型费用。
+最新 [source22 九族配对对照](audits/rc20-primary22-insufficient-balance.audit.json)完成 34/54 个流程、37/66 个角色，累计 198 次请求、4,998,882 个已报告 token。第 35 个流程收到 MiMo 官方 HTTP 402「余额不足」，响应完整，无传输或落盘故障，但没有用量；原待定预留保留。另记录一个未知流程／角色，原进程已退出并清理所属 Job，总耗时约 147.6 分钟；进程 exit0 不代表实验通过。完整审计、盲评及净收益分析未启动，不续接或拼接为通过。
+
+按用户要求不再重复公开校准；后续对照复用固定代码和本地准备，采用新实验身份。已知文档失败不重评，质量、安全、token、完整工作流耗时及独立接手门槛不变。API 诊断已补充明确的 HTTP JSON 拒绝原因，同时保留未知用量与禁止自动重试，相关 14 项离线回归通过；这不构成效果提升证据。[此前宿主中断](audits/rc20-source21-host-capacity.audit.json)的调用与备份／回退记录仍冻结。
 
 此前 [source19 两模型公开校准](audits/rc20-source19-capability-and-environment.audit.json)完成 19 次请求记账、无待结算；DeepSeek 通过，关闭推理的 MiMo 机械失败且语义 **VETO**。旧失败和成本单独保留，不由本轮结果覆盖。
 
 [UltraSpeed 可用性与工具格式核验](audits/rc20-ultraspeed-native-compatibility.audit.json)的两次公开单请求均正常关闭，共报告 1,345 token；启用推理及 strict 后，约 3.1 秒返回符合原 schema 的虚拟补丁调用，未执行工具。新研究配置保留旧配置与本地校验；真实任务质量、同条件成本与持续容量仍未证明。[上一轮](audits/rc20-source18-hybrid-tool-contract.audit.json)及[深度推理耗时诊断](audits/rc20-source17-latency-and-quality.audit.json)保留原结果；不得以速度抵消质量否决或放宽完成标准。
 
-最近[九族配对实测](audits/rc20-primary14-incomplete-transport.audit.json)在第 27 个流程因 HTTP 响应体 `IncompleteRead` 中断。预注册分母仍为 **54 个流程／66 个角色**；已发布 26 个流程、29 个角色记录，第 157 次请求用量与费用未知。原失败、待定预留和未完成范围全部保留；首次整体审计、语义盲评和净收益分析的前置条件未满足。事后确认原 23 个容器及 69 个临时路径不存在，不追认业务成功。较早的[非流式两模型校准及四角色中断控制](audits/rc20-reasoning-input-budget-diagnosis-v1.audit.json)是历史记录，不构成当前净收益证明。
+此前[九族配对实测](audits/rc20-primary14-incomplete-transport.audit.json)在第 27 个流程因 HTTP 响应体 `IncompleteRead` 中断。预注册分母仍为 **54 个流程／66 个角色**；已发布 26 个流程、29 个角色记录，第 157 次请求用量与费用未知。原失败、待定预留和未完成范围全部保留；首次整体审计、语义盲评和净收益分析的前置条件未满足。事后确认原 23 个容器及 69 个临时路径不存在，不追认业务成功。较早的[非流式两模型校准及四角色中断控制](audits/rc20-reasoning-input-budget-diagnosis-v1.audit.json)是历史记录，不构成当前净收益证明。
 
 合并与安装仍须完成：
 

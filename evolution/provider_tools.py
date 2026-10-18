@@ -100,7 +100,7 @@ PUBLIC_LANGUAGE_FEEDBACK_POLICY = "public-finite-language-reminder-v1"
 DEADLINE_TELEMETRY_SCHEMA = "bounded-post-wait-v1"
 TRANSPORT_PHASES = frozenset({"preparation", "worker-before-request", "payload-serialize", "connection-create",
     "connect", "http-request", "response-headers", "response-body", "connection-close", "response-decode",
-    "response-persist", "response-envelope", "complete", "deadline-wait", "unobserved"})
+    "response-persist", "response-envelope", "provider-rejection", "complete", "deadline-wait", "unobserved"})
 
 
 def profile_configuration(profile_id):
@@ -169,6 +169,10 @@ class ResponseUnknown(RuntimeError):
     pass
 
 
+class ProviderRejected(ResponseUnknown):
+    """A known HTTP rejection reason, with usage/accounting still uncertain."""
+
+
 class DeadlineBeforeDispatch(RuntimeError):
     pass
 
@@ -187,7 +191,7 @@ _EXCEPTION_TYPES = ((ssl.SSLCertVerificationError, "SSLCertVerificationError"), 
             (ConnectionRefusedError, "ConnectionRefusedError"), (ConnectionResetError, "ConnectionResetError"),
             (BrokenPipeError, "BrokenPipeError"), (TimeoutError, "TimeoutError"), (OSError, "OSError"),
             (KeyboardInterrupt, "KeyboardInterrupt"), (DeadlineBeforeDispatch, "DeadlineBeforeDispatch"),
-            (ResponseUnknown, "ResponseUnknown"), (UnicodeError, "UnicodeError"), (ValueError, "ValueError"),
+            (ProviderRejected, "ProviderRejected"), (ResponseUnknown, "ResponseUnknown"), (UnicodeError, "UnicodeError"), (ValueError, "ValueError"),
             (TypeError, "TypeError"), (RuntimeError, "RuntimeError"), (MemoryError, "MemoryError"))
 TRANSPORT_EXCEPTION_CLASSES = frozenset(name for unused, name in _EXCEPTION_TYPES) | {"OtherError"}
 
@@ -715,6 +719,34 @@ def _native_response_json(body):
         elif type(item) is float and not math.isfinite(item):
             raise ValueError("non-finite native response number")
     return value
+
+
+def _provider_rejection(status, headers, body, *, complete, secret=""):
+    """Bounded diagnostic only; never a usage, non-dispatch or billing proof."""
+    if (complete is not True or type(status) is not int or not 400 <= status <= 599
+            or type(body) is not bytes or len(body) > 16384):
+        return None
+    media = [value for name, value in headers if name.casefold() == "content-type"]
+    encoding = [value for name, value in headers if name.casefold() == "content-encoding"]
+    if (len(media) != 1 or re.fullmatch(r'application/json(?:\s*;\s*charset\s*=\s*(?:"utf-8"|utf-8))?\s*', media[0].strip(), re.I) is None
+            or len(encoding) > 1 or encoding and encoding[0].strip().casefold() != "identity"):
+        return None
+    try:
+        value = _native_response_json(body)
+    except (ValueError, UnicodeError):
+        return None
+    error = value.get("error") if type(value) is dict else None
+    if type(error) is not dict:
+        return None
+    diagnostic = {"phase": "provider-rejection", "http_status": status}
+    for name, limit in (("code", 128), ("type", 128), ("message", 1024)):
+        text = error.get(name)
+        if type(text) is str and text:
+            # Redact before truncating, including a credential crossing the cap.
+            text = _redact(text, secret)
+            text = "".join(" " if ord(char) < 32 or ord(char) == 127 else char for char in text)
+            diagnostic[name] = text.encode("utf-8", errors="replace")[:limit].decode("utf-8", errors="ignore")
+    return diagnostic if len(diagnostic) > 2 else None
 
 
 def _usage(raw, *, profile_id=None):
@@ -1674,7 +1706,7 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
             request_started = time.perf_counter()
             request_count += 1
             response_sha, usage, raw, request_error, overrun = None, None, None, None, {}
-            sse_report, semantic_failure = None, False
+            sse_report, semantic_failure, provider_rejection = None, False, None
             transport, not_invoked = _transport("unobserved"), False
             deadline_telemetry = None
             managed, capture_receipts = None, []
@@ -1725,10 +1757,16 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                     code, headers, body = _bounded_post(provider, payload, key, deadline - time.perf_counter())
                 transport = _transport("response-decode", connection_attempted=True, http_dispatch="response_received")
                 decode_failure = None
+                complete = (managed is None or managed["failure"] is None
+                    and last_settlement["body_complete"] is True and last_settlement["worker_done"] is True
+                    and last_settlement["worker_alive_at_return"] is False)
+                provider_rejection = _provider_rejection(code,
+                    managed["raw_headers"][1] if streaming else list(headers.items()), body,
+                    complete=complete, secret=key)
                 if streaming:
                     sse_report = sse_report or chat_sse.project(body, body_complete=last_settlement["body_complete"])
                     raw = sse_report["response"]
-                    if (not sse_report["terminal_complete"] or not chat_sse.headers_valid(code, managed["raw_headers"][1])):
+                    if provider_rejection is None and (not sse_report["terminal_complete"] or not chat_sse.headers_valid(code, managed["raw_headers"][1])):
                         decode_failure = _transport("response-decode", ResponseUnknown(), True, "response_received")
                     semantic_failure = not sse_report["sse"]["message_valid"]
                 else:
@@ -1740,6 +1778,8 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                 transport["phase"] = "response-persist"
                 response_record = {"http_status": code, "body_sha256": sha(body), "body_bytes": len(body), "response": raw,
                     "request_id_header": next((value for name, value in headers.items() if name.casefold() in {"x-request-id", "request-id"}), None)}
+                if provider_rejection is not None:
+                    response_record["provider_rejection"] = provider_rejection
                 if engineering:
                     response_record.update(adapter=adapter_identity, broker_profile_id=broker_profile_id,
                         execution_backend=execution_backend, request_id=request_id)
@@ -1771,6 +1811,9 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                         or last_settlement.get("worker_alive_at_return") is not False
                         or last_settlement.get("attempt_dispatch_gate_closed") is not True):
                     raise TransportFailure(_transport("connection-close", None, True, "response_received"))
+                if provider_rejection is not None:
+                    transport["phase"] = "provider-rejection"
+                    raise ProviderRejected("http-provider-rejection")
                 if (code != 200 or not isinstance(raw, dict) or usage is None
                         or not isinstance(raw.get("id"), str) or not raw["id"]
                         or not isinstance(raw.get("model"), str) or not raw["model"]
@@ -1819,6 +1862,8 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                            model_reported=raw.get("model") if isinstance(raw, dict) else None,
                            api_response_id=raw.get("id") if isinstance(raw, dict) else None,
                            elapsed_seconds=time.perf_counter() - request_started, error_type=request_error)
+            if provider_rejection is not None:
+                outcome["provider_rejection"] = provider_rejection
             if deadline_telemetry is not None:
                 outcome["deadline_telemetry"] = deadline_telemetry
             if settlement_policy is not None:

@@ -1,0 +1,72 @@
+{
+  "schema": "rc20-incomplete-development-comparison-audit-v1",
+  "observed_on": "2026-10-18",
+  "status": "INCOMPLETE_NOT_ASSESSED",
+  "candidate": "3.0.0-rc.20",
+  "comparison": ["fixed-rc19", "attention-control", "full-rc20"],
+  "registered_counts": {"workflows": 54, "actors": 66, "paired_blocks": 18, "families": 9},
+  "completed_counts": {"workflows": 34, "actors": 37},
+  "recorded_counts": {"workflows": 35, "actors": 38, "unknown_workflows": 1, "unknown_actors": 1},
+  "requests": {"slots": 198, "known_reported_tokens": 4998882, "pending": 1},
+  "original_process": {
+    "session_id": 21013,
+    "exit_code": 0,
+    "business_status": "unknown-accounting-global-stop",
+    "inclusive_owner_wall_seconds": 8856.216604200003,
+    "overrun": false,
+    "job_active_after": 0,
+    "owned_process_handle_closed": true,
+    "external_daemon_cleanup": "NOT_PROVEN_BY_WINDOWS_JOB",
+    "process_exit_is_not_study_success": true
+  },
+  "failure": {
+    "actor_id": "w035-source",
+    "provider": "mimo",
+    "model": "mimo-v2.6-pro-ultraspeed",
+    "local_request_index": 3,
+    "request_id": "2ab841bcb5d14f4a98892c7f77be79b3",
+    "http_status": 402,
+    "content_type": "application/json",
+    "body_bytes": 138,
+    "body_sha256": "6526d7d797378d955dbebd1360951476d80ba8d1e1ef9a07f9d1fa82398f3143",
+    "provider_error": {"code": "402", "type": "insufficient_balance", "message": "Insufficient account balance"},
+    "body_complete": true,
+    "worker_done": true,
+    "transport_failure": null,
+    "capture_failure": null,
+    "usage": null,
+    "billing": "UNKNOWN",
+    "automatic_retry": false,
+    "interpretation": "Explicit provider balance rejection, not SSE disconnection or Docker failure. Absent usage does not establish zero billing."
+  },
+  "fee_estimates": {
+    "deepseek_USD_input_miss_bound": "4.55740428",
+    "mimo_USD_input_miss_bound": "13.21633530",
+    "mimo_pending_reserved_USD": "0.47550720",
+    "mimo_reported_input_tokens": 2021948,
+    "mimo_reported_output_tokens": 508145,
+    "mimo_reported_cached_tokens": 1583744,
+    "mimo_cache_adjusted_CNY": "44.030756",
+    "mimo_CNY_rates_per_million": {"input_hit": "0.25", "input_miss": "30", "output": "60"},
+    "pricing_source": "https://mimo.mi.com/models/zh-CN/mimo-v2.6-pro-ultraspeed",
+    "price_reviewed_on": "2026-10-18",
+    "scope": "Known usage only, not invoices. Currency alternatives are not summed. Original ledger conservatively ignores cache discounts; failed request billing remains unknown."
+  },
+  "original_evidence": {
+    "source_manifest_sha256": "fe8d7f447ecb4c7fed296225c67c01b6394e8c8424dd28ab5217a0b3fdd0970b",
+    "protocol_sha256": "7f8b57143263ae360347454cbd30ca1f3b15a14461eb306d9868bebe35da8004",
+    "execution_plan_sha256": "482a45f587a40d33d10baab6be322b725da481eddcf8e493e46163cbe5a5e1c5",
+    "terminal_sha256": "a2b34956cd8f6482122538c4b2540eb6add2dae84dc7bae15224deb8d23be9d0",
+    "accounting_sha256": "f53f56e2fd984b3270244769665e9392e089a5d35fe23c7d8aa7e162a866792f",
+    "owner_closed_sha256": "9c4dd9b5b65393231762e2ebe7700ffc4438ddfa318fdc7e7cc306f001f61805"
+  },
+  "assessment": {
+    "first_whole_raw_audit": "NOT_RUN_INCOMPLETE_PRECONDITIONS",
+    "manual_extraction_and_grading": "NOT_RUN",
+    "net_benefit": "NOT_ASSESSED",
+    "promotion_allowed": false,
+    "Stable": false,
+    "resume_regrade_or_partial_splice_authorized": false,
+    "main_and_local_install": "3.0.0-rc.19"
+  }
+}
