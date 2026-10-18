@@ -6,9 +6,11 @@
 
 表达相关性、完整改动、事实保真和按需读取由[规范源](governance-src/model/governance-model.json)统一编译。当前生成核心 **6,976 字节**，四组指引、16 项政策、8 项 Hot Path、3 项默认规则和 18 个交付文件；规范身份 `adefef22…`，资格指纹 `74075f35…`。五个上游的固定来源、许可、适配与排除记录见 [选择性来源映射](docs/upstream-rule-map.md)及[许可记录](third_party/notices/README.md)。实验适配器不随 Skill 交付。
 
-当前 RC20 的 [source21 公开试验](audits/rc20-source21-host-capacity.audit.json)在首个容器创建前被 Docker HTTP500 中断：4 次 DeepSeek 请求报告 76,647 token、无待结算，MiMo 未启动，任务质量未评估。宿主日志明确出现 renderer OOM 和分页文件不足；D 盘约余 149 MB。两份虚拟磁盘及设置已备份并逐字节哈希核对，失败的临时启动配置已回退；待宿主资源恢复后再用新 cohort 验证。
+最新 [source21 真实工具与公开质量校准](audits/rc20-source21-real-backend-and-public-quality.audit.json)完成两模型、15 次请求，报告 394,673 token、无待结算，总耗时约 389 秒。固定镜像和 C 盘挂载的前置验收通过，容器及临时源码清理已确认。首次独立盲审全锁定后解盲：DeepSeek 九项全部通过；MiMo 功能检查通过，但 README 的 Unicode 示例和验证次数存在错误，四项语义要求未通过，无严重否决。不能宣称净收益或晋升。
 
-最近完成质量评估的[两模型公开校准](audits/rc20-source19-capability-and-environment.audit.json)完成 19 次请求记账、无待结算，owner 正常关闭；首次盲评全锁定后解盲。DeepSeek 机械及 9 项语义要求全部通过；关闭推理的 MiMo 仍两次遗漏补丁路径与 SHA，在执行验证前声称已检查，并留下实现缺陷，机械失败且语义 **VETO**。准确字段反馈未防止错误复发，该轮配置未通过全量试验门槛。此前 Docker 故障中断的 5 次调用及成本单独保留；释放项目存储空间、恢复引擎并验证后使用新 cohort，没有重跑或重评原失败。
+按用户要求停止反复公开校准，下一步固定 RC19、attention control 和完整组进行收益对照。已知文档失败作为开发基线保留，不重评为通过；对照后的质量、安全、token、完整工作流耗时及独立接手门槛不变。[此前宿主中断](audits/rc20-source21-host-capacity.audit.json)的四次调用和备份／回退记录仍冻结；用户释放资源后引擎已恢复，新入口先验收工具再产生模型费用。
+
+此前 [source19 两模型公开校准](audits/rc20-source19-capability-and-environment.audit.json)完成 19 次请求记账、无待结算；DeepSeek 通过，关闭推理的 MiMo 机械失败且语义 **VETO**。旧失败和成本单独保留，不由本轮结果覆盖。
 
 [UltraSpeed 可用性与工具格式核验](audits/rc20-ultraspeed-native-compatibility.audit.json)的两次公开单请求均正常关闭，共报告 1,345 token；启用推理及 strict 后，约 3.1 秒返回符合原 schema 的虚拟补丁调用，未执行工具。新研究配置保留旧配置与本地校验；真实任务质量、同条件成本与持续容量仍未证明。[上一轮](audits/rc20-source18-hybrid-tool-contract.audit.json)及[深度推理耗时诊断](audits/rc20-source17-latency-and-quality.audit.json)保留原结果；不得以速度抵消质量否决或放宽完成标准。
 

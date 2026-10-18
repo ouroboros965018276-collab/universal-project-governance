@@ -1,0 +1,161 @@
+{
+  "schema_version": 1,
+  "kind": "rc20-source21-real-backend-and-public-quality",
+  "observed_date": "2026-10-18",
+  "runtime_changed": false,
+  "code_commit": "a48c84eecf89140883fab8a228e32ac3cf159fb3",
+  "source_manifest_sha256": "c7830307dbc6ab812d26063dad0b2061f814aaba6b93d97034643aa1e5fe4540",
+  "source_seal_sha256": "4b1346825e88e8636f000cb2de4cfcc06d2f24bbf4663eb03ee6c77a23f95891",
+  "registration_sha256": "5efe1494d4c354acfea6ad7c5fbeb94ec0dcea27b5c8ac9b5d4712dac610bafc",
+  "recovery": {
+    "user_closed_unused_apps": true,
+    "free_virtual_KiB_before_start": 5125024,
+    "D_free_before_start_bytes": 1713623040,
+    "Docker_client_server": "29.8.1",
+    "permanent_config_or_disk_migration": false,
+    "original_backup_retained": true
+  },
+  "prepaid_gate": {
+    "exact_pinned_image": true,
+    "checks_passed": 2,
+    "checks_total": 2,
+    "wall_seconds": 9.37690869999642,
+    "container_removed": true,
+    "scratch_removed": true,
+    "unknown": false,
+    "source_fixes": "Late publication, early exit0 validation and unknown paid-counter attribution corrected before registration.",
+    "synthetic_child_cases": 8,
+    "synthetic_models_Docker": 0,
+    "first_control_sha256": "871f9e684e6dea2f2a981bb09bce7fc8f0f37dfefbb5d54ed58567311fb56667",
+    "admission_sha256": "857bfed40f4d22bd82f13cc65f37b4140daaae776bc2a6ca376b1f25a0a8587e",
+    "execution_result_sha256": "19a80d3b9dd3c57b322793341c8005a7104bef4bbbac75815437e5d2a9227216"
+  },
+  "trial": {
+    "scope": "PUBLIC_DEVELOPMENT_ONLY",
+    "planned_workflows": 2,
+    "completed_workflows": 2,
+    "provider_order": [
+      "mimo",
+      "deepseek"
+    ],
+    "requests": 15,
+    "pending": 0,
+    "reported_tokens": 394673,
+    "owner_exit": 0,
+    "Job_active_after": 0,
+    "owned_handle_closed": true,
+    "owner_wall_before_closed_publication_seconds": 389.2442236000061,
+    "providers": {
+      "deepseek": {
+        "requests": 8,
+        "usage": {
+          "input_tokens": 203995,
+          "cached_tokens": 200064,
+          "output_tokens": 31886,
+          "reasoning_tokens": 29169,
+          "total_tokens": 235881
+        },
+        "mechanical_pass": true,
+        "first_semantic": "PASS",
+        "supported": 9,
+        "unsupported": [],
+        "workflow_wall_before_observation_seconds": 299.19517249999626
+      },
+      "mimo": {
+        "requests": 7,
+        "usage": {
+          "input_tokens": 137984,
+          "cached_tokens": 109504,
+          "output_tokens": 20808,
+          "reasoning_tokens": 17447,
+          "total_tokens": 158792
+        },
+        "mechanical_pass": true,
+        "first_semantic": "FAIL",
+        "supported": 5,
+        "unsupported": [
+          "factual-scope",
+          "complete-integration",
+          "relevant-maintenance",
+          "evidence-consistency"
+        ],
+        "workflow_wall_before_observation_seconds": 79.64289760000247
+      }
+    },
+    "transport_replay_or_request_retry": false,
+    "semantic_first_decisions_locked_before_unblind": true
+  },
+  "diagnosis": {
+    "mimo_remaining_defects": [
+      "README converts decomposed e plus U+0301 to composed U+00E9 in claimed output although contract/code preserve code points.",
+      "README says one validation run; original evidence and final report record two."
+    ],
+    "severe_veto": false,
+    "public_quality_pass": false,
+    "DS_initial_wire_payload_sha256": "b7a7f10e26728e7932fc27cc40139e6c1ffec639ee0289bc7695f6a618d3bacb",
+    "DS_initial_task_and_wire_identical_to_source19": true,
+    "DS_requests_previous_current": [
+      6,
+      8
+    ],
+    "DS_reported_tokens_previous_current": [
+      134258,
+      235881
+    ],
+    "DS_reasoning_tokens_previous_current": [
+      22044,
+      29169
+    ],
+    "DS_tools_previous": [
+      "repo_read",
+      "repo_read",
+      "repo_search",
+      "repo_search",
+      "repo_patch",
+      "repo_validate",
+      "repo_status"
+    ],
+    "DS_tools_current": [
+      "repo_read",
+      "repo_search",
+      "repo_search",
+      "repo_search",
+      "repo_patch",
+      "repo_validate",
+      "repo_status",
+      "repo_search",
+      "repo_search"
+    ],
+    "causal_limit": "Identical initial DS wire still produced a longer tool/reasoning trajectory. This is a diagnosis of observed cost drivers, not isolated causation, a matched treatment estimate or net benefit."
+  },
+  "original_pins": {
+    "closed_sha256": "414a20608a22142d0e1853eb48bd38eb72ffcc0a65816c58f6d265ccbe5eb939",
+    "terminal_sha256": "a4eef17f74cdd5ad929459ef46b8f4d613ea4b4ce21e21ee3e227def2e48d883",
+    "accounting_sha256": "efc26f5f379c9198282ac33cc4c2b28570293f876683cb024fde124bc549a385",
+    "first_final_ledger_sha256": "b594a00c647a8e612435b224d9847b3625e4b6b3bbfa684f390f323ae8576874",
+    "extract_sha256": "1a71340b38fc838d9734711bf55b7a4e5681584b139df9d2e52c35049ad9f321",
+    "first_decisions_sha256": [
+      "849e534f21b1d9a478832e3e5bf1c43b9399ddacedbeac7bf0a2e818770e2639",
+      "63f7f758b2a1099670ef1bc173073945c559260ee4464892e46507e33653d5b9"
+    ],
+    "initial_lock_sha256": "715f28ab59b0a8e5c7be0f57e17004972e1eac838462186d02e5bdd0da8f4c1d",
+    "unblind_sha256": "8b272102aed762c3a96cfe0010d15878aac862f4e79028169d05bd94344c4413"
+  },
+  "next_comparison": {
+    "reason": "User requested ending repeated public calibration and proceeding to actual benefits comparison.",
+    "public_FAIL_preserved": true,
+    "prospective_entry": "Complete two mechanical/raw/accounting passes and known locked noncritical semantic failures may enter a development comparison. This does not qualify or promote the candidate.",
+    "fixed_RC19_attention_full_release_gates_unchanged": true,
+    "formal_locked_or_holdout_standards_unchanged": true,
+    "no_more_public_calibration_planned": true
+  },
+  "release": {
+    "main_and_installed": "3.0.0-rc.19",
+    "RC20_merged_installed": false,
+    "net_benefit": "NOT_ESTABLISHED",
+    "formal_qualification": "UNASSESSED",
+    "stable": false,
+    "prior_unknown_usage_retained": true,
+    "research_manual_unobserved_total_cost": "UNKNOWN"
+  }
+}
