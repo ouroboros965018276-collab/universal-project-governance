@@ -76,6 +76,11 @@ ENGINEERING_REASONING_PROFILE_SETTINGS = {
 }
 ENGINEERING_REASONING_MAX_REQUESTS = 24
 ENGINEERING_REASONING_MAX_SECONDS = 600
+REASONING_CONTINUATION_POLICY = "empty-reasoning-length-continue-once-v1"
+REASONING_CONTINUATION_FEEDBACK = (
+    "The previous response reached its output limit before issuing a tool call. "
+    "Continue the unfinished repository task with the next registered tool call. "
+    "Do not repeat the analysis or claim completion; only repo_finish submits the final report.")
 CONNECT_RETRY_POLICY = "confirmed-pre-http-connect-once-v1"
 CONNECT_RETRY_EXCEPTIONS = frozenset({"TimeoutError", "gaierror", "ConnectionRefusedError", "ConnectionResetError"})
 PUBLIC_LANGUAGE_FEEDBACK_POLICY = "public-finite-language-reminder-v1"
@@ -561,7 +566,40 @@ def _schema(value, schema, depth=0):
     return True
 
 
-def _usage(raw):
+def _native_response_json(body):
+    """Decode a bounded API body independently of repository artifact limits."""
+    if type(body) is not bytes or len(body) > MAX_RESPONSE_BYTES:
+        raise ValueError("native response exceeds byte limit")
+    def pairs(rows):
+        result = {}
+        for name, value in rows:
+            if name in result:
+                raise ValueError("duplicate native response key")
+            result[name] = value
+        return result
+    def nonfinite(unused):
+        raise ValueError("non-finite native response number")
+    try:
+        value = json.loads(body.decode("utf-8", errors="strict"),
+            object_pairs_hook=pairs, parse_constant=nonfinite)
+    except RecursionError:
+        raise ValueError("native response exceeds complexity limit") from None
+    pending, count = [(value, 0)], 0
+    while pending:
+        item, depth = pending.pop()
+        count += 1
+        if depth > 48 or count > 10000:
+            raise ValueError("native response exceeds complexity limit")
+        if type(item) is dict:
+            pending.extend((child, depth + 1) for child in item.values())
+        elif type(item) is list:
+            pending.extend((child, depth + 1) for child in item)
+        elif type(item) is float and not math.isfinite(item):
+            raise ValueError("non-finite native response number")
+    return value
+
+
+def _usage(raw, *, profile_id=None):
     if not isinstance(raw, dict):
         return None
     names = ("prompt_tokens", "completion_tokens", "total_tokens")
@@ -579,9 +617,14 @@ def _usage(raw):
         return None
     cached = prompt_details.get("cached_tokens", raw.get("prompt_cache_hit_tokens"))
     reasoning = completion_details.get("reasoning_tokens")
-    for value, maximum in ((cached, raw["prompt_tokens"]), (reasoning, raw["completion_tokens"])):
-        if value is not None and (type(value) is not int or not 0 <= value <= maximum):
+    if cached is not None and (type(cached) is not int or not 0 <= cached <= raw["prompt_tokens"]):
+        return None
+    if reasoning is not None and (type(reasoning) is not int or not 0 <= reasoning <= raw["completion_tokens"]):
+        if profile_id != ENGINEERING_REASONING_PROFILE:
             return None
+        # This optional subset cannot invalidate consistent billable totals.
+        # Keep the provider's original count in raw evidence; never clamp it.
+        reasoning = None
     if "prompt_cache_hit_tokens" in raw:
         legacy_cached = raw["prompt_cache_hit_tokens"]
         if (legacy_cached is not None and (type(legacy_cached) is not int or not 0 <= legacy_cached <= raw["prompt_tokens"])
@@ -1159,7 +1202,8 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
               max_requests=12, timeout_seconds=180, *, response_json_mode, thinking,
               before_request=None, after_request=None, profile_id=None, execution_backend=None, connect_retry_policy=None, tool_feedback_policy=None,
               broker_profile_id=None, controlled_local_stop_guard=None, settlement_policy=None,
-              actor_timing=None, controlled_phase_stop_policy=None, controlled_phase_stop_guard=None):
+              actor_timing=None, controlled_phase_stop_policy=None, controlled_phase_stop_guard=None,
+              reasoning_continuation_policy=None):
     """Run once on existing disk state; new actor => fresh artifact directory.
 
     before_request(metadata) reserves the outer budget before dispatch and may
@@ -1188,6 +1232,10 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
     Only the opt-in engineering reasoning profile admits up to 24 request slots
     and 600 work seconds. Callers must choose those limits explicitly; default
     arguments and every earlier profile remain bounded by 12 slots/180 seconds.
+    Its optional reasoning_continuation_policy may request one continuation of
+    an otherwise empty length-truncated thinking response. This consumes the
+    next existing slot, preserves opaque history and never executes a tool or
+    submits a report by itself; other missing native finishes still stop.
     """
     if provider not in ENDPOINTS or not isinstance(model, str) or not model.strip():
         raise ValueError("allowlisted provider and explicit model are required")
@@ -1227,6 +1275,10 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
         if engineering.PROFILE_ID != ENGINEERING_PROFILE or engineering.BACKEND_ID != ENGINEERING_BACKEND:
             raise ValueError("engineering module identity mismatch")
         adapter_identity = ENGINEERING_ADAPTER
+    if reasoning_continuation_policy is not None and (type(reasoning_continuation_policy) is not str
+            or reasoning_continuation_policy != REASONING_CONTINUATION_POLICY
+            or not engineering_reasoning or engineering is None):
+        raise ValueError("reasoning continuation requires its explicit policy and engineering reasoning profile")
     if settlement_policy is not None:
         if (type(settlement_policy) is not str or settlement_policy != SETTLEMENT_POLICY or engineering is None):
             raise ValueError("settlement requires the exact opt-in engineering policy")
@@ -1311,6 +1363,8 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
             entry["actor_timing"] = copy.deepcopy(registered_timing)
         if controlled_phase_stop_guard is not None:
             entry["controlled_phase_stop_policy"] = controlled_phase_stop_policy
+        if reasoning_continuation_policy is not None:
+            entry["reasoning_continuation_policy"] = reasoning_continuation_policy
         if settlement_policy is not None:
             entry.update(settlement_policy=settlement_policy, settlement_max_seconds=SETTLEMENT_MAX_SECONDS,
                 work_deadline_monotonic=deadline, settlement_deadline_monotonic=settlement_deadline,
@@ -1356,6 +1410,7 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
         failed_execution, execution_state_unknown, execution_infrastructure_failed = None, False, False
         connect_retries, next_retry_parent = 0, None
         schema_rejections, schema_rejection_receipts = 0, []
+        reasoning_continuations = 0
         controlled_local_stop, last_calls, last_outcome_sha = None, [], None
         work_cutoff_reached, last_settlement = False, None
         for index in range(1, max_requests + 1):
@@ -1412,6 +1467,8 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                     failures.append("api-local-stop-rejected:unverified-proposal")
                     status, refusal_reason = "controlled-local-stop-proposal-refused", _exception_class(error)
                     break
+            if reasoning_continuation_policy is not None:
+                metadata["reasoning_continuation_policy"] = reasoning_continuation_policy
             try:
                 reservation = before_request(copy.deepcopy(metadata)) if before_request else None
                 if engineering and (not isinstance(reservation, dict)
@@ -1497,7 +1554,7 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                 transport = _transport("response-decode", connection_attempted=True, http_dispatch="response_received")
                 decode_failure = None
                 try:
-                    raw = normalize("json", body.decode("utf-8"))
+                    raw = _native_response_json(body)
                 except (ValueError, UnicodeError) as error:
                     decode_failure = _transport("response-decode", error, True, "response_received")
                     raw = {"unparsed_response": body.decode("utf-8", errors="replace")}
@@ -1510,13 +1567,13 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                 # For the opt-in path, preserve already verified components even
                 # if the subsequent durable response write or close fails.
                 if settlement_policy is not None and decode_failure is None:
-                    usage = _usage(raw.get("usage")) if isinstance(raw, dict) else None
+                    usage = _usage(raw.get("usage"), profile_id=profile_id) if isinstance(raw, dict) else None
                     if usage is not None:
                         receipts.append(usage)
                 response_sha = _write_new(artifacts / "requests" / ("%02d.response.json" % index), response_record, key)
                 if decode_failure is not None:
                     raise TransportFailure(decode_failure)
-                usage = _usage(raw.get("usage")) if isinstance(raw, dict) else None
+                usage = _usage(raw.get("usage"), profile_id=profile_id) if isinstance(raw, dict) else None
                 if usage is not None:
                     if settlement_policy is None:
                         receipts.append(usage)
@@ -1615,6 +1672,15 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
             assistant = {name: _redact(message[name], key) for name in ("role", "content", "reasoning_content", "tool_calls") if name in message}
             messages.append(assistant)
             if not calls:
+                if (reasoning_continuation_policy == REASONING_CONTINUATION_POLICY
+                        and reasoning_continuations == 0 and index < max_requests
+                        and time.perf_counter() < deadline and choice["finish_reason"] == "length"
+                        and message.get("content") in (None, "")
+                        and type(message.get("reasoning_content")) is str and message["reasoning_content"].strip()
+                        and assistant.get("reasoning_content") == message["reasoning_content"]):
+                    reasoning_continuations += 1
+                    messages.append({"role": "user", "content": REASONING_CONTINUATION_FEEDBACK})
+                    continue
                 failures.append("api-finish-rejected:required-native-terminal-call")
                 status = "tool-contract-failed"
                 break
@@ -1918,6 +1984,8 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
             result["receipt"].update(broker_profile_id=broker_profile_id, execution_backend=execution_backend)
             result["quality"].update(evidence_adapter=adapter_identity,
                 evidence_broker_profile_id=broker_profile_id, evidence_execution_backend=execution_backend)
+        if reasoning_continuation_policy is not None:
+            result["reasoning_continuations"] = reasoning_continuations
         if controlled_local_stop_guard is not None:
             result["controlled_local_stop"] = controlled_local_stop
             if controlled_local_stop is not None:

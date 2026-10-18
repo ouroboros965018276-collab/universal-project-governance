@@ -18,11 +18,13 @@
 - **四规则组消融**：首轮因读取器计数顺序不一致停止，原轮不重新判定。修复后的[新轮](audits/rc20-guidance-ablation-v2.audit.json)运行与首次原始审计退出 0，16 个角色原始证明通过，16 包、144 项要求全部独立初评锁定后才解盲。四组质量门槛均失败或未知，token／耗时比较均为未知，未证明规则组贡献；不能据此认定任何上游有利或有害。
 - **跨 API／CLI 公开接手**：此前[首轮读取异常](audits/rc20-public-mixed-first-failure-v3.audit.json)保留。命令数组读取修复后的新轮发生 CLI 连接发送失败；前两次工具调用成功，无完成回合用量。未观察到容量或余额错误，更深层网络原因未知。新公开校准轮复用身份一致的冻结源码与规划结果，使用新项目、协议和授权，已完成两个方向的两条自然工作流及四个角色，首次原始审计通过；完整运行约 140.60 秒，用量按模型分域记录，[独立字节保全及预算控制](audits/rc20-public-mixed-and-budget-calibrations-v1.audit.json)均已完成。它不证明语义质量、突发中断恢复或净收益，旧轮未知用量不清除。
 
-[证据保真修订](audits/rc20-evidence-fidelity-refinement.audit.json)已生成并完成完整本地回归：运行 **1,119 项，3 项跳过，其余通过**；九项工程门禁通过。前一次回归中的旧终止行为断言失败已保留，修订后的用例继续验证未修复任务不能成功。当前提交 `7b8c32c` 的 [11 项 CI](https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/39083750962) 已通过。
+[证据保真修订](audits/rc20-evidence-fidelity-refinement.audit.json)已生成并完成完整本地回归：运行 **1,119 项，3 项跳过，其余通过**；九项工程门禁通过。前一次回归中的旧终止行为断言失败已保留，修订后的用例继续验证未修复任务不能成功。指引提交 `7b8c32c` 的 [11 项 CI](https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/39083750962) 已通过；显式工程推理配置提交 `cf155ec` 的 [11 项 CI](https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/39085553433) 也已通过。
 
 [六工作流公开真实校准](audits/rc20-public-six-feedback-negative-v1.audit.json)已结束：两家模型、三组条件共 66 次请求结算，754,759 个已知报告 token，关闭记录发布前约 521.83 秒；6 个角色的首次原始校验通过。三组独立盲审完成 6 包、54 项要求，初评全部锁定后揭盲，完整工作流通过 **0/6**，完整组有一项事实性否决。五个工作流耗尽 12 次请求；另一个耗尽 8,192 个输出 token，未调用收尾工具。只接受特定 Unicode 类别字面写法的文档检查还存在语义误拒，下一轮必须先修正测量有效性，再验证独立的推理执行配置；原始失败、初评和费用保留，不重新判定。当前未证明真实净收益；完整配对、消融、真实跨 Agent 接手和独立未暴露实测仍未完成。
 
 合并和安装要求完整组质量不劣于 RC19 与 attention control、无严重否决，报告 token 与完整工作流耗时均严格低于两组对照，并补足来源消融、真实跨 Agent 接手和独立未暴露验证。未知用量、意外中断、缺失耗时或超限阻止有利净收益结论。研究、人工及未观测总成本保持未知。正式资格 **UNASSESSED**，locked **NOT RUN**，不宣称 Stable。其他已曝光开发结果、首次失败及冻结实验限制保留在各自 [audits/](audits/)，不绑定为当前候选的有效性证明。
+
+随后[两模型推理能力校准](audits/rc20-two-pro-reasoning-prefix-v1.audit.json)因原始响应解析而失败关闭：DeepSeek 的 7 次请求完成任务，4 项机械检查及首次原始校验通过；关闭后的独立诊断初评先锁后揭盲，DeepSeek 的 9 项语义要求通过，MiMo 因证据缺口为 UNKNOWN。MiMo 的第二次响应为 69,115 字节，被误用的 64 KiB 项目文件解析上限拒绝。原轮保留 116,009 个已知结算 token 和一笔未知预留，不重新结算或评分为成功。当前修复分离原生响应解析、保留一致的主用量计数，并增加显式一次推理截断续接；172 项 provider 相关测试及 24 项结算测试通过，真实效果尚待新轮验证。
 
 ## 最近一次重要发布：RC19
 

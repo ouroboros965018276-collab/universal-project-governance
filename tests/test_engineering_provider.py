@@ -238,6 +238,138 @@ class EngineeringCandidateTests(_ProviderFixture, unittest.TestCase):
         self.assertEqual(result['max_tools'], 32)
         self.assertTrue(result['quality']['hard_pass'])
 
+    def test_reasoning_actor_retains_large_native_response_and_known_primary_usage_with_unknown_detail(self):
+        steps = self.ready()+[self.finish(4)]
+        observed_bodies = []
+        def post(provider, payload, key, timeout):
+            index = len(self.before)
+            step = steps[index-1]
+            response = step(payload) if callable(step) else step
+            if index == 1:
+                response['choices'][0]['message']['reasoning_content'] = 'x' * 70000
+                response['usage']['completion_tokens_details']['reasoning_tokens'] = 6
+            else:
+                self.assertEqual(payload['messages'][2]['reasoning_content'], 'x' * 70000)
+            body = canonical(response)
+            observed_bodies.append(body)
+            return 200, {}, body
+        with patch.object(lab, '_bounded_post', side_effect=post):
+            result = self.new_actor(profile_id=lab.ENGINEERING_REASONING_PROFILE,
+                thinking='enabled', max_requests=24, timeout_seconds=600)
+        self.assertTrue(result['quality']['hard_pass'], result['quality'])
+        self.assertFalse(result['unknown_usage'])
+        self.assertEqual(result['usage']['total_tokens'], 60)
+        self.assertIsNone(result['usage']['reasoning_tokens'])
+        self.assertEqual(self.after[0]['usage']['total_tokens'], 15)
+        self.assertIsNone(self.after[0]['usage']['reasoning_tokens'])
+        saved = json.loads((self.artifacts/'requests/01.response.json').read_bytes())
+        self.assertGreater(saved['body_bytes'], 65536)
+        self.assertEqual(saved['body_bytes'], len(observed_bodies[0]))
+        self.assertEqual(saved['body_sha256'], sha(observed_bodies[0]))
+        self.assertEqual(saved['response']['usage']['completion_tokens_details']['reasoning_tokens'], 6)
+        self.assertFalse((self.artifacts/'requests/01.pending.json').exists())
+
+    def truncated_reasoning(self, index, **message_changes):
+        response = completion(index)
+        response['choices'][0]['finish_reason'] = 'length'
+        response['choices'][0]['message']['reasoning_content'] = 'opaque synthetic unfinished analysis'
+        response['choices'][0]['message'].update(message_changes)
+        return response
+
+    def test_opt_in_empty_reasoning_truncation_continues_once_through_native_tools_and_finish(self):
+        initial = self.truncated_reasoning(1)
+        steps = [initial, self.read(2), self.patch_from_read(3, 'fixed\n'),
+            self.validate_and_status(4), self.finish(5)]
+        def post(provider, payload, key, timeout):
+            index = len(self.before)
+            if index == 2:
+                self.assertEqual(payload['messages'][-2], initial['choices'][0]['message'])
+                self.assertEqual(payload['messages'][-1], {'role': 'user', 'content': lab.REASONING_CONTINUATION_FEEDBACK})
+                self.assertEqual(self.brokers[-1][0].events, [])
+            step = steps[index-1]
+            return 200, {}, canonical(step(payload) if callable(step) else step)
+        with patch.object(lab, '_bounded_post', side_effect=post):
+            result = self.new_actor(profile_id=lab.ENGINEERING_REASONING_PROFILE, thinking='enabled',
+                reasoning_continuation_policy=lab.REASONING_CONTINUATION_POLICY,
+                max_requests=24, timeout_seconds=600)
+        self.assertTrue(result['quality']['hard_pass'], result['quality'])
+        self.assertEqual(result['requests'], 5)
+        self.assertEqual(result['reasoning_continuations'], 1)
+        self.assertEqual(result['usage']['total_tokens'], 75)
+        self.assertEqual([event['tool'] for event in result['tool_events']],
+            ['repo_read', 'repo_patch', 'repo_validate', 'repo_status'])
+        self.assertEqual(result['api_tool_trace'][0]['request_index'], 2)
+        for item in [result] + self.before + self.after:
+            self.assertEqual(item['reasoning_continuation_policy'], lab.REASONING_CONTINUATION_POLICY)
+        saved = json.loads((self.artifacts/'requests/01.response.json').read_bytes())
+        self.assertEqual(saved['response'], initial)
+
+    def test_continuation_does_not_repeat_add_slots_or_accept_other_missing_finishes(self):
+        cases = [([self.truncated_reasoning(1), self.truncated_reasoning(2)], 24, 2, 1),
+            ([self.truncated_reasoning(1)], 1, 1, 0),
+            ([completion(1)], 24, 1, 0),
+            ([self.truncated_reasoning(1, content='I finished the task.')], 24, 1, 0),
+            ([self.truncated_reasoning(1, reasoning_content='')], 24, 1, 0)]
+        partial = self.read(1)
+        partial['choices'][0]['finish_reason'] = 'length'
+        cases.append(([partial], 24, 1, 0))
+        for ordinal, (steps, maximum, expected_requests, continuations) in enumerate(cases):
+            with self.subTest(ordinal=ordinal):
+                self.artifacts = self.base/('continuation-stop-'+str(ordinal))
+                self.loaded, self.before, self.after = [], [], []
+                result, count = self.run_steps(steps, profile_id=lab.ENGINEERING_REASONING_PROFILE,
+                    thinking='enabled', reasoning_continuation_policy=lab.REASONING_CONTINUATION_POLICY,
+                    max_requests=maximum, timeout_seconds=600)
+                self.assertEqual(count, expected_requests)
+                self.assertEqual(result['requests'], expected_requests)
+                self.assertEqual(result['reasoning_continuations'], continuations)
+                self.assertEqual(result['status'], 'tool-contract-failed')
+                self.assertEqual(result['tool_events'], [])
+                self.assertIsNone(result['final_report'])
+                self.assertFalse(result['quality']['hard_pass'])
+
+    def test_continuation_never_retries_unknown_or_late_responses_and_default_remains_terminal(self):
+        for ordinal, mode in enumerate(('unknown', 'late', 'default')):
+            self.artifacts = self.base/('continuation-fence-'+mode)
+            self.loaded, self.before, self.after = [], [], []
+            now = [100.0]
+            def post(provider, payload, key, timeout):
+                response = self.truncated_reasoning(1)
+                if mode == 'unknown':
+                    response.pop('usage')
+                elif mode == 'late':
+                    now[0] += 601
+                return 200, {}, canonical(response)
+            kwargs = {'profile_id': lab.ENGINEERING_REASONING_PROFILE, 'thinking': 'enabled',
+                'max_requests': 24, 'timeout_seconds': 600}
+            if mode != 'default':
+                kwargs['reasoning_continuation_policy'] = lab.REASONING_CONTINUATION_POLICY
+            with self.subTest(mode=mode), patch.object(lab.time, 'perf_counter', side_effect=lambda: now[0]), \
+                    patch.object(lab, '_bounded_post', side_effect=post) as dispatch:
+                result = self.new_actor(**kwargs)
+            self.assertEqual(dispatch.call_count, 1)
+            self.assertEqual(result['requests'], 1)
+            self.assertEqual(result['tool_events'], [])
+            self.assertIsNone(result['final_report'])
+            if mode == 'default':
+                self.assertNotIn('reasoning_continuations', result)
+                self.assertNotIn('reasoning_continuation_policy', result)
+                self.assertNotIn('reasoning_continuation_policy', self.before[0])
+            else:
+                self.assertEqual(result['reasoning_continuations'], 0)
+            self.assertEqual(result['unknown_usage'], mode == 'unknown')
+
+    def test_continuation_policy_requires_exact_new_profile_before_credentials_or_artifacts(self):
+        for changes in ({}, {'profile_id': lab.THINKING_PROFILE},
+                {'profile_id': lab.ENGINEERING_REASONING_PROFILE, 'thinking': 'enabled',
+                    'reasoning_continuation_policy': 'unknown'}):
+            kwargs = {'reasoning_continuation_policy': lab.REASONING_CONTINUATION_POLICY}
+            kwargs.update(changes)
+            with self.subTest(kwargs=kwargs), self.assertRaises(ValueError):
+                self.new_actor(**kwargs)
+        self.assertEqual((self.loaded, self.before, self.after), ([], [], []))
+        self.assertFalse(self.artifacts.exists())
+
     def test_reasoning_profile_does_not_raise_default_limits_or_admit_other_backends(self):
         valid = {'profile_id': lab.ENGINEERING_REASONING_PROFILE, 'thinking': 'enabled'}
         cases = [dict(valid, max_requests=25), dict(valid, max_requests=True),

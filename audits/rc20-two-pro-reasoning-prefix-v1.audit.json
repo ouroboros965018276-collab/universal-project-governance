@@ -1,0 +1,96 @@
+{
+  "schema": "rc20-public-two-reasoning-first-prefix-v1",
+  "candidate": "3.0.0-rc.20",
+  "observed_date": "2026-10-18",
+  "scope": "Two full-condition public unicode_columns workflows. Capability diagnosis only; no baseline, net-benefit or qualification claim.",
+  "source": {
+    "manifest_sha256": "a6ecf685899e3f6020eed8db87741d177bf701a44b1ab6c44e831dea5bff36f1",
+    "seal_sha256": "c5e0deece9e524fde4a2eafbbd5e6edbf6c12a402923fee971056056905e510e",
+    "runner_sha256": "87e534194eba778ec3b3152aa5fd356363cbc6a321e125a79a44fffbfd45b59e",
+    "registration_sha256": "b468a4a377f384c3765680cc190ca9e7187481d8f7bb22b828a43b5ea10f0699",
+    "canonical_api_sha256": "c53670a4cee7a1e10957615aa1dd89eaf68b98b6b36407cf443c25a7e9eafd6b",
+    "profile_id": "thinking-enabled-engineering-pro-16384-v1"
+  },
+  "closure": {
+    "owned_child_exit": 1,
+    "owned_process_handle_closed": true,
+    "owned_job_active_after": 0,
+    "inclusive_wall_before_closed_publication_seconds": 513.7940570000064,
+    "final_closed_publication_cost": null,
+    "closed_sha256": "7774f707982bc0699ac4dad8a293262add10c12e9e9684fce449143062954ea1",
+    "terminal_sha256": "1f666d0fd7321d177e0a171292f4aa593bd779f06e5b43894088d39ea9f4758d",
+    "first_exception_class": "ValueError",
+    "first_exception_detail": "suppressed by original runner",
+    "replay_or_resume_authorized": false
+  },
+  "original_accounting": {
+    "request_slots": 9,
+    "known_settled_requests": 8,
+    "known_reported_tokens": 116009,
+    "pending_requests": 1,
+    "unknown_pending_usage_retained": true,
+    "ledger_status": "capability-prefix-failure-no-replay"
+  },
+  "actors": [
+    {
+      "actor": "w001-source",
+      "provider": "deepseek",
+      "status": "completed",
+      "requests": 7,
+      "reported_tokens": 111858,
+      "mechanical_checks_passed": 4,
+      "mechanical_checks_total": 4,
+      "first_raw_integrity": true,
+      "first_raw_sha256": "445d957bd3d811438d6c0939918de5c468e951e9abf20e4670d30eaff87c239a",
+      "workflow_wall_before_observation_seconds": 96.8926014000026,
+      "independent_semantic_review": "NOT RUN"
+    },
+    {
+      "actor": "w002-source",
+      "provider": "mimo",
+      "status": "unknown-call-blocked",
+      "requests": 2,
+      "known_reported_prefix_tokens": 4151,
+      "first_raw_integrity": null,
+      "first_raw_report": "NOT PRODUCED; original first reader threw",
+      "independent_semantic_review": "NOT RUN"
+    }
+  ],
+  "postclosure_readonly_diagnosis": {
+    "native_http_response": 200,
+    "affected_request": "w002-source/02",
+    "native_body_bytes": 69115,
+    "native_body_sha256": "c87b751b3ad9cf4c14c1fa082a789fdc666cfb78d3d8369152565e178d5897d9",
+    "standard_json_valid": true,
+    "artifact_decoder_limit_bytes": 65536,
+    "finding": "Adapter reused the project-artifact 64 KiB JSON normalizer for a native response despite a separate 2 MiB transport cap. Original response was stored as unparsed and the reserve remained unknown. First-reader raw JSON binding cannot pass that representation.",
+    "unadmitted_native_main_counters": {"prompt_tokens": 5828, "completion_tokens": 16384, "total_tokens": 22212},
+    "unadmitted_reasoning_detail": 16387,
+    "finish_reason": "length",
+    "counter_limit": "Raw counters are diagnostic observations only; not added to original settled totals or used to repair the pending ledger.",
+    "prospective_fixes": "Separate bounded native JSON parser; retain valid reported main counters while marking invalid optional reasoning detail unknown; evaluate one explicitly bounded continuation of a reasoning-only length truncation.",
+    "old_reader_replayed": false,
+    "old_ledger_repaired": false
+  },
+  "postclosure_diagnostic_initial_review": {
+    "scope": "First semantic decisions for the verified DeepSeek prefix and an explicitly unadmitted MiMo output. Not the original complete-round extraction; does not turn the failed round into success.",
+    "packets": 2,
+    "requirements": 18,
+    "fresh_blind_reviewers": 2,
+    "all_initials_locked_before_unblind": true,
+    "extract_sha256": "b97117d8bcca35f4ab5f0e617ef9e44123261ad684b843ed21474e28b1f5d91c",
+    "initial_lock_sha256": "653900b22f53cfaa3b75ab4cdb2f53ec1512c90f04bffe496652c8be8a195350",
+    "unblind_sha256": "c1a0eca658dffe68cbf90661004d2fb49566f39b9e58d24d2a4a7c66b4cc775f",
+    "deepseek": "PASS; nine requirements supported",
+    "mimo": "UNKNOWN; current output not admitted without first raw proof",
+    "promotion_authorized": false,
+    "regrade": false
+  },
+  "release": {
+    "round_pass": false,
+    "net_benefit_established": false,
+    "promotion_authorized": false,
+    "main_and_local": "3.0.0-rc.19",
+    "Stable": false
+  }
+}

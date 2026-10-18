@@ -235,6 +235,14 @@ primitive 返回状态还必须与实际收据原始字节一致，不能单凭�
 配置、费率估计和预算绑定进新收据；旧轮身份、结果和未知费用不重算。提高上限只解决执行
 可行性，不能作为质量或成本收益证据；各实验条件须使用同一已注册配置。
 
+原生 API 响应使用独立的 2 MiB 严格 JSON 与结构上限，项目文件和工具参数的 64 KiB
+上限保持不变。该推理配置中，计费主数一致而可选 reasoning 细分计数无效时，仅细分项
+为未知，原始计数保留；主数、加总和缓存计数仍严格校验。
+显式 `reasoning_continuation_policy="empty-reasoning-length-continue-once-v1"` 可在已知、
+及时、无工具且正文为空的推理长度截断后，保留原 reasoning 并请求一次续接；默认关闭。
+续接使用剩余原预算，不执行工具、不提交报告；再次截断、普通结束、非空正文、未知或
+迟到响应不能续接。收据绑定策略，读取器须从原响应重建后续消息与次数。
+
 `stdlib-python-project-v1` 使用独立身份 `official-chat-api-registered-project-v1` 和
 `docker-cpython-project-v1`，复用原 API 循环及受控文件操作。只接受固定 Pro/Flash
 模型配置、持久预算回调和注册任务；默认及有限 VM 配置保持原义，旧结果不重评。

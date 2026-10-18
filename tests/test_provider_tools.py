@@ -845,6 +845,44 @@ class ProviderToolsTests(_ProviderFixture, unittest.TestCase):
         self.assertIsNone(lab._totals([usage, dict(usage, cached_tokens=None)])["cached_tokens"])
         self.assertEqual(lab._totals([usage, dict(usage, cached_tokens=None)])["total_tokens"], 30)
 
+    def test_native_api_decoder_has_its_own_byte_and_structure_bounds(self):
+        value = {"reasoning_content": "x" * 70000}
+        raw = canonical(value)
+        self.assertEqual(lab._native_response_json(raw), value)
+        with self.assertRaises(ValueError):
+            lab.normalize("json", raw.decode("utf-8"))
+        boundary = b'{"pad":"' + b'x' * (lab.MAX_RESPONSE_BYTES - 10) + b'"}'
+        self.assertEqual(len(boundary), lab.MAX_RESPONSE_BYTES)
+        self.assertEqual(len(lab._native_response_json(boundary)["pad"]), lab.MAX_RESPONSE_BYTES - 10)
+        invalid = (boundary + b' ', b'{"a":0,"a":1}', b'{"a":{"b":0,"b":1}}',
+            b'{"a":NaN}', b'{"a":Infinity}', b'{"a":1e309}', b'"\xff"', b'{',
+            canonical([0] * 10000), b'[' * 49 + b'0' + b']' * 49,
+            b'[' * 2000 + b'0' + b']' * 2000)
+        for body in invalid:
+            with self.subTest(size=len(body), prefix=body[:20]), self.assertRaises((ValueError, UnicodeError)):
+                lab._native_response_json(body)
+
+    def test_only_explicit_engineering_reasoning_profile_preserves_core_usage_with_invalid_reasoning_subset(self):
+        base = {"prompt_tokens": 10, "completion_tokens": 5, "total_tokens": 15,
+            "prompt_tokens_details": {"cached_tokens": 2}}
+        for invalid in (6, -1, True, 1.5, "5", []):
+            raw = dict(base, completion_tokens_details={"reasoning_tokens": invalid})
+            with self.subTest(reasoning=invalid):
+                self.assertIsNone(lab._usage(raw))
+                for profile in (lab.THINKING_PROFILE, lab.FLASH_THINKING_PROFILE,
+                        lab.FLASH_DISABLED_PROFILE, lab.DEEPSEEK_PRO_FLASH_DISABLED_PROFILE):
+                    self.assertIsNone(lab._usage(raw, profile_id=profile))
+                normalized = lab._usage(raw, profile_id=lab.ENGINEERING_REASONING_PROFILE)
+                self.assertEqual(normalized, {"input_tokens": 10, "output_tokens": 5, "total_tokens": 15,
+                    "cached_tokens": 2, "reasoning_tokens": None, "measurement": "actual-official-chat-api-response"})
+                self.assertEqual(raw["completion_tokens_details"]["reasoning_tokens"], invalid)
+        for invalid in (dict(base, total_tokens=16), dict(base, prompt_tokens=True),
+                dict(base, completion_tokens=-1, total_tokens=9),
+                dict(base, completion_tokens=5.0), dict(base, prompt_tokens_details={"cached_tokens": 11}),
+                dict(base, completion_tokens_details=[])):
+            with self.subTest(usage=invalid):
+                self.assertIsNone(lab._usage(invalid, profile_id=lab.ENGINEERING_REASONING_PROFILE))
+
     def test_usage_details_allow_only_missing_null_or_dict_and_counters_remain_strict(self):
         base = {"prompt_tokens": 10, "completion_tokens": 5, "total_tokens": 15}
         for field, counter in (("prompt_tokens_details", "cached_tokens"), ("completion_tokens_details", "reasoning_tokens")):
