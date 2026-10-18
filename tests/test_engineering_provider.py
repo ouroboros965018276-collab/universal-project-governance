@@ -412,7 +412,9 @@ class EngineeringCandidateTests(_ProviderFixture, unittest.TestCase):
                 self.assertEqual(count, expected_requests)
                 self.assertEqual(result['requests'], expected_requests)
                 self.assertEqual(result['reasoning_continuations'], continuations)
-                self.assertEqual(result['status'], 'tool-contract-failed')
+                length = steps[-1]['choices'][0]['finish_reason'] == 'length'
+                self.assertEqual(result['status'], 'output-limit-unfinished' if length else 'tool-contract-failed')
+                self.assertEqual(result['refusal_reason'], 'provider-finish-reason-length' if length else None)
                 self.assertEqual(result['tool_events'], [])
                 self.assertIsNone(result['final_report'])
                 self.assertFalse(result['quality']['hard_pass'])

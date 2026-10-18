@@ -77,10 +77,11 @@ ENGINEERING_REASONING_PROFILES = (ENGINEERING_REASONING_PROFILE, ENGINEERING_REA
                                 ENGINEERING_REASONING_SSE_PROFILE)
 ENGINEERING_HYBRID_SSE_PROFILE = "thinking-hybrid-engineering-pro-16384-sse-v1"
 ENGINEERING_ULTRASPEED_STRICT_SSE_PROFILE = "thinking-enabled-engineering-ultraspeed-strict-16384-sse-v1"
+ENGINEERING_ULTRASPEED_CAPACITY_SSE_PROFILE = "thinking-enabled-engineering-ultraspeed-strict-dslow32768-mimo65536-sse-v1"
 ENGINEERING_PROFILES = (*ENGINEERING_REASONING_PROFILES, ENGINEERING_HYBRID_SSE_PROFILE,
-                       ENGINEERING_ULTRASPEED_STRICT_SSE_PROFILE)
+                        ENGINEERING_ULTRASPEED_STRICT_SSE_PROFILE, ENGINEERING_ULTRASPEED_CAPACITY_SSE_PROFILE)
 ENGINEERING_SSE_PROFILES = (ENGINEERING_REASONING_SSE_PROFILE, ENGINEERING_HYBRID_SSE_PROFILE,
-                           ENGINEERING_ULTRASPEED_STRICT_SSE_PROFILE)
+                            ENGINEERING_ULTRASPEED_STRICT_SSE_PROFILE, ENGINEERING_ULTRASPEED_CAPACITY_SSE_PROFILE)
 ENGINEERING_INPUT_PROFILES = (ENGINEERING_REASONING_INPUT_PROFILE, *ENGINEERING_SSE_PROFILES)
 ENGINEERING_REASONING_INPUT_MAX_BYTES = 524288
 ENGINEERING_REASONING_PROFILE_SETTINGS = {
@@ -143,7 +144,7 @@ def profile_configuration(profile_id):
         configuration["price_evidence"]["mimo_pro"] = "https://mimo.mi.com/models/en-US/mimo-v2.6-pro"
     if profile_id == ENGINEERING_HYBRID_SSE_PROFILE:
         configuration["providers"]["mimo"]["thinking"] = "disabled"
-    if profile_id == ENGINEERING_ULTRASPEED_STRICT_SSE_PROFILE:
+    if profile_id in (ENGINEERING_ULTRASPEED_STRICT_SSE_PROFILE, ENGINEERING_ULTRASPEED_CAPACITY_SSE_PROFILE):
         configuration["providers"]["deepseek"]["strict_tools"] = False
         configuration["providers"]["mimo"].update(model="mimo-v2.6-pro-ultraspeed", strict_tools=True)
         configuration["prices"]["mimo"] = {"USD": {"input_hit": ".036", "input_miss": "4.35", "output": "8.7"}}
@@ -152,6 +153,9 @@ def profile_configuration(profile_id):
             mimo="https://mimo.mi.com/models/en-US/mimo-v2.6-pro-ultraspeed",
             mimo_price_reviewed_on="2026-10-18",
             basis="DeepSeek-V4-Pro-0813 peak-rate estimate (off-peak rates are half; no time-based rate selection here); MiMo-V2.6-Pro-UltraSpeed official USD rates per million tokens reviewed 2026-10-18. Estimates, not invoices or provider billing caps.")
+        if profile_id == ENGINEERING_ULTRASPEED_CAPACITY_SSE_PROFILE:
+            configuration["providers"]["deepseek"].update(output_cap=32768, reasoning_effort="low")
+            configuration["providers"]["mimo"]["output_cap"] = 65536
     if profile_id in ENGINEERING_SSE_PROFILES:
         configuration["transport"] = {"transport_profile_id": chat_sse.TRANSPORT_PROFILE,
             "providers": {"deepseek": {"stream": True, "stream_options": {"include_usage": True}},
@@ -1427,6 +1431,8 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
     keeps DeepSeek Pro thinking enabled and requests MiMo Pro thinking disabled.
     The UltraSpeed strict SSE profile keeps both providers thinking enabled and
     requests function.strict only for MiMo; original local schemas still apply.
+    Its explicit capacity profile requests DeepSeek low/32768 and MiMo 65536;
+    request, input, tool and wall limits remain unchanged.
     """
     if provider not in ENDPOINTS or not isinstance(model, str) or not model.strip():
         raise ValueError("allowlisted provider and explicit model are required")
@@ -1616,6 +1622,7 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
         reasoning_continuations = 0
         controlled_local_stop, last_calls, last_outcome_sha = None, [], None
         work_cutoff_reached, last_settlement = False, None
+        last_finish_reason = None
         for index in range(1, max_requests + 1):
             remaining = deadline - time.perf_counter()
             if remaining <= 0:
@@ -1922,6 +1929,7 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                 work_cutoff_reached = True
                 status = "work-deadline-settled-unfinished"
                 break  # Usage was accounted once; never consume this late message.
+            last_finish_reason = choice.get("finish_reason") if isinstance(choice, dict) else None
             if semantic_failure:
                 failures.append("api-tool-rejected:invalid-assistant-envelope")
                 status = "tool-contract-failed"
@@ -2154,6 +2162,10 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                     break
             if status in {"tool-contract-failed", "completed"} or unknown or execution_state_unknown or execution_infrastructure_failed or work_cutoff_reached:
                 break
+        if status == "tool-contract-failed" and not unknown and last_finish_reason == "length":
+            # Keep the original rejection evidence and one-time continuation
+            # policy; classify the settled provider stop without admitting it.
+            status, refusal_reason = "output-limit-unfinished", "provider-finish-reason-length"
         if settlement_policy is not None and time.perf_counter() >= deadline:
             work_cutoff_reached = True
             if not unknown and not execution_state_unknown and not execution_infrastructure_failed:

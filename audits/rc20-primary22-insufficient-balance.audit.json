@@ -156,7 +156,7 @@
   },
   "continuation_after_host_recovery": {
     "observed_on": "2026-10-19 Asia/Shanghai",
-    "status": "RUNNING_REMAINING_W037_W054_ONLY",
+    "status": "EXECUTION_COMPLETED_FIRST_BLIND_REVIEW_PENDING",
     "completed_workflows_reused": 36,
     "completed_actor_records_reused": 39,
     "remaining_workflows": 18,
@@ -188,7 +188,20 @@
       ]
     ],
     "net_benefit": "NOT_ASSESSED",
-    "promotion_allowed": false
+    "promotion_allowed": false,
+    "completed_suffix_workflows": 18,
+    "actual_suffix_actor_records": 21,
+    "suffix_requests": 92,
+    "suffix_known_reported_tokens": 2386336,
+    "suffix_pending_requests": 0,
+    "original_exit_code": 0,
+    "total_executed_workflows": 54,
+    "total_actual_actor_records": 60,
+    "total_planned_actor_records": 66,
+    "first36_reexecuted": false,
+    "terminal_sha256": "4cb98c1f6a345238fa16f3aaf5f1b7e647f56834dfebd013813662cef52b7f22",
+    "accounting_sha256": "b0df6cdc0e98070e77b6b8137bb2f060e62b4207f50751819fdfe85ef59ea87f",
+    "closed_sha256": "17cd84279d49838400f12a199a6a5f3394ad489ca369a6aead981f0e4f6b5fb5"
   },
   "adapter_resilience_update": {
     "scope": "Canonical research adapter only; not copied into frozen/live comparison or installed Skill.",
@@ -217,5 +230,131 @@
     },
     "verification": "Copies counted directly; allocation/capture faults injected without network. Old configuration identities/wire and HTTP402 diagnostics covered by the focused run.",
     "limitations": "System-wide exhaustion may still prevent tiny allocations or receipt writes. Missing raw body/hash cannot become independent RAW PASS. Original w037 allocation site remains unknown; no empirical token/time benefit claimed."
+  },
+  "current_comparison_observation": {
+    "observed_on": "2026-10-19",
+    "status": "CLOSED_NEGATIVE_FIRST_DECISIONS_LOCKED",
+    "composition_sha256": "bff78a4dd18ba8b30c93b8b704a8e08b82c4e23b12aebed95e4b8d84115b9b55",
+    "extract_sha256": "1736c2755089951fd7c4f570a05a07f11ab0ca8cc77ab519a875906265e025f1",
+    "actual_records": 60,
+    "planned_records": 66,
+    "accepted_reported_tokens": 7774825,
+    "descriptive_full_delta_percent": {
+      "vs_rc19_tokens": -22.38446907082966,
+      "vs_attention_tokens": -13.619397342050487,
+      "vs_rc19_inclusive_wall": 5.735975377175939,
+      "vs_attention_inclusive_wall": 7.298834888806183
+    },
+    "quality_qualified_cost_claim": false,
+    "further_same_variant_paid_batches": "DEFERRED_AFTER_OBSERVED_WALL_REGRESSION",
+    "original_unknowns_and_failed_claims_preserved": true,
+    "models_replayed": 0,
+    "grading_standard_changed": false,
+    "analysis_sha256": "4d67559289fe2cb72932a2cbf49eaa6fac14952b06c2fa5b508b5136c0ec5d81",
+    "all66_first_decisions_sha256": "74ff1ab60c90109b9086210f5437c748773c1d9a722312e0e46dc9b83293c433",
+    "initial_lock_sha256": "2290b9fd4cce256515a91b40dc78c60460ecfcc46dd21ba939bf9042e2f6a655",
+    "condition_unblind_sha256": "e3e6da5cd0ee3111b95e27c6cb8413d38da178975917d1147c46b8116b428910",
+    "workflow_passes": {
+      "rc19": 2,
+      "attention": 4,
+      "full": 2
+    },
+    "workflow_denominator_per_arm": 18,
+    "first_manual_packet_totals": {
+      "PASS": 8,
+      "FAIL": 24,
+      "UNKNOWN": 26,
+      "UNFINISHED": 6,
+      "VETO": 2
+    },
+    "first_requirements_count": 522,
+    "serious_full_veto_actors": [
+      "w020-source"
+    ],
+    "paired_full_regression_blocks": [
+      "b03",
+      "b04",
+      "b10"
+    ],
+    "favorable_development_net_result": false,
+    "sensitivity_favorable": false,
+    "promotion_authorized": false,
+    "capacity_diagnosis": {
+      "actual_actors": 60,
+      "tool_contract_failed": 29,
+      "terminal_length_all_29": true,
+      "terminal_length_no_call": 24,
+      "terminal_length_partial_call": 5,
+      "reasoning_continuation_actors": 44,
+      "all_six_uninvoked_receivers_follow_sqlite_source_length_failure": true,
+      "old_statuses_preserved": true
+    },
+    "wall_diagnosis": {
+      "full_minus_rc19_seconds": 254.38960789996798,
+      "request_seconds_delta": -60.054,
+      "tool_seconds_delta": -33.739,
+      "planner_seconds_delta": 0.113,
+      "git_seconds_delta": 0.6,
+      "actor_other_seconds_delta": 48.983,
+      "result_to_record_including_first_raw_seconds_delta": 298.346,
+      "record_tail_seconds_delta": 0.139,
+      "shared_difference_seconds": 0,
+      "mechanism": "Each actor starts an empty request proof cache and independently consumes the whole ledger prefix; receivers also consume their source.",
+      "causal_limit": "Interval includes result publication and independent RAW; no isolated hash/parse/IO CPU measurement. Not proven sole cause or UPG rule cost.",
+      "actual_wall_not_subtracted": true,
+      "old_raw_reexecuted": false
+    }
+  },
+  "post_result_candidate_revision": {
+    "status": "IMPLEMENTED_OFFLINE_CHECKED_EMPIRICAL_NOT_RUN",
+    "candidate": "3.0.0-rc.20",
+    "reason": "Observed high-risk data-boundary VETO and all29 tool-contract failures ending at provider output length; no revision of original decisions.",
+    "governance_model_file_sha256": "1ec318f18d9cd7188635f9370dcc045bb764252bd3cc97bef3ed73882363d9ce",
+    "canonical_source_digest": "d9eeafb1ba7c700ee85a651ad45d865ba148ed421bccf6154959797ce373d229",
+    "qualification_fingerprint": "269a01eb4e9e52be7677d75e1c307fc78a7a2fc0d8f9f771c6c322deea8403a3",
+    "freeze_sha256": "ab5a7746c2e53639f6376adf359f3ce264b4369bf49f4eaea9d97049c52452dd",
+    "runtime_bytes_added": 171,
+    "skill_body_changed": false,
+    "policies_added": 0,
+    "guidance_groups_added": 0,
+    "old_freeze_archived_sha256": "b5a910d8da33234bb394e25c0729307a1a87a7668ab20989e0f1a219c2685b57",
+    "boundary_revision_checks": {
+      "compiler": "PASS",
+      "lint": "PASS",
+      "integrity": "PASS",
+      "freeze": "PASS",
+      "bundle": "PASS",
+      "related_existing_regression_tests": 27
+    },
+    "api_sha256": "1b9d0069f5a8a7d77609287a77f67c7dfb060e5ed3f43a8bd1e5480bf19bc00c",
+    "length_classification": "output-limit-unfinished/provider-finish-reason-length; original rejection/usage/one-continuation retained; no partial call admitted",
+    "capacity_profile": {
+      "id": "thinking-enabled-engineering-ultraspeed-strict-dslow32768-mimo65536-sse-v1",
+      "configuration_sha256": "6a3b378982dd17b11e9dc5daa3204f36df8d35087993ffccbe8c0b99f5f029c7",
+      "deepseek": {
+        "thinking": "enabled",
+        "effort": "low",
+        "output_cap": 32768
+      },
+      "mimo": {
+        "thinking": "enabled",
+        "effort": null,
+        "strict": true,
+        "output_cap": 65536
+      },
+      "old_configuration_identities_preserved": 9,
+      "default_profile_changed": false,
+      "focused_offline_tests": 9,
+      "transport_body_limit_bytes": 8388608,
+      "output_capacity_not_guaranteed_under_transport_bound": true,
+      "sources": [
+        "https://api-docs.deepseek.com/guides/thinking_mode/",
+        "https://mimo.mi.com/docs/en-US/api/chat/openai-api"
+      ]
+    },
+    "first54_or_model_calls_repeated": false,
+    "same_variant_followup_paid_batches_started": false,
+    "new_candidate_empirical_qualification": "UNASSESSED",
+    "promotion_authorized": false
   }
 }

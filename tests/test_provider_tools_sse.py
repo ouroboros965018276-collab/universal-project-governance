@@ -369,6 +369,59 @@ class SSEActorTests(engineering_fixture.EngineeringCandidateTests):
         self.assertTrue(self.after[0]['settlement']['worker_done'])
         self.assertFalse(self.after[0]['settlement']['worker_alive_at_return'])
 
+    def test_settled_length_is_unfinished_without_executing_truncated_tools_or_terminal(self):
+        for provider in ('deepseek', 'mimo'):
+            for kind in ('empty', 'partial-tool', 'complete-tool', 'partial-finish', 'complete-finish'):
+                with self.subTest(provider=provider, kind=kind):
+                    self.artifacts = self.base/('length-'+provider+'-'+kind)
+                    self.before, self.after, self.loaded = [], [], []
+                    native = (completion(1) if kind == 'empty' else self.finish(1)
+                              if kind.endswith('finish') else self.read(1))
+                    native['choices'][0]['finish_reason'] = 'length'
+                    if kind.startswith('partial'):
+                        native['choices'][0]['message']['tool_calls'][0]['function']['arguments'] = '{"incomplete":'
+                    result, payloads = self.run_sse([native], provider)
+                    self.assertEqual((len(payloads), len(self.before), len(self.after)), (1, 1, 1))
+                    self.assertEqual(result['status'], 'output-limit-unfinished')
+                    self.assertEqual(result['refusal_reason'], 'provider-finish-reason-length')
+                    self.assertFalse(result['unknown_usage'])
+                    self.assertEqual(result['usage']['total_tokens'], 15)
+                    self.assertEqual(self.after[0]['usage']['total_tokens'], 15)
+                    self.assertIsNone(self.after[0]['error_type'])
+                    self.assertTrue(self.after[0]['settlement']['worker_done'])
+                    self.assertFalse(self.after[0]['settlement']['worker_alive_at_return'])
+                    self.assertFalse(result['quality']['hard_pass'])
+                    self.assertEqual(result['tool_events'], [])
+                    self.assertIsNone(result['final_report'])
+                    self.assertFalse((self.artifacts/'requests/01.pending.json').exists())
+                    self.assertFalse((self.artifacts/'actor.pending.json').exists())
+                    rejected = ('api-finish-rejected:required-native-terminal-call' if kind == 'empty'
+                                else 'api-tool-rejected:finish-reason')
+                    self.assertIn(rejected, result['quality']['failures'])
+
+    def test_length_diagnosis_does_not_override_unknown_or_late_settlement(self):
+        for mode in ('unknown', 'late'):
+            with self.subTest(mode=mode):
+                self.artifacts = self.base/('length-fence-'+mode)
+                self.before, self.after, self.loaded = [], [], []
+                native = completion(1)
+                native['choices'][0]['finish_reason'] = 'length'
+                now = [100.0]
+                with patch.object(api.time, 'perf_counter', side_effect=lambda: now[0]):
+                    result, payloads = self.run_sse([native], broken=mode == 'unknown',
+                        on_eof=(lambda: now.__setitem__(0, 701.0)) if mode == 'late' else None,
+                        actor_options={'reasoning_continuation_policy': api.REASONING_CONTINUATION_POLICY})
+                self.assertEqual((len(payloads), len(self.before), len(self.after)), (1, 1, 1))
+                self.assertEqual(result['status'], 'unknown-call-blocked' if mode == 'unknown'
+                                 else 'work-deadline-settled-unfinished')
+                self.assertIsNone(result['refusal_reason'])
+                self.assertEqual(result['unknown_usage'], mode == 'unknown')
+                self.assertEqual(result['known_usage']['total_tokens'], 15)
+                self.assertEqual(result['reasoning_continuations'], 0)
+                self.assertEqual(result['tool_events'], [])
+                self.assertIsNone(result['final_report'])
+                self.assertEqual((self.artifacts/'requests/01.pending.json').exists(), mode == 'unknown')
+
     def test_complete_http_json_rejection_preserves_reason_and_unknown_accounting(self):
         rejection = {'error': {'code': '402', 'type': 'insufficient_balance',
                                'message': 'Insufficient account balance'}}
@@ -516,6 +569,106 @@ class SSEActorTests(engineering_fixture.EngineeringCandidateTests):
         configuration['prices']['mimo']['USD']['output'] = '0'
         configuration['transport']['providers']['mimo']['stream'] = False
         self.assertEqual(api.profile_configuration(api.ENGINEERING_ULTRASPEED_STRICT_SSE_PROFILE), original)
+
+    def test_ultraspeed_capacity_preserves_prior_identities_and_fixed_bounds(self):
+        legacy = {
+            api.THINKING_PROFILE: '4f4307e6e479eeb852a4d1a7bb358a7e64917467cae0fa11fe4063db1d47d1df',
+            api.FLASH_THINKING_PROFILE: 'f5ae975f21072974c9da04da33e8081a2e2fc44be6769c2cbe8c36e82d58081b',
+            api.FLASH_DISABLED_PROFILE: 'a11dd520a6f62837f3bfab36468653c418d0caf80c7f0d658b5231429633919e',
+            api.DEEPSEEK_PRO_FLASH_DISABLED_PROFILE: 'db21a61c86bb3398f9b9568cdb290482407115dfc1ac0be3c21b8fb62ac8ced6',
+            api.ENGINEERING_REASONING_PROFILE: '03de3880a6d3e6114a5321687722e987c39419db55cc7855e2d4e833d009d5df',
+            api.ENGINEERING_REASONING_INPUT_PROFILE: 'd56ad83d4e7339c59c9f2f782f91241e538af1eddb158fc3f1d5373b53fd5ce3',
+            api.ENGINEERING_REASONING_SSE_PROFILE: '2ab5077064140b8a909534f6da85af18b985c6c01e64ec5c7596e4e9cd95b63b',
+            api.ENGINEERING_HYBRID_SSE_PROFILE: '46637727f794a961b18190bcd008f2e7149f323d50d2c9d4dfed2aa9afebef36',
+            api.ENGINEERING_ULTRASPEED_STRICT_SSE_PROFILE: '1cb672988abb0ac11a5af1b54f319b261c90774de8435acc61cd67dfbc5d7f79'}
+        expected = api.profile_configuration(api.ENGINEERING_ULTRASPEED_STRICT_SSE_PROFILE)
+        expected['profile_id'] = 'thinking-enabled-engineering-ultraspeed-strict-dslow32768-mimo65536-sse-v1'
+        expected['providers']['deepseek'].update(output_cap=32768, reasoning_effort='low')
+        expected['providers']['mimo']['output_cap'] = 65536
+        configuration = api.profile_configuration(api.ENGINEERING_ULTRASPEED_CAPACITY_SSE_PROFILE)
+        self.assertEqual(configuration, expected)
+        self.assertEqual(configuration['admission_limits'], {'max_requests': 24, 'timeout_seconds': 600,
+            'max_tools': 32, 'max_input_bytes': 524288})
+        configuration['providers']['deepseek']['reasoning_effort'] = 'max'
+        configuration['providers']['mimo']['output_cap'] = 131072
+        self.assertEqual(api.profile_configuration(api.ENGINEERING_ULTRASPEED_CAPACITY_SSE_PROFILE), expected)
+        self.assertEqual({p: sha(canonical(api.profile_configuration(p))) for p in legacy}, legacy)
+
+    def test_ultraspeed_capacity_owned_wire_and_receipts_bind_each_provider(self):
+        self.enable_real_patch()
+        profile = api.ENGINEERING_ULTRASPEED_CAPACITY_SSE_PROFILE
+        configuration = api.profile_configuration(profile)
+        parameters = {item['name']: item['inputSchema']
+                      for item in engineering_fixture.real_engineering.tool_definitions()}
+        parameters[api.FINISH_TOOL] = api.FINAL_SCHEMA
+        for provider, cap, effort in (('deepseek', 32768, 'low'), ('mimo', 65536, None)):
+            with self.subTest(provider=provider):
+                self.artifacts = self.base/('capacity-wire-' + provider)
+                (self.workspace/'target.txt').write_bytes(b'old\n')
+                self.before, self.after, self.loaded, self.executions = [], [], [], []
+                result, payloads = self.run_sse(self.ready()+[self.finish(4)], provider,
+                    model=configuration['providers'][provider]['model'], actor_options={'profile_id': profile})
+                self.assertEqual((result['status'], result['requests'], result['tool_attempts']), ('completed', 4, 5))
+                self.assertTrue(result['quality']['hard_pass'])
+                for payload in payloads:
+                    self.assertEqual(payload['thinking'], {'type': 'enabled'})
+                    self.assertEqual(payload['max_tokens' if provider == 'deepseek' else 'max_completion_tokens'], cap)
+                    self.assertNotIn('max_completion_tokens' if provider == 'deepseek' else 'max_tokens', payload)
+                    self.assertNotIn('strict', payload)
+                    self.assertEqual(payload.get('reasoning_effort'), effort)
+                    if provider == 'mimo':
+                        self.assertNotIn('reasoning_effort', payload)
+                    self.assertEqual({tool['function']['name']: tool['function']['parameters']
+                                      for tool in payload['tools']}, parameters)
+                    self.assertEqual(len(payload['tools']), 6)
+                    for tool in payload['tools']:
+                        if provider == 'mimo':
+                            self.assertIs(tool['function']['strict'], True)
+                        else:
+                            self.assertNotIn('strict', tool['function'])
+                for metadata in (result, *self.before, *self.after):
+                    self.assertEqual((metadata['profile_id'], metadata['output_cap'], metadata['reasoning_effort_requested']),
+                                     (profile, cap, effort))
+                    self.assertEqual(metadata['profile_configuration_sha256'], sha(canonical(configuration)))
+                    self.assertEqual(metadata['max_input_bytes'], 524288)
+                    self.assertIsNone(metadata['connect_retry_policy'])
+                self.assertEqual((result['max_requests'], result['max_tools'], result['timeout_seconds'],
+                                  result['settlement_max_seconds']), (24, 32, 600, 600))
+
+    def test_ultraspeed_capacity_does_not_relax_admission_or_provider_overrun(self):
+        profile = api.ENGINEERING_ULTRASPEED_CAPACITY_SSE_PROFILE
+        for provider, model, cap in (('deepseek', 'deepseek-v4-pro', 32768),
+                                     ('mimo', 'mimo-v2.6-pro-ultraspeed', 65536)):
+            for change in ({'max_requests': 25}, {'timeout_seconds': 601}, {'thinking': 'disabled'},
+                           {'settlement_policy': None}, {'connect_retry_policy': api.CONNECT_RETRY_POLICY}):
+                options = dict(provider=provider, model=model, thinking='enabled', profile_id=profile,
+                    settlement_policy=api.SETTLEMENT_POLICY, max_requests=24, timeout_seconds=600)
+                options.update(change)
+                with self.subTest(provider=provider, change=change), self.assertRaises(ValueError):
+                    self.new_actor(**options)
+            self.assertEqual((self.before, self.after, self.loaded), ([], [], []))
+            self.artifacts = self.base/('capacity-input-' + provider)
+            result, payloads = self.run_sse([], provider, model=model,
+                actor_options={'profile_id': profile, 'system_context': 'x'*524288})
+            self.assertEqual(result['status'], 'input-byte-cap-not-invoked')
+            self.assertEqual((self.before, self.after, self.loaded, payloads), ([], [], [], []))
+            for reported in (cap, cap+1):
+                self.artifacts = self.base/('capacity-overrun-' + provider + '-' + str(reported))
+                native = self.read(1)
+                native['usage'].update(completion_tokens=reported, total_tokens=reported+10)
+                result, payloads = self.run_sse([native], provider, model=model,
+                    actor_options={'profile_id': profile, 'max_requests': 1})
+                self.assertEqual((len(payloads), len(self.before), len(self.after)), (1, 1, 1))
+                self.assertFalse(result['unknown_usage'])
+                self.assertFalse(result['quality']['hard_pass'])
+                if reported == cap:
+                    self.assertEqual(result['status'], 'request-budget-exhausted')
+                    self.assertEqual(len(result['tool_events']), 1)
+                else:
+                    self.assertEqual(result['status'], 'unexpected-overrun-blocked')
+                    self.assertIn('unexpected-provider-usage-overrun', result['quality']['failures'])
+                    self.assertEqual(result['tool_events'], [])
+                self.before, self.after, self.loaded = [], [], []
 
     def test_ultraspeed_strict_owned_wire_changes_only_mimo_model_and_function_flag(self):
         self.enable_real_patch()  # Original engineering schemas and patches; execution remains the fixture stub.

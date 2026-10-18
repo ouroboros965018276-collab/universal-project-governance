@@ -180,7 +180,7 @@
         "automation",
         "design"
       ],
-      "closure": "Validate the actual claims made by the change using the smallest sufficient checks; report any unverified surface explicitly.",
+      "closure": "Validate actual change claims with the smallest sufficient checks proportionate to affected risk. At affected high-risk boundaries, check key invariants against negative, exceptional and combined boundary cases. Narrow passes establish only tested behavior; report unverified surfaces explicitly.",
       "conflicts_with": [],
       "eval_tags": [
         "validation",
@@ -950,7 +950,7 @@
     "release_operation_forces": "audit"
   },
   "schema_version": 1,
-  "source_sha256": "ba02e356040b852be4b8196df9904f9a4d787e737d42ac47f0c30181b20e15a4",
+  "source_sha256": "d9eeafb1ba7c700ee85a651ad45d865ba148ed421bccf6154959797ce373d229",
   "structural_integration": {
     "exempt_operations": [
       "release"
