@@ -1320,6 +1320,57 @@
         "verification_sha256": "a134b53af0e6be3a56ab6b91d4fe0b3cc001e3c0ce712ccc285e1c8ed92d3b7e",
         "status": "PASS",
         "claim_limit": "External corrective prefix evidence; does not change original failure or establish whole-trial benefit."
+      },
+      "actual_remaining33_segment": {
+        "status": "FAILED_NO_REPLAY",
+        "completed_actor_ids": [
+          "w003-receiver",
+          "w004-source"
+        ],
+        "cumulative_completed_actor_count": 5,
+        "requests": 15,
+        "reported_tokens": 282283,
+        "native_exposures": 1,
+        "native_reported_usage": null,
+        "native_usage_status": "UNKNOWN_PENDING_RETAINED",
+        "first_error": {
+          "actor_id": "w004-receiver",
+          "class": "StudyStop",
+          "phase": "native-owned-exit-observation"
+        },
+        "native_cli_observed_error": "workspace routing discovery failed",
+        "native_cli_model_catalog_error": "failed to refresh available models: request timed out",
+        "recorded_native_tool_calls": 0,
+        "native_worker_exited": true,
+        "native_worker_exit_code": 3,
+        "native_job_active_after": 0,
+        "native_cleanup_errors": [],
+        "owned_exit_confirmed": false,
+        "native_worker_alive_field": null,
+        "outer_runtime_inclusive_seconds": 169.51213550000102,
+        "logical_inclusive_seconds": 300.05146570000215,
+        "additional_external_control_observation_overhead_seconds": 0.3437966,
+        "all_api_known_requests": 33,
+        "all_api_known_reported_tokens": 446582,
+        "terminal": {
+          "path": "C:\\Users\\96501\\.codex\\upg-experiments\\rc20-independent-engineering-six-condition-continuation-v1\\terminal.json",
+          "sha256": "60bc4a65963b01049b614a1700162c91e703295aa584776df63603ffc0101fac"
+        },
+        "ledger": {
+          "path": "C:\\Users\\96501\\.codex\\upg-experiments\\rc20-independent-engineering-six-condition-continuation-v1\\accounting.json",
+          "sha256": "8a6683245f41a3c2bc4a3ef9da0b4a7d1c17d2eeb2ca46ac6ed30b865c25a7df"
+        },
+        "round_observation": {
+          "path": "C:\\Users\\96501\\.codex\\upg-experiments\\rc20-independent-engineering-six-condition-continuation-v1-supervisor\\round-observation.json",
+          "sha256": "0a9b3c0e40ab531a92ea47c4c7de3ea707c844cce2c9eb83b57a3b6b98da87f8"
+        },
+        "owner_exit": {
+          "path": "C:\\Users\\96501\\.codex\\upg-experiments\\rc20-independent-engineering-six-condition-continuation-v1-supervisor\\owner-exit.json",
+          "sha256": "30da50857935ec4d41d3589e8e111396812fc598b47643f282cc0b15fc0b5b72"
+        },
+        "no_replay": true,
+        "quality_or_net_benefit_assessed": false,
+        "next_action": "Read-only native official workspace-routing diagnosis before further paid calls. Preserve five completed roles and unknown exposure; never replay this native or reinterpret unknown usage as zero."
       }
     }
   }
