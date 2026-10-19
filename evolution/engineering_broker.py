@@ -223,7 +223,8 @@ class EngineeringBroker(RepoBroker):
                 if stat.S_ISLNK(info.st_mode) or getattr(info, 'st_file_attributes', 0) & 1024:
                     raise ValueError('original resume artifacts cannot use reparse paths')
             old = old.resolve()
-            if audit_file is not None and Path(audit_file).resolve().is_relative_to(old):
+            audit_path = Path(audit_file).resolve() if audit_file is not None else None
+            if audit_path is not None and (audit_path == old or old in audit_path.parents):
                 raise ValueError('resumed broker cannot append to original artifacts')
             self._resume_execution_artifacts = old / 'execution'
         self._confirmed_removed_paths = (set() if restored_files is None else
@@ -242,8 +243,9 @@ class EngineeringBroker(RepoBroker):
             project = Path(root).resolve()
             if self.project_execution_artifacts == project or project in self.project_execution_artifacts.parents:
                 raise ValueError('execution receipts must be outside project')
-            if resume is not None and (self.project_execution_artifacts.is_relative_to(old)
-                    or old.is_relative_to(self.project_execution_artifacts)):
+            if resume is not None and (self.project_execution_artifacts == old
+                    or old in self.project_execution_artifacts.parents
+                    or self.project_execution_artifacts in old.parents):
                 raise ValueError('resumed execution receipts require a distinct new namespace')
         super().__init__(root, task, git_binary, audit_file=audit_file,
                          max_calls=max_calls, deadline=deadline)

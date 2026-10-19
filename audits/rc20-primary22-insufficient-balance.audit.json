@@ -1517,6 +1517,20 @@
     "repository_checks_passed": 9,
     "gates_result_sha256": "bedb294c7fc61c6134f820ad6443de3c1257fc61259a680731cdeec3225694e9",
     "model_calls": 0,
-    "efficacy_claimed": false
+    "efficacy_claimed": false,
+    "portability_correction": {
+      "failed_CI_commit": "713c6268dece48da765522d97db9e39e530c0709",
+      "run_id": 39178597583,
+      "failed_job_id": 117826368292,
+      "failed_matrix": "Python3.8",
+      "reason": "Path.is_relative_to unavailable in Python3.8 in live checkpoint broker path containment",
+      "correction": "Use equivalent equality/parents containment; frozen Python3.12 trial source unchanged",
+      "focused_tests_run": 45,
+      "focused_failures": 0,
+      "focused_seconds": 6.352,
+      "actual_tool_result": "a652f0/exit0",
+      "new_matrix_result": "PENDING",
+      "frozen_active_study_source_changed": false
+    }
   }
 }
