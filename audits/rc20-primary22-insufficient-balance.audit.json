@@ -1822,7 +1822,7 @@
   },
   "compact_expression_candidate": {
     "observed_on": "2026-10-19",
-    "status": "ENGINEERING_VALIDATED_FRESH_STUDY_NOT_LAUNCHED",
+    "status": "STOPPED_FIXED_PROTOCOL_DISQUALIFICATION_NO_PROMOTION",
     "reason": "negative locked comparison; remove redundant default expression without adding conditional blocks",
     "model_raw_sha256": "e37fcc75cc70d5b8ae9676bd105d4a797eb3290513ccdb97645b84d2713461c6",
     "model_canonical_sha256": "32770df214978c40cdfaa70d5e4a62a32a76abb4092517c5ad4bae3ea36fddd3",
@@ -1835,7 +1835,7 @@
     "other_three_guidance_change": false,
     "operational_guidance_change": false,
     "new_rule_blocks": 0,
-    "full_comparison_launched": false,
+    "full_comparison_launched": true,
     "prior_36_replayed_or_regraded": false,
     "runtime_size_is_not_efficacy": true,
     "new_fixture_manifest_sha256": "1d26183f13333b4ec687ef02b950e61e29d67f4cc22d3210e8dde1997b2cb4fe",
@@ -1847,7 +1847,7 @@
       "actual_Docker_or_Agent_run": false
     },
     "public_validation_facts": "opt-in original receipt verification preserves recipe groups versus actual tests, failures/errors/skips, current/stale/NOT_RUN and cleanup; no private IDs/answers/diagnostics",
-    "current_gate": "BLOCKED; new candidate efficacy not assessed",
+    "current_gate": "BLOCKED; frozen run-once/no-resume and unexpected-interruption rules already violated; incomplete current study",
     "main_and_local_install": "RC19_UNCHANGED",
     "tests": {
       "total": 1300,
@@ -1882,6 +1882,221 @@
       "outer_wall_seconds": 0.875,
       "model_calls": 0
     },
-    "native_scope_classification": "API, MCP and native trace share unchanged-state refusal classifier; current validation/required tools remain mandatory; old frozen task quality unchanged"
+    "native_scope_classification": "API, MCP and native trace share unchanged-state refusal classifier; current validation/required tools remain mandatory; old frozen task quality unchanged",
+    "canonical_candidate_commit": "577235477495ea9224d0159a072016d08a8c5684",
+    "cross_platform_CI": {
+      "run_id": 39186565945,
+      "jobs_passed": 11,
+      "jobs_total": 11
+    },
+    "independent_study": {
+      "roles": 36,
+      "workflows": 24,
+      "conditions": 6,
+      "families": 4,
+      "original_planners": 30,
+      "same_context_comparison_planners": 6,
+      "preparation_receipt_sha256": "b26f974408debaf1fdc4e7f828602cd25152378e1be912e136896845f50bfea2",
+      "metadata_amendment_sha256": "a8fda7eedf3f2f2c8d107a392d9dc7ca30bd29bcff5c2774fa18e15b172564a4",
+      "protocol_sha256": "2f338a53397aa7d74d208373e75d7f71c54bbda2d3af1af2d22be81c42deb078",
+      "execution_plan_sha256": "65bc643fc67a7111b61db56dfc4585b28635698342fae3b219a6ca06974c40a5",
+      "actual_launch_observation": "2a7014",
+      "actual_launch_session": 78701,
+      "status": "FAILED_NO_REPLAY",
+      "old_model_tasks_replayed": false,
+      "quality_cost_criteria_changed": false,
+      "benefit_established": false,
+      "actor_roles_attempted": 1,
+      "roles_not_invoked": 35,
+      "requests_dispatched": 11,
+      "known_reported_API_tokens": 184526,
+      "pending_requests": 0,
+      "actual_session_exit_code": 1,
+      "model_result_status": "completed",
+      "first_exception_class": "ValueError",
+      "owner_status": "UNKNOWN_NO_REPLAY",
+      "job_active_after": 0,
+      "first_RAW_audit_status": "FAILED",
+      "first_RAW_audit_sha256": "d490513523c4da185ed8829220d0ca2f2ebef7f71a6d539cfce5a05a1b26d440",
+      "first_RAW_seal_sha256": "8336893496335881722a9189d1be6aea3748f1f60d0ed9eb9488049d3c4dd45b",
+      "consumer_failure_diagnosis": {
+        "status": "ROOT_CAUSE_CONFIRMED",
+        "kind": "stale_topology_source_identity",
+        "captured_engineering_study_sha256": "55c8680807142b2e7e59ff8704f5383042af8e2cdf59de9b883452ca5932714f",
+        "stale_reader_constant_sha256": "fd8dcd479dc250389939f7688a2843702ba46d62b3728e229bfe67611d7bd033",
+        "effect": "registered_arms fell back to three arms and rejected ablation native roles while validating the complete registry before w001 receipt replay",
+        "actual_readonly_diagnostic": "d89cbb",
+        "safe_trace_sha256": "6e6d6a11e3a486402214733c65dd44f575853e6943ea386ec60fdadfa8b9b12f",
+        "actual_diagnostic_wall_seconds": 0.9497761999955401,
+        "model_calls": 0,
+        "project_executions": 0,
+        "independent_static_confirmation": true,
+        "old_results_or_gates_changed": false
+      },
+      "append_only_continuation": {
+        "status": "FAILED_NO_REPLAY",
+        "original_first_study_failed_unchanged": true,
+        "replayed_model_roles": 0,
+        "completed_prefix_roles": 1,
+        "remaining_roles": 35,
+        "planned_roles": 36,
+        "planned_workflows": 24,
+        "next_role": "w004-source",
+        "corrective_report_sha256": "7226678873a0e1f7aea2deb5179b63323f57cda4abf9d94e0b42546c7e512bdf",
+        "ROOT_corrective_exit_sha256": "85d1f6a011fc0065ab2ad525b8d86dd2fd41c762cff7feb95c4288e4211050e1",
+        "source_identity": {
+          "mixed": {
+            "changed_members": [
+              "shared/managed_contract_primary.py",
+              "shared/mixed_workflow_reader.py",
+              "shared/raw_auditor_primary.py"
+            ],
+            "manifest_sha256": "de066a16440cafa2636d03983c482bdc03a3b70605914954d178619cb1c987b7",
+            "seal_sha256": "390e1e26abd81704d4693f00958d7c5b3369645c90e7b7dc7cafe89ef2546867",
+            "source_map_sha256": "38bcde4146e0ac2f375263a303fbe6bf76df6b18ea02a47db30a7073b2d9c440"
+          },
+          "study": {
+            "changed_members": [
+              "collector.py",
+              "common.py",
+              "contract.py",
+              "owner.py",
+              "run_once.py",
+              "source_receipt.py"
+            ],
+            "manifest_sha256": "1ebd9e393b17dc54f539ec28d36a102d59bf04b59094cdff3fb7f9217dfc5a1e",
+            "seal_sha256": "01c40225c53954e3e395d67d522277fa470c3bcc28344e1d1c2e948cdacb9831",
+            "source_map_sha256": "1415ba828378daa57995e72e80c6cb13bde448ceedc2937279eed86323ca57e4"
+          }
+        },
+        "binding_receipt_sha256": "18ec564f5b65cc4328c9870fe38f4835f192f45fd0262a55b1e301530bd0b3c7",
+        "protocol_sha256": "78621d6ec393ff51b73b715bddfbd1c4d90ea00fb7fa785bca58f28263796d57",
+        "execution_plan_sha256": "251f9d04e7b302ff48ed45bf94cc36bd2badaadee4c6ea86fa673b2ff4d77b56",
+        "actual_launch": "de8071",
+        "actual_session": 83374,
+        "known_inherited_active_seconds": 145.5886098000214,
+        "research_calendar_gap": "UNKNOWN_NOT_ZERO",
+        "zero_model_controls": "complete36 registry; wrong hash/unknown arm/native overbudget rejected; all12 registered API/API and API/native routes; cross-workflow rejected; w001 dispatch denied",
+        "all_original_plans_entries_byte_exact": true,
+        "blind_lock_status": "NOT_RUN",
+        "benefit_established": false,
+        "actual_session_exit_code": 1,
+        "segment_known_API_requests": 32,
+        "segment_known_API_tokens": 1002312,
+        "pending_requests": 0,
+        "completed_prefix_plus_actual_role_outputs": 4,
+        "remaining_uninvoked_roles": 32,
+        "second_reader_diagnosis": {
+          "kind": "unscoped_legacy_partial_recovery_actor_guard",
+          "error_class": "KeyError",
+          "missing_field": "original_receiver_setup_seconds",
+          "location": "raw_auditor_primary.verify_entry:106",
+          "actual_readonly_diagnostic": "2a4e36",
+          "actual_diagnostic_tool_wall_seconds": 1.7540506,
+          "no_model_or_project_execution": true
+        },
+        "terminal_sha256": "0dc9c5a7b896d17456a2cbc94c8d9132331dd63f233256bc0dd7d60d84400ecf",
+        "owner_exit_sha256": "fe9fab0f8412f5e625cf56cc88666fa34703495072ceb6d9415cd8c4affe80b8"
+      }
+    },
+    "full_comparison_completed": false,
+    "final_observation": {
+      "observed_at": "2026-10-19T03:04:37.420415+00:00",
+      "candidate_commit": "577235477495ea9224d0159a072016d08a8c5684",
+      "status": "ADMINISTRATIVE_STOP_TO_PREVENT_FURTHER_INELIGIBLE_SPEND",
+      "full_planned_roles": 36,
+      "full_planned_workflows": 24,
+      "prior_completed_API_roles_preserved": 5,
+      "new_published_actor_records": [
+        "w004-receiver.json",
+        "w005-source.json",
+        "w006-source.json",
+        "w007-receiver.json",
+        "w007-source.json",
+        "w008-receiver.json",
+        "w008-source.json",
+        "w009-source.json"
+      ],
+      "total_published_role_records": 13,
+      "published_records_are_not_independent_quality_passes": true,
+      "blind_review": "NOT_RUN",
+      "net_benefit": "NOT_ESTABLISHED",
+      "fixed_failure_policy": "Original run once; no replay/resume/reprepare/regrade/provider failover or result-dependent order. Known mechanical source FAIL preserved, receiver genuinely UNINVOKED, continue fixed next workflow. Any unknown/execution/persistence/cap state stops globally. Reuse only original confirmed-pre-http-connect-once-v1 retry within original 600s and minimum 15s dispatch window, consuming one of same 24 slots and retaining all costs; no HTTP-dispatched/capacity/503/unknown retries. Native retry zero.",
+      "fixed_cost_unknown_or_missing": "Any unknown usage/execution, unexpected interruption, missing time/evidence, uninvoked role, cap overrun or persistence/cleanup uncertainty prevents favorable net benefit.",
+      "eligibility": "FAILED_ORIGINAL_FROZEN_PROTOCOL; continuation cannot erase original interruptions",
+      "operator_error": "Continuation eligibility was not checked against the frozen failure policy before additional paid dispatch. Repeated harness/source/interface repairs did not restore original eligibility.",
+      "prior_segments": {
+        "API_requests_dispatched": 51,
+        "known_reported_API_tokens": 1355204,
+        "completed_API_role_records": 5
+      },
+      "latest_segment": {
+        "API_requests_dispatched": 59,
+        "known_reported_API_tokens": 1126645,
+        "pending_API_requests": 1,
+        "current_actor_at_stop": "w010-source",
+        "actual_native_executions": 2,
+        "native_reported_tokens_by_domain": {
+          "nativeCLI/openai-native-cli/gpt-6-luna": 1041760
+        },
+        "accounting_status_unmodified": "running"
+      },
+      "observed_current_study_totals": {
+        "API_requests_dispatched": 110,
+        "known_reported_API_tokens": 2481849,
+        "pending_API_usage": "UNKNOWN_NOT_ZERO",
+        "native_reported_tokens_by_domain": {
+          "nativeCLI/openai-native-cli/gpt-6-luna": 1041760
+        },
+        "API_and_native_domains_are_not_summed": true,
+        "invoice_total": "UNKNOWN",
+        "inclusive_comparative_wall_and_break_even": "UNASSESSED"
+      },
+      "prior_native_pre_call_failure": {
+        "independently_proved_model_dispatches": 0,
+        "original_UNKNOWN_and_pending_retained": true,
+        "setup_seconds_debited": 4.975950699998066,
+        "verification_sha256": "e31558fdb80aea9f600faad6eb5818292bbf4cf46acd32076ccbe5c37ad5d910"
+      },
+      "safe_stop": {
+        "ROOT_observation": "fecb38",
+        "actual_outer_exit_observation": "ae77b1",
+        "actual_outer_exit_code": 1,
+        "terminated_owned_job_only": true,
+        "termination_code": 97,
+        "job_active_after": 0,
+        "job_cleanup_query_confirmed": true,
+        "outer_process_exited": true,
+        "terminal_not_published": true,
+        "original_pending_not_cleared": true
+      },
+      "raw_evidence": {
+        "accounting": {
+          "path": "C:\\Users\\96501\\.codex\\upg-experiments\\rc20-compact-prefix-continuation-v3\\accounting.json",
+          "sha256": "a4a2f0d74722d6bbec0919b7b322671b2796063ffc558c085397e412ab4ea64e"
+        },
+        "owner_closed": {
+          "path": "C:\\Users\\96501\\.codex\\upg-experiments\\rc20-compact-prefix-continuation-v3-owner\\CLOSED.json",
+          "sha256": "e8b0c01b0bdd60e796846fd16daff723272debd8f2d696216407a1a463aef491"
+        },
+        "supervisor_owner_exit": {
+          "path": "C:\\Users\\96501\\.codex\\upg-experiments\\rc20-compact-prefix-continuation-v3-supervisor\\owner-exit.json",
+          "sha256": "b27c302510d09212a9399bb239cb07d9b0a2ed93dd124e3b715806560ba3587f"
+        },
+        "ROOT_named_job_stop": {
+          "path": "eval-workspaces\\rc20-compact-prefix-continuation-v3\\ROOT-NAMED-JOB-STOP-01.json",
+          "sha256": "a30dd1892550dbd0cf7781c11be639e11a28be32ee03abcf23043b85b1027689"
+        },
+        "frozen_analysis_registration": {
+          "path": "eval-workspaces\\rc20-compact-prefix-continuation-v3\\study\\analysis-registration.json",
+          "sha256": "28738b2333cc32a763be1e67f6f8f49c7dda158c38718565a81c388ea1b88cb5"
+        }
+      },
+      "original_results_or_promotion_criteria_changed": false,
+      "completed_model_roles_replayed": 0,
+      "further_paid_study_calls_authorized_by_this_record": false,
+      "main_and_local_install": "RC19_UNCHANGED",
+      "next_eligible_evidence": "A separately preregistered fresh comparison is required; original interrupted study remains ineligible. Recovery/stop eligibility must be checked before any paid dispatch. Reuse existing outputs as development evidence only; do not replay completed work."
+    }
   }
 }
