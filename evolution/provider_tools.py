@@ -2071,6 +2071,13 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                 status = "work-deadline-settled-unfinished"
                 break  # Usage was accounted once; never consume this late message.
             last_finish_reason = choice.get("finish_reason") if isinstance(choice, dict) else None
+            if last_finish_reason == "content_filter":
+                # The provider settled this refusal. Preserve its usage and
+                # wire, admit no attached action, and never retry the refusal.
+                reported_models.append(raw["model"])
+                failures.append("provider-refused:content-filter")
+                status, refusal_reason = "provider-refused", "provider-finish-reason-content-filter"
+                break
             if semantic_failure:
                 failures.append("api-tool-rejected:invalid-assistant-envelope")
                 status = "tool-contract-failed"

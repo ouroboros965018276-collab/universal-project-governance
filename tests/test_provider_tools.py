@@ -187,6 +187,30 @@ class _ProviderFixture:
 
 @unittest.skipUnless(SUPPORTED, "repository API helper tests require Python 3.10+; runtime 3.8 has separate tests")
 class ProviderToolsTests(_ProviderFixture, unittest.TestCase):
+    def test_settled_content_filter_is_known_refusal_without_retry_or_action(self):
+        for provider in ('deepseek', 'mimo'):
+            for attached in (False, True):
+                with self.subTest(provider=provider, attached=attached):
+                    self.artifacts = self.base / ('refusal-' + provider + str(attached))
+                    self.before, self.after, self.loaded = [], [], []
+                    response = completion(1, [call('blocked', 'repo_read', {'paths':['target.txt']})] if attached else None,
+                                          content='Provider refused this request')
+                    response['choices'][0]['finish_reason'] = 'content_filter'
+                    with patch.object(lab, '_post', return_value=(200, {}, canonical(response))) as post:
+                        result = self.run_actor(provider=provider)
+                    self.assertEqual(post.call_count, 1)
+                    self.assertEqual(result['status'], 'provider-refused')
+                    self.assertEqual(result['refusal_reason'], 'provider-finish-reason-content-filter')
+                    self.assertIn('provider-refused:content-filter', result['quality']['failures'])
+                    self.assertFalse(result['unknown_usage'])
+                    self.assertFalse(result['quality']['hard_pass'])
+                    self.assertEqual(result['known_usage']['total_tokens'], 15)
+                    self.assertEqual((len(self.before), len(self.after)), (1, 1))
+                    self.assertEqual(result['tool_events'], [])
+                    self.assertIsNone(result['final_report'])
+                    self.assertEqual((self.workspace/'target.txt').read_bytes(), b'old\n')
+                    self.assertFalse(list(self.artifacts.rglob('*.pending.json')))
+
     def test_native_api_broker_chain_and_budget_receipts_pass(self):
         with patch.object(lab, "_post", side_effect=self.positive) as post:
             result = self.run_actor()

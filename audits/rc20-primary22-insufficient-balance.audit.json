@@ -2100,8 +2100,8 @@
     }
   },
   "working_set_recovery_candidate": {
-    "observed_at": "2026-10-19T03:24:36.538093+00:00",
-    "status": "ENGINEERING_VALIDATED_PROSPECTIVE_MODEL_STUDY_NOT_LAUNCHED",
+    "observed_at": "2026-10-19T04:10:04.651754+00:00",
+    "status": "FRESH_STUDY_STOPPED_PROVIDER_REFUSAL_NET_BENEFIT_NOT_ESTABLISHED",
     "parent_commit": "367de9cb6fe180abf4a9eb836cb03f65512c9fd2",
     "runtime_model_changed": false,
     "generated_Skill_changed": false,
@@ -2184,10 +2184,131 @@
       "result_sha256": "ec7bbb2e146ca310094b3e43eb48ab59c6e9da741c134e0931f4bf65c5970874",
       "source_sha256": "b896295af27fceab2968c7c36bcf399c6d905b73dcf737a5b7cc7103ca60b881"
     },
-    "model_experiments_started": false,
+    "model_experiments_started": true,
     "real_token_time_net_benefit": "NOT_ESTABLISHED",
     "old_results_replayed_or_changed": false,
     "promotion": "BLOCKED",
-    "main_and_local_install": "RC19_UNCHANGED"
+    "main_and_local_install": "RC19_UNCHANGED",
+    "actual_study": {
+      "candidate_commit": "94e4dbe09c0e2b0133d4406a8e279aaecb34d8f1",
+      "registration": {
+        "path": "D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution\\eval-workspaces\\rc20-working-set-six-condition-v1\\prepare-input.json",
+        "sha256": "51db08a0c1bffc993fe8a22d5a3493ae829944fd989dd5fa130b4bf38377107b"
+      },
+      "binding": {
+        "path": "D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution\\eval-workspaces\\rc20-working-set-six-condition-v1\\binding.receipt.json",
+        "sha256": "54f1203731cb6d3ff3919602a8a8d119ebf6f682fa1d1d8c20b1fc95120527ec"
+      },
+      "protocol_sha256": "ff9f32908b5058f987e525bb7915e29b0d848fc1602d4f2bbc7fe9dfce2c6841",
+      "terminal": {
+        "path": "C:\\Users\\96501\\.codex\\upg-experiments\\rc20-working-set-six-condition-v1\\terminal.json",
+        "sha256": "53061972a039c6c903006d1130ec0756e43b2ed870ebc51061ab94ee35ddf954"
+      },
+      "owner_exit": {
+        "path": "C:\\Users\\96501\\.codex\\upg-experiments\\rc20-working-set-six-condition-v1-supervisor\\owner-exit.json",
+        "sha256": "08469d09b877e2403a9fbf93fef7251fce9edc2323b1c4bab9f74160291632cc"
+      },
+      "ROOT_process_observation": "e0e2cc",
+      "actual_exit_code": 1,
+      "published_roles": 8,
+      "completed_roles": 7,
+      "planned_roles": 36,
+      "requests": 80,
+      "known_reported_API_tokens_ledger": 2192686,
+      "known_usage_by_model_domain": {
+        "deepseek/deepseek-v4-pro": {
+          "requests": 43,
+          "input_tokens": 698103,
+          "output_tokens": 83416,
+          "reasoning_tokens": 72191,
+          "cached_tokens": 635776,
+          "total_tokens": 781519
+        },
+        "mimo/mimo-v2.6-pro-ultraspeed": {
+          "requests": 37,
+          "input_tokens": 1213534,
+          "output_tokens": 197633,
+          "reasoning_tokens": 183977,
+          "cached_tokens": 1008704,
+          "total_tokens": 1411167
+        }
+      },
+      "pending_requests": 0,
+      "wall_seconds_inclusive_owner": 1608.0862684000167,
+      "owner_status": "UNKNOWN_NO_REPLAY",
+      "original_terminal_status": "FAILED_NO_REPLAY",
+      "job_active_after": 0,
+      "job_query_confirmed": true,
+      "cleanup_errors": [],
+      "stop_actor": "w006-source",
+      "stop_condition": "full",
+      "provider": "mimo",
+      "finish_reason": "content_filter",
+      "last_usage_known": true,
+      "HTTP_balance_or_host_error_observed": false,
+      "partial_wire_diagnostic": {
+        "path": "D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution\\eval-workspaces\\rc20-working-set-six-condition-v1\\provider-refusal-wire-diagnostic-v1.json",
+        "sha256": "c7647030b860c639be2750fa392d1e10e94e8919e6cc6996433402101a31415a"
+      },
+      "existing_current_snapshot_validation": {
+        "recipe_groups_passed": 4,
+        "recipe_groups_total": 5,
+        "failed_unittest_case": "test_12_contract_errors",
+        "observed_error": "ValueError where contract/test requires TypeError",
+        "semantic_blind_assessment": "NOT_RUN"
+      },
+      "API_blind_panels_invoked": 0,
+      "first_RAW_audit_invoked": false,
+      "postprocessor_observed_exit": {
+        "ROOT_observation": "0406fc",
+        "exit_code": 1,
+        "reason": "actual successful owner exit and cleanup required"
+      },
+      "old_or_completed_tasks_replayed": false,
+      "research_invoice_all_in": "UNKNOWN",
+      "net_benefit": "NOT_ESTABLISHED",
+      "promotion": "BLOCKED"
+    },
+    "research_calibration": {
+      "requests": 2,
+      "same_requests_replayed": false,
+      "original_format_failures_retained": true,
+      "deepseek_reported_tokens": 2029,
+      "mimo_reported_tokens": 1645,
+      "lossless_representation_only_control": {
+        "path": "D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution\\eval-workspaces\\rc20-working-set-six-condition-v1\\api-panel-normalization-control-first-use-01\\verification.json",
+        "sha256": "0a2207edb70d0d7f2d3bf13481a7be657a4a0a72c7c2959e5faa7a557997d85d"
+      },
+      "independent_consumer_control": {
+        "path": "D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution\\eval-workspaces\\rc20-working-set-six-condition-v1\\manual-api-normalized-control-first-use-01\\verification.json",
+        "sha256": "345833c4724d19ad74f93c99fe7f7a8c17370bb935cdfbe3b89856f777f372b7"
+      },
+      "calibration_is_not_task_benefit": true
+    },
+    "settled_refusal_classification_fix": {
+      "reason": "A complete billed content_filter response was labeled generic tool-contract-failed. Classify provider-refused, preserve usage/wire, never retry or execute attached tool calls. Original frozen records remain unchanged.",
+      "files": {
+        "evolution/provider_tools.py": "328ce7b04af50c93a77581efb42f30158647daf3b105aa3bd9ce5c5907ef2c57",
+        "tests/test_provider_tools.py": "3e77e332a605d57423ba37e22f7f33bdf38000e35ac5ca974784e8f2f6cfac09",
+        "tests/test_provider_tools_sse.py": "55345b29d8048d064dcc3c59ca825cefe9684d03ea37bdca3a3c5287ba681a8b"
+      },
+      "actual_ROOT_test_observations": [
+        "5d882d",
+        "f911c7",
+        "ba9e7a"
+      ],
+      "tests": 280,
+      "failures": 0,
+      "errors": 0,
+      "elapsed_seconds": 32.504,
+      "real_HTTP_or_models": 0,
+      "prior_full_regression_scope": "1311 tests belongs to prior94e4dbe; not rerun after this narrow classifier fix",
+      "prior_CI": {
+        "commit": "94e4dbe09c0e2b0133d4406a8e279aaecb34d8f1",
+        "run_id": 39194578705,
+        "jobs_passed": 11,
+        "jobs_total": 11
+      }
+    }
   }
 }

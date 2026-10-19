@@ -612,6 +612,30 @@ class SSEActorTests(engineering_fixture.EngineeringCandidateTests):
                                     **options)
         return result, payloads
 
+    def test_settled_sse_content_filter_preserves_wire_and_usage_without_action(self):
+        for provider in ('deepseek', 'mimo'):
+            for attached in (False, True):
+                with self.subTest(provider=provider, attached=attached):
+                    self.artifacts = self.base/('sse-refusal-' + provider + str(attached))
+                    self.before, self.after, self.loaded, self.executions = [], [], [], []
+                    response = completion(1, [call('blocked', 'repo_read', {'paths':['target.txt']})] if attached else None,
+                                          content='Provider refused this request')
+                    response['choices'][0]['finish_reason'] = 'content_filter'
+                    result, payloads = self.run_sse([response], provider)
+                    self.assertEqual(result['status'], 'provider-refused')
+                    self.assertEqual(result['refusal_reason'], 'provider-finish-reason-content-filter')
+                    self.assertEqual((len(payloads), len(self.before), len(self.after)), (1, 1, 1))
+                    self.assertFalse(result['unknown_usage'])
+                    self.assertFalse(result['quality']['hard_pass'])
+                    self.assertEqual(result['known_usage']['total_tokens'], 15)
+                    self.assertEqual((result['tool_events'], self.executions), ([], []))
+                    self.assertIsNone(result['final_report'])
+                    record = json.loads((self.artifacts/'requests/01.response.json').read_bytes())
+                    raw = (self.artifacts/'requests/01.transport-sse.bin').read_bytes()
+                    self.assertEqual(record['body_sha256'], sha(raw))
+                    self.assertEqual(record['response']['choices'][0]['finish_reason'], 'content_filter')
+                    self.assertFalse(list(self.artifacts.rglob('*.pending.json')))
+
     def test_actual_owned_transport_both_providers_raw_projection_history_and_budget(self):
         for provider in ('deepseek', 'mimo'):
             with self.subTest(provider=provider):
