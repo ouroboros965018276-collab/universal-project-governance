@@ -1529,8 +1529,34 @@
       "focused_failures": 0,
       "focused_seconds": 6.352,
       "actual_tool_result": "a652f0/exit0",
-      "new_matrix_result": "PENDING",
-      "frozen_active_study_source_changed": false
+      "new_matrix_result": "11/11 SUCCESS",
+      "frozen_active_study_source_changed": false,
+      "passed_run_id": 39179076581
     }
+  },
+  "actual_completed_source_recovery": {
+    "original_segment_status": "FAILED_NO_REPLAY",
+    "original_owner_status_preserved": true,
+    "actor_id": "w012-source",
+    "new_API_requests": 4,
+    "new_known_API_tokens": 67070,
+    "new_pending_count": 0,
+    "runtime_inclusive_seconds": 47.577100199996494,
+    "logical_round_inclusive_seconds": 1059.7724369000139,
+    "known_API_tokens_across_all_segments": 1575285,
+    "completed_cumulative_independently_verified": 17,
+    "remaining_roles_uninvoked": 19,
+    "actual_model_result_status": "completed",
+    "independent_corrective_status": "PASS",
+    "corrective_verification_sha256": "851a5f610783ec68cba511a950acbbf967647ac22d597e8219c103af5d028ca2",
+    "corrective_root_exit_sha256": "f9fc0392a703f613545c57234a556a1c7ba890199c1f23b849cafff31370d8df",
+    "corrective_outer_seconds": 3.594929200015031,
+    "old_sixteen_RAW_replayed": false,
+    "model_tasks_replayed": 0,
+    "old_native_unknown_retained": true,
+    "billable_usage_complete": false,
+    "net_benefit_established": false,
+    "planned_controlled_interruption_complete": false,
+    "next_action": "Finish zero-model API/native prefix admission, then continue only registered remaining19; no repeat of completed source."
   }
 }
