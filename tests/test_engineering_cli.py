@@ -455,6 +455,31 @@ class CliProjectCandidateTests(unittest.TestCase):
             tool_broker.serve(path)
         return [json.loads(line) for line in stdout.buffer.getvalue().splitlines()]
 
+    def test_mcp_known_unchanged_fragment_refusal_keeps_registered_correction_available(self):
+        original = self.task['initial_files']['pkg/core.py']
+        digest = sha(original.encode('utf-8'))
+        responses = self.run_mcp_calls([
+            ('repo_read', {'paths': ['pkg/core.py']}),
+            ('repo_patch', {'operations': [{'path': 'pkg/core.py', 'old_sha256': digest,
+                'old_text': 'ABSENT_FRAGMENT', 'new_text': '3'}]}),
+            ('repo_read', {'paths': ['pkg/core.py']}),
+            ('repo_patch', {'operations': [{'path': 'pkg/core.py', 'old_sha256': digest,
+                'old_text': '0', 'new_text': '3'}]}),
+            ('repo_status', {})])
+        self.assertEqual(len(responses), 5)
+        values = [json.loads(row['result']['content'][0]['text']) for row in responses]
+        self.assertEqual(values[1], {'ok': False, 'error': 'ValueError: old_text must occur exactly once in the current file'})
+        self.assertTrue(responses[1]['result']['isError'])
+        self.assertTrue(all(values[n]['ok'] for n in (0, 2, 3, 4)))
+        self.assertEqual(values[2]['files']['pkg/core.py']['text'], original)
+        journal = [json.loads(line) for line in (self.base / 'stdio-audit.jsonl').read_bytes().splitlines()]
+        self.assertEqual([row['sequence'] for row in journal], [1, 2, 3, 4, 5])
+        self.assertEqual(journal[1]['state_sha256'], journal[0]['state_sha256'])
+        expected = dict(self.task['initial_files'], **{'pkg/core.py': 'VALUE = 3\n'})
+        self.assertEqual(engineering.files_from_receipt_journal(self.task, journal), expected)
+        self.assertEqual((self.repo / 'pkg/core.py').read_bytes(), b'VALUE = 3\n')
+        self.assertEqual(self.executor_calls, 0)
+
     def test_mcp_closes_broker_after_scope_refusal_without_second_tool_call(self):
         responses = self.run_mcp_calls([
             ('repo_patch', {'operations': [{'path': 'pkg/__init__.py', 'old_sha256': sha(b''), 'new_text': 'wrong\n'}]}),

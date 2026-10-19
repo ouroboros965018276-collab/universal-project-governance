@@ -920,29 +920,9 @@ def _api_quality(broker, before, final_text, native_trace, extra_failures, execu
 
 
 def _recoverable_engineering_patch(tool, arguments, result, event, task, before, after):
-    """Deliver only known preflight rejections with verified unchanged state.
-
-    This does not repair arguments or alter the original rejection/receipt. The
-    caller bounds feedback opportunities with its existing request/tool/deadline budgets.
-    """
-    errors = {
-        "ValueError: patch precondition hash mismatch",
-        "ValueError: patch path is protected or duplicated",
-        "ValueError: patch must make a nonempty bounded change",
-        "ValueError: old_text must occur exactly once in the current file",
-    }
-    if (tool != "repo_patch" or type(result) is not dict or set(result) != {"ok", "error"}
-            or result.get("ok") is not False or type(result.get("error")) is not str
-            or result["error"] not in errors
-            or before is None or after is None or before != after
-            or event.get("state_sha256") != after
-            or event.get("arguments_sha256") != sha(canonical(arguments))
-            or event.get("result_sha256") != sha(canonical(result))):
-        return False
-    operations = arguments.get("operations")
-    return (type(operations) is list and bool(operations)
-            and all(type(op) is dict and type(op.get("path")) is str
-                    and op["path"] in task["writable_files"] for op in operations))
+    """Use the broker's unchanged-state patch-refusal contract."""
+    from evolution.engineering_broker import recoverable_project_patch_refusal
+    return recoverable_project_patch_refusal(tool, arguments, result, event, task, before, after)
 
 
 def _recoverable_tool_feedback(tool, arguments, result, event, task, execution_backend=None):

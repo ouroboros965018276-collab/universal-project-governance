@@ -520,6 +520,32 @@ def validate_execution_result(result, task, state_sha):
     return value
 
 
+def recoverable_project_patch_refusal(tool, arguments, result, event, task, before, after):
+    """Deliver only known preflight rejections with verified unchanged state.
+
+    This does not repair arguments or alter the original rejection/receipt. The
+    caller bounds feedback opportunities with its existing request/tool/deadline budgets.
+    """
+    errors = {
+        "ValueError: patch precondition hash mismatch",
+        "ValueError: patch path is protected or duplicated",
+        "ValueError: patch must make a nonempty bounded change",
+        "ValueError: old_text must occur exactly once in the current file",
+    }
+    if (tool != "repo_patch" or type(result) is not dict or set(result) != {"ok", "error"}
+            or result.get("ok") is not False or type(result.get("error")) is not str
+            or result["error"] not in errors
+            or before is None or after is None or before != after
+            or event.get("state_sha256") != after
+            or event.get("arguments_sha256") != sha(canonical(arguments))
+            or event.get("result_sha256") != sha(canonical(result))):
+        return False
+    operations = arguments.get("operations")
+    return (type(operations) is list and bool(operations)
+            and all(type(op) is dict and type(op.get("path")) is str
+                    and op["path"] in task["writable_files"] for op in operations))
+
+
 def recoverable_project_test_failure(result, task, state_sha):
     """Only completed failures of registered checks may be repaired in place.
 

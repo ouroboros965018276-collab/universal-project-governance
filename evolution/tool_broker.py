@@ -707,10 +707,15 @@ def serve(spec_file):
             response["result"] = {"content": [{"type": "text", "text": canonical(result).decode("utf-8")}],
                                   "isError": not result["ok"]}
             if profile is not None and result.get('ok') is not True:
-                from evolution.engineering_broker import recoverable_project_test_failure
+                from evolution.engineering_broker import recoverable_project_test_failure, recoverable_project_patch_refusal
                 recoverable = (recoverable_project_test_failure(result, broker.task, broker.events[-1]['state_sha256'])
                                if broker.events and params.get('name') == 'repo_validate'
                                and params.get('arguments', {}) == {} else False)
+                if broker.events and params.get('name') == 'repo_patch':
+                    previous = (broker.events[-2]['state_sha256'] if len(broker.events) > 1 else
+                                sha(canonical({name: sha(text.encode('utf-8')) for name, text in broker.task['initial_files'].items()})))
+                    recoverable = recoverable_project_patch_refusal('repo_patch', params.get('arguments', {}), result,
+                        broker.events[-1], broker.task, previous, broker.events[-1]['state_sha256'])
                 if not recoverable:
                     # The CLI's provider turns are opaque. Close only this
                     # broker after refusal; never claim a per-HTTP stop bound.
