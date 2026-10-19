@@ -687,5 +687,94 @@ class EngineeringBrokerTests(unittest.TestCase):
         self.assertEqual(self.executor_calls, 1)
 
 
+    def checkpoint_facts(self, broker=None, *, working_set=False, events=None, current=None):
+        from evolution import context_checkpoint
+        broker = broker or self.broker
+        events = broker.events if events is None else events
+        traces, previous = [], None
+        for event in events:
+            trace = {k: event[k] for k in ('tool', 'arguments_sha256', 'result_sha256', 'state_sha256')}
+            trace.update(broker_sequence=event['sequence'], broker_event_sha256=sha(canonical(event)),
+                         previous_chain_sha256=previous)
+            trace['chain_sha256'] = sha(canonical(trace)); previous = trace['chain_sha256']; traces.append(trace)
+        return context_checkpoint.facts(broker.task,
+            {p: sha(t.encode()) for p,t in broker.task['initial_files'].items()},
+            broker.snapshot() if current is None else current, events, traces,
+            {'requests_used': 2, 'requests_limit': 24, 'tools_limit': 32}, include_working_set=working_set)
+
+    def test_checkpoint_working_set_preserves_current_text_and_legacy_projection(self):
+        from evolution import context_checkpoint as cp
+        self.broker.call('repo_read', {'paths': ['pkg/core.py', 'CONTRACT.json']})
+        self.broker.call('repo_patch', {'operations': [{'path': 'pkg/core.py',
+            'old_sha256': sha(b'VALUE = 0\n'), 'old_text': '0', 'new_text': '1'}]})
+        legacy = self.checkpoint_facts(); value = self.checkpoint_facts(working_set=True)
+        self.assertEqual(value['working_set']['pkg/core.py']['text'], 'VALUE = 1\n')
+        self.assertEqual(value['working_set']['pkg/core.py']['source_tool'], 'repo_patch')
+        self.assertEqual(value['working_set']['CONTRACT.json']['source_tool'], 'repo_read')
+        self.assertEqual(value['not_carried_paths'], ['README.md', 'pkg/__init__.py'])
+        self.assertEqual(value['unmet_required_initial_reads'], [])
+        self.assertIn('current-validation-missing-or-stale', value['risks'])
+        projected = {k:v for k,v in value.items() if k not in ('working_set','not_carried_paths')}
+        projected['schema'] = legacy['schema']; self.assertEqual(projected, legacy)
+        messages = [{'role':'system','content':'same policy'}]
+        self.assertEqual(cp.bootstrap(messages,legacy), messages+[{'role':'user','content':cp.PREFIX+canonical(legacy).decode()}])
+        self.assertIn('VALUE = 1', cp.bootstrap(messages,value,include_working_set=True)[-1]['content'])
+        self.assertEqual(self.executor_calls, 0)
+
+    def test_checkpoint_working_set_creation_deletion_do_not_claim_unread_content(self):
+        task = copy.deepcopy(self.task); task['writable_files'].append('new.py')
+        broker = lab.create_broker(self.workspace, task, self.base/'mock-git')
+        broker.call('repo_read', {'paths':['README.md','new.py']})
+        broker.call('repo_patch', {'operations':[
+            {'path':'README.md','old_sha256':sha(task['initial_files']['README.md'].encode()),'new_text':None},
+            {'path':'new.py','old_sha256':None,'new_text':'VALUE = 2\n'}]})
+        value = self.checkpoint_facts(broker,working_set=True)
+        self.assertEqual(set(value['working_set']), {'new.py'})
+        self.assertEqual(value['working_set']['new.py']['text'], 'VALUE = 2\n')
+        self.assertIn('README.md', value['deleted_paths'])
+        self.assertEqual(value['unmet_required_initial_reads'], ['CONTRACT.json','pkg/core.py'])
+        self.assertIn('pkg/core.py', value['not_carried_paths'])
+        self.assertEqual(self.executor_calls, 0)
+
+    def test_checkpoint_working_set_rejects_forged_reads_stale_state_and_oversize(self):
+        from evolution import context_checkpoint as cp
+        self.broker.call('repo_read', {'paths':['pkg/core.py']})
+        events = copy.deepcopy(self.broker.events)
+        events[0]['result']['files']['pkg/core.py']['text'] = 'forged public text'
+        events[0]['result_sha256'] = sha(canonical(events[0]['result']))
+        with self.assertRaises(ValueError): self.checkpoint_facts(working_set=True,events=events)
+        stale = dict(self.broker.snapshot(), **{'pkg/core.py':sha(b'VALUE = 9\n')})
+        with self.assertRaises(ValueError): self.checkpoint_facts(working_set=True,current=stale)
+        task = copy.deepcopy(self.task); task['initial_files']['pkg/core.py'] = 'x'*65536
+        (self.workspace/'pkg/core.py').write_bytes(task['initial_files']['pkg/core.py'].encode())
+        broker = lab.create_broker(self.workspace,task,self.base/'mock-git')
+        broker.call('repo_read', {'paths':['pkg/core.py']})
+        self.assertLess(len(canonical(self.checkpoint_facts(broker))), cp.POLICY['max_facts_bytes'])
+        with self.assertRaises(cp.CheckpointDeferred): self.checkpoint_facts(broker,working_set=True)
+        self.assertEqual((cp.WORKING_SET_POLICY['max_facts_bytes'],cp.WORKING_SET_POLICY['max_bootstrap_bytes']), (65536,262144))
+        self.assertEqual(self.executor_calls, 0)
+
+    def test_checkpoint_working_set_preserves_validation_and_later_staleness(self):
+        self.read_and_edit()
+        self.broker.call('repo_validate', {})
+        self.broker.call('repo_status', {})
+        value=self.checkpoint_facts(working_set=True)
+        self.assertTrue(value['latest_validation']['current'])
+        self.assertTrue(value['latest_validation']['ok'])
+        self.assertTrue(value['latest_validation']['container_removed'])
+        self.assertTrue(value['latest_status']['current'])
+        prior=copy.deepcopy(value['latest_validation'])
+        self.assertTrue(self.broker.call('repo_patch', {'operations':[{'path':'pkg/core.py',
+            'old_sha256':self.broker.snapshot()['pkg/core.py'],'new_text':'VALUE = 2\n'}]})['ok'])
+        after=self.checkpoint_facts(working_set=True)
+        self.assertEqual(after['working_set']['pkg/core.py']['text'],'VALUE = 2\n')
+        self.assertFalse(after['latest_validation']['current'])
+        self.assertEqual({k:v for k,v in after['latest_validation'].items()if k!='current'},
+                         {k:v for k,v in prior.items()if k!='current'})
+        self.assertIn('current-validation-missing-or-stale',after['risks'])
+        self.assertFalse(after['latest_status']['current'])
+        self.assertEqual(self.executor_calls,1) # The fixture executor is a pure stub.
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)

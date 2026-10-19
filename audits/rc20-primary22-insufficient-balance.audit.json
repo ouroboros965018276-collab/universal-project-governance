@@ -2098,5 +2098,96 @@
       "main_and_local_install": "RC19_UNCHANGED",
       "next_eligible_evidence": "A separately preregistered fresh comparison is required; original interrupted study remains ineligible. Recovery/stop eligibility must be checked before any paid dispatch. Reuse existing outputs as development evidence only; do not replay completed work."
     }
+  },
+  "working_set_recovery_candidate": {
+    "observed_at": "2026-10-19T03:24:36.538093+00:00",
+    "status": "ENGINEERING_VALIDATED_PROSPECTIVE_MODEL_STUDY_NOT_LAUNCHED",
+    "parent_commit": "367de9cb6fe180abf4a9eb836cb03f65512c9fd2",
+    "runtime_model_changed": false,
+    "generated_Skill_changed": false,
+    "reason": "Hash-only conversation checkpoints discarded verified current file text and could cause redundant reads. A separate opt-in preserves exact current read/write working-set bodies and uses an earlier bounded profitable checkpoint.",
+    "canonical_source_sha256": {
+      "evolution/context_checkpoint.py": "5c6593ddc110d0a87e7980512cd17fe263e8f2e0ad23ae064f963c35629482b6",
+      "evolution/provider_tools.py": "099bbe379993e61fd7b721beda32e759dce22378146c1cc2d50ddfacf41e7f49",
+      "evolution/engineering_study.py": "ce499be0479583844d85cbdd1fa529f4923aef025fe6ea8bed97a1c1278d1d17",
+      "tests/test_engineering_broker.py": "33a5a8236da51af97a1fe20e1b45280195930d7f8e030e3e385512f01b25d965",
+      "tests/test_engineering_provider.py": "846f6d6ffa9b0a0f04b148b8986adc5ebcfae5fa3a2e622253b31914f4ecd060",
+      "tests/test_provider_tools_sse.py": "b9e0b3cdd3c6c89745db5dd3c78ec1dbcfa0dc7f14740998aaae711c753249fd",
+      "tests/test_engineering_study.py": "567ce2a4a5c9dd443eec4d722c5e51377b2b2553f443dcb902ddcde6ee4c2fbb"
+    },
+    "profile_id": "thinking-enabled-engineering-ultraspeed-strict-dslow32768-mimo65536-checkpoint-working-set-once-sse-v1",
+    "profile_configuration_sha256": "ecb06a3c5f8ecb5c8799b586e548f252dda71f699b6f07a83c7e44eb213c5ca1",
+    "behavior": {
+      "trigger_bytes": 65536,
+      "max_checkpoints": 1,
+      "max_facts_bytes": 65536,
+      "max_bootstrap_bytes": 262144,
+      "unprofitable_or_oversized_complete_facts": "KEEP_ORIGINAL_CONVERSATION_NO_TRUNCATION",
+      "unread_files_not_claimed_read": true,
+      "stale_validation_stays_stale": true,
+      "legacy_profile_configuration_and_wire_unchanged": true,
+      "actor_and_global_budget_not_increased": true
+    },
+    "new_route_profile": "dual-api-natural-cross-provider-v1",
+    "new_route_counts": {
+      "families": 4,
+      "conditions": 6,
+      "workflows": 24,
+      "roles": 36,
+      "API": 36,
+      "native_Codex_CLI": 0,
+      "shared_API_hard_ceiling": 720,
+      "shared_round_seconds_hard_ceiling": 41250
+    },
+    "regression": {
+      "tests_run": 1311,
+      "failures": 0,
+      "errors": 0,
+      "skips": 3,
+      "elapsed_seconds": 224.95418720002635,
+      "source_before_after_exact": true,
+      "result_sha256": "f4424c92f1d5e24a90ca10bc5a985272fed0234801e09090f620d4b9239f3172"
+    },
+    "repository_gates": {
+      "passed": 9,
+      "total": 9,
+      "result_sha256": "c05483e995fd88648344cce316db9ddd5e5b8b1e35d0d9aea4fbf4a2aa9be7cf"
+    },
+    "fresh_fixture_manifest_sha256": "51c50a49975fbd53501b58dda03267d142a3b5d0bd5558112fb910f768be2eab",
+    "fresh_fixture_seal_sha256": "03f47b27b421546c88570949b03382d7ba1250cd9ac0efb664a4aa128fab8110",
+    "fresh_fixture_local_controls": {
+      "correct": 6,
+      "incorrect_rejected": 72,
+      "total": 78,
+      "not_actual_Agent_tests": true
+    },
+    "fresh_fixture_actual_Docker_controls": {
+      "actual_ROOT_observation": "7fd9fe",
+      "exit_code": 0,
+      "executions": 9,
+      "observations": 10,
+      "expectation_matches": 10,
+      "integrity_confirmed": 9,
+      "container_cleanup_confirmed": 9,
+      "scratch_cleanup_confirmed": 9,
+      "unknown": 0,
+      "elapsed_seconds": 38.295599000004586,
+      "source_before_after_exact": true,
+      "result_sha256": "233b74f34e7d67ab1ee1d04e5d6822852be5fdf5d191f4c8801cc29873e0e4a8",
+      "synthetic_lineage_is_not_real_interruption_proof": true
+    },
+    "API_blind_review_client_zero_network_control": {
+      "actual_ROOT_observation": "012018",
+      "assertions_passed": 13,
+      "actual_models": 0,
+      "actual_credentials_loaded": 0,
+      "result_sha256": "ec7bbb2e146ca310094b3e43eb48ab59c6e9da741c134e0931f4bf65c5970874",
+      "source_sha256": "b896295af27fceab2968c7c36bcf399c6d905b73dcf737a5b7cc7103ca60b881"
+    },
+    "model_experiments_started": false,
+    "real_token_time_net_benefit": "NOT_ESTABLISHED",
+    "old_results_replayed_or_changed": false,
+    "promotion": "BLOCKED",
+    "main_and_local_install": "RC19_UNCHANGED"
   }
 }

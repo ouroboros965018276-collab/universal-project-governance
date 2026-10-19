@@ -45,10 +45,81 @@ class EngineeringStudyTests(unittest.TestCase):
                  'receiver_provider': route[2], 'arm_order': list(study.ARMS[i:] + study.ARMS[:i])}
                 for i, route in enumerate(study.ROUTES)]}
 
-    def build(self, prereg=None):
+    def build(self, prereg=None, configuration=None):
         return study.EngineeringStudy(self.prereg if prereg is None else prereg,
-            baseline_model=self.baseline, full_model=self.full, configuration=self.configuration,
+            baseline_model=self.baseline, full_model=self.full,
+            configuration=self.configuration if configuration is None else configuration,
             consumed_source_pins=self.pins)
+
+    def dual_api_registration(self):
+        prereg = copy.deepcopy(self.prereg)
+        prereg.update(route_profile=study.DUAL_API_ROUTE_PROFILE,
+                      profile_configuration_sha256=study.DUAL_API_CONFIGURATION_SHA256)
+        for family, route in zip(prereg['families'], study.DUAL_API_ROUTES):
+            family.update(kind=route[0], source_provider=route[1], receiver_provider=route[2])
+        return prereg, provider_tools.profile_configuration(study.DUAL_API_PROFILE_ID)
+
+    def test_explicit_dual_api_routes_keep_conditions_panels_and_shared_global_ceilings(self):
+        prereg, configuration = self.dual_api_registration()
+        self.assertEqual(study.digest(configuration), study.DUAL_API_CONFIGURATION_SHA256)
+        topology = self.build(prereg, configuration)
+        self.assertEqual(topology.condition_models(), self.build().condition_models())
+        self.assertEqual(topology.counts(), dict(self.build().counts(), API=36, nativeCLI=0))
+        registry = topology.fixed_registry()
+        for arm in study.ARMS:
+            workflows = sorted((r for r in topology.fixed_order()['workflows'] if r['arm'] == arm), key=lambda r:r['block_id'])
+            self.assertEqual([(r['kind'],r['source_provider'],r['receiver_provider']) for r in workflows], list(study.DUAL_API_ROUTES))
+        self.assertTrue(all((r['surface'],r['work_seconds'],r['max_requests'],r['max_tools'],r['max_native_executions'])
+                            == ('API',600,24,32,0) for r in registry.values()))
+        caps = topology.caps()
+        self.assertEqual((caps['request_slots'],caps['round_seconds_soft'],caps['cli_execution_slots'],caps['tool_slots']),
+                         (720,41250,0,1152))
+        self.assertEqual(caps['provider_request_slots'], {'deepseek':432,'mimo':432})
+        self.assertGreater(sum(caps['provider_request_slots'].values()),caps['request_slots'])
+        self.assertGreater(sum(caps['workflow_seconds_soft'].values())+120,caps['round_seconds_soft'])
+        self.assertEqual(caps['kind'],'shared-global-hard-ceilings-not-simultaneous-per-actor-budget-grants')
+        panels = topology.private_panel_assignment()
+        self.assertEqual(panels,self.build().private_panel_assignment())
+
+    def test_dual_api_opt_in_rejects_unknown_route_profile_config_or_route_drift(self):
+        prereg, configuration = self.dual_api_registration()
+        for kind in ('unknown','null','implicit','old-config','same-provider','native','swapped-route','changed-config'):
+            with self.subTest(kind=kind):
+                p, cfg = copy.deepcopy(prereg), copy.deepcopy(configuration)
+                if kind == 'unknown': p['route_profile'] = 'any-api'
+                elif kind == 'null': p['route_profile'] = None
+                elif kind == 'implicit': p.pop('route_profile')
+                elif kind == 'old-config': cfg = self.configuration; p['profile_configuration_sha256'] = study.CONFIGURATION_SHA256
+                elif kind == 'same-provider': p['families'][3]['receiver_provider'] = 'mimo'
+                elif kind == 'native': p['families'][3]['receiver_provider'] = 'openai-native-cli'
+                elif kind == 'swapped-route': p['families'][2]['source_provider'] = 'mimo'; p['families'][2]['receiver_provider'] = 'deepseek'
+                else:
+                    cfg['providers']['deepseek']['output_cap'] -= 1
+                    p['profile_configuration_sha256'] = study.digest(cfg)
+                with self.assertRaises(ValueError): self.build(p,cfg)
+        with self.assertRaises(ValueError): self.build(configuration=configuration)
+
+    def test_dual_api_protocol_binds_explicit_profile_and_rejects_aggregate_budget_expansion(self):
+        prereg, configuration = self.dual_api_registration()
+        topology = self.build(prereg,configuration)
+        protocol = {'identity':prereg['study_id'],'counts':topology.counts(),'order':topology.fixed_order(),
+            'actor_registry':topology.fixed_registry(),'ledger_registry_identity':topology.registry_identity(),
+            'round_caps':topology.caps(),'profile_configuration_sha256':study.DUAL_API_CONFIGURATION_SHA256,
+            'configuration_sha256':study.DUAL_API_CONFIGURATION_SHA256,'profile_id':study.DUAL_API_PROFILE_ID,
+            'route_profile':study.DUAL_API_ROUTE_PROFILE,'study_topology_sha256':topology.preregistration_sha256}
+        self.assertEqual(topology.validate_protocol(protocol),protocol)
+        for kind in ('missing-route','unknown-route','profile','configuration','source','slots','wall','provider-slots'):
+            with self.subTest(kind=kind):
+                p = copy.deepcopy(protocol)
+                if kind == 'missing-route': p.pop('route_profile')
+                elif kind == 'unknown-route': p['route_profile'] = 'any-api'
+                elif kind == 'profile': p['profile_id'] = study.PROFILE_ID
+                elif kind == 'configuration': p['configuration_sha256'] = study.CONFIGURATION_SHA256
+                elif kind == 'source': p['ledger_registry_identity']['source_sha256'] = '9'*64
+                elif kind == 'slots': p['round_caps']['request_slots'] = 864
+                elif kind == 'wall': p['round_caps']['round_seconds_soft'] = 44760
+                else: p['round_caps']['provider_request_slots']['deepseek'] += 1
+                with self.assertRaises(ValueError): topology.validate_protocol(p)
 
     def test_all_six_conditions_derive_exact_routes_counts_caps_and_blind_panels(self):
         topology = self.build()

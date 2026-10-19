@@ -217,6 +217,137 @@ class SSEActorTests(engineering_fixture.EngineeringCandidateTests):
         self.assertEqual(expected['admission_limits']['max_input_bytes'], 524288)
         self.assertNotIn('context_checkpoint', prior)
 
+    def test_working_set_checkpoint_profile_keeps_old_configuration_and_wire_limits(self):
+        old = api.profile_configuration(api.ENGINEERING_CHECKPOINT_SSE_PROFILE)
+        self.assertEqual(sha(canonical(old)), '0d204c60bf968839d183954286e871aba0b168ed1b144a6cf1dae219e082af56')
+        expected = copy.deepcopy(old)
+        expected.update(profile_id=api.ENGINEERING_WORKING_SET_CHECKPOINT_SSE_PROFILE,
+                        context_checkpoint=copy.deepcopy(api.context_checkpoint.WORKING_SET_POLICY))
+        self.assertEqual(api.profile_configuration(api.ENGINEERING_WORKING_SET_CHECKPOINT_SSE_PROFILE),expected)
+        self.assertEqual(expected['context_checkpoint']['trigger_bytes'],65536)
+        self.assertEqual(expected['context_checkpoint']['max_checkpoints'],1)
+        self.assertEqual(expected['admission_limits'],{'max_requests':24,'timeout_seconds':600,'max_tools':32,'max_input_bytes':524288})
+        self.assertEqual((expected['providers']['deepseek']['reasoning_effort'],expected['providers']['deepseek']['output_cap'],
+                          expected['providers']['mimo']['output_cap']),('low',32768,65536))
+
+    def test_working_set_real_broker_two_conversations_reuse_text_without_duplicate_read(self):
+        # Scripted policy response, not evidence of real-model token/quality gains.
+        self.real_patch = True
+        def split_reasoning(body):
+            blocks=[]
+            for block in body.split(b'\r\n\r\n'):
+                if block.startswith(b'data: {'):
+                    value=json.loads(block[6:]); choices=value['choices']
+                    delta=choices[0]['delta'] if choices else {}
+                    reason=delta.get('reasoning_content')
+                    if isinstance(reason,str) and len(reason)>131072:
+                        for offset in range(0,len(reason),131072):
+                            part=copy.deepcopy(value)
+                            part['choices'][0]['delta']=(dict(delta,reasoning_content=reason[offset:offset+131072])
+                                if offset==0 else {'reasoning_content':reason[offset:offset+131072]})
+                            blocks.append(b'data: '+canonical(part))
+                        continue
+                blocks.append(block)
+            return b'\r\n\r\n'.join(blocks)
+        for provider in ('deepseek','mimo'):
+            observed = {}
+            for include in (False,True):
+                profile = api.ENGINEERING_WORKING_SET_CHECKPOINT_SSE_PROFILE if include else api.ENGINEERING_CHECKPOINT_SSE_PROFILE
+                self.artifacts=self.base/('working-set-'+provider+'-'+str(include))
+                self.before,self.after,self.loaded,self.executions,self.brokers=[],[],[],[],[]
+                (self.workspace/'target.txt').write_bytes(b'old\n')
+                first=self.read(1);first['choices'][0]['message']['reasoning_content']='r'*270000
+                next_index=2 if include else 3
+                patch_step=completion(next_index,[call('patch-after-boundary','repo_patch',{'operations':[
+                    {'path':'target.txt','old_sha256':sha(b'old\n'),'old_text':'old','new_text':'fixed'}]})])
+                def at_boundary(payload, include=include, next_step=patch_step):
+                    content=payload['messages'][-1]['content']
+                    self.assertEqual(len(payload['messages']),3)
+                    prefix=api.context_checkpoint.WORKING_SET_PREFIX if include else api.context_checkpoint.PREFIX
+                    facts=json.loads(content[len(prefix):])
+                    self.assertEqual(facts['budgets']['requests_used'],1)
+                    self.assertEqual(facts['budgets']['tool_attempts_used'],1)
+                    if include:
+                        self.assertEqual(facts['working_set']['target.txt']['text'],'old\n')
+                        self.assertEqual(facts['working_set']['target.txt']['sha256'],sha(b'old\n'))
+                        return next_step
+                    self.assertNotIn('working_set',facts)
+                    return self.read(2)
+                steps=[first,at_boundary]+([] if include else [patch_step])
+                steps += [self.validate_and_status(next_index+1),self.finish(next_index+2)]
+                result,payloads=self.run_sse(steps,provider,
+                    model='deepseek-v4-pro' if provider=='deepseek' else 'mimo-v2.6-pro-ultraspeed',
+                    actor_options={'profile_id':profile},transform=split_reasoning)
+                self.assertEqual(result['status'],'completed',result['quality'])
+                self.assertTrue(result['quality']['hard_pass'])
+                self.assertEqual(len(result['context_checkpoint_receipts']),1)
+                checkpoint=json.loads((self.artifacts/result['context_checkpoint_receipts'][0]['ref']).read_bytes())
+                self.assertEqual(checkpoint['schema'],api.context_checkpoint.WORKING_SET_SCHEMA if include else api.context_checkpoint.SCHEMA)
+                self.assertEqual(checkpoint['bootstrap_payload_sha256'],sha(canonical(payloads[1])))
+                self.assertEqual([m['conversation_index']for m in self.before],[0]+[1]*(len(steps)-1))
+                self.assertTrue(all(m['work_deadline_monotonic']==result['work_deadline_monotonic']for m in self.before))
+                self.assertFalse(list(self.artifacts.rglob('*.pending.json')))
+                observed[include]={'snapshot':{n:(self.workspace/n).read_bytes()for n in self.task['initial_files']},
+                    'reads':sum(e['tool']=='repo_read'for e in result['tool_events']),
+                    'requests':result['requests'],'tools':result['tool_attempts'],
+                    'input_bytes':sum(len(canonical(v))for v in payloads)}
+            self.assertEqual(observed[False]['snapshot'],observed[True]['snapshot'])
+            self.assertEqual((observed[False]['reads'],observed[True]['reads']),(2,1))
+            self.assertEqual(observed[False]['requests']-observed[True]['requests'],1)
+            self.assertEqual(observed[False]['tools']-observed[True]['tools'],1)
+            self.assertLess(observed[True]['input_bytes'],observed[False]['input_bytes'])
+
+    def test_working_set_defers_complete_oversize_facts_and_preserves_patch_validation_obligations(self):
+        self.real_patch=True
+        self.task['initial_files']['target.txt']='x'*65536
+        (self.workspace/'target.txt').write_bytes(self.task['initial_files']['target.txt'].encode())
+        first=self.read(1);first['choices'][0]['message']['reasoning_content']='r'*70000
+        def second(payload):
+            # Complete 64KiB text + facts did not fit. Full history survives;
+            # there is no fabricated checkpoint or omission to force one.
+            self.assertGreater(len(payload['messages']),3)
+            return completion(2,[call('replace-large-file','repo_patch',{'operations':[
+                {'path':'target.txt','old_sha256':sha(self.task['initial_files']['target.txt'].encode()),'new_text':'fixed\n'}]})])
+        def third(payload):
+            facts=json.loads(payload['messages'][-1]['content'][len(api.context_checkpoint.WORKING_SET_PREFIX):])
+            self.assertEqual(len(payload['messages']),3)
+            self.assertEqual(facts['working_set']['target.txt']['text'],'fixed\n')
+            self.assertEqual(facts['working_set']['target.txt']['source_tool'],'repo_patch')
+            self.assertEqual(facts['budgets']['tool_attempts_used'],2)
+            self.assertIsNone(facts['latest_validation'])
+            self.assertIn('current-validation-missing-or-stale',facts['risks'])
+            return self.validate_and_status(3)
+        result,payloads=self.run_sse([first,second,third,self.finish(4)],
+            actor_options={'profile_id':api.ENGINEERING_WORKING_SET_CHECKPOINT_SSE_PROFILE})
+        self.assertEqual((result['status'],result['requests'],result['tool_attempts']),('completed',4,5))
+        self.assertTrue(result['quality']['hard_pass'])
+        self.assertEqual([m['conversation_index']for m in self.before],[0,0,1,1])
+        self.assertEqual(len(result['context_checkpoint_receipts']),1)
+        self.assertTrue(all(len(canonical(p))<=524288 for p in payloads))
+        self.assertEqual(len(self.executions),1) # Explicit fake validation, never checkpoint execution.
+
+    def test_working_set_retains_history_when_bootstrap_is_large_or_not_smaller(self):
+        self.real_patch=True
+        for mode in ('bootstrap-over-limit','not-smaller'):
+            with self.subTest(mode=mode):
+                self.artifacts=self.base/('working-set-deferred-'+mode)
+                self.before,self.after,self.loaded,self.executions,self.brokers=[],[],[],[],[]
+                (self.workspace/'target.txt').write_bytes(b'old\n')
+                options={'profile_id':api.ENGINEERING_WORKING_SET_CHECKPOINT_SSE_PROFILE,
+                    'system_context':'public context '* (20000 if mode=='bootstrap-over-limit' else 5000)}
+                result,payloads=self.run_sse(self.ready()+[self.finish(4)],actor_options=options)
+                self.assertEqual((result['status'],result['requests']),('completed',4),result['quality'])
+                self.assertTrue(result['quality']['hard_pass'])
+                if mode=='bootstrap-over-limit':
+                    self.assertEqual(result['context_checkpoint_receipts'],[])
+                    self.assertEqual([m['conversation_index']for m in self.before],[0,0,0,0])
+                else:
+                    self.assertEqual([m['conversation_index']for m in self.before[:2]],[0,0])
+                self.assertTrue(all(len(canonical(p))<=524288 for p in payloads))
+                # First complete read is still in the same history, not replaced
+                # with an omitted working set or fabricated checkpoint.
+                self.assertTrue(any(m['role']=='tool' and 'old' in m['content'] for m in payloads[1]['messages']))
+
     def test_checkpoint_two_conversations_keep_actor_budget_evidence_and_id_namespaces(self):
         for provider in ('deepseek', 'mimo'):
             with self.subTest(provider=provider):

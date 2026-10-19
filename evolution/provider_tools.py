@@ -80,10 +80,12 @@ ENGINEERING_HYBRID_SSE_PROFILE = "thinking-hybrid-engineering-pro-16384-sse-v1"
 ENGINEERING_ULTRASPEED_STRICT_SSE_PROFILE = "thinking-enabled-engineering-ultraspeed-strict-16384-sse-v1"
 ENGINEERING_ULTRASPEED_CAPACITY_SSE_PROFILE = "thinking-enabled-engineering-ultraspeed-strict-dslow32768-mimo65536-sse-v1"
 ENGINEERING_CHECKPOINT_SSE_PROFILE = "thinking-enabled-engineering-ultraspeed-strict-dslow32768-mimo65536-checkpoint-once-sse-v1"
+ENGINEERING_WORKING_SET_CHECKPOINT_SSE_PROFILE = "thinking-enabled-engineering-ultraspeed-strict-dslow32768-mimo65536-checkpoint-working-set-once-sse-v1"
+ENGINEERING_CHECKPOINT_PROFILES = (ENGINEERING_CHECKPOINT_SSE_PROFILE, ENGINEERING_WORKING_SET_CHECKPOINT_SSE_PROFILE)
 ENGINEERING_PROFILES = (*ENGINEERING_REASONING_PROFILES, ENGINEERING_HYBRID_SSE_PROFILE,
-                        ENGINEERING_ULTRASPEED_STRICT_SSE_PROFILE, ENGINEERING_ULTRASPEED_CAPACITY_SSE_PROFILE, ENGINEERING_CHECKPOINT_SSE_PROFILE)
+                        ENGINEERING_ULTRASPEED_STRICT_SSE_PROFILE, ENGINEERING_ULTRASPEED_CAPACITY_SSE_PROFILE, *ENGINEERING_CHECKPOINT_PROFILES)
 ENGINEERING_SSE_PROFILES = (ENGINEERING_REASONING_SSE_PROFILE, ENGINEERING_HYBRID_SSE_PROFILE,
-                            ENGINEERING_ULTRASPEED_STRICT_SSE_PROFILE, ENGINEERING_ULTRASPEED_CAPACITY_SSE_PROFILE, ENGINEERING_CHECKPOINT_SSE_PROFILE)
+                            ENGINEERING_ULTRASPEED_STRICT_SSE_PROFILE, ENGINEERING_ULTRASPEED_CAPACITY_SSE_PROFILE, *ENGINEERING_CHECKPOINT_PROFILES)
 ENGINEERING_INPUT_PROFILES = (ENGINEERING_REASONING_INPUT_PROFILE, *ENGINEERING_SSE_PROFILES)
 ENGINEERING_REASONING_INPUT_MAX_BYTES = 524288
 ENGINEERING_REASONING_PROFILE_SETTINGS = {
@@ -146,7 +148,7 @@ def profile_configuration(profile_id):
         configuration["price_evidence"]["mimo_pro"] = "https://mimo.mi.com/models/en-US/mimo-v2.6-pro"
     if profile_id == ENGINEERING_HYBRID_SSE_PROFILE:
         configuration["providers"]["mimo"]["thinking"] = "disabled"
-    if profile_id in (ENGINEERING_ULTRASPEED_STRICT_SSE_PROFILE, ENGINEERING_ULTRASPEED_CAPACITY_SSE_PROFILE, ENGINEERING_CHECKPOINT_SSE_PROFILE):
+    if profile_id in (ENGINEERING_ULTRASPEED_STRICT_SSE_PROFILE, ENGINEERING_ULTRASPEED_CAPACITY_SSE_PROFILE, *ENGINEERING_CHECKPOINT_PROFILES):
         configuration["providers"]["deepseek"]["strict_tools"] = False
         configuration["providers"]["mimo"].update(model="mimo-v2.6-pro-ultraspeed", strict_tools=True)
         configuration["prices"]["mimo"] = {"USD": {"input_hit": ".036", "input_miss": "4.35", "output": "8.7"}}
@@ -155,11 +157,12 @@ def profile_configuration(profile_id):
             mimo="https://mimo.mi.com/models/en-US/mimo-v2.6-pro-ultraspeed",
             mimo_price_reviewed_on="2026-10-18",
             basis="DeepSeek-V4-Pro-0813 peak-rate estimate (off-peak rates are half; no time-based rate selection here); MiMo-V2.6-Pro-UltraSpeed official USD rates per million tokens reviewed 2026-10-18. Estimates, not invoices or provider billing caps.")
-        if profile_id in (ENGINEERING_ULTRASPEED_CAPACITY_SSE_PROFILE, ENGINEERING_CHECKPOINT_SSE_PROFILE):
+        if profile_id in (ENGINEERING_ULTRASPEED_CAPACITY_SSE_PROFILE, *ENGINEERING_CHECKPOINT_PROFILES):
             configuration["providers"]["deepseek"].update(output_cap=32768, reasoning_effort="low")
             configuration["providers"]["mimo"]["output_cap"] = 65536
-    if profile_id == ENGINEERING_CHECKPOINT_SSE_PROFILE:
-        configuration["context_checkpoint"] = copy.deepcopy(context_checkpoint.POLICY)
+    if profile_id in ENGINEERING_CHECKPOINT_PROFILES:
+        configuration["context_checkpoint"] = copy.deepcopy(context_checkpoint.WORKING_SET_POLICY
+            if profile_id == ENGINEERING_WORKING_SET_CHECKPOINT_SSE_PROFILE else context_checkpoint.POLICY)
     if profile_id in ENGINEERING_SSE_PROFILES:
         configuration["transport"] = {"transport_profile_id": chat_sse.TRANSPORT_PROFILE,
             "providers": {"deepseek": {"stream": True, "stream_options": {"include_usage": True}},
@@ -1496,8 +1499,11 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
         output_cap = settings["output_cap"]
     max_input_bytes = (configuration["admission_limits"]["max_input_bytes"]
                        if profile_id in ENGINEERING_INPUT_PROFILES else MAX_INPUT_BYTES)
-    checkpointing = profile_id == ENGINEERING_CHECKPOINT_SSE_PROFILE
-    if resume_checkpoint is not None and (not checkpointing or registered_timing is None or timeout_seconds != 600
+    checkpointing = profile_id in ENGINEERING_CHECKPOINT_PROFILES
+    working_set_checkpoint = profile_id == ENGINEERING_WORKING_SET_CHECKPOINT_SSE_PROFILE
+    checkpoint_policy = configuration["context_checkpoint"] if checkpointing else None
+    checkpoint_options = {"include_working_set": True} if working_set_checkpoint else {}
+    if resume_checkpoint is not None and (profile_id != ENGINEERING_CHECKPOINT_SSE_PROFILE or registered_timing is None or timeout_seconds != 600
             or max_requests != 24 or controlled_local_stop_guard is not None or controlled_phase_stop_guard is not None):
         raise ValueError("actor recovery requires explicit checkpoint engineering profile without a phase cut")
     task = copy.deepcopy(engineering.validate_task(task) if engineering else validate_task(task))
@@ -1572,7 +1578,7 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                 application_execution_scope="Registered multi-module stdlib Python project commands in the explicit isolated backend; no arbitrary shell, dependency installation, deployment or project_tool lifecycle.",
                 schema_correction_limit=ENGINEERING_SCHEMA_CORRECTIONS)
         if checkpointing:
-            entry.update(context_checkpoint_policy=context_checkpoint.POLICY_ID,
+            entry.update(context_checkpoint_policy=checkpoint_policy["policy_id"],
                 context_checkpoint_generator_sha256=sha(Path(context_checkpoint.__file__).read_bytes()))
         if resume_seed is not None:
             entry.update(actor_resume_checkpoint_policy=resume_seed["policy_id"],
@@ -1665,8 +1671,8 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                 "reasoning_continuations_used": reasoning_continuations, "connect_retries_used": connect_retries,
                 "actor_started_monotonic": started, "work_deadline_monotonic": deadline,
                 "settlement_deadline_monotonic": settlement_deadline}
-            facts = context_checkpoint.facts(task, received, broker.snapshot(), broker.events, native_trace, budgets)
-            messages = context_checkpoint.bootstrap(initial_messages, facts)
+            facts = context_checkpoint.facts(task, received, broker.snapshot(), broker.events, native_trace, budgets, **checkpoint_options)
+            messages = context_checkpoint.bootstrap(initial_messages, facts, **checkpoint_options)
             recovery_transition = {"schema": "engineering-context-recovery-transition-v1", "policy_id": resume_seed["policy_id"],
                 "checkpoint_index": 1, "from_conversation_index": 0, "to_conversation_index": 1,
                 "checkpoint_descriptor_sha256": resume_seed["checkpoint_sha256"],
@@ -1696,7 +1702,7 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
             if response_json_mode:
                 payload["response_format"] = {"type": "json_object"}
             if recovery_transition is not None:
-                if len(canonical(payload)) > context_checkpoint.POLICY["max_bootstrap_bytes"]:
+                if len(canonical(payload)) > checkpoint_policy["max_bootstrap_bytes"]:
                     status, refusal_reason = "input-byte-cap-not-invoked", "recovery-bootstrap-over-limit"
                     break
                 recovery_transition.update(bootstrap_payload_utf8_bytes=len(canonical(payload)), bootstrap_payload_sha256=sha(canonical(payload)))
@@ -1705,7 +1711,7 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                 checkpoint_receipts.append({"checkpoint_index": 1, "ref": ref, "sha256": digest})
                 recovery_transition = None
             if (checkpointing and checkpoint_ready and not checkpoint_receipts
-                    and len(canonical(payload)) >= context_checkpoint.POLICY["trigger_bytes"]):
+                    and len(canonical(payload)) >= checkpoint_policy["trigger_bytes"]):
                 try:
                     budgets = {"requests_used": request_count, "requests_limit": max_requests,
                         "tool_attempts_used": tool_attempts, "tools_limit": MAX_TOOLS,
@@ -1713,19 +1719,24 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                         "reasoning_continuations_used": reasoning_continuations, "connect_retries_used": connect_retries,
                         "actor_started_monotonic": started, "work_deadline_monotonic": deadline,
                         "settlement_deadline_monotonic": settlement_deadline}
-                    facts = context_checkpoint.facts(task, received, broker.snapshot(), broker.events, native_trace, budgets)
-                    renewed = context_checkpoint.bootstrap(initial_messages, facts)
+                    facts = context_checkpoint.facts(task, received, broker.snapshot(), broker.events, native_trace, budgets, **checkpoint_options)
+                    renewed = context_checkpoint.bootstrap(initial_messages, facts, **checkpoint_options)
                     candidate = dict(payload, messages=renewed)
-                    if len(canonical(candidate)) > context_checkpoint.POLICY["max_bootstrap_bytes"]:
+                    if len(canonical(candidate)) > checkpoint_policy["max_bootstrap_bytes"]:
+                        if working_set_checkpoint:
+                            raise context_checkpoint.CheckpointDeferred("complete bootstrap exceeds bound")
                         status, refusal_reason = "input-byte-cap-not-invoked", "checkpoint-bootstrap-over-limit"
                         break
                     if len(canonical(candidate)) >= len(canonical(payload)):
+                        if working_set_checkpoint:
+                            raise context_checkpoint.CheckpointDeferred("complete bootstrap does not reduce input")
                         status, refusal_reason = "input-byte-cap-not-invoked", "checkpoint-does-not-reduce-input"
                         break
                     generator_sha = sha(Path(context_checkpoint.__file__).read_bytes())
                     if generator_sha != entry["context_checkpoint_generator_sha256"]:
                         raise ValueError("checkpoint generator changed")
-                    checkpoint = {"schema": context_checkpoint.SCHEMA, "policy_id": context_checkpoint.POLICY_ID,
+                    checkpoint = {"schema": context_checkpoint.WORKING_SET_SCHEMA if working_set_checkpoint else context_checkpoint.SCHEMA,
+                        "policy_id": checkpoint_policy["policy_id"],
                         "checkpoint_index": 1, "from_conversation_index": 0, "to_conversation_index": 1,
                         "generator_source_sha256": generator_sha, "input_task_sha256": input_identity,
                         "profile_configuration_sha256": entry["profile_configuration_sha256"],
@@ -1751,6 +1762,11 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                         work_cutoff_reached = True
                         status = "work-deadline-settled-unfinished"
                         break
+                except context_checkpoint.CheckpointDeferred:
+                    if not working_set_checkpoint:
+                        raise
+                    # No omission or refresh occurred. Retain the full history
+                    # under the same input/request/tool/deadline limits.
                 except (OSError, ValueError, TypeError, KeyError, UnicodeError, MemoryError) as error:
                     failures.append("api-checkpoint-rejected:unverifiable-facts")
                     status, refusal_reason = "checkpoint-evidence-unfinished", _exception_class(error)
@@ -1764,7 +1780,7 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                         "input_utf8_bytes": len(canonical(payload)), "request_payload_sha256": sha(canonical(payload)),
                         "output_cap": output_cap, "input_task_sha256": input_identity, "adapter": adapter_identity}
             if checkpointing:
-                metadata.update(context_checkpoint_policy=context_checkpoint.POLICY_ID, conversation_index=conversation_index,
+                metadata.update(context_checkpoint_policy=checkpoint_policy["policy_id"], conversation_index=conversation_index,
                     context_checkpoint_sha256=checkpoint_receipts[0]["sha256"] if checkpoint_receipts else None)
             if resume_seed is not None:
                 metadata.update(actor_resume_checkpoint_policy=resume_seed["policy_id"],

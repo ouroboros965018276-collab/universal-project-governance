@@ -18,6 +18,11 @@ MODULE = 'evolution/engineering_study.py'
 ARMS = ('rc19', 'attention', 'full', *ABLATIONS)
 PROFILE_ID = 'thinking-enabled-engineering-ultraspeed-strict-dslow32768-mimo65536-checkpoint-once-sse-v1'
 CONFIGURATION_SHA256 = '0d204c60bf968839d183954286e871aba0b168ed1b144a6cf1dae219e082af56'
+DUAL_API_ROUTE_PROFILE = 'dual-api-natural-cross-provider-v1'
+DUAL_API_PROFILE_ID = 'thinking-enabled-engineering-ultraspeed-strict-dslow32768-mimo65536-checkpoint-working-set-once-sse-v1'
+DUAL_API_CONFIGURATION_SHA256 = 'ecb06a3c5f8ecb5c8799b586e548f252dda71f699b6f07a83c7e44eb213c5ca1'
+DUAL_API_GLOBAL_REQUEST_SLOTS = 720
+DUAL_API_GLOBAL_ROUND_SECONDS = 41250
 MODEL_DELTA_ID = 'rc19-bd4-to-rc20-reviewed-evidence-closure-compact-expression-v1'
 BASELINE_MODEL_SHA256 = '44e7d9fdf648e35d834e3835ea8e06a734a5aed50eb3e701c2f86c2717e17a7d'
 BASELINE_EVIDENCE_CLOSURE_SHA256 = '4d97faefd8df3aa5c9ab13d6efef346afa6c9ffa5e1208f0319eb97da5b279f1'
@@ -28,6 +33,9 @@ MODELS = {'deepseek': 'deepseek-v4-pro', 'mimo': 'mimo-v2.6-pro-ultraspeed',
 ROUTES = (('single', 'deepseek', None), ('single', 'mimo', None),
           ('natural-handoff', 'deepseek', 'mimo'),
           ('natural-handoff', 'mimo', 'openai-native-cli'))
+DUAL_API_ROUTES = (('single', 'deepseek', None), ('single', 'mimo', None),
+                   ('natural-handoff', 'deepseek', 'mimo'),
+                   ('natural-handoff', 'mimo', 'deepseek'))
 ENVELOPE = {'work_seconds': 600, 'max_api_requests': 24, 'max_api_input_bytes': 524288,
             'max_tools': 32, 'minimum_dispatch_window_seconds': 15,
             'max_native_executions': 1, 'api_settlement_seconds': 600,
@@ -72,11 +80,18 @@ class EngineeringStudy:
     def __init__(self, preregistration, *, baseline_model, full_model, configuration,
                  consumed_source_pins):
         p = copy.deepcopy(preregistration)
-        _require(type(p) is dict and set(p) == {'schema', 'study_id', 'baseline_model_sha256',
+        dual_api = type(p) is dict and 'route_profile' in p
+        fields = {'schema', 'study_id', 'baseline_model_sha256',
                  'full_model_sha256', 'profile_configuration_sha256', 'condition_bindings',
-                 'families', 'source_pins', 'reviewed_model_delta_id'} and p['schema'] == SCHEMA
+                 'families', 'source_pins', 'reviewed_model_delta_id'}
+        _require(type(p) is dict and set(p) == fields | ({'route_profile'} if dual_api else set()) and p['schema'] == SCHEMA
                  and p['reviewed_model_delta_id'] == MODEL_DELTA_ID,
                  'exact prospective study preregistration required')
+        _require(not dual_api or p['route_profile'] == DUAL_API_ROUTE_PROFILE,
+                 'unknown explicit engineering route profile')
+        routes = DUAL_API_ROUTES if dual_api else ROUTES
+        profile_id = DUAL_API_PROFILE_ID if dual_api else PROFILE_ID
+        configuration_sha256 = DUAL_API_CONFIGURATION_SHA256 if dual_api else CONFIGURATION_SHA256
         _require(type(p['study_id']) is str and re.fullmatch('[A-Za-z0-9_-]{1,96}', p['study_id']),
                  'explicit study identity required')
         pins = p['source_pins']
@@ -84,8 +99,8 @@ class EngineeringStudy:
                  and all(_path(name) and _sha(value) for name, value in pins.items())
                  and canonical(pins) == canonical(consumed_source_pins),
                  'complete consumed source pins differ')
-        _require(type(configuration) is dict and configuration.get('profile_id') == PROFILE_ID
-                 and digest(configuration) == p['profile_configuration_sha256'] == CONFIGURATION_SHA256,
+        _require(type(configuration) is dict and configuration.get('profile_id') == profile_id
+                 and digest(configuration) == p['profile_configuration_sha256'] == configuration_sha256,
                  'fixed reviewed engineering configuration differs')
         _require(type(baseline_model) is dict and type(full_model) is dict
                  and digest(baseline_model) == p['baseline_model_sha256'] == BASELINE_MODEL_SHA256
@@ -127,9 +142,9 @@ class EngineeringStudy:
         _require(bindings['attention'] == bindings['rc19'],
                  'attention may only append the canonical attention instruction to the RC19 entry')
         families = p['families']
-        _require(type(families) is list and len(families) == len(ROUTES), 'four independent families required')
+        _require(type(families) is list and len(families) == len(routes), 'four independent families required')
         names = set()
-        for family, route in zip(families, ROUTES):
+        for family, route in zip(families, routes):
             _require(type(family) is dict and set(family) == {'family', 'kind', 'source_provider',
                      'receiver_provider', 'arm_order'}, 'exact family route/order fields required')
             name = family['family']
@@ -137,12 +152,14 @@ class EngineeringStudy:
                      'distinct opaque family identities required')
             names.add(name)
             _require(tuple(family[k] for k in ('kind', 'source_provider', 'receiver_provider')) == route,
+                     'fixed registered DS/MiMo single and bidirectional API handoff routes required' if dual_api else
                      'fixed DS/MiMo single and DS-to-MiMo/MiMo-to-native routes required')
             arms = family['arm_order']
             _require(type(arms) is list and len(arms) == len(ARMS)
                      and all(type(arm) is str for arm in arms) and set(arms) == set(ARMS),
                      'each family needs one preregistered permutation of all six conditions')
         self._preregistration, self._models = p, models
+        self._routes, self._configuration_sha256 = routes, configuration_sha256
 
     @property
     def preregistration_sha256(self):
@@ -192,9 +209,9 @@ class EngineeringStudy:
 
     def counts(self):
         registry = self.fixed_registry()
-        return {'families': len(ROUTES), 'single_families': sum(r[0] == 'single' for r in ROUTES),
-                'natural_handoff_families': sum(r[0] == 'natural-handoff' for r in ROUTES),
-                'paired_blocks': len(ROUTES), 'workflows': len(self.fixed_order()['workflows']),
+        return {'families': len(self._routes), 'single_families': sum(r[0] == 'single' for r in self._routes),
+                'natural_handoff_families': sum(r[0] == 'natural-handoff' for r in self._routes),
+                'paired_blocks': len(self._routes), 'workflows': len(self.fixed_order()['workflows']),
                 'actors': len(registry), 'API': sum(r['surface'] == 'API' for r in registry.values()),
                 'nativeCLI': sum(r['surface'] == 'nativeCLI' for r in registry.values()),
                 'panels': len(ARMS), 'roles_per_panel': len(registry) // len(ARMS)}
@@ -218,19 +235,26 @@ class EngineeringStudy:
             workflow_caps[row['workflow_id']] = workflow_caps.get(row['workflow_id'], 60) + seconds
             if not native:
                 slots[row['provider']] += row['max_requests']
-        return {'actors': len(registry), 'workflows': len(workflow_caps), 'blocks': len(ROUTES),
+        caps = {'actors': len(registry), 'workflows': len(workflow_caps), 'blocks': len(self._routes),
                 'request_slots': sum(slots.values()), 'provider_request_slots': slots,
                 'cli_execution_slots': sum(r['max_native_executions'] for r in registry.values()),
                 'tool_slots': sum(r['max_tools'] for r in registry.values()),
                 'max_input_bytes': ENVELOPE['max_api_input_bytes'], 'workflow_seconds_soft': workflow_caps,
                 'round_seconds_soft': sum(workflow_caps.values()) + 120,
                 'kind': 'prospective-reservation-envelope-not-actual-usage-or-invoice'}
+        if 'route_profile' in self._preregistration:
+            # Individual/provider ceilings remain unchanged; the shared study
+            # budget does not promise that all actor maxima can be consumed.
+            caps.update(request_slots=DUAL_API_GLOBAL_REQUEST_SLOTS,
+                        round_seconds_soft=DUAL_API_GLOBAL_ROUND_SECONDS,
+                        kind='shared-global-hard-ceilings-not-simultaneous-per-actor-budget-grants')
+        return caps
 
     def private_panel_assignment(self):
         rows, panels = self.fixed_order()['workflows'], {}
         for wave in range(len(ARMS)):
             selection = []
-            for row in rows[wave * len(ROUTES):(wave + 1) * len(ROUTES)]:
+            for row in rows[wave * len(self._routes):(wave + 1) * len(self._routes)]:
                 actors = [row['source_actor_id']]
                 if row['receiver_actor_id']:
                     actors.append(row['receiver_actor_id'])
@@ -266,8 +290,14 @@ class EngineeringStudy:
         expected = {'identity': self._preregistration['study_id'], 'counts': self.counts(),
                     'order': self.fixed_order(), 'actor_registry': self.fixed_registry(),
                     'ledger_registry_identity': self.registry_identity(),
-                    'profile_configuration_sha256': CONFIGURATION_SHA256,
+                    'profile_configuration_sha256': self._configuration_sha256,
                     'study_topology_sha256': self.preregistration_sha256}
+        if 'route_profile' in self._preregistration:
+            expected.update(route_profile=DUAL_API_ROUTE_PROFILE, profile_id=DUAL_API_PROFILE_ID,
+                            configuration_sha256=self._configuration_sha256)
+        else:
+            _require(type(protocol) is dict and 'route_profile' not in protocol,
+                     'explicit route profile requires its own preregistration')
         _require(type(protocol) is dict and all(canonical(protocol.get(k)) == canonical(v) for k, v in expected.items()),
                  'protocol topology/identity differs from preregistration')
         caps = protocol.get('round_caps')
