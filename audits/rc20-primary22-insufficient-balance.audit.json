@@ -1590,8 +1590,8 @@
     "old_native_unknown_retained": true,
     "model_tasks_replayed": 0,
     "normal_exit_first_reader_not_invoked": true,
-    "terminal_independent_audit": "NOT_RUN",
-    "manual36": "NOT_RUN",
+    "terminal_independent_audit": "QUALITY_ONLY_PASS",
+    "manual36": "ALL_36_INITIALS_LOCKED_BEFORE_UNBLIND",
     "controlled_interruption_complete": false,
     "net_benefit_established": false,
     "billable_usage_complete": false,
@@ -1628,6 +1628,196 @@
         "runtime": "Python 3.12.10",
         "matrix_reverification": "PENDING"
       }
+    },
+    "independently_verified_role_evidence_count": 36,
+    "independently_verified_CLI_reported_tokens": 1155943,
+    "locked_comparison": {
+      "analysis_sha256": "291cd34057c6aae4d936d872f2285c0691110ff254e03246371c77fc7c4b2c01",
+      "analysis_registration_sha256": "d57473827453ecc68af0dbab74ce42539ec4592ed4dc05f5c8b91ecfa946eb23",
+      "terminal_audit_sha256": "bb482acadfc048b56f94cd8056a8b2a6406afd718b3e50b13e15afa33a82f596",
+      "terminal_audit_seal_sha256": "80ec6f57f6785f65878b0dcaf819328a21fa4dc10d2b3afb94b865ed4a1c05b4",
+      "extract_sha256": "cf41c4c44925af740da989522f10b9b1cff8491ebfd7a2e7a91c72dd92bb19dd",
+      "initial_lock_sha256": "e1827f93cec99e215c61b80012c6fd9e896a66df3de1e30fae75ff54c854196a",
+      "unblind_sha256": "489b488a71bf866d5c0ebf9197482dfc867b3a1016948a00f8baf338cde748c0",
+      "fresh_fork_none_reviewers": 6,
+      "roles": 36,
+      "workflows": 24,
+      "workflows_per_condition": 4,
+      "workflow_confirmed_pass_counts": {
+        "attention": 2,
+        "full": 1,
+        "minus_complete_change": 2,
+        "minus_decision_relevance": 3,
+        "minus_evidence_fidelity": 2,
+        "rc19": 1
+      },
+      "all_conditions_retained": true,
+      "unknown_locked_role_ids": [
+        "w003-receiver",
+        "w006-source",
+        "w007-receiver",
+        "w011-receiver",
+        "w014-source",
+        "w015-receiver",
+        "w016-receiver",
+        "w016-source",
+        "w019-receiver",
+        "w020-receiver",
+        "w020-source",
+        "w023-receiver"
+      ],
+      "full_serious_veto_actor_ids": [
+        "w024-receiver"
+      ],
+      "full_paired_family_regressions": [
+        "f_62bc17"
+      ],
+      "quality_condition": false,
+      "full_failure_findings": [
+        "success/error CLI output suffix was literal backslash-n rather than LF",
+        "persistent HANDOFF claimed receiver-complete and consumer_ready despite final failed validation",
+        "required validation and status calls were NOT_DELIVERED after channel close"
+      ],
+      "evidence_limits": [
+        "12 locked role judgements are UNKNOWN; aggregate receipts do not substantiate all report details",
+        "small fixed development population; no independent ablation attribution or Stable claim",
+        "original failed owners and native pending records remain unchanged"
+      ],
+      "reported_prefix_tokens_by_arm_and_domain": {
+        "attention": {
+          "API/deepseek/deepseek-v4-pro": 194301,
+          "API/mimo/mimo-v2.6-pro-ultraspeed": 362287,
+          "nativeCLI/openai-native-cli/gpt-6-luna": 91229
+        },
+        "full": {
+          "API/deepseek/deepseek-v4-pro": 172609,
+          "API/mimo/mimo-v2.6-pro-ultraspeed": 296770,
+          "nativeCLI/openai-native-cli/gpt-6-luna": null
+        },
+        "minus_complete_change": {
+          "API/deepseek/deepseek-v4-pro": 218892,
+          "API/mimo/mimo-v2.6-pro-ultraspeed": 313669,
+          "nativeCLI/openai-native-cli/gpt-6-luna": 231887
+        },
+        "minus_decision_relevance": {
+          "API/deepseek/deepseek-v4-pro": 215792,
+          "API/mimo/mimo-v2.6-pro-ultraspeed": 290148,
+          "nativeCLI/openai-native-cli/gpt-6-luna": null
+        },
+        "minus_evidence_fidelity": {
+          "API/deepseek/deepseek-v4-pro": 177019,
+          "API/mimo/mimo-v2.6-pro-ultraspeed": 416069,
+          "nativeCLI/openai-native-cli/gpt-6-luna": null
+        },
+        "rc19": {
+          "API/deepseek/deepseek-v4-pro": 140455,
+          "API/mimo/mimo-v2.6-pro-ultraspeed": 303097,
+          "nativeCLI/openai-native-cli/gpt-6-luna": 204869
+        }
+      },
+      "favorable_bounded_replication_net_benefit": false,
+      "promotion_allowed": false,
+      "manual_aggregation_correction": {
+        "original_panel5_sha256": "ef02d6b3b6fec2fb91f790de54df033fe642d8bbdb5120b203cfdf450426e38b",
+        "corrected_panel5_sha256": "c4f0f61bb81d5bddaa62c4289438681a1a054957b28046ac020d2194cf6d2ae8",
+        "requirements_status_reason_evidence_unchanged": true,
+        "only_deterministic_overall_changed": true,
+        "correction_before_lock_and_unblind": true
+      }
+    },
+    "supplementary_cost_description": {
+      "preregistration_sha256": "e853b98612d73b20532d219b210c3b093488a9fb57eb4fe47baf113379540642",
+      "calculator_sha256": "e237e0d11dc957252be05cc29ebc1c9649fd424dca3f12eaf29ed68a51272bcb",
+      "summary_sha256": "ad3197eed584619c21265d7a40c6616a2534878c554f3bad283a36e2d2d6fa3e",
+      "fixed_primary_workflows": 12,
+      "fixed_primary_roles": 18,
+      "descriptive_comparisons": {
+        "attention": {
+          "against": "rc19",
+          "by_domain": {
+            "API/deepseek/deepseek-v4-pro": {
+              "actor_active_difference": {
+                "delta": -0.8281174000003375,
+                "percent": -0.928705070007152
+              },
+              "reported_token_difference": {
+                "delta": 53846,
+                "percent": 38.33683386137909
+              }
+            },
+            "API/mimo/mimo-v2.6-pro-ultraspeed": {
+              "actor_active_difference": {
+                "delta": 3.2794557000452187,
+                "percent": 2.8466947628303485
+              },
+              "reported_token_difference": {
+                "delta": 59190,
+                "percent": 19.528401798764094
+              }
+            },
+            "nativeCLI/openai-native-cli/gpt-6-luna": {
+              "actor_active_difference": {
+                "delta": -19.76103470000089,
+                "percent": -28.90606282005155
+              },
+              "reported_token_difference": {
+                "delta": -113640,
+                "percent": -55.46959276415661
+              }
+            }
+          },
+          "complete_observed_workflow_seconds_difference": {
+            "delta": -13.841566100076307,
+            "percent": -4.747640633952432
+          }
+        },
+        "full": {
+          "against": "rc19",
+          "by_domain": {
+            "API/deepseek/deepseek-v4-pro": {
+              "actor_active_difference": {
+                "delta": 6.680099199991673,
+                "percent": 7.4915005954233616
+              },
+              "reported_token_difference": {
+                "delta": 32154,
+                "percent": 22.89274144743869
+              }
+            },
+            "API/mimo/mimo-v2.6-pro-ultraspeed": {
+              "actor_active_difference": null,
+              "reported_token_difference": {
+                "delta": -6327,
+                "percent": -2.087450552133474
+              }
+            },
+            "nativeCLI/openai-native-cli/gpt-6-luna": {
+              "actor_active_difference": {
+                "delta": -7.594833100010874,
+                "percent": -11.10957629646343
+              },
+              "reported_token_difference": null
+            }
+          },
+          "complete_observed_workflow_seconds_difference": {
+            "delta": 15.409006799949566,
+            "percent": 5.285270921177521
+          }
+        }
+      },
+      "workflow_wall_scope": "sum of observed task intervals, excludes shared/debug/calendar research overhead",
+      "reported_tokens_across_models_not_scalar_summed": true,
+      "all_in_cost_status": "UNKNOWN",
+      "net_benefit_claimed": false,
+      "promotion_gate": "BLOCKED_UNCHANGED"
+    },
+    "current_engineering_CI": {
+      "commit": "3150480bc325fb3fc4197e99c5653031de247504",
+      "run_id": 39183298319,
+      "jobs_passed": 11,
+      "jobs_total": 11,
+      "observed_actual_all_success": true,
+      "does_not_establish_efficacy": true
     }
   }
 }
