@@ -1615,7 +1615,19 @@
         "evolution/tool_broker.py": "8a24d04f6826124a147f19d11dd12fc7bca104ac07b353d89a60097333cd6abc",
         "tests/test_engineering_cli.py": "a2950fbcbfb2ab67754fce3fc7d153aefc85f52352bd895701ca831b16a55848"
       },
-      "does_not_convert_failed_trial_to_pass": true
+      "does_not_convert_failed_trial_to_pass": true,
+      "CI_834cf09": {
+        "run_id": 39182772788,
+        "observed_runtime_failure": "test broker stub omitted relocated shared classifier",
+        "production_import_or_fallback_added": false,
+        "test_stub_fix": "tests/test_engineering_provider.py exports real shared classifier",
+        "actual_affected_modules_tests": 220,
+        "failures": 0,
+        "errors": 0,
+        "wall_seconds": 21.918,
+        "runtime": "Python 3.12.10",
+        "matrix_reverification": "PENDING"
+      }
     }
   }
 }

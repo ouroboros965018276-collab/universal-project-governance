@@ -112,6 +112,7 @@ class EngineeringCandidateTests(_ProviderFixture, unittest.TestCase):
         self.module.tool_definitions = Mock(side_effect=tool_definitions)
         self.module.public_instruction = Mock(return_value='Synthetic engineering instruction. required_read_paths alone are mandatory. project_tool unavailable.')
         self.module.validate_execution_result = Mock(side_effect=execution)
+        self.module.recoverable_project_patch_refusal = real_engineering.recoverable_project_patch_refusal
         self.module.quality_from_current_receipts = Mock(side_effect=quality)
         module_patch = patch.dict(sys.modules, {'evolution.engineering_broker': self.module})
         module_patch.start()
