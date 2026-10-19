@@ -345,6 +345,145 @@ class ProjectExecutorTests(unittest.TestCase):
             return info
         with patch.object(Path, "lstat", synthetic), self.assertRaises(ValueError):project._safe_new_root(self.artifacts)
 
+    def public_facts(self, *, contract=None, current=None):
+        registered = CONTRACT if contract is None else contract
+        with patch.object(project, "_read_project_receipt", wraps=project._read_project_receipt) as reader:
+            checked, receipt, digest, summary = project.read_project_receipt(
+                FILES, registered, self.artifacts, include_public_summary=True)
+        self.assertEqual(reader.call_count, 1)
+        return project.public_validation_facts(summary, tuple(row["recipe"] for row in registered["checks"]),
+            current_snapshot_sha256=receipt["snapshot_sha256"] if current is None else current), summary
+
+    def test_public_validation_separates_checks_from_test_executions_without_leaks(self):
+        contract = deepcopy(CONTRACT)
+        contract["checks"].insert(1, dict(contract["checks"][0], id="another-unit-recipe"))
+        self.execute(contract=contract)
+        facts, summary = self.public_facts(contract=contract)
+        self.assertEqual(facts["checks"], {"registered": 4, "passed": 4, "failed": 0, "timed_out": 0, "truncated": 0})
+        # The same registered test executed by two recipes is two executions,
+        # not four checks or two distinct test cases.
+        self.assertEqual(facts["unittest"]["counts"]["tests_run"], 2)
+        self.assertEqual(facts["current_validation"], "PASSED")
+        self.assertEqual(facts["execution"], {"status": "EXECUTED", "unknown": False,
+                         "container_removed": True, "scratch_removed": True})
+        encoded = project.canonical(facts).decode()
+        for secret in (TEST_ID, "another-unit-recipe", "registered_tests", "sample_pkg", "test_ids",
+                       "stdout", "stderr", "diagnostics", "expected_stdout", "expected_files"):
+            self.assertNotIn(secret, encoded)
+        self.assertEqual(len(project.read_project_receipt(FILES, contract, self.artifacts)), 3)
+
+    def test_public_validation_preserves_all_failed_unittest_counts(self):
+        original = FakeDocker.rows
+        def failing_rows(fake, inp):
+            rows = original(fake, inp)
+            rows[0]["outcome"].update(tests_run=7, failures=2, errors=1, skipped=1,
+                                      expected_failures=1, unexpected_successes=1, successful=False)
+            return rows
+        with patch.object(FakeDocker, "rows", failing_rows):
+            self.execute()
+        facts, _ = self.public_facts()
+        self.assertEqual(facts["current_validation"], "FAILED")
+        self.assertEqual(facts["checks"]["failed"], 1)
+        self.assertEqual(facts["unittest"]["counts"], {"tests_run": 7, "failures": 2, "errors": 1,
+                         "skipped": 1, "expected_failures": 1, "unexpected_successes": 1})
+
+    def test_public_validation_stale_keeps_historical_counts(self):
+        self.execute()
+        facts, _ = self.public_facts(current="0" * 64)
+        self.assertEqual(facts["current_validation"], "STALE")
+        self.assertEqual(facts["observed_validation"], "PASSED")
+        self.assertEqual(facts["unittest"]["counts"]["tests_run"], 1)
+
+    def test_public_validation_incomplete_outcome_never_becomes_zero_tests(self):
+        self.execute("child-timeout")
+        facts, _ = self.public_facts()
+        self.assertEqual(facts["current_validation"], "FAILED")
+        self.assertEqual(facts["checks"]["timed_out"], 3)
+        self.assertEqual(facts["unittest"]["status"], "INCOMPLETE")
+        self.assertIsNone(facts["unittest"]["counts"])
+        self.assertIsNone(facts["unittest"]["known_counts"])
+        self.assertEqual(facts["unittest"]["completed_recipe_count"], 0)
+
+    def test_public_validation_unknown_cleanup_does_not_claim_known_results(self):
+        self.execute("cleanup")
+        facts, summary = self.public_facts()
+        self.assertIs(summary, project.ValidationUnavailable.UNKNOWN)
+        self.assertEqual(facts["current_validation"], "UNKNOWN")
+        self.assertTrue(facts["execution"]["unknown"])
+        self.assertIsNone(facts["execution"]["container_removed"])
+        self.assertIsNone(facts["execution"]["scratch_removed"])
+        self.assertIsNone(facts["checks"]["passed"])
+        self.assertIsNone(facts["unittest"]["counts"])
+
+    def test_public_validation_partial_recipe_coverage_preserves_known_failure_subtotal(self):
+        contract = deepcopy(CONTRACT)
+        contract["checks"].insert(1, dict(contract["checks"][0], id="another-unit-recipe"))
+        original = FakeDocker.rows
+        def partial_rows(fake, inp):
+            rows = original(fake, inp)
+            rows[0]["outcome"].update(failures=1, successful=False)
+            rows[1].update(timeout=True, exit_code=None, outcome=None)
+            return rows
+        with patch.object(FakeDocker, "rows", partial_rows):
+            self.execute(contract=contract)
+        facts, _ = self.public_facts(contract=contract)
+        self.assertEqual(facts["unittest"]["status"], "INCOMPLETE")
+        self.assertIsNone(facts["unittest"]["counts"])
+        self.assertEqual(facts["unittest"]["known_counts"]["tests_run"], 1)
+        self.assertEqual(facts["unittest"]["known_counts"]["failures"], 1)
+        self.assertEqual(facts["unittest"]["completed_recipe_count"], 1)
+
+    def test_public_validation_truncated_or_timed_out_rows_cannot_claim_complete_counts(self):
+        original = FakeDocker.rows
+        for flag in ("timeout", "truncated"):
+            self.artifacts = self.base / flag
+            def incomplete_rows(fake, inp):
+                rows = original(fake, inp)
+                rows[0][flag] = True  # Even a complete-looking outcome is insufficient.
+                return rows
+            with patch.object(FakeDocker, "rows", incomplete_rows):
+                self.execute()
+            facts, _ = self.public_facts()
+            self.assertEqual(facts["unittest"]["status"], "INCOMPLETE")
+            self.assertIsNone(facts["unittest"]["counts"])
+            self.assertIsNone(facts["unittest"]["known_counts"])
+
+    def test_public_validation_explicit_not_run_differs_from_unknown(self):
+        recipes = ("unittest", "module")
+        absent = project.public_validation_facts(project.ValidationUnavailable.NOT_RUN, recipes,
+                                                 current_snapshot_sha256="0" * 64)
+        unknown = project.public_validation_facts(project.ValidationUnavailable.UNKNOWN, recipes,
+                                                  current_snapshot_sha256="0" * 64)
+        self.assertEqual(absent["current_validation"], "NOT_RUN")
+        self.assertFalse(absent["execution"]["unknown"])
+        self.assertEqual(unknown["current_validation"], "UNKNOWN")
+        self.assertIsNone(absent["unittest"]["counts"])
+        no_unit = project.public_validation_facts(project.ValidationUnavailable.UNKNOWN, ("module",),
+                                                  current_snapshot_sha256="0" * 64)
+        self.assertEqual(no_unit["unittest"]["status"], "NOT_RUN")
+        self.assertIsNone(no_unit["unittest"]["counts"])
+
+    def test_public_validation_rejects_producer_dicts_recipe_drift_and_false_types(self):
+        self.execute()
+        facts, summary = self.public_facts()
+        for supplied in ({"ok": True, "tests_run": 999}, bytes(summary), None, True):
+            with self.subTest(supplied=type(supplied)), self.assertRaises(ValueError):
+                project.public_validation_facts(supplied, ("unittest", "import", "module"), current_snapshot_sha256="0" * 64)
+        for recipes in (("unittest",), ("unittest", "module", "import"), ["unittest", "import", "module"], ("private-test-id",)):
+            with self.subTest(recipes=recipes), self.assertRaises(ValueError):
+                project.public_validation_facts(summary, recipes, current_snapshot_sha256="0" * 64)
+        for snapshot in (True, None, "current"):
+            with self.assertRaises(ValueError):
+                project.public_validation_facts(summary, ("unittest", "import", "module"), current_snapshot_sha256=snapshot)
+        with self.assertRaises(ValueError):
+            project.read_project_receipt(FILES, CONTRACT, self.artifacts, include_public_summary=1)
+
+    def test_public_validation_original_stream_tamper_rejected_before_projection(self):
+        self.execute()
+        (self.artifacts / "04-start-attach.stdout.raw").write_bytes(b"producer says all tests passed\n")
+        with self.assertRaises(ValueError):
+            project.read_project_receipt(FILES, CONTRACT, self.artifacts, include_public_summary=True)
+
 
 if __name__ == "__main__":
     unittest.main()

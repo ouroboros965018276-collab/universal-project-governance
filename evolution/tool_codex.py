@@ -231,7 +231,17 @@ def _project_cli_trace_failures(events, journal, task):
     event envelope. Unknown/absent result shapes fail; real CLI compatibility
     still requires a separate registered first observation.
     """
-    from .engineering_broker import validate_execution_result, recoverable_project_test_failure
+    from .engineering_broker import (validate_execution_result, recoverable_project_test_failure,
+                                     recoverable_project_patch_refusal)
+    initial_state = sha(canonical({name: sha(text.encode('utf-8'))
+                                  for name, text in task['initial_files'].items()}))
+
+    def known_patch_refusal(index):
+        row = journal[index]
+        before = journal[index - 1].get('state_sha256') if index else initial_state
+        return recoverable_project_patch_refusal(row.get('tool'), row.get('arguments', {}),
+            row.get('result'), row, task, before, row.get('state_sha256'))
+
     observed, failures, seen_ids = [], [], set()
     native_ordinal = 0
     for event in events:
@@ -271,18 +281,19 @@ def _project_cli_trace_failures(events, journal, task):
             continue
         if item['status'] == 'failed':
             row = journal[native_ordinal - 1] if native_ordinal <= len(journal) else None
-            if (item['tool'] != 'repo_validate' or arguments != {} or type(row) is not dict
-                    or row.get('tool') != item['tool']
+            if (type(row) is not dict or row.get('tool') != item['tool']
                     or row.get('arguments_sha256') != sha(canonical(arguments))
                     or row.get('result_sha256') != sha(canonical(value))
-                    or not recoverable_project_test_failure(value, task, row.get('state_sha256'))):
+                    or not ((item['tool'] == 'repo_validate' and arguments == {}
+                             and recoverable_project_test_failure(value, task, row.get('state_sha256')))
+                            or known_patch_refusal(native_ordinal - 1))):
                 failures.append('scope-invalid:cli-project-mcp-result-unconfirmed')
                 continue
         observed.append((item['tool'], sha(canonical(arguments)), sha(canonical(value))))
     expected = [(row.get('tool'), row.get('arguments_sha256'), row.get('result_sha256')) for row in journal]
     if observed != expected:
         failures.append('scope-invalid:cli-project-ordered-results-journal-mismatch')
-    for row in journal:
+    for index, row in enumerate(journal):
         result = row.get('result', {})
         project_validation = row.get('tool') == 'repo_validate' and row.get('arguments') == {}
         if project_validation:
@@ -291,7 +302,8 @@ def _project_cli_trace_failures(events, journal, task):
                     or result.get('write_state') is not None):
                 failures.append('scope-invalid:cli-project-execution-unknown-or-unconfirmed')
         if result.get('ok') is not True:
-            if not project_validation or not recoverable_project_test_failure(result, task, row.get('state_sha256')):
+            if not ((project_validation and recoverable_project_test_failure(result, task, row.get('state_sha256')))
+                    or known_patch_refusal(index)):
                 failures.append('scope-invalid:cli-project-tool-refused')
                 failures.extend(value for value in result.get('failures', []) if type(value) is str)
         elif result.get('write_state') is not None or result.get('failures'):

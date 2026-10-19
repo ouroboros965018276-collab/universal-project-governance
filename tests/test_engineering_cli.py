@@ -304,6 +304,41 @@ class CliProjectCandidateTests(unittest.TestCase):
                 result, _, _ = self.quality(events=events)
                 self.assertFalse(result['hard_pass'])
 
+    def test_cli_known_unchanged_patch_refusal_allows_correction_but_not_missing_validation(self):
+        self.broker.call('repo_read', {'paths': ['pkg/core.py']})
+        refused = self.broker.call('repo_patch', {'operations': [{'path': 'pkg/core.py',
+            'old_sha256': sha(self.task['initial_files']['pkg/core.py'].encode()),
+            'old_text': 'ABSENT_FRAGMENT', 'new_text': '1'}]})
+        self.assertFalse(refused['ok'])
+        events = events_for(self.broker.events); events[1]['item']['status'] = 'failed'
+        self.assertEqual(tool_codex._project_cli_trace_failures(events, self.broker.events, self.task), [])
+        self.assertFalse(self.quality(events=events)[0]['hard_pass'])
+        self.complete()
+        events = events_for(self.broker.events); events[1]['item']['status'] = 'failed'
+        quality, unknown, _ = self.quality(events=events)
+        self.assertTrue(quality['hard_pass'], quality)
+        self.assertFalse(unknown)
+        self.assertEqual(self.executor_calls, 1)
+
+    def test_cli_patch_refusal_preserves_scope_partial_unknown_and_state_fences(self):
+        self.broker.call('repo_read', {'paths': ['pkg/core.py']})
+        self.broker.call('repo_patch', {'operations': [{'path': 'pkg/core.py',
+            'old_sha256': sha(self.task['initial_files']['pkg/core.py'].encode()),
+            'old_text': 'ABSENT_FRAGMENT', 'new_text': '1'}]})
+        for kind in ('state', 'protected', 'partial', 'unknown', 'budget', 'argument-hash'):
+            journal = copy.deepcopy(self.broker.events); row = journal[1]
+            if kind == 'state': row['state_sha256'] = 'f' * 64
+            elif kind == 'protected': row['arguments']['operations'][0]['path'] = 'pkg/__init__.py'
+            elif kind == 'partial': row['result']['write_state'] = 'partial'
+            elif kind == 'unknown': row['result']['error'] = 'ValueError: unknown write outcome'
+            elif kind == 'budget': row['result']['error'] = 'ValueError: tool call budget exceeded'
+            row['arguments_sha256'] = sha(canonical(row['arguments']))
+            row['result_sha256'] = sha(canonical(row['result']))
+            if kind == 'argument-hash': row['arguments_sha256'] = 'e' * 64
+            events = events_for(journal); events[1]['item']['status'] = 'failed'
+            with self.subTest(kind=kind):
+                self.assertTrue(tool_codex._project_cli_trace_failures(events, journal, self.task))
+
     def test_scope_refusal_cannot_be_hidden_by_later_passing_project_checks(self):
         refused = self.broker.call('repo_patch', {'operations': [
             {'path': 'pkg/__init__.py', 'old_sha256': sha(b''), 'new_text': 'wrong\n'}]})

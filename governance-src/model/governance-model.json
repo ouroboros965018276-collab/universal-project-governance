@@ -52,7 +52,7 @@
       "policy_ids": [
         "TRUTH_CURRENT"
       ],
-      "statement": "Keep only information current readers need for project use/maintenance/validation/takeover. Use the user's language; fit wording/format to task/readers. Deliver relevant outcomes/evidence/gaps once, with needed technical detail and why/when. Omit governance/process recitals; put task-rule explanations in project content only if project understanding needs them. No mechanical style rules or extra model polishing calls."
+      "statement": "Use the user's language. Keep project content useful for current use, maintenance, validation or takeover. Give the needed outcome, evidence and limits once. Fit technical detail and reasons to need; omit process recitals, rigid style rules and extra model polishing."
     },
     {
       "id": "complete_change",

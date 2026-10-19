@@ -1819,5 +1819,69 @@
       "observed_actual_all_success": true,
       "does_not_establish_efficacy": true
     }
+  },
+  "compact_expression_candidate": {
+    "observed_on": "2026-10-19",
+    "status": "ENGINEERING_VALIDATED_FRESH_STUDY_NOT_LAUNCHED",
+    "reason": "negative locked comparison; remove redundant default expression without adding conditional blocks",
+    "model_raw_sha256": "e37fcc75cc70d5b8ae9676bd105d4a797eb3290513ccdb97645b84d2713461c6",
+    "model_canonical_sha256": "32770df214978c40cdfaa70d5e4a62a32a76abb4092517c5ad4bae3ea36fddd3",
+    "qualification_fingerprint": "sha256:2f6cddc9e2cdc133887192a483f5a0093ef876df27e93ef89123549a51f65be2",
+    "skill_bytes": 7031,
+    "previous_skill_bytes": 7185,
+    "skill_sha256": "b1f5456595d47478ac81b18d07ad70537fc8c1bef32577b32b0f512d0f77e2a5",
+    "core_policies": 16,
+    "core_policy_change": false,
+    "other_three_guidance_change": false,
+    "operational_guidance_change": false,
+    "new_rule_blocks": 0,
+    "full_comparison_launched": false,
+    "prior_36_replayed_or_regraded": false,
+    "runtime_size_is_not_efficacy": true,
+    "new_fixture_manifest_sha256": "1d26183f13333b4ec687ef02b950e61e29d67f4cc22d3210e8dde1997b2cb4fe",
+    "new_fixture_seal_sha256": "0243e4368a065bc60913239a1084d8edc3cc220a1e125299e42ae28ac2f753f9",
+    "new_fixture_local_controls": {
+      "correct_snapshots_passed": 6,
+      "incorrect_snapshots_rejected": 42,
+      "total": 48,
+      "actual_Docker_or_Agent_run": false
+    },
+    "public_validation_facts": "opt-in original receipt verification preserves recipe groups versus actual tests, failures/errors/skips, current/stale/NOT_RUN and cleanup; no private IDs/answers/diagnostics",
+    "current_gate": "BLOCKED; new candidate efficacy not assessed",
+    "main_and_local_install": "RC19_UNCHANGED",
+    "tests": {
+      "total": 1300,
+      "failures": 0,
+      "errors": 0,
+      "skips": 3,
+      "wall_seconds": 232.125,
+      "source_before_after_exact": true,
+      "result_sha256": "918d54575f26f18fee52a2243df026dce99a744a6f6ab3e10a19c97e46340e3f"
+    },
+    "repository_gates": {
+      "passed": 9,
+      "total": 9,
+      "result_sha256": "8db2061883fff1a1d6cbfd23b3c2f7624cb7b669bac1c1ca66defd9abb8c06b9"
+    },
+    "new_fixture_real_controls": {
+      "status": "PASS",
+      "unique_executions": 7,
+      "observations": 8,
+      "integrity_verified": 7,
+      "container_cleanup_confirmed": 7,
+      "scratch_cleanup_confirmed": 7,
+      "unknown": 0,
+      "wall_seconds": 29.604193599981954,
+      "result_sha256": "d860e0d185765a8534d40d96dac7c60371e8bf3bf383d7cf60615fe44bbf0b06",
+      "actual_agent_interruption_proved": false
+    },
+    "public_facts_glue_control": {
+      "assertions": 15,
+      "status": "PASS",
+      "caller_sha256": "bf637f3496d41442aae1aa7bae8bb884c9a06586c6f904026abfcaac5a30904a",
+      "outer_wall_seconds": 0.875,
+      "model_calls": 0
+    },
+    "native_scope_classification": "API, MCP and native trace share unchanged-state refusal classifier; current validation/required tools remain mandatory; old frozen task quality unchanged"
   }
 }

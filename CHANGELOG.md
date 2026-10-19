@@ -16,6 +16,8 @@
 - Refines the existing evidence-fidelity guidance after two locked documentation vetoes: planned checks cannot become claimed execution; validation statements bind to observed results for the tested state. Regenerated candidate identity supersedes no historical result.
 
 
+- On 2026-10-19, shortens the existing default expression without adding policy blocks, keeps independently verified public test counts distinct from recipe-group counts, and shares unchanged-state refusal classification with native trace verification. Fresh identity and task controls preserve all earlier locked negative results; no empirical benefit or deployment is inferred.
+
 ## 3.0.0-rc.19 — 2026-10-13 — candidate
 
 - Separates RC18 historical tail latency from reproduced preparation costs; retains the original paired outcome.

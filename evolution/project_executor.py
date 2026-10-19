@@ -11,6 +11,7 @@ from __future__ import annotations
 import ast
 import base64
 import binascii
+from enum import Enum
 import math
 import os
 from pathlib import Path
@@ -979,10 +980,114 @@ def _read_project_receipt(files, contract, artifacts, receipt_sha256=None):
     return validate_receipt(files, contract, receipt), receipt, sha(raw)
 
 
-def read_project_receipt(files, contract, artifacts, receipt_sha256=None):
+class ValidationUnavailable(Enum):
+    """Caller-observed journal states, never inferred from model prose.
+
+    NOT_RUN requires an independently checked absence of validation events;
+    missing or unverified evidence is UNKNOWN instead.
+    """
+    NOT_RUN = "NOT_RUN"
+    UNKNOWN = "UNKNOWN"
+
+
+_PUBLIC_SUMMARY_TOKEN = object()
+_TEST_COUNTS = ("tests_run", "failures", "errors", "skipped", "expected_failures", "unexpected_successes")
+
+
+class _VerifiedExecutionSummary(bytes):
+    """In-process immutable output of the original-receipt verifier only."""
+    __slots__ = ()
+
+    def __new__(cls, value, token):
+        if token is not _PUBLIC_SUMMARY_TOKEN:
+            raise ValueError("original-receipt verifier summary required")
+        return super().__new__(cls, canonical(value))
+
+
+def _verified_execution_summary(checked, receipt):
+    if checked.get("integrity_ok") is not True:
+        return ValidationUnavailable.UNKNOWN
+    # Never retain IDs, modules, argv, expected values, streams or diagnostics.
+    rows = []
+    for row in receipt["checks"]:
+        outcome = row["outcome"]
+        counts = ({key: outcome[key] for key in _TEST_COUNTS}
+                  if row["recipe"] == "unittest" and outcome is not None
+                  and outcome["completed"] is True and not row["timeout"]
+                  and not row["truncated"] else None)
+        rows.append({"recipe": row["recipe"], "counts": counts,
+                     "timeout": row["timeout"], "truncated": row["truncated"]})
+    return _VerifiedExecutionSummary({
+        "snapshot_sha256": receipt["snapshot_sha256"], "ok": checked["ok"],
+        "checks_total": checked["checks_total"], "checks_passed": checked["checks_passed"],
+        "container_removed": receipt["container_removed"], "scratch_removed": receipt["scratch_removed"],
+        "rows": rows}, _PUBLIC_SUMMARY_TOKEN)
+
+
+def public_validation_facts(summary, public_recipes, *, current_snapshot_sha256):
+    """Redact one verified validation, without executing or rereading evidence.
+
+    `public_recipes` is the registered public tuple of recipe *kinds*, in order;
+    it contains no private check/test IDs or expected answers. An auditor obtains
+    the owned summary with read_project_receipt(include_public_summary=True),
+    writes these facts into its bound proof, and manual consumers use that proof.
+    Counts describe test executions in this validation, not unique project tests.
+    This process boundary does not defend against arbitrary trusted Python code.
+    """
+    if (type(public_recipes) is not tuple or not 1 <= len(public_recipes) <= MAX_CHECKS
+            or any(type(recipe) is not str or recipe not in {"unittest", "import", "module"}
+                   for recipe in public_recipes)
+            or type(current_snapshot_sha256) is not str or not HEX.fullmatch(current_snapshot_sha256)):
+        raise ValueError("typed public recipes and current snapshot required")
+    counts = {key: 0 for key in _TEST_COUNTS}
+    units = public_recipes.count("unittest")
+    facts = {"schema": "public-project-validation-facts-v1",
+             "current_validation": "UNKNOWN", "observed_validation": "UNKNOWN",
+             "execution": {"status": "UNKNOWN", "unknown": True,
+                           "container_removed": None, "scratch_removed": None},
+             "checks": {"registered": len(public_recipes), "passed": None, "failed": None,
+                        "timed_out": None, "truncated": None},
+             "unittest": {"status": "UNKNOWN" if units else "NOT_RUN", "registered_recipe_count": units,
+                          "completed_recipe_count": None, "counts": None, "known_counts": None,
+                          "count_scope": "test-executions-in-this-validation-not-unique-tests"}}
+    if type(summary) is ValidationUnavailable:
+        if summary is ValidationUnavailable.NOT_RUN:
+            facts["current_validation"] = facts["observed_validation"] = "NOT_RUN"
+            facts["execution"].update(status="NOT_RUN", unknown=False)
+            facts["unittest"]["status"] = "NOT_RUN"
+        return facts
+    if type(summary) is not _VerifiedExecutionSummary:
+        raise ValueError("owned independently verified execution summary required")
+    value = strict_json(bytes(summary))
+    if tuple(row["recipe"] for row in value["rows"]) != public_recipes:
+        raise ValueError("verified/public recipe coverage differs")
+    observed = "PASSED" if value["ok"] else "FAILED"
+    facts["observed_validation"] = observed
+    facts["current_validation"] = (observed if value["snapshot_sha256"] == current_snapshot_sha256 else "STALE")
+    facts["execution"].update(status="EXECUTED", unknown=False,
+                             container_removed=value["container_removed"], scratch_removed=value["scratch_removed"])
+    facts["checks"].update(passed=value["checks_passed"], failed=value["checks_total"] - value["checks_passed"],
+                          timed_out=sum(row["timeout"] for row in value["rows"]),
+                          truncated=sum(row["truncated"] for row in value["rows"]))
+    known = [row["counts"] for row in value["rows"] if row["recipe"] == "unittest" and row["counts"] is not None]
+    for row in known:
+        for key in _TEST_COUNTS:
+            counts[key] += row[key]
+    facts["unittest"].update(status="NOT_RUN" if not units else "COMPLETE" if len(known) == units else "INCOMPLETE",
+                             completed_recipe_count=len(known), known_counts=counts if known else None,
+                             counts=counts.copy() if units and len(known) == units else None)
+    return facts
+
+
+def read_project_receipt(files, contract, artifacts, receipt_sha256=None, *, include_public_summary=False):
     """Pure original-receipt read; malformed JSON shapes become ValueError."""
+    if type(include_public_summary) is not bool:
+        raise ValueError("explicit public-summary option required")
     try:
-        return _read_project_receipt(files, contract, artifacts, receipt_sha256)
+        checked, receipt, digest = _read_project_receipt(files, contract, artifacts, receipt_sha256)
+        if include_public_summary:
+            return checked, receipt, digest, _verified_execution_summary(checked, receipt)
+        return checked, receipt, digest
     except (TypeError, KeyError, AttributeError, IndexError, UnicodeError, RecursionError, Failure) as error:
         raise ValueError("malformed original project receipt") from error
 
