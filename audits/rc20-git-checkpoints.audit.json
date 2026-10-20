@@ -1,567 +1,11 @@
 {
   "schema_version": 1,
-  "document_kind": "autonomous-project-git-adoption-release",
-  "observed_at": "2026-10-20T14:31:08.673832+00:00",
-  "version": "3.0.0-rc.20.3",
-  "status": "SOURCE_AND_INSTALLATION_VERIFIED",
   "work_order": "https://github.com/ouroboros965018276-collab/universal-project-governance/issues/26",
-  "baseline_revision": "3a96b2739f8b537ec355152cc5669d6508f7ebfb",
-  "canonical_current_observation": "Current RC20.3 engineering facts only; prior RC20.2 release remains exactly preserved in Git at baseline_revision.",
-  "previous_verified_release": {
-    "version": "3.0.0-rc.20.2",
-    "revision": "3a96b2739f8b537ec355152cc5669d6508f7ebfb",
-    "audit_path": "audits/rc20-git-checkpoints.audit.json",
-    "final_head_ci_run": 39427759804,
-    "ci_jobs_passed": 11,
-    "ci_jobs_total": 11,
-    "status": "PASS observed this task"
-  },
-  "workspace_health": {
-    "invocation_id": "477daa19c28c415189add1244bff831b",
-    "entry": "Codex desktop root functions.exec PowerShell, managed scoped escalation",
-    "project_path": "D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution",
-    "observed_at": "2026-10-20T13:18:43.6682645Z",
-    "powershell": "7.6.5",
-    "python": "3.12.10",
-    "git": "2.53.0.windows.3",
-    "write_read_delete": "PASS unique CreateNew handle/readback/DeleteOnClose cleanup",
-    "raw_result": "Current task tool transcript 90b302; each implementation agent checked its own actual entry.",
-    "permissions": "Current user-selected managed/auto-review mode retained; project writes use reviewed scoped tools."
-  },
-  "scope": [
-    "Explicit Git root initialization and verified native zero-parent commits with scoped initial adoption.",
-    "Independent project observer for hosts which never call begin/finish.",
-    "Quiet/cooldown/dedup/validator/source/token protection, manual workflow priority and cooperative stop.",
-    "Necessary real local Git/native process checks; final CI, main/installed byte identity and one bounded acceptance observation."
-  ],
   "new_paid_model_calls": 0,
   "paid_test_decision": {
     "needed": false,
     "reason": "This feature is established by actual Git objects, native processes, source/index identities and deterministic local validators. No paid model trial is required or added."
   },
-  "checks": {
-    "development_full_suite": {
-      "status": "PASS",
-      "tests": 1382,
-      "skipped": 3,
-      "raw": ".governance/rc203-check-11.log",
-      "source_sha256": {
-        "governance-src/model/governance-model.json": "1f9c3b234d12df8c4c296f4e371d4eeec50a35048af41ff42b40faea99f84ea9",
-        "governance-src/runtime-scripts/project_tool.py": "a9922d6f433ce0d1c9fd0543c6655cded432d73eba567c712f3970f726c888b9",
-        "governance-src/runtime-scripts/git_checkpoint.py": "a16f8691a94b0a8d4b7eb07cfd42b35bd475e19dba7c96dc639dfae6b084de01",
-        "governance-src/runtime-scripts/git_watch.py": "dd08d2349880dee3dc490d91ad944e4da0c70a3f9ce42e592de5e45dbe345817",
-        "qualification/FREEZE.json": "25f10c42af6a10b266fd021bcd206690e612fda8dfdd8110267589a76b2ccc78"
-      },
-      "limit": "Observed before final focused observer/receipt/portable-security corrections; final-source complete CI remains required."
-    },
-    "final_helper_bootstrap_lifecycle": {
-      "status": "PASS",
-      "tests": 40,
-      "source_sha256": {
-        "governance-src/runtime-scripts/git_checkpoint.py": "fe1e7279c16856179870fba1a6c06dd5e0270c38d6f83d3cefe39e13affe6793",
-        "governance-src/runtime-scripts/project_tool.py": "a9922d6f433ce0d1c9fd0543c6655cded432d73eba567c712f3970f726c888b9"
-      },
-      "checks": [
-        {
-          "check": "helper",
-          "returncode": 0,
-          "raw": ".governance/rc203-post-receipt-helper.log",
-          "summary": "_change) ... ok\r\ntest_rejecting_hook_preserves_head_index_and_worktree (test_git_checkpoints.GitCheckpointTests.test_rejecting_hook_preserves_head_index_and_worktree) ... ok\r\ntest_reverted_deferred_change_clears_pending_state_without_extra_commit (test_git_checkpoints.GitCheckpointTests.test_reverted_deferred_change_clears_pending_state_without_extra_commit) ... ok\r\ntest_selected_file_changed_after_preparation_is_not_committed_as_verified (test_git_checkpoints.GitCheckpointTests.test_selected_file_changed_after_preparation_is_not_committed_as_verified) ... ok\r\ntest_selected_partial_staging_blocks_without_losing_index_or_worktree (test_git_checkpoints.GitCheckpointTests.test_selected_partial_staging_blocks_without_losing_index_or_worktree) ... ok\r\ntest_sensitive_and_ignored_selected_files_never_enter_commit (test_git_checkpoints.GitCheckpointTests.test_sensitive_and_ignored_selected_files_never_enter_commit) ... ok\r\ntest_unrelated_staged_and_untracked_changes_are_preserved (test_git_checkpoints.GitCheckpointTests.test_unrelated_staged_and_untracked_changes_are_preserved) ... ok\r\ntest_updating_handoff_document_alone_does_not_bypass_partial_stage_cadence (test_git_checkpoints.GitCheckpointTests.test_updating_handoff_document_alone_does_not_bypass_partial_stage_cadence) ... ok\r\n\r\n----------------------------------------------------------------------\r\nRan 26 tests in 88.763s\r\n\r\nOK\r\n"
-        },
-        {
-          "check": "bootstrap",
-          "returncode": 0,
-          "raw": ".governance/rc203-post-receipt-bootstrap.log",
-          "summary": "y_initializes_commits_latest_source_and_deduplicates (test_git_bootstrap.GitBootstrapTests.test_explicit_no_repository_initializes_commits_latest_source_and_deduplicates) ... ok\r\ntest_initial_commit_preserves_unrelated_staged_entries (test_git_bootstrap.GitBootstrapTests.test_initial_commit_preserves_unrelated_staged_entries) ... ok\r\ntest_initialization_requires_explicit_authorization (test_git_bootstrap.GitBootstrapTests.test_initialization_requires_explicit_authorization) ... ok\r\ntest_large_untracked_neighborhood_outside_scope_does_not_block_initial_commit (test_git_bootstrap.GitBootstrapTests.test_large_untracked_neighborhood_outside_scope_does_not_block_initial_commit) ... ok\r\ntest_missing_identity_and_rejecting_hook_are_reported_and_recover_without_duplicate (test_git_bootstrap.GitBootstrapTests.test_missing_identity_and_rejecting_hook_are_reported_and_recover_without_duplicate) ... ok\r\ntest_selected_staged_initial_source_blocks_without_losing_owner_index (test_git_bootstrap.GitBootstrapTests.test_selected_staged_initial_source_blocks_without_losing_owner_index) ... ok\r\ntest_validated_source_hash_cannot_authorize_later_bytes_before_helper_capture (test_git_bootstrap.GitBootstrapTests.test_validated_source_hash_cannot_authorize_later_bytes_before_helper_capture) ... ok\r\n\r\n----------------------------------------------------------------------\r\nRan 10 tests in 31.592s\r\n\r\nOK\r\n"
-        },
-        {
-          "check": "lifecycle",
-          "returncode": 0,
-          "raw": ".governance/rc203-post-receipt-lifecycle.log",
-          "summary": "test_default_off_and_invalid_scope_do_not_grant_commit_permission (test_git_lifecycle.GitLifecycleTests.test_default_off_and_invalid_scope_do_not_grant_commit_permission) ... ok\r\ntest_deferred_scope_is_immutable_and_disable_explicitly_retires_scheduling (test_git_lifecycle.GitLifecycleTests.test_deferred_scope_is_immutable_and_disable_explicitly_retires_scheduling) ... ok\r\ntest_failed_git_commit_is_visible_and_same_finished_report_recovers (test_git_lifecycle.GitLifecycleTests.test_failed_git_commit_is_visible_and_same_finished_report_recovers) ... ok\r\ntest_finish_automatically_commits_and_exact_retry_does_not_duplicate_in_both_modes (test_git_lifecycle.GitLifecycleTests.test_finish_automatically_commits_and_exact_retry_does_not_duplicate_in_both_modes) ... ok\r\n\r\n----------------------------------------------------------------------\r\nRan 4 tests in 20.162s\r\n\r\nOK\r\n"
-        }
-      ]
-    },
-    "observer_focused": {
-      "coverage_cases": 14,
-      "earlier_run": {
-        "command": [
-          "py",
-          "-3",
-          "-m",
-          "unittest",
-          "discover",
-          "-s",
-          "tests",
-          "-p",
-          "test_git_watch.py",
-          "-v"
-        ],
-        "tests": 14,
-        "passed": 13,
-        "failed": 1,
-        "returncode": 1,
-        "elapsed_seconds": 141.707,
-        "raw_source": "Verbatim concatenation of observed exec chunks; source/test identities recorded before the run."
-      },
-      "final_affected_retests": [
-        {
-          "command": [
-            "py",
-            "-3",
-            "-m",
-            "unittest",
-            "discover",
-            "-s",
-            "tests",
-            "-p",
-            "test_git_watch.py",
-            "-k",
-            "published_commit_with_lost_receipt",
-            "-v"
-          ],
-          "tests": 1,
-          "passed": 1,
-          "failed": 0,
-          "returncode": 0,
-          "elapsed_seconds": 7.074,
-          "source_identity": "final_sha256"
-        },
-        {
-          "command": [
-            "py",
-            "-3",
-            "-m",
-            "unittest",
-            "discover",
-            "-s",
-            "tests",
-            "-p",
-            "test_git_watch.py",
-            "-k",
-            "native_failed_validator",
-            "-v"
-          ],
-          "tests": 1,
-          "passed": 1,
-          "failed": 0,
-          "returncode": 0,
-          "elapsed_seconds": 13.301,
-          "source_identity": "final_sha256"
-        }
-      ],
-      "final_sha256": {
-        "governance-src/runtime-scripts/git_checkpoint.py": "fe1e7279c16856179870fba1a6c06dd5e0270c38d6f83d3cefe39e13affe6793",
-        "governance-src/runtime-scripts/git_watch.py": "59b42de0c5b2b2cd45a57ba5137ce92ea46a8e03a1748acb1f9d006c3db6001d",
-        "tests/test_git_watch.py": "8ef995e7914a1d54b3c71332a315e48bd17956a55a6b26db919198b1daa713ff",
-        "qualification/FREEZE.json": "fede91d0d5d384e730e9973ef6e1b6630d956fa2aeaa02a9d83c5ada8b76165c",
-        "universal-project-governance/integrity/manifest.json": "3437972d69575f7421721e47366e6443264aaaec9beeefb8d08cfd8bac91569a"
-      },
-      "coverage_limits": {
-        "earlier_module_run": "14 observed on prior source: 13 pass, 1 demonstrated failure. Kept unchanged above.",
-        "focused_retest": "2 affected cases passed on final helper/watcher/runtime bytes. Other 12 earlier watcher case results are inherited, not claimed rerun on this final source.",
-        "remaining_verification": "Root owns affected helper/bootstrap/lifecycle regression, static checks, and complete final-source CI."
-      },
-      "raw_receipt": ".governance/rc203-watch-final.json",
-      "final_whole_suite_confirmation": "All14 observer cases are included in the actual final-source CI1390-test discovery on Linux/Windows3.11/3.13, with zero failures/errors. The original13-pass/1-fail local observation remains historical above."
-    },
-    "portable_launch_security": {
-      "status": "PASS",
-      "tests": 5,
-      "raw": "Current task transcript685b6e; final-source static gate also passed.",
-      "reviewed_launch_digest": "478c9779a152350869e6a2709fa1a683e9f3981ee982ed9b7bd6fa2a0feecebb",
-      "limit": "Normalize empty type_params and transparent Python3.8 Index only; complete supported interpreter matrix remains required in CI."
-    },
-    "final_static_package": {
-      "status": "PASS",
-      "checks": [
-        {
-          "argv": [
-            "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
-            "compiler/compile_governance.py",
-            "--check"
-          ],
-          "returncode": 0,
-          "elapsed_seconds": 0.297,
-          "raw": ".governance/rc203-post-receipt-gate-0.log"
-        },
-        {
-          "argv": [
-            "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
-            "tools/governance_lint.py",
-            "."
-          ],
-          "returncode": 0,
-          "elapsed_seconds": 0.109,
-          "raw": ".governance/rc203-post-receipt-gate-1.log"
-        },
-        {
-          "argv": [
-            "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
-            "tools/validate_qualification.py",
-            "."
-          ],
-          "returncode": 0,
-          "elapsed_seconds": 0.641,
-          "raw": ".governance/rc203-post-receipt-gate-2.log"
-        },
-        {
-          "argv": [
-            "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
-            "tools/qualification_freeze.py",
-            ".",
-            "--check"
-          ],
-          "returncode": 0,
-          "elapsed_seconds": 0.14,
-          "raw": ".governance/rc203-post-receipt-gate-3.log"
-        },
-        {
-          "argv": [
-            "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
-            "tools/validate_repository.py",
-            "."
-          ],
-          "returncode": 0,
-          "elapsed_seconds": 1.5,
-          "raw": ".governance/rc203-post-receipt-gate-4.log"
-        },
-        {
-          "argv": [
-            "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
-            "tools/validate_skill_bundle.py",
-            "universal-project-governance"
-          ],
-          "returncode": 0,
-          "elapsed_seconds": 0.156,
-          "raw": ".governance/rc203-post-receipt-gate-5.log"
-        },
-        {
-          "argv": [
-            "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
-            "universal-project-governance/scripts/validate_integrity.py",
-            "universal-project-governance"
-          ],
-          "returncode": 0,
-          "elapsed_seconds": 0.125,
-          "raw": ".governance/rc203-post-receipt-gate-6.log"
-        },
-        {
-          "argv": [
-            "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
-            "tools/security_audit.py",
-            "."
-          ],
-          "returncode": 0,
-          "elapsed_seconds": 1.204,
-          "raw": ".governance/rc203-post-receipt-gate-7.log"
-        },
-        {
-          "argv": [
-            "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
-            "tools/validate_navigation.py",
-            "."
-          ],
-          "returncode": 0,
-          "elapsed_seconds": 0.14,
-          "raw": ".governance/rc203-post-receipt-gate-8.log"
-        },
-        {
-          "argv": [
-            "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
-            "tools/package_release.py",
-            "universal-project-governance",
-            "--output-dir",
-            ".governance/rc203-post-receipt-package"
-          ],
-          "returncode": 0,
-          "elapsed_seconds": 0.875,
-          "raw": ".governance/rc203-post-receipt-gate-9.log"
-        }
-      ],
-      "qualification_fingerprint": "sha256:07ad38059be6f069c9cd200ce6d22a7a16a26e2af1c48968830d5117d7df28a2",
-      "package_sha256": "f9255dcea067b175b3c3f7fea7ff9a2ace38bce5621005396d226a0d55466321",
-      "delivered_files": 20,
-      "manifest_covered_files": 19
-    },
-    "native_outer_host_boundary": {
-      "fixture": "D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution\\eval-workspaces\\rc203-host-boundary-bvrfz3y0",
-      "pid": 13916,
-      "token": "5318662156384eb3951634008f01762b",
-      "starting_cli_exited": true,
-      "scope": "Outer host tool execution will now return; next independent tool must observe this worker.",
-      "cross_tool_worker_survival": true,
-      "external_native_edit_committed": true,
-      "commit_count": 2,
-      "actual_process_exit_confirmed": true,
-      "status": "PASS",
-      "cleanup_confirmed": true,
-      "limit": "Development observation of the unchanged fixed launch mechanism; final native worker/installed/root observations remain distinct."
-    },
-    "final_source_ci": {
-      "observed_at": "2026-10-20 14:27:36 UTC",
-      "source_revision": "07dbba8f85fd7ffcffc1bac18277c67703130559",
-      "pull_request": 28,
-      "pr_run": 39437856552,
-      "push_run": 39437753748,
-      "status": "PASS",
-      "jobs": [
-        {
-          "id": 118679543098,
-          "name": "upstream-agent-skills",
-          "status": "completed",
-          "conclusion": "success"
-        },
-        {
-          "id": 118679543269,
-          "name": "skills-cli",
-          "status": "completed",
-          "conclusion": "success"
-        },
-        {
-          "id": 118679543367,
-          "name": "runtime-matrix (3.11)",
-          "status": "completed",
-          "conclusion": "success"
-        },
-        {
-          "id": 118679543372,
-          "name": "windows-runtime (3.13)",
-          "status": "completed",
-          "conclusion": "success"
-        },
-        {
-          "id": 118679543426,
-          "name": "offline-evolution (3.13)",
-          "status": "completed",
-          "conclusion": "success"
-        },
-        {
-          "id": 118679543437,
-          "name": "source-runtime-integrity",
-          "status": "completed",
-          "conclusion": "success"
-        },
-        {
-          "id": 118679543449,
-          "name": "windows-runtime (3.11)",
-          "status": "completed",
-          "conclusion": "success"
-        },
-        {
-          "id": 118679543455,
-          "name": "runtime-matrix (3.13)",
-          "status": "completed",
-          "conclusion": "success"
-        },
-        {
-          "id": 118679543596,
-          "name": "runtime-matrix (3.8)",
-          "status": "completed",
-          "conclusion": "success"
-        },
-        {
-          "id": 118679543653,
-          "name": "offline-evolution (3.10)",
-          "status": "completed",
-          "conclusion": "success"
-        },
-        {
-          "id": 118679543877,
-          "name": "qualification-contract",
-          "status": "completed",
-          "conclusion": "success"
-        }
-      ],
-      "push_jobs": [
-        {
-          "id": 118679186694,
-          "name": "skills-cli",
-          "status": "completed",
-          "conclusion": "success"
-        },
-        {
-          "id": 118679186707,
-          "name": "offline-evolution (3.13)",
-          "status": "completed",
-          "conclusion": "success"
-        },
-        {
-          "id": 118679186856,
-          "name": "offline-evolution (3.10)",
-          "status": "completed",
-          "conclusion": "success"
-        },
-        {
-          "id": 118679186877,
-          "name": "source-runtime-integrity",
-          "status": "completed",
-          "conclusion": "success"
-        },
-        {
-          "id": 118679186928,
-          "name": "upstream-agent-skills",
-          "status": "completed",
-          "conclusion": "success"
-        },
-        {
-          "id": 118679187019,
-          "name": "runtime-matrix (3.8)",
-          "status": "completed",
-          "conclusion": "success"
-        },
-        {
-          "id": 118679187020,
-          "name": "runtime-matrix (3.11)",
-          "status": "completed",
-          "conclusion": "success"
-        },
-        {
-          "id": 118679187034,
-          "name": "windows-runtime (3.11)",
-          "status": "completed",
-          "conclusion": "success"
-        },
-        {
-          "id": 118679187058,
-          "name": "runtime-matrix (3.13)",
-          "status": "completed",
-          "conclusion": "success"
-        },
-        {
-          "id": 118679187124,
-          "name": "qualification-contract",
-          "status": "completed",
-          "conclusion": "success"
-        },
-        {
-          "id": 118679187448,
-          "name": "windows-runtime (3.13)",
-          "status": "completed",
-          "conclusion": "success"
-        }
-      ],
-      "test_logs": [
-        {
-          "job_id": 118679543367,
-          "name": "runtime-matrix (3.11)",
-          "summary": [
-            "2026-10-20T14:19:26.2738058Z Ran 1390 tests in 117.148s",
-            "2026-10-20T14:19:26.2738428Z OK (skipped=2)",
-            "2026-10-20T14:19:26.5958203Z sha256:  f9255dcea067b175b3c3f7fea7ff9a2ace38bce5621005396d226a0d55466321"
-          ],
-          "conclusion": "success"
-        },
-        {
-          "job_id": 118679543455,
-          "name": "runtime-matrix (3.13)",
-          "summary": [
-            "2026-10-20T14:19:20.8910361Z Ran 1390 tests in 110.668s",
-            "2026-10-20T14:19:20.8910630Z OK (skipped=2)",
-            "2026-10-20T14:19:21.2065465Z sha256:  f9255dcea067b175b3c3f7fea7ff9a2ace38bce5621005396d226a0d55466321"
-          ],
-          "conclusion": "success"
-        },
-        {
-          "job_id": 118679543596,
-          "name": "runtime-matrix (3.8)",
-          "summary": [
-            "2026-10-20T14:18:58.1866773Z Ran 955 tests in 83.253s",
-            "2026-10-20T14:18:58.1866912Z OK (skipped=534)",
-            "2026-10-20T14:18:58.5690537Z sha256:  f9255dcea067b175b3c3f7fea7ff9a2ace38bce5621005396d226a0d55466321"
-          ],
-          "conclusion": "success"
-        },
-        {
-          "job_id": 118679543372,
-          "name": "windows-runtime (3.13)",
-          "conclusion": "success",
-          "summary": [
-            "2026-10-20T14:26:32.3334197Z Ran 1390 tests in 534.913s\r",
-            "2026-10-20T14:26:33.0133070Z sha256:  f9255dcea067b175b3c3f7fea7ff9a2ace38bce5621005396d226a0d55466321\r"
-          ]
-        },
-        {
-          "job_id": 118679543449,
-          "name": "windows-runtime (3.11)",
-          "conclusion": "success",
-          "summary": [
-            "2026-10-20T14:26:25.4942460Z Ran 1390 tests in 527.985s\r",
-            "2026-10-20T14:26:26.2807338Z sha256:  f9255dcea067b175b3c3f7fea7ff9a2ace38bce5621005396d226a0d55466321\r"
-          ]
-        }
-      ],
-      "merge_revision": "61d35ecadffa132139c7477c7f6b3ce18ecacf44",
-      "new_paid_model_calls": 0
-    },
-    "installed_copy": {
-      "status": "PASS",
-      "source_revision": "61d35ecadffa132139c7477c7f6b3ce18ecacf44",
-      "version": "3.0.0-rc.20.3",
-      "delivered_files": 20,
-      "runtime_file_sha256": {
-        "INTEGRITY.md": "3e2404344195b4795ad4cb07944acac5bb1070a9e40c92c4da792abeb6e3774d",
-        "LICENSE": "50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a",
-        "SKILL.md": "585d752a8ba9810af5e2a0e6f50d73497895e25a384a232554bc8743ae4d39b8",
-        "VERSION.md": "a9c26303e014d489a0078b36583c36e06b65d2dae3a08b0c332106cb7fcb82e8",
-        "integrity/manifest.json": "3437972d69575f7421721e47366e6443264aaaec9beeefb8d08cfd8bac91569a",
-        "policy-index.json": "8d164600d17d8b7e269bb08b44f9af094af5fd2a8e23f5c98e402ec31c5c9f45",
-        "schemas/audit.schema.json": "a5e15c26eff86e3c4e2e174fb121ef22981628307f09cf18d09a589e738ea889",
-        "schemas/execution.schema.json": "d2a7cddc9d98c8101294df302259ba18217c27b9e7c8fee43d96c82ff6bde1d7",
-        "schemas/feedback.schema.json": "22da61a114a1e89ee641ac25e90e23d6231003351df15918d4265f9900091954",
-        "schemas/field-report.schema.json": "9c58db8a99af7312bf75f96bad391ae54e968bc1f58cc200864b39b1630cd7ba",
-        "schemas/governance-plan.schema.json": "1e1ef2e692bea3752ece6e292d2e7c3d67abfbe3b58dd93ec75655f2aff9b25e",
-        "schemas/handoff.schema.json": "994769e2a35b4d2189c509b8c5fce6ba76e4941fa4cadaa51f8f02f48b338a97",
-        "schemas/task-context.schema.json": "acc323f7d86f8dad5d8694e7fcf566dad6987d077877fbe6dbc819029936ad38",
-        "scripts/git_checkpoint.py": "fe1e7279c16856179870fba1a6c06dd5e0270c38d6f83d3cefe39e13affe6793",
-        "scripts/git_watch.py": "59b42de0c5b2b2cd45a57ba5137ce92ea46a8e03a1748acb1f9d006c3db6001d",
-        "scripts/plan_governance.py": "aad1d34983c813f508d1845b6ad94d8adb4afcdc6352ef6b5692550623729697",
-        "scripts/project_facts.py": "f355e0fa241a1032c94d4959b610b86c2d0ad48b2c62bbfed1ded65bfa4bd9ee",
-        "scripts/project_tool.py": "a9922d6f433ce0d1c9fd0543c6655cded432d73eba567c712f3970f726c888b9",
-        "scripts/state_tool.py": "193cb9657c32dedb253727e93a13bcb6f39306331fc8a90d1319e337f5b088a0",
-        "scripts/validate_integrity.py": "cf09558e67b4488db88c5ce9836e9f1cf1c8bae97d6e1444bb9d2d80409157c0"
-      },
-      "backup": "D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution\\.governance\\installed-rc203-backup-5bdb098fc8aa",
-      "backup_files": 23,
-      "backup_readback": true,
-      "unmanaged_files_preserved": true,
-      "installed_native_tests": 8,
-      "installed_module_paths": {
-        "state_tool": "C:\\Users\\96501\\.codex\\skills\\universal-project-governance\\scripts\\state_tool.py",
-        "project_facts": "C:\\Users\\96501\\.codex\\skills\\universal-project-governance\\scripts\\project_facts.py",
-        "git_checkpoint": "C:\\Users\\96501\\.codex\\skills\\universal-project-governance\\scripts\\git_checkpoint.py",
-        "project_tool": "C:\\Users\\96501\\.codex\\skills\\universal-project-governance\\scripts\\project_tool.py",
-        "git_watch": "C:\\Users\\96501\\.codex\\skills\\universal-project-governance\\scripts\\git_watch.py"
-      },
-      "fresh_official_discovery": {
-        "official_cli": "C:\\Users\\96501\\.agent-environment\\runtimes\\codex-0.162.0-alpha.20\\bin\\codex.exe",
-        "enabled_matching_skills": 1,
-        "all_skill_errors": [],
-        "process_returncode": 0,
-        "new_model_calls": 0,
-        "scope": "Fresh official discovery and verified installed bytes; no retrospective claim about this parent conversation loading the new skill."
-      },
-      "raw_receipt": ".governance/rc203-install.json"
-    }
-  },
-  "delivery": {
-    "github": {
-      "status": "MERGED",
-      "source_revision": "07dbba8f85fd7ffcffc1bac18277c67703130559",
-      "source_pull_request": "https://github.com/ouroboros965018276-collab/universal-project-governance/pull/28",
-      "merge_revision": "61d35ecadffa132139c7477c7f6b3ce18ecacf44",
-      "default_main_observed_at_install": "61d35ecadffa132139c7477c7f6b3ce18ecacf44"
-    },
-    "installation": "PASS20 files match default-main runtime;8 installed real-Git cases and fresh official discovery pass",
-    "acceptance_stage": "This file and PROJECT_STATE record observed source-CI/install facts once. Later checks on the acceptance commit are authoritative on GitHub and linked work_order/current ignored lifecycle, without another timestamp-only commit.",
-    "project_observer": "Enable after the release workflow completes; its current token/heartbeat belong in original ignored binding/status, not a tracked polling log."
-  },
-  "remaining_goals": [
-    "Independent cross-agent joint token/time benefit NOT_ESTABLISHED; formal UNASSESSED; locked NOT_RUN; no Stable/perfection claim.",
-    "Watcher requires an authorized local Python/Git process and running OS; no permission bypass or system startup service is installed.",
-    "Unsupported advanced Git contexts, arbitrary custom hooks and unresolved stale locks can still require owner inspection.",
-    "Insight application remains prior partial/unaccepted state; this task does not modify application code."
-  ],
   "preserved_preexisting_changes": {
     "audits/rc19-nine-native-development-v2.preregistration.json": "6b92bad0ea3a542993dd261b3c73bdf5d3731411119bfa3988fca87e602e486a",
     "audits/rc20-paired-real-python-development-v2.audit.json": "997dc558fa0ba64924a369ce3fe96db0a4adec4ef60f9c088995f8f05415b71b",
@@ -576,54 +20,918 @@
   "formal_qualification": "UNASSESSED",
   "locked_trials": "NOT_RUN",
   "stable": false,
-  "preparation_observations": [
-    {
-      "entry": "restricted read-only Git status",
-      "result": "Sandbox Git status in the external linked worktree reported not a work tree; actual scoped escalated entry reports correct non-bare worktree and versions. No ACL or repository-corruption inference."
-    },
-    {
-      "entry": "bootstrap agent sandbox preparation",
-      "result": "Restricted py/TEMP preparation failed before business Git tests. Retried through its verified scoped actual-project entry; unique empty temporary directory checked and removed non-recursively."
-    },
-    {
-      "entry": "source stage script preparation",
-      "result": "A nested quoting syntax error prevented the preparation command body from starting; corrected before audit, lifecycle or Git mutation. The subsequent observed business commit was not blindly retried."
-    }
-  ],
-  "source_sha256": {
-    "governance-src/model/governance-model.json": "1f9c3b234d12df8c4c296f4e371d4eeec50a35048af41ff42b40faea99f84ea9",
-    "governance-src/runtime-scripts/project_tool.py": "a9922d6f433ce0d1c9fd0543c6655cded432d73eba567c712f3970f726c888b9",
-    "governance-src/runtime-scripts/git_checkpoint.py": "fe1e7279c16856179870fba1a6c06dd5e0270c38d6f83d3cefe39e13affe6793",
-    "governance-src/runtime-scripts/git_watch.py": "59b42de0c5b2b2cd45a57ba5137ce92ea46a8e03a1748acb1f9d006c3db6001d",
-    "qualification/FREEZE.json": "fede91d0d5d384e730e9973ef6e1b6630d956fa2aeaa02a9d83c5ada8b76165c",
-    "tools/security_audit.py": "9ed5b086ce5152cad015106656a11cc1317aba8842dfc21561e566b375e73fb2",
-    "tests/test_git_watch_security.py": "03b3b6c466270b350fdfe4ee204475796613a2e43d5850a19b2e27898983d80e",
-    "tests/test_git_bootstrap.py": "79f002e7288ecbd0e8c0b9409dd479501af1649024fc826cb2c684ff5830f127",
-    "tests/test_git_watch.py": "8ef995e7914a1d54b3c71332a315e48bd17956a55a6b26db919198b1daa713ff",
-    "universal-project-governance/integrity/manifest.json": "3437972d69575f7421721e47366e6443264aaaec9beeefb8d08cfd8bac91569a"
-  },
-  "review_corrections": [
-    "Follow verified same-branch fast-forward external commits using a new observer workflow; persist baseline through quiet/cooldown. Rollback/removal/fork remains blocked.",
-    "Recover the original durable observer journal before interpreting published HEAD as external progress; preserve original validation intent/event.",
-    "Retain original protected dirt only; edits created during validation remain eligible for the next stage.",
-    "Retry temporary writer-lock occupancy without killing the worker; failed diagnostic/stop acknowledgement writes cannot fake health.",
-    "Recheck token/generation/validation ownership before each validator; revoked ownership prevents the next command.",
-    "Failed-candidate backoff remains blocked in public health.",
-    "Actual receipt-write failure exposed premature recovery-artifact cleanup. Restore pre-receipt in-memory policy on persistence failure; original-event recovery makes no extra commit or validator call.",
-    "Portable labelled AST identity preserves the sole fixed own-worker launch across supported Python versions without broadening process permission."
-  ],
   "commit_policy": "One meaningful source checkpoint and one final acceptance observation; no progress/timestamp-only commit loop. New paid model calls remain zero.",
-  "source_checkpoint": {
-    "revision": "07dbba8f85fd7ffcffc1bac18277c67703130559",
-    "automatic": true,
-    "declared_and_verified_paths": 28,
-    "exact_retry": "duplicate",
-    "before_count": 61,
-    "after_count": 62,
-    "after_retry_count": 62
+  "document_kind": "persistent-git-observer-recovery-release",
+  "observed_at": "2026-10-20T16:45:56.566253+00:00",
+  "version": "3.0.0-rc.20.4",
+  "status": "SESSION_AFFECTED_VALIDATED_FULL_CI_PENDING",
+  "baseline_revision": "8d31e0f22ffe3cdde36f842032440c02362aa302",
+  "canonical_current_observation": "Current RC20.4 engineering state; exact RC20.3 evidence, including original failed calibration and corrected retests, remains in baseline Git history.",
+  "previous_verified_release": {
+    "version": "3.0.0-rc.20.3",
+    "revision": "8d31e0f22ffe3cdde36f842032440c02362aa302",
+    "audit_path": "audits/rc20-git-checkpoints.audit.json",
+    "audit_sha256": "4733321ef62560c2bd89403b0d8e67eec1ab9b6819c4b26aa543e75dc5c4358d",
+    "final_head_ci_run": 39440236403,
+    "ci_jobs_passed": 11,
+    "ci_jobs_total": 11,
+    "installed_files": 20
   },
-  "merge_boundary": {
-    "explicit_schedule_pause": true,
-    "reason": "Preserve the strict lifecycle HEAD guard across the verified external GitHub merge; no baseline was silently rewritten. Scheduling resumes after completion using the independent observer configuration."
-  }
+  "workspace_health": {
+    "invocation_id": "cab6e9d86a054a0e9151a86f9938300e",
+    "entry": "Codex desktop root RC20.4 PowerShell scoped reviewed entry",
+    "project_path": "D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution",
+    "observed_at": "2026-10-20T15:29:55.5048652Z",
+    "powershell": "7.6.5",
+    "python": "3.12.10",
+    "git": "2.53.0.windows.3",
+    "write_read_delete": "PASS unique CreateNew/readback/DeleteOnClose",
+    "raw": ".governance/rc204-health.json",
+    "permissions": "Existing non-elevated account and managed auto-review profile preserved."
+  },
+  "scope": [
+    "Project-entry or explicit-start local supervision; no OS startup entry or scheduled task.",
+    "OS worker/validation/writer/checkpoint guard recovery, bounded crash backoff and cooperative persistent stop.",
+    "Original source validation, meaningful stages, cooldown and dedup preserved.",
+    "Necessary native calibration plus final CI and GitHub/install/work-order verification; no new paid model trials."
+  ],
+  "checks": {
+    "native_development": {
+      "new_paid_model_calls": 0,
+      "process_guard": {
+        "tests": 6,
+        "passed": 6,
+        "elapsed_seconds": 1.208,
+        "tool_transcript": "5fa9bf",
+        "coverage": [
+          "exclusive guard occupancy",
+          "parent hard exit preserves child guard",
+          "last child exit releases guard",
+          "timeout refuses repeated native work until actual completion"
+        ]
+      },
+      "checkpoint_hard_exit": {
+        "tests": 3,
+        "passed": 3,
+        "elapsed_seconds": 40.485,
+        "tool_transcript": "c74fa1",
+        "helper_sha256": "ab1b1721607e267c5b39f709cdc8d309d4137cf10eb923231862014742d8ea42",
+        "development_failure": "First necessary calibration exposed cleanup-before-unlock on receipt recovery after index replacement; corrected before three passing retests."
+      },
+      "observer_recovery": {
+        "tests": 4,
+        "passed": 4,
+        "elapsed_seconds": 85.331,
+        "source": "bootstrap_impl observed test result, final full suite must cover frozen source",
+        "coverage": [
+          "idle hard exit recovery and dedup",
+          "validator-held guard prevents overlap; release resumes without long lease expiry",
+          "writer guard hard exit and legacy directory lock preserved",
+          "explicit stop/reconfigure intent remains stopped"
+        ]
+      },
+      "root_targeted": {
+        "guidance": {
+          "tests": 1,
+          "passed": 1
+        },
+        "operational": {
+          "tests": 16,
+          "passed": 16
+        },
+        "security": {
+          "tests": 7,
+          "passed": 7,
+          "tool": "eb7363",
+          "scope": "Only three fixed process launches pinned: worker, guarded native wrapper, session supervisor; mutated argv/function identity rejected."
+        }
+      },
+      "limits": [
+        "Development observations and exact affected retests, not final-source full-suite/CI evidence.",
+        "No paid model effectiveness evidence.",
+        "OS startup prototype revoked/removed; native/task calibration history is not delivered startup functionality.",
+        "Process hard exits only; power-loss persistence and arbitrary detached descendants not established."
+      ],
+      "pythonw_stream_correction": {
+        "status": "PASS",
+        "new_tests": 1,
+        "test_seconds": 0.467,
+        "raw": ".governance/pythonw-guard-diagnostic.json",
+        "before": "Git return0/0.437s but empty stdout",
+        "after": "Same Git return0/0.328s, expected real project root stdout",
+        "root_cause": "Wrapper now explicitly forwards stdin/stdout/stderr; fixed launcher functions unchanged.",
+        "guard_source_sha256": "1ad3bf19e694c6ca487f3a396b3feaabbc41c9c2b6d1e69d12f76040fcf7fe92"
+      },
+      "session_atomic_remove_and_status": {
+        "schema_version": 1,
+        "candidate": "3.0.0-rc.20.4",
+        "status": "FOCUSED_SESSION_CALIBRATION_PASS_FULL_CI_PENDING",
+        "health_invocation": "d49275d620c0466183b1abc28d644e6b",
+        "current_source_sha256": {
+          "governance-src/runtime-scripts/git_watch.py": "45bba626c19b7ccb45ba1bc5bc77b9d70766b00b4b60f741784f44c909f4a027",
+          "governance-src/runtime-scripts/project_tool.py": "bb3013f8169aa9d05919d54d23a0692b5d7f9f7b772d54407b0235883f6c58d3",
+          "tests/test_git_recovery.py": "5287be53818fd755fe1e10f0c8e7f7ba59142034285cb2df859f69ec27750cff",
+          "qualification/FREEZE.json": "24dbf5b6dfc79cec2fa4b31a57e31c57c66605af15ef7ecf41921591877f7e2c"
+        },
+        "new_external_paid_model_calls": 0,
+        "runs": [
+          {
+            "tool": "03c5a8",
+            "tests": 2,
+            "passed": 2,
+            "returncode": 0,
+            "elapsed_seconds": 9.31,
+            "phase": "session candidate before nested blocked public status and bounded sharing-read fixes",
+            "raw": "test_unique_atomic_crash_residue_never_blocks_or_becomes_canonical_state ... ok\ntest_remove_holds_project_native_guards_until_ownership_state_is_deleted ... ok\nRan 2 tests in 9.310s\nOK"
+          },
+          {
+            "tool": "cf1a44",
+            "tests": 1,
+            "passed": 1,
+            "returncode": 0,
+            "elapsed_seconds": 5.523,
+            "phase": "final generated source identity; affected remove/native guard and blocked/stop status case",
+            "raw": "test_remove_holds_project_native_guards_until_ownership_state_is_deleted (test_git_recovery.GitRecoveryTests.test_remove_holds_project_native_guards_until_ownership_state_is_deleted) ... ok\r\n\r\n----------------------------------------------------------------------\r\nRan 1 test in 5.523s\r\n\r\nOK\r\n"
+          }
+        ],
+        "prior_evidence": ".governance/rc204-recovery-final.json preserves earlier four hard-crash/guard tests and superseded OS-task mock phase; it is not final session architecture evidence.",
+        "limits": [
+          "No operating-system startup configuration is created.",
+          "The final two supervision-native cases are recorded separately by the supervision test owner.",
+          "Source/generated hashes matched after final compiler d880c6. Full suite and CI are the root agent responsibility.",
+          "Timeout does not prove native hooks have exited; guarded wrapper keeps ownership until actual exit.",
+          "Unknown legacy locks and old unguarded workers remain blocked; never removed by a PID or lease timeout.",
+          "If the supervisor itself exits, the next project entry or explicit start restores it."
+        ]
+      },
+      "supervision_final": {
+        "status": "PASS",
+        "observed_at": "2026-10-20T16:21:08.653379+00:00",
+        "affected_case_elapsed_seconds": 22.776,
+        "affected_case_exit_code": 0,
+        "command": [
+          "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "tests",
+          "-p",
+          "test_git_supervision.py",
+          "-k",
+          "test_production_supervisor_routine_recovers_owned_crash_without_another_activation",
+          "-v"
+        ],
+        "log": ".governance/rc204-supervision-affected.log",
+        "paid_external_model_calls": 0,
+        "runtime_snapshot_after": {
+          "integrity/manifest.json": "fa89aa69d8566e0c61d8a20aa74e51bfba2656a1dee65098e6d0deed5edf5bd6",
+          "INTEGRITY.md": "3e2404344195b4795ad4cb07944acac5bb1070a9e40c92c4da792abeb6e3774d",
+          "LICENSE": "50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a",
+          "policy-index.json": "9efa94d41af859857e3493622d054cdfa39e6ac6ba68c1259861cc008f98c422",
+          "schemas/audit.schema.json": "a5e15c26eff86e3c4e2e174fb121ef22981628307f09cf18d09a589e738ea889",
+          "schemas/execution.schema.json": "d2a7cddc9d98c8101294df302259ba18217c27b9e7c8fee43d96c82ff6bde1d7",
+          "schemas/feedback.schema.json": "22da61a114a1e89ee641ac25e90e23d6231003351df15918d4265f9900091954",
+          "schemas/field-report.schema.json": "9c58db8a99af7312bf75f96bad391ae54e968bc1f58cc200864b39b1630cd7ba",
+          "schemas/governance-plan.schema.json": "1e1ef2e692bea3752ece6e292d2e7c3d67abfbe3b58dd93ec75655f2aff9b25e",
+          "schemas/handoff.schema.json": "994769e2a35b4d2189c509b8c5fce6ba76e4941fa4cadaa51f8f02f48b338a97",
+          "schemas/task-context.schema.json": "acc323f7d86f8dad5d8694e7fcf566dad6987d077877fbe6dbc819029936ad38",
+          "scripts/git_checkpoint.py": "ab1b1721607e267c5b39f709cdc8d309d4137cf10eb923231862014742d8ea42",
+          "scripts/git_watch.py": "45bba626c19b7ccb45ba1bc5bc77b9d70766b00b4b60f741784f44c909f4a027",
+          "scripts/plan_governance.py": "aad1d34983c813f508d1845b6ad94d8adb4afcdc6352ef6b5692550623729697",
+          "scripts/process_guard.py": "1ad3bf19e694c6ca487f3a396b3feaabbc41c9c2b6d1e69d12f76040fcf7fe92",
+          "scripts/project_facts.py": "f355e0fa241a1032c94d4959b610b86c2d0ad48b2c62bbfed1ded65bfa4bd9ee",
+          "scripts/project_tool.py": "bb3013f8169aa9d05919d54d23a0692b5d7f9f7b772d54407b0235883f6c58d3",
+          "scripts/state_tool.py": "193cb9657c32dedb253727e93a13bcb6f39306331fc8a90d1319e337f5b088a0",
+          "scripts/validate_integrity.py": "cf09558e67b4488db88c5ce9836e9f1cf1c8bae97d6e1444bb9d2d80409157c0",
+          "SKILL.md": "a06ced95ddccb34b4cba3a1578c3dfc46d0cb92f0907a64a46d6962f3d2c6d9c",
+          "VERSION.md": "1e24e7cb350ad444dd0c64ba2a64f61280785797fb1f3a24aa1909dc31ef8349"
+        },
+        "same_runtime_bytes": null,
+        "runtime_freeze_anchor": "parent compiler operation d880c6; generated runtime was frozen before the single affected-case rerun",
+        "test_source_sha256": "dbb086c989d4108ba9741c3c1f7b382411dab6e98f805e6334a1c77f2c00ac52",
+        "source_sha256": {
+          "git_watch.py": "45bba626c19b7ccb45ba1bc5bc77b9d70766b00b4b60f741784f44c909f4a027",
+          "project_tool.py": "bb3013f8169aa9d05919d54d23a0692b5d7f9f7b772d54407b0235883f6c58d3",
+          "process_guard.py": "1ad3bf19e694c6ca487f3a396b3feaabbc41c9c2b6d1e69d12f76040fcf7fe92"
+        },
+        "initial_receipt": ".governance/rc204-supervision-initial.json",
+        "initial_log": ".governance/rc204-supervision-initial.log",
+        "initial_observation": {
+          "suite": "2 native supervision cases",
+          "status": "FAILED",
+          "elapsed_seconds": 29.156,
+          "passed": [
+            "test_public_start_launches_supervisor_then_stop_and_ensure_leave_all_processes_stopped"
+          ],
+          "error": "routine case reached recovered worker and Git count 2, then direct fixture state read raised PermissionError during Windows replacement"
+        },
+        "final_evidence": [
+          {
+            "case": "production supervisor routine",
+            "result": "PASS",
+            "tests": 1,
+            "elapsed_seconds": 22.776,
+            "evidence": ".governance/rc204-supervision-affected.log",
+            "final_runtime": true
+          },
+          {
+            "case": "public native supervisor launch plus cooperative stop and ensure",
+            "result": "PASS",
+            "tests": 1,
+            "evidence": ".governance/rc204-supervision-initial.log",
+            "final_runtime": false,
+            "inherited": true
+          }
+        ],
+        "boundaries": [
+          "production supervise routine with captured real owned worker Popen, actual hard exit, automatic recovery with no subsequent recover/start/ensure, one validated Git commit and unchanged retry",
+          "real public start launches fresh native supervisor; cooperative stop and actual Popen waits; later ensure preserves stopped intent; withdrawn system startup API stays unavailable"
+        ],
+        "bookkeeping_error": {
+          "phase": "after test execution and log saved",
+          "reason": "receipt wrapper looked for nonexistent runtime-scripts/project.py instead of project_tool.py",
+          "action": "repair metadata without another test execution",
+          "unavailable_metadata": [
+            "unpersisted before/after runtime identity comparisons",
+            "exact execution started_at timestamp"
+          ]
+        },
+        "limits": [
+          "public-launch case was inherited from initial run; final source full suite and CI remain required",
+          "before/after runtime hash metadata was not persisted after successful affected-case execution; only post-run source/runtime snapshot and parent freeze anchor are retained",
+          "no physical machine reboot, user logon, or operating-system persistence is involved"
+        ],
+        "excluded": [
+          "no Task Scheduler or system startup registration",
+          "no paid provider/model execution",
+          "no old recovery suite or full-suite rerun"
+        ]
+      }
+    },
+    "pythonw_stream_diagnostic": {
+      "before_fix": {
+        "elapsed": 0.437,
+        "phase": "returned",
+        "python": "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\pythonw.exe",
+        "returncode": 0,
+        "stderr": "",
+        "stderr_none": false,
+        "stdin_none": false,
+        "stdout": "",
+        "stdout_none": false,
+        "which_git": "C:\\Users\\96501\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\native\\git\\cmd\\git.EXE",
+        "outer_exit": 0,
+        "outer_elapsed": 0.641,
+        "fixture": "D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution\\eval-workspaces\\pythonw-guard-diagnostic-szx7mio3"
+      },
+      "after_fix": {
+        "python": "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\pythonw.exe",
+        "which_git": "C:\\Users\\96501\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\native\\git\\cmd\\git.EXE",
+        "returncode": 0,
+        "stdout": "D:/Universal Project Governance/worktrees/rc17-offline-evolution\n",
+        "stderr": "",
+        "elapsed": 0.328,
+        "outer_exit": 0,
+        "matched_actual_root": true,
+        "status": "PASS"
+      },
+      "fix": "explicit actual-command stdin/sys.stdin, stdout/sys.stdout, stderr/sys.stderr; launcher unchanged"
+    },
+    "session_supervision": {
+      "status": "PASS",
+      "observed_at": "2026-10-20T16:21:08.653379+00:00",
+      "affected_case_elapsed_seconds": 22.776,
+      "affected_case_exit_code": 0,
+      "command": [
+        "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_git_supervision.py",
+        "-k",
+        "test_production_supervisor_routine_recovers_owned_crash_without_another_activation",
+        "-v"
+      ],
+      "log": ".governance/rc204-supervision-affected.log",
+      "paid_external_model_calls": 0,
+      "runtime_snapshot_after": {
+        "integrity/manifest.json": "fa89aa69d8566e0c61d8a20aa74e51bfba2656a1dee65098e6d0deed5edf5bd6",
+        "INTEGRITY.md": "3e2404344195b4795ad4cb07944acac5bb1070a9e40c92c4da792abeb6e3774d",
+        "LICENSE": "50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a",
+        "policy-index.json": "9efa94d41af859857e3493622d054cdfa39e6ac6ba68c1259861cc008f98c422",
+        "schemas/audit.schema.json": "a5e15c26eff86e3c4e2e174fb121ef22981628307f09cf18d09a589e738ea889",
+        "schemas/execution.schema.json": "d2a7cddc9d98c8101294df302259ba18217c27b9e7c8fee43d96c82ff6bde1d7",
+        "schemas/feedback.schema.json": "22da61a114a1e89ee641ac25e90e23d6231003351df15918d4265f9900091954",
+        "schemas/field-report.schema.json": "9c58db8a99af7312bf75f96bad391ae54e968bc1f58cc200864b39b1630cd7ba",
+        "schemas/governance-plan.schema.json": "1e1ef2e692bea3752ece6e292d2e7c3d67abfbe3b58dd93ec75655f2aff9b25e",
+        "schemas/handoff.schema.json": "994769e2a35b4d2189c509b8c5fce6ba76e4941fa4cadaa51f8f02f48b338a97",
+        "schemas/task-context.schema.json": "acc323f7d86f8dad5d8694e7fcf566dad6987d077877fbe6dbc819029936ad38",
+        "scripts/git_checkpoint.py": "ab1b1721607e267c5b39f709cdc8d309d4137cf10eb923231862014742d8ea42",
+        "scripts/git_watch.py": "45bba626c19b7ccb45ba1bc5bc77b9d70766b00b4b60f741784f44c909f4a027",
+        "scripts/plan_governance.py": "aad1d34983c813f508d1845b6ad94d8adb4afcdc6352ef6b5692550623729697",
+        "scripts/process_guard.py": "1ad3bf19e694c6ca487f3a396b3feaabbc41c9c2b6d1e69d12f76040fcf7fe92",
+        "scripts/project_facts.py": "f355e0fa241a1032c94d4959b610b86c2d0ad48b2c62bbfed1ded65bfa4bd9ee",
+        "scripts/project_tool.py": "bb3013f8169aa9d05919d54d23a0692b5d7f9f7b772d54407b0235883f6c58d3",
+        "scripts/state_tool.py": "193cb9657c32dedb253727e93a13bcb6f39306331fc8a90d1319e337f5b088a0",
+        "scripts/validate_integrity.py": "cf09558e67b4488db88c5ce9836e9f1cf1c8bae97d6e1444bb9d2d80409157c0",
+        "SKILL.md": "a06ced95ddccb34b4cba3a1578c3dfc46d0cb92f0907a64a46d6962f3d2c6d9c",
+        "VERSION.md": "1e24e7cb350ad444dd0c64ba2a64f61280785797fb1f3a24aa1909dc31ef8349"
+      },
+      "same_runtime_bytes": null,
+      "runtime_freeze_anchor": "parent compiler operation d880c6; generated runtime was frozen before the single affected-case rerun",
+      "test_source_sha256": "dbb086c989d4108ba9741c3c1f7b382411dab6e98f805e6334a1c77f2c00ac52",
+      "source_sha256": {
+        "git_watch.py": "45bba626c19b7ccb45ba1bc5bc77b9d70766b00b4b60f741784f44c909f4a027",
+        "project_tool.py": "bb3013f8169aa9d05919d54d23a0692b5d7f9f7b772d54407b0235883f6c58d3",
+        "process_guard.py": "1ad3bf19e694c6ca487f3a396b3feaabbc41c9c2b6d1e69d12f76040fcf7fe92"
+      },
+      "initial_receipt": ".governance/rc204-supervision-initial.json",
+      "initial_log": ".governance/rc204-supervision-initial.log",
+      "initial_observation": {
+        "suite": "2 native supervision cases",
+        "status": "FAILED",
+        "elapsed_seconds": 29.156,
+        "passed": [
+          "test_public_start_launches_supervisor_then_stop_and_ensure_leave_all_processes_stopped"
+        ],
+        "error": "routine case reached recovered worker and Git count 2, then direct fixture state read raised PermissionError during Windows replacement"
+      },
+      "final_evidence": [
+        {
+          "case": "production supervisor routine",
+          "result": "PASS",
+          "tests": 1,
+          "elapsed_seconds": 22.776,
+          "evidence": ".governance/rc204-supervision-affected.log",
+          "final_runtime": true
+        },
+        {
+          "case": "public native supervisor launch plus cooperative stop and ensure",
+          "result": "PASS",
+          "tests": 1,
+          "evidence": ".governance/rc204-supervision-initial.log",
+          "final_runtime": false,
+          "inherited": true
+        }
+      ],
+      "boundaries": [
+        "production supervise routine with captured real owned worker Popen, actual hard exit, automatic recovery with no subsequent recover/start/ensure, one validated Git commit and unchanged retry",
+        "real public start launches fresh native supervisor; cooperative stop and actual Popen waits; later ensure preserves stopped intent; withdrawn system startup API stays unavailable"
+      ],
+      "bookkeeping_error": {
+        "phase": "after test execution and log saved",
+        "reason": "receipt wrapper looked for nonexistent runtime-scripts/project.py instead of project_tool.py",
+        "action": "repair metadata without another test execution",
+        "unavailable_metadata": [
+          "unpersisted before/after runtime identity comparisons",
+          "exact execution started_at timestamp"
+        ]
+      },
+      "limits": [
+        "public-launch case was inherited from initial run; final source full suite and CI remain required",
+        "before/after runtime hash metadata was not persisted after successful affected-case execution; only post-run source/runtime snapshot and parent freeze anchor are retained",
+        "no physical machine reboot, user logon, or operating-system persistence is involved"
+      ],
+      "excluded": [
+        "no Task Scheduler or system startup registration",
+        "no paid provider/model execution",
+        "no old recovery suite or full-suite rerun"
+      ]
+    },
+    "development_full_suite_failure": {
+      "observed_at": "2026-10-20T16:19:22.711757+00:00",
+      "source_sha256": {
+        "governance-src/model/governance-model.json": "04f071ebebc0dbfa7fd75f939972f070da9b91e2cce5c2df7de3b0abf7473900",
+        "governance-src/runtime-scripts/git_checkpoint.py": "ab1b1721607e267c5b39f709cdc8d309d4137cf10eb923231862014742d8ea42",
+        "governance-src/runtime-scripts/git_watch.py": "45bba626c19b7ccb45ba1bc5bc77b9d70766b00b4b60f741784f44c909f4a027",
+        "governance-src/runtime-scripts/plan_governance.py": "aad1d34983c813f508d1845b6ad94d8adb4afcdc6352ef6b5692550623729697",
+        "governance-src/runtime-scripts/process_guard.py": "1ad3bf19e694c6ca487f3a396b3feaabbc41c9c2b6d1e69d12f76040fcf7fe92",
+        "governance-src/runtime-scripts/project_facts.py": "f355e0fa241a1032c94d4959b610b86c2d0ad48b2c62bbfed1ded65bfa4bd9ee",
+        "governance-src/runtime-scripts/project_tool.py": "bb3013f8169aa9d05919d54d23a0692b5d7f9f7b772d54407b0235883f6c58d3",
+        "governance-src/runtime-scripts/state_tool.py": "193cb9657c32dedb253727e93a13bcb6f39306331fc8a90d1319e337f5b088a0",
+        "governance-src/runtime-scripts/validate_integrity.py": "cf09558e67b4488db88c5ce9836e9f1cf1c8bae97d6e1444bb9d2d80409157c0",
+        "qualification/FREEZE.json": "24dbf5b6dfc79cec2fa4b31a57e31c57c66605af15ef7ecf41921591877f7e2c",
+        "tools/security_audit.py": "b4237c7c7be783f1508d61177bef8509daec881edb7d8088aaf3ff5d75ae0954"
+      },
+      "new_paid_model_calls": 0,
+      "returncode": 1,
+      "status": "FAIL",
+      "tests": 1410,
+      "elapsed_seconds": 954.484,
+      "raw": ".governance/rc204-full-suite.log",
+      "summary": "option_sources': {}, 'branch': 'refs/heads/master', 'dirty_paths': [], 'head': '0f95d61032fd75ead64f1e831afbaa30856fe6da', 'observed_at': 1792513869.97733, 'ok': True}, 'configuration': {'enabled': True, 'poll_seconds': 1, 'quiet_seconds': 0, 'validators': [{'argv': ['C:\\\\Users\\\\96501\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python312\\\\python.exe', 'D:\\\\Universal Project Governance\\\\worktrees\\\\rc17-offline-evolution\\\\eval-workspaces\\\\git-watch-9tl3feb0\\\\.governance\\\\validate.py'], 'timeout_seconds': 10}]}, 'desired_running': True, 'generation': '2893a5fb5d744860bbee2957732f7881', 'guard_version': 1, 'heartbeat': 1792513870.3245668, 'lease_until': 1792513885.3245668, 'pid': None, 'running': True, 'status': 'starting', 'supervisor': {'enabled': True, 'guard_version': 1, 'pid': 444, 'status': 'watching', 'token': 'fe40ba553da3461abad3634eb5622135'}, 'token': '3bf144f1460f4fc1bba26c981da3f67a', 'workflow_id': 'git-watch:2893a5fb5d744860bbee2957732f7881'}\r\n\r\n======================================================================\r\nFAIL: test_native_worker_survives_parent_cli_exit_single_instance_stops_and_restarts (test_git_watch.GitWatchTests.test_native_worker_survives_parent_cli_exit_single_instance_stops_and_restarts)\r\n----------------------------------------------------------------------\r\nTraceback (most recent call last):\r\n  File \"D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution\\tests\\test_git_watch.py\", line 404, in test_native_worker_survives_parent_cli_exit_single_instance_stops_and_restarts\r\n    started = self.start_worker()\r\n              ^^^^^^^^^^^^^^^^^^^\r\n  File \"D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution\\tests\\test_git_watch.py\", line 107, in start_worker\r\n    self.assertIsInstance(self.worker_pid, int, started)\r\nAssertionError: None is not an instance of <class 'int'> : {'baseline': {'adoption_sources': {}, 'branch': 'refs/heads/master', 'dirty_paths': [], 'head': '1a5fd035e4e281277f2a316ce864c8335a164278', 'observed_at': 1792513877.5992599, 'ok': True}, 'configuration': {'enabled': True, 'poll_seconds': 1, 'quiet_seconds': 1, 'validators': [{'argv': ['C:\\\\Users\\\\96501\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python312\\\\python.exe', 'D:\\\\Universal Project Governance\\\\worktrees\\\\rc17-offline-evolution\\\\eval-workspaces\\\\git-watch-w4pu5pwh\\\\.governance\\\\validate.py'], 'timeout_seconds': 10}]}, 'desired_running': True, 'generation': 'fac6273bd39944d5adb497328762a0c1', 'guard_version': 1, 'heartbeat': 1792513877.9386377, 'lease_until': 1792513892.9386377, 'pid': None, 'running': True, 'status': 'starting', 'supervisor': {'enabled': True, 'guard_version': 1, 'pid': 36044, 'status': 'watching', 'token': 'e149e4f36f564fae9b09d505b7a63c18'}, 'token': '68946b63793e4e5d961b565e0075f482', 'workflow_id': 'git-watch:fac6273bd39944d5adb497328762a0c1'}\r\n\r\n======================================================================\r\nFAIL: test_stop_during_first_validator_does_not_launch_second_validator (test_git_watch.GitWatchTests.test_stop_during_first_validator_does_not_launch_second_validator)\r\n----------------------------------------------------------------------\r\nTraceback (most recent call last):\r\n  File \"D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution\\tests\\test_git_watch.py\", line 369, in test_stop_during_first_validator_does_not_launch_second_validator\r\n    self.start_worker()\r\n  File \"D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution\\tests\\test_git_watch.py\", line 107, in start_worker\r\n    self.assertIsInstance(self.worker_pid, int, started)\r\nAssertionError: None is not an instance of <class 'int'> : {'baseline': {'adoption_sources': {}, 'branch': 'refs/heads/master', 'dirty_paths': [], 'head': '4bf9b85feae2bbe72f2b61a68c4343cb02fbc14e', 'observed_at': 1792513996.6673944, 'ok': True}, 'configuration': {'enabled': True, 'poll_seconds': 1, 'quiet_seconds': 0, 'validators': [{'argv': ['C:\\\\Users\\\\96501\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python312\\\\python.exe', 'D:\\\\Universal Project Governance\\\\worktrees\\\\rc17-offline-evolution\\\\eval-workspaces\\\\git-watch-qfhj4bx7\\\\.governance\\\\first-validator.py'], 'timeout_seconds': 12}, {'argv': ['C:\\\\Users\\\\96501\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python312\\\\python.exe', 'D:\\\\Universal Project Governance\\\\worktrees\\\\rc17-offline-evolution\\\\eval-workspaces\\\\git-watch-qfhj4bx7\\\\.governance\\\\second-validator.py'], 'timeout_seconds': 5}]}, 'desired_running': True, 'generation': '150cf1afe98d4ad8b4a418e8350ae548', 'guard_version': 1, 'heartbeat': 1792513997.0118465, 'lease_until': 1792514012.0118465, 'pid': None, 'running': True, 'status': 'starting', 'supervisor': {'enabled': True, 'guard_version': 1, 'pid': 38612, 'status': 'watching', 'token': '393599d599d04d379744fb1ffc44960c'}, 'token': '2a94a136dcb94f1e93334b8fd5e720c2', 'workflow_id': 'git-watch:150cf1afe98d4ad8b4a418e8350ae548'}\r\n\r\n----------------------------------------------------------------------\r\nRan 1410 tests in 952.199s\r\n\r\nFAILED (failures=7, skipped=3)\r\n",
+      "source_unchanged": true
+    },
+    "affected_regressions": {
+      "handshake_initial_retest": {
+        "schema_version": 1,
+        "scope": "original six startup-handshake failures only; original full-suite failure preserved",
+        "tests": [
+          "test_git_recovery.GitRecoveryTests.test_native_crash_recovers_original_scope_and_deduplicates",
+          "test_git_recovery.GitRecoveryTests.test_stop_and_reconfigure_do_not_let_recovery_revive_user_stop",
+          "test_git_watch.GitWatchTests.test_native_failed_validator_uses_bounded_retry_and_recovers_without_source_change",
+          "test_git_watch.GitWatchTests.test_native_worker_retries_temporary_writer_lock_without_exiting",
+          "test_git_watch.GitWatchTests.test_native_worker_survives_parent_cli_exit_single_instance_stops_and_restarts",
+          "test_git_watch.GitWatchTests.test_stop_during_first_validator_does_not_launch_second_validator"
+        ],
+        "returncode": 1,
+        "elapsed_seconds": 161.0,
+        "source_sha256": {
+          "governance-src/runtime-scripts/git_watch.py": "183a0f72e9063a87bd3aa9ad1090754f769475667ed9ea119dfd6bd5f45b48df",
+          "governance-src/runtime-scripts/project_tool.py": "bb3013f8169aa9d05919d54d23a0692b5d7f9f7b772d54407b0235883f6c58d3",
+          "universal-project-governance/scripts/git_watch.py": "183a0f72e9063a87bd3aa9ad1090754f769475667ed9ea119dfd6bd5f45b48df",
+          "universal-project-governance/scripts/project_tool.py": "bb3013f8169aa9d05919d54d23a0692b5d7f9f7b772d54407b0235883f6c58d3",
+          "qualification/FREEZE.json": "c8a28aa94b4c01661665aec9a60f2fb13d8e50acb7a55b6dbd8633286d24e0f7"
+        },
+        "raw": "test_native_crash_recovers_original_scope_and_deduplicates (test_git_recovery.GitRecoveryTests.test_native_crash_recovers_original_scope_and_deduplicates) ... ok\r\ntest_stop_and_reconfigure_do_not_let_recovery_revive_user_stop (test_git_recovery.GitRecoveryTests.test_stop_and_reconfigure_do_not_let_recovery_revive_user_stop) ... ok\r\ntest_native_failed_validator_uses_bounded_retry_and_recovers_without_source_change (test_git_watch.GitWatchTests.test_native_failed_validator_uses_bounded_retry_and_recovers_without_source_change) ... ok\r\ntest_native_worker_retries_temporary_writer_lock_without_exiting (test_git_watch.GitWatchTests.test_native_worker_retries_temporary_writer_lock_without_exiting) ... ok\r\ntest_native_worker_survives_parent_cli_exit_single_instance_stops_and_restarts (test_git_watch.GitWatchTests.test_native_worker_survives_parent_cli_exit_single_instance_stops_and_restarts) ... FAIL\r\ntest_stop_during_first_validator_does_not_launch_second_validator (test_git_watch.GitWatchTests.test_stop_during_first_validator_does_not_launch_second_validator) ... ok\r\n\r\n======================================================================\r\nFAIL: test_native_worker_survives_parent_cli_exit_single_instance_stops_and_restarts (test_git_watch.GitWatchTests.test_native_worker_survives_parent_cli_exit_single_instance_stops_and_restarts)\r\n----------------------------------------------------------------------\r\nTraceback (most recent call last):\r\n  File \"D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution\\tests\\test_git_watch.py\", line 421, in test_native_worker_survives_parent_cli_exit_single_instance_stops_and_restarts\r\n    self.stop_worker()\r\n  File \"D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution\\tests\\test_git_watch.py\", line 129, in stop_worker\r\n    stopped = self.watch(\"stop\", expected=(0,))[\"watcher\"]\r\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\r\n  File \"D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution\\tests\\test_git_watch.py\", line 81, in watch\r\n    return self.cli(*argv, expected=expected)\r\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\r\n  File \"D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution\\tests\\test_git_watch.py\", line 70, in cli\r\n    self.assertIn(process.returncode, expected, process.stderr.decode(\"utf-8\", \"replace\") + process.stdout.decode(\"utf-8\", \"replace\"))\r\nAssertionError: 2 not found in (0,) : error: project state writer busy; legacy directory locks require explicit owner inspection\r\r\n\r\n\r\n----------------------------------------------------------------------\r\nRan 6 tests in 160.795s\r\n\r\nFAILED (failures=1)\r\n",
+        "new_external_paid_model_calls": 0
+      },
+      "stop_final_retest": {
+        "schema_version": 1,
+        "scope": "one original stop-path temporary-writer-conflict failure only; earlier full and six-case evidence retained",
+        "tests": [
+          "test_git_watch.GitWatchTests.test_native_worker_survives_parent_cli_exit_single_instance_stops_and_restarts"
+        ],
+        "returncode": 0,
+        "elapsed_seconds": 50.906,
+        "source_sha256": {
+          "governance-src/runtime-scripts/git_watch.py": "93fab9e599f3696e230bedb0e0169e0706e0e324f227737e144175bde9daedec",
+          "governance-src/runtime-scripts/project_tool.py": "bb3013f8169aa9d05919d54d23a0692b5d7f9f7b772d54407b0235883f6c58d3",
+          "universal-project-governance/scripts/git_watch.py": "93fab9e599f3696e230bedb0e0169e0706e0e324f227737e144175bde9daedec",
+          "universal-project-governance/scripts/project_tool.py": "bb3013f8169aa9d05919d54d23a0692b5d7f9f7b772d54407b0235883f6c58d3",
+          "qualification/FREEZE.json": "4c92cb3788c5e61d88771e212660036aa3b14cc58a999cda3e8d7d3072534df1"
+        },
+        "raw": "test_native_worker_survives_parent_cli_exit_single_instance_stops_and_restarts (test_git_watch.GitWatchTests.test_native_worker_survives_parent_cli_exit_single_instance_stops_and_restarts) ... ok\r\n\r\n----------------------------------------------------------------------\r\nRan 1 test in 50.653s\r\n\r\nOK\r\n",
+        "new_external_paid_model_calls": 0
+      },
+      "native_index_critical_section": {
+        "status": "PASS",
+        "tests": 1,
+        "passed": 1,
+        "elapsed_seconds": 8.567,
+        "tool": "37afd6",
+        "test": "test_native_index_lock_refuses_concurrent_staging_and_preserves_user_work",
+        "original_failure": "Old prepared-journal callback now precedes actual native-lock publication; staging before lock is allowed and source/index drift blocks our commit. Fixture moved to real locked critical section, not weakened.",
+        "runtime_changed": false,
+        "assertions_preserved": [
+          "real external Git add rejected",
+          "index.lock diagnostic",
+          "own hardlink inode verified",
+          "only source committed",
+          "user unrelated worktree/index preserved"
+        ],
+        "source_sha256": {
+          "tests/test_git_checkpoints.py": "73d4402cdfc25bb087d5573c75094ab6010fcb97e08b6ca0901de161f1b988de",
+          "governance-src/runtime-scripts/git_checkpoint.py": "ab1b1721607e267c5b39f709cdc8d309d4137cf10eb923231862014742d8ea42"
+        }
+      }
+    },
+    "final_static_package": {
+      "observed_at": "2026-10-20T16:44:21.993496+00:00",
+      "source_sha256": {
+        "governance-src/model/governance-model.json": "04f071ebebc0dbfa7fd75f939972f070da9b91e2cce5c2df7de3b0abf7473900",
+        "governance-src/runtime-scripts/project_tool.py": "bb3013f8169aa9d05919d54d23a0692b5d7f9f7b772d54407b0235883f6c58d3",
+        "governance-src/runtime-scripts/git_checkpoint.py": "ab1b1721607e267c5b39f709cdc8d309d4137cf10eb923231862014742d8ea42",
+        "governance-src/runtime-scripts/git_watch.py": "93fab9e599f3696e230bedb0e0169e0706e0e324f227737e144175bde9daedec",
+        "governance-src/runtime-scripts/process_guard.py": "1ad3bf19e694c6ca487f3a396b3feaabbc41c9c2b6d1e69d12f76040fcf7fe92",
+        "tools/security_audit.py": "b4237c7c7be783f1508d61177bef8509daec881edb7d8088aaf3ff5d75ae0954",
+        "tests/test_git_watch_security.py": "e72f08fe69632269a6b88b8bd79f9354d6da8eaaa2432e7e1b96af222097c49b",
+        "qualification/FREEZE.json": "4c92cb3788c5e61d88771e212660036aa3b14cc58a999cda3e8d7d3072534df1"
+      },
+      "checks": [
+        {
+          "argv": [
+            "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+            "compiler/compile_governance.py",
+            "--check"
+          ],
+          "returncode": 0,
+          "elapsed_seconds": 0.312,
+          "raw": ".governance/rc204-post-stop-gate-0.log"
+        },
+        {
+          "argv": [
+            "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+            "tools/governance_lint.py",
+            "."
+          ],
+          "returncode": 0,
+          "elapsed_seconds": 0.094,
+          "raw": ".governance/rc204-post-stop-gate-1.log"
+        },
+        {
+          "argv": [
+            "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+            "tools/validate_qualification.py",
+            "."
+          ],
+          "returncode": 0,
+          "elapsed_seconds": 0.781,
+          "raw": ".governance/rc204-post-stop-gate-2.log"
+        },
+        {
+          "argv": [
+            "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+            "tools/qualification_freeze.py",
+            ".",
+            "--check"
+          ],
+          "returncode": 0,
+          "elapsed_seconds": 0.157,
+          "raw": ".governance/rc204-post-stop-gate-3.log"
+        },
+        {
+          "argv": [
+            "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+            "tools/validate_repository.py",
+            "."
+          ],
+          "returncode": 0,
+          "elapsed_seconds": 1.828,
+          "raw": ".governance/rc204-post-stop-gate-4.log"
+        },
+        {
+          "argv": [
+            "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+            "tools/validate_skill_bundle.py",
+            "universal-project-governance"
+          ],
+          "returncode": 0,
+          "elapsed_seconds": 0.172,
+          "raw": ".governance/rc204-post-stop-gate-5.log"
+        },
+        {
+          "argv": [
+            "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+            "universal-project-governance/scripts/validate_integrity.py",
+            "universal-project-governance"
+          ],
+          "returncode": 0,
+          "elapsed_seconds": 0.125,
+          "raw": ".governance/rc204-post-stop-gate-6.log"
+        },
+        {
+          "argv": [
+            "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+            "tools/security_audit.py",
+            "."
+          ],
+          "returncode": 0,
+          "elapsed_seconds": 1.625,
+          "raw": ".governance/rc204-post-stop-gate-7.log"
+        },
+        {
+          "argv": [
+            "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+            "tools/validate_navigation.py",
+            "."
+          ],
+          "returncode": 0,
+          "elapsed_seconds": 0.156,
+          "raw": ".governance/rc204-post-stop-gate-8.log"
+        },
+        {
+          "argv": [
+            "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+            "tools/package_release.py",
+            "universal-project-governance",
+            "--output-dir",
+            ".governance/rc204-post-stop-package"
+          ],
+          "returncode": 0,
+          "elapsed_seconds": 0.922,
+          "raw": ".governance/rc204-post-stop-gate-9.log"
+        }
+      ],
+      "package_sha256": "248fe1beb023e1de300859b09c7e8e88d5a7860aa3ed60e9704370720a72b0f3"
+    },
+    "final_source_ci": {
+      "status": "PENDING"
+    }
+  },
+  "delivery": {
+    "github": "PENDING new session-supervision source",
+    "installation": "Installed20.3 retained; no system startup registration left."
+  },
+  "remaining_goals": [
+    "Final source CI, merge,21-file installation and final acceptance-head CI pending.",
+    "No activity before project entry; supervisor itself restored on next project entry/explicit start. No boot/login startup.",
+    "Independent cross-agent quality/token/time benefit NOT_ESTABLISHED; formal UNASSESSED; locked NOT_RUN; not Stable.",
+    "Legacy unknown locks, unsupported advanced Git/arbitrary detached hooks and unverified power-loss durability remain bounded limitations.",
+    "Insight application remains prior partial/unaccepted state; not modified here."
+  ],
+  "withdrawn_system_startup_history": {
+    "current_user_task_registration": {
+      "status": "PASS WITH INITIAL READBACK CALIBRATION CORRECTION",
+      "observation": "Non-elevated registration succeeded. Initial strict XML comparison rejected official normalization; no success was claimed. Same fixture task ownership verified, XML backed up, task removed and absence queried. Corrected adapter normalizes only explicit defaults/current account SID-name identity. Functional periodic crash recovery still pending.",
+      "backup": ".governance/autostart-backups/UPG-GitWatch-28c5babfe395c22ec6a64ecd-c02709f30a3644e38787462a10d6bec5.json"
+    },
+    "scheduled_task_first_functional_calibration": {
+      "status": "FAILED",
+      "raw": ".governance/autostart-native-calibration.json",
+      "proven": [
+        "Real task returned Ready3/last_result0 and launched its own worker.",
+        "After proved-owned worker hard exit, same task periodically recovered a new worker in55.016s without a second manual run."
+      ],
+      "failed": "No commit observed within20s after recovery; precise pre-stop watcher status was not saved and remains unknown.",
+      "cleanup": "Task disabled/query confirmed absent; read-only Git-object cleanup exception retained for safe handling.",
+      "root_cause_diagnostic": {
+        "raw": ".governance/pythonw-guard-diagnostic.json",
+        "observation": "Necessary pythonw guarded Git diagnostic returned0 in0.437s but stdout was empty instead of expected project root. Actual native stdio forwarding correction pending."
+      }
+    },
+    "withdrawn_system_startup": {
+      "status": "REVOKED_BY_OWNER_AND_REMOVED",
+      "reason": "Owner explicitly forbids boot/login startup injection; replace with project-session supervision.",
+      "task_name": "UPG-GitWatch-28c5babfe395c22ec6a64ecd",
+      "task_absent": true,
+      "all_upg_tasks_empty": true,
+      "owned_worker_31180_exited": true,
+      "fixture_absent": true,
+      "raw": ".governance/rc204-native-autostart-final.json",
+      "tool_transcripts": [
+        "d24ca9",
+        "4e2558"
+      ],
+      "prototype_files": "Removed from candidate source/tests after exact ignored backup. Historical calibration only, not delivered functionality."
+    },
+    "final_revocation_receipt": {
+      "checks": [
+        {
+          "task_run_ready_worker": {
+            "heartbeat": 1792512268.8741574,
+            "last_result": 0,
+            "pid": 39824,
+            "scheduler_state": 3,
+            "status": "running",
+            "token": "0f392354e4574ad680b14bd22e2873e7"
+          }
+        },
+        {
+          "after": {
+            "last": "2026-10-20T16:05:26.0000000Z",
+            "next": "2026-10-20T16:06:26.0000000Z",
+            "result": 0
+          },
+          "automatic_recovery": {
+            "heartbeat": 1792512326.7259638,
+            "last_result": 0,
+            "pid": 31180,
+            "scheduler_state": 3,
+            "status": "running",
+            "token": "fe9f632faab443178edfe00b2cc88650"
+          },
+          "before": {
+            "last": "2026-10-20T16:04:28.0000000Z",
+            "next": "2026-10-20T16:05:26.0000000Z",
+            "result": 0
+          },
+          "elapsed_seconds": 57.484
+        },
+        {
+          "commit_count": 2,
+          "observed_states": [
+            {
+              "heartbeat": 1792512326.7259638,
+              "pid": 31180,
+              "reason": "native-worker-confirmed",
+              "status": "running",
+              "token": "fe9f632faab443178edfe00b2cc88650"
+            },
+            {
+              "heartbeat": 1792512331.1523726,
+              "pid": 31180,
+              "reason": "running-explicit-project-validators",
+              "status": "validating",
+              "token": "fe9f632faab443178edfe00b2cc88650"
+            }
+          ],
+          "validated_edit_commit": true
+        }
+      ],
+      "cleanup_verified": true,
+      "disable_cleanup": {
+        "autostart": {
+          "backup": ".governance\\autostart-backups\\UPG-GitWatch-28c5babfe395c22ec6a64ecd-119651053ebf4de8919c96e48610563b.json",
+          "enabled": false,
+          "launcher": "pythonw",
+          "owner_sid": "S-1-5-21-4052648770-270173072-85949553-1003",
+          "source": "urn:upg:git-autostart:28c5babfe395c22ec6a64ecdb7976d84c6165a2d3fb1327212d7c827c40e1b32",
+          "status": "disabled",
+          "task_name": "UPG-GitWatch-28c5babfe395c22ec6a64ecd",
+          "task_present": false,
+          "task_xml_sha256": "afb24a075489745d691b9f830ba9ecbffe4c744c5d93d66dda098e308e2520a7"
+        }
+      },
+      "enable": {
+        "autostart": {
+          "backup": ".governance\\autostart-backups\\UPG-GitWatch-28c5babfe395c22ec6a64ecd-5b8245cc53f343329897f566b7cc4d7a.json",
+          "changed": true,
+          "desired_running": true,
+          "enabled": true,
+          "launcher": "pythonw",
+          "logon_semantics": "after this user signs in; not before login",
+          "owner_sid": "S-1-5-21-4052648770-270173072-85949553-1003",
+          "registration_verified": true,
+          "scheduler_state": 3,
+          "source": "urn:upg:git-autostart:28c5babfe395c22ec6a64ecdb7976d84c6165a2d3fb1327212d7c827c40e1b32",
+          "status": "enabled",
+          "task_name": "UPG-GitWatch-28c5babfe395c22ec6a64ecd",
+          "task_present": true,
+          "task_xml_sha256": "afb24a075489745d691b9f830ba9ecbffe4c744c5d93d66dda098e308e2520a7"
+        }
+      },
+      "error": "project state writer busy; legacy directory locks require explicit owner inspection",
+      "failure_before_cleanup": {
+        "autostart": {
+          "backup": ".governance\\autostart-backups\\UPG-GitWatch-28c5babfe395c22ec6a64ecd-5b8245cc53f343329897f566b7cc4d7a.json",
+          "enabled": true,
+          "launcher": "pythonw",
+          "owner_sid": "S-1-5-21-4052648770-270173072-85949553-1003",
+          "source": "urn:upg:git-autostart:28c5babfe395c22ec6a64ecdb7976d84c6165a2d3fb1327212d7c827c40e1b32",
+          "status": "enabled",
+          "task_name": "UPG-GitWatch-28c5babfe395c22ec6a64ecd",
+          "task_xml_sha256": "afb24a075489745d691b9f830ba9ecbffe4c744c5d93d66dda098e308e2520a7"
+        },
+        "baseline": {
+          "branch": "refs/heads/master",
+          "dirty_paths": [],
+          "head": "ac9fd262215d41e40bc70c1e6a30a6ae31082562",
+          "observed_at": 1792512330.3216362,
+          "ok": true
+        },
+        "candidate": {
+          "branch": "refs/heads/master",
+          "fingerprint": "d39adcc5f1d6f6c8895a0a13046b6d9708d6eafb5e88b927d728ac3b2812670b",
+          "head": "ac9fd262215d41e40bc70c1e6a30a6ae31082562",
+          "paths": [
+            "source.txt"
+          ],
+          "seen_at": 1792512331.1523726,
+          "sources": {
+            "source.txt": [
+              "1e6c40f2abc83e89f48c8825a08aa12c77263fc596ede8096c11fa917f41e925",
+              0
+            ]
+          }
+        },
+        "configuration": {
+          "enabled": true,
+          "poll_seconds": 1,
+          "quiet_seconds": 0,
+          "validators": [
+            {
+              "argv": [
+                "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+                "-c",
+                "from pathlib import Path; assert Path('source.txt').read_bytes().startswith(b'value=')"
+              ],
+              "timeout_seconds": 10
+            }
+          ]
+        },
+        "desired_running": true,
+        "generation": "c54a8483e6a4499698f33906568b5365",
+        "guard_version": 1,
+        "heartbeat": 1792512331.1523726,
+        "last_attempt": {
+          "attempted_at": 1792512331.5323439,
+          "failures": 1,
+          "fingerprint": "d39adcc5f1d6f6c8895a0a13046b6d9708d6eafb5e88b927d728ac3b2812670b",
+          "retry_after": 1792512337.5323439,
+          "validations": [
+            {
+              "argv": [
+                "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+                "-c",
+                "from pathlib import Path; assert Path('source.txt').read_bytes().startswith(b'value=')"
+              ],
+              "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "output_truncated": false,
+              "returncode": 0,
+              "timed_out": false
+            }
+          ]
+        },
+        "lease_until": 1792512356.1523726,
+        "pid": 31180,
+        "reason": "running-explicit-project-validators",
+        "running": true,
+        "status": "validating",
+        "token": "fe9f632faab443178edfe00b2cc88650",
+        "workflow_id": "git-watch:c54a8483e6a4499698f33906568b5365"
+      },
+      "fixture": "D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution\\eval-workspaces\\git-autostart-native-ld7zhb17",
+      "fixture_absent_after_cleanup": true,
+      "owner_revocation": {
+        "fixture_absent": true,
+        "future_system_autostart_registration_authorized": false,
+        "owned_worker_exit_confirmed": true,
+        "owned_worker_pid": 31180,
+        "plan": "REVOKED_BY_OWNER",
+        "task_query_absent": true
+      },
+      "paid_model_calls": 0,
+      "runtime_after": {
+        "git_autostart.py": "06fb037a0fdb94fdd7f0f5ba5ebe2cb988fe87e3926360275d5290202652c564",
+        "git_checkpoint.py": "ab1b1721607e267c5b39f709cdc8d309d4137cf10eb923231862014742d8ea42",
+        "git_watch.py": "e0fc0c41eab9aed510927038ed353c573955f2c3149f58693f132426338bf723",
+        "process_guard.py": "1ad3bf19e694c6ca487f3a396b3feaabbc41c9c2b6d1e69d12f76040fcf7fe92",
+        "project_tool.py": "1af2fe4e63e08dbc54865da9adcb3ad930e422e31ef6b7f7f779fc2dc60c993d"
+      },
+      "runtime_before": {
+        "git_autostart.py": "06fb037a0fdb94fdd7f0f5ba5ebe2cb988fe87e3926360275d5290202652c564",
+        "git_checkpoint.py": "ab1b1721607e267c5b39f709cdc8d309d4137cf10eb923231862014742d8ea42",
+        "git_watch.py": "e0fc0c41eab9aed510927038ed353c573955f2c3149f58693f132426338bf723",
+        "process_guard.py": "1ad3bf19e694c6ca487f3a396b3feaabbc41c9c2b6d1e69d12f76040fcf7fe92",
+        "project_tool.py": "1af2fe4e63e08dbc54865da9adcb3ad930e422e31ef6b7f7f779fc2dc60c993d"
+      },
+      "same_runtime_bytes": true,
+      "status": "FAILED",
+      "stop_cleanup": {
+        "watcher": {
+          "autostart": {
+            "backup": ".governance\\autostart-backups\\UPG-GitWatch-28c5babfe395c22ec6a64ecd-5b8245cc53f343329897f566b7cc4d7a.json",
+            "enabled": true,
+            "launcher": "pythonw",
+            "owner_sid": "S-1-5-21-4052648770-270173072-85949553-1003",
+            "source": "urn:upg:git-autostart:28c5babfe395c22ec6a64ecdb7976d84c6165a2d3fb1327212d7c827c40e1b32",
+            "status": "enabled",
+            "task_name": "UPG-GitWatch-28c5babfe395c22ec6a64ecd",
+            "task_xml_sha256": "afb24a075489745d691b9f830ba9ecbffe4c744c5d93d66dda098e308e2520a7"
+          },
+          "baseline": {
+            "branch": "refs/heads/master",
+            "dirty_paths": [],
+            "head": "e862c326793ec7d3de545c52fbfa96c7bf77b480",
+            "observed_at": 1792512350.1536698,
+            "ok": true
+          },
+          "checkpoint": {
+            "commit": "e862c326793ec7d3de545c52fbfa96c7bf77b480",
+            "paths": [
+              "source.txt"
+            ],
+            "reason": "verified-stage",
+            "status": "committed"
+          },
+          "configuration": {
+            "enabled": true,
+            "poll_seconds": 1,
+            "quiet_seconds": 0,
+            "validators": [
+              {
+                "argv": [
+                  "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+                  "-c",
+                  "from pathlib import Path; assert Path('source.txt').read_bytes().startswith(b'value=')"
+                ],
+                "timeout_seconds": 10
+              }
+            ]
+          },
+          "desired_running": false,
+          "generation": "c54a8483e6a4499698f33906568b5365",
+          "guard_version": 1,
+          "heartbeat": 1792512350.1536698,
+          "lease_until": 0,
+          "pid": null,
+          "reason": "explicit-stop-request",
+          "running": false,
+          "status": "stopped",
+          "stop_token": "fe9f632faab443178edfe00b2cc88650",
+          "workflow_id": "git-watch:c54a8483e6a4499698f33906568b5365"
+        }
+      },
+      "task_absent_after_cleanup": true,
+      "task_name": "UPG-GitWatch-28c5babfe395c22ec6a64ecd"
+    },
+    "prototype_unit_only": {
+      "tests": 9,
+      "passed": 9,
+      "elapsed_seconds": 0.314,
+      "scope": "Task scheduler ownership/default normalization/backup/concurrency/rollback; actual periodic recovery pending separate same fixture receipt"
+    }
+  },
+  "source_sha256": {
+    "governance-src/model/governance-model.json": "04f071ebebc0dbfa7fd75f939972f070da9b91e2cce5c2df7de3b0abf7473900",
+    "governance-src/runtime-scripts/project_tool.py": "bb3013f8169aa9d05919d54d23a0692b5d7f9f7b772d54407b0235883f6c58d3",
+    "governance-src/runtime-scripts/git_checkpoint.py": "ab1b1721607e267c5b39f709cdc8d309d4137cf10eb923231862014742d8ea42",
+    "governance-src/runtime-scripts/git_watch.py": "93fab9e599f3696e230bedb0e0169e0706e0e324f227737e144175bde9daedec",
+    "governance-src/runtime-scripts/process_guard.py": "1ad3bf19e694c6ca487f3a396b3feaabbc41c9c2b6d1e69d12f76040fcf7fe92",
+    "tools/security_audit.py": "b4237c7c7be783f1508d61177bef8509daec881edb7d8088aaf3ff5d75ae0954",
+    "tests/test_git_watch_security.py": "e72f08fe69632269a6b88b8bd79f9354d6da8eaaa2432e7e1b96af222097c49b",
+    "qualification/FREEZE.json": "4c92cb3788c5e61d88771e212660036aa3b14cc58a999cda3e8d7d3072534df1"
+  },
+  "delivered_files": 21,
+  "manifest_covered_files": 20,
+  "preparation_observations": [
+    "Restricted external-worktree Git read reported not a worktree; actual reviewed entry correct, no ACL/corruption inference.",
+    "Caller attempted to change immutable workflow start function after owner steering; rejected before event, inspected previous event then preserved original start and registered new after/task facts.",
+    "Nested quoting prevented one source-script preparation from starting; no business Git operation started."
+  ]
 }

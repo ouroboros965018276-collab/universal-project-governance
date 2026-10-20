@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Current candidate: **3.0.0-rc.20.3 — Autonomous Git Adoption**.
+Current candidate: **3.0.0-rc.20.4 — Persistent Git Observer**.
 
 ## First modifying activation
 

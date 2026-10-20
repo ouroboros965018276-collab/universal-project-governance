@@ -28,13 +28,20 @@ def worker_launch_digest(fn):
 
 # This pins own-script argv, detached flags, DEVNULL I/O and shell=False;
 # no general process-launch exception is granted.
-OWN_WORKER_LAUNCH_SHA256 = "478c9779a152350869e6a2709fa1a683e9f3981ee982ed9b7bd6fa2a0feecebb"
+OWN_WORKER_LAUNCH_SHA256 = "f27a6b3b4c98d5e5e7196c2565c0d6b3453b8f784de39252cff0935f927583e2"
+
+OWN_GUARDED_LAUNCH_SHA256 = "5b5675ef5434a823860eb5c95030ecedfb73b76cede230b8f5c62e21ef8060ce"
+
+OWN_SUPERVISOR_LAUNCH_SHA256 = "f18b40e98ce5eb1d444da5831da8d74a6b29d518e9d53bd3223a5fd8ce5406a9"
 
 def approved_worker_launch(path, tree, node):
-    if path.name != "git_watch.py": return False
+    reviewed = {("git_watch.py", "_spawn_worker"): OWN_WORKER_LAUNCH_SHA256,
+                ("git_watch.py", "_spawn_supervisor"): OWN_SUPERVISOR_LAUNCH_SHA256,
+                ("process_guard.py", "_spawn_guarded"): OWN_GUARDED_LAUNCH_SHA256}
     for fn in tree.body:
-        if isinstance(fn, ast.FunctionDef) and fn.name == "_spawn_worker" and node in ast.walk(fn):
-            return worker_launch_digest(fn) == OWN_WORKER_LAUNCH_SHA256
+        if isinstance(fn, ast.FunctionDef) and node in ast.walk(fn):
+            expected = reviewed.get((path.name, fn.name))
+            return expected is not None and worker_launch_digest(fn) == expected
     return False
 
 def audit_runtime_scripts(skill_root:Path,errors:list,warnings:list)->None:

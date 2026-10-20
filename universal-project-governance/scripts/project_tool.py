@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import argparse
+import os
+import uuid
 from datetime import datetime, timezone
 import json
 import re
@@ -10,13 +12,15 @@ from pathlib import Path, PurePosixPath
 import sys
 import hashlib
 import functools
-from contextlib import contextmanager
+from contextlib import contextmanager, ExitStack
 import threading
 import time
 from state_tool import validate_node
+import process_guard as guards
 
 ROOT = Path(__file__).resolve().parents[1]
 _locks = threading.local()
+CONTROLLED_GUARDS = frozenset({".upg-writer.guard", ".upg-worker.guard", ".upg-validation.guard", ".upg-checkpoint.guard", ".upg-supervisor.guard"})
 
 def serialized(fn):
     @functools.wraps(fn)
@@ -28,38 +32,65 @@ def serialized(fn):
             return fn(project, *args, **kwargs)
         gov = root / ".governance"
         gov.mkdir(parents=True, exist_ok=True)
-        lock = gov / ".upg-write-lock"
+        legacy = gov / ".upg-write-lock"
+        guard = None
         for attempt in range(100):
-            try:
-                lock.mkdir()
-                break
-            except FileExistsError:
-                time.sleep(0.02)
+            if not legacy.exists() and not legacy.is_symlink():
+                guard = guards.acquire(root, ".upg-writer.guard")
+                if guard is not None:
+                    break
+            time.sleep(0.02)
         else:
-            raise ValueError("project state writer busy; after abrupt stop inspect and explicitly remove only the stale .upg-write-lock directory")
+            raise ValueError("project state writer busy; legacy directory locks require explicit owner inspection")
         held = set(held); held.add(key); _locks.held = held
         try:
-            return fn(project, *args, **kwargs)
+            with guard, guards.holding(guard):
+                return fn(project, *args, **kwargs)
         finally:
             held.remove(key); _locks.held = held
-            lock.rmdir()
-            if not any(gov.iterdir()):
-                gov.rmdir()
+            # Stable guard inodes remain infrastructure. Unlinking on release
+            # could let two POSIX open-file descriptions protect different files.
+
     return wrapped
 
 def load_json(path):
-    return json.loads(Path(path).read_text(encoding="utf-8-sig"))
+    for attempt in range(3):
+        try:
+            return json.loads(Path(path).read_text(encoding="utf-8-sig"))
+        except PermissionError:
+            if attempt == 2:
+                raise
+            time.sleep(0.02)
 
 def write_json_atomic(path, value):
     path = Path(path)
     if path.is_symlink() or path.parent.is_symlink():
         raise ValueError("refusing to write through symlinked managed path")
     path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_name(path.name + ".tmp")
-    if tmp.exists() or tmp.is_symlink():
-        raise ValueError("temporary managed path already exists: %s" % tmp)
-    tmp.write_text(json.dumps(value, indent=2, ensure_ascii=False, sort_keys=True) + "\n", encoding="utf-8")
-    tmp.replace(path)
+    legacy = path.with_name(path.name + ".tmp")
+    if legacy.exists() or legacy.is_symlink():
+        raise ValueError("temporary managed path already exists: %s" % legacy)
+    raw = (json.dumps(value, indent=2, ensure_ascii=False, sort_keys=True) + "\n").encode("utf-8")
+    temporary = path.with_name(path.name + ".upg-" + uuid.uuid4().hex + ".tmp")
+    identity = None
+    try:
+        with temporary.open("xb") as stream:
+            info = os.fstat(stream.fileno())
+            identity = info.st_dev, info.st_ino
+            stream.write(raw)
+            stream.flush()
+            os.fsync(stream.fileno())
+        if temporary.read_bytes() != raw:
+            raise ValueError("managed temporary write failed readback")
+        if path.is_symlink() or path.parent.is_symlink():
+            raise ValueError("managed destination changed to a symlink")
+        os.replace(str(temporary), str(path))
+    finally:
+        if identity is not None and temporary.is_file() and not temporary.is_symlink():
+            info = temporary.stat()
+            if (info.st_dev, info.st_ino) == identity:
+                temporary.unlink()
+
 
 def index():
     return load_json(ROOT / "policy-index.json")
@@ -87,7 +118,7 @@ def _project_origin(project):
         if child.name != ".governance":
             return "existing"
     gov = root / ".governance"
-    if gov.is_dir() and any(child.name != ".upg-write-lock" for child in gov.iterdir()):
+    if gov.is_dir() and any(child.name != ".upg-write-lock" and child.name not in CONTROLLED_GUARDS for child in gov.iterdir()):
         return "existing"
     return "new"
 
@@ -150,6 +181,11 @@ def _validate_git_policy(policy):
                 validate_configuration(watcher["configuration"])
             except ValueError as error:
                 errors.append(str(error))
+            if "desired_running" in watcher and type(watcher["desired_running"]) is not bool:
+                errors.append("git_checkpoint.watcher.desired_running must be boolean")
+            supervisor = watcher.get("supervisor")
+            if supervisor is not None and (not isinstance(supervisor, dict) or type(supervisor.get("enabled")) is not bool):
+                errors.append("git_checkpoint.watcher.supervisor.enabled must be boolean")
     return errors
 
 def _upgradeable_binding(value):
@@ -324,10 +360,12 @@ def status(project):
     watcher_stale = bool(watcher.get("token") and watcher.get("lease_until", 0) < time.time()
                          and watcher_state not in {"stopped", "stopping"})
     watcher_pending = bool(git_state.get("enabled") and watcher.get("configuration", {}).get("enabled")
-                           and (watcher_stale or watcher_state in {"blocked", "cancelled", "stale"}))
+                           and (watcher_stale or watcher.get("recovery_blocked")
+                                or watcher.get("supervisor", {}).get("status") in {"starting", "recovering", "waiting", "blocked"}
+                                or watcher_state in {"starting", "blocked", "cancelled", "stale"}))
     return {
         "ok": not state_errors and not pending_outcome and not git_pending and not watcher_pending,
-        **({"reason": "git-watcher-pending", "errors": ["Git observer is blocked or its heartbeat is stale; inspect git-watch status before claiming automatic saving"]} if watcher_pending else {}),
+        **({"reason": "git-watcher-pending", "errors": ["Git observer startup is unconfirmed, blocked, or its heartbeat is stale; inspect git-watch status before claiming automatic saving"]} if watcher_pending else {}),
         **({"reason": "git-checkpoint-pending", "errors": ["Git checkpoint requires reconciliation; retry its original finish input"]} if git_pending else {}),
         **({"reason": "checkpoint-unreconciled", "errors": ["ledger commit newer than binding checkpoint; retry the original report/finish input"]} if pending_outcome else {}),
         **({"reason": "current-state-drift", "errors": state_errors} if state_errors else {}),
@@ -883,8 +921,35 @@ def purge_reports(project, yes):
             raise ValueError("export current evidence and preserve the verified export before rotating the reporting epoch")
     write_json_atomic(report_path, ledger)
     return {"purged": True, "path": str(report_path), "field_test_reporting": True}
-@serialized
 def remove(project, yes):
+    if not yes:
+        raise ValueError("remove requires --yes")
+    binding_path = resolve(project, config()["binding_file"])
+    if binding_path.is_file():
+        binding = load_json(binding_path)
+        errors = validate_binding(binding)
+        if errors:
+            raise ValueError("refusing to remove drifted/unowned binding: " + "; ".join(errors))
+        if binding.get("git_checkpoint", {}).get("journal"):
+            raise ValueError("reconcile the pending Git transaction before removing its recovery state")
+        watcher = binding.get("git_checkpoint", {}).get("watcher", {})
+        if watcher.get("token") or watcher.get("pid") or watcher.get("desired_running"):
+            import git_watch
+            stopped = git_watch.stop(project)["watcher"]
+            if stopped.get("status") != "stopped":
+                raise ValueError("observer cancellation is pending; wait for its native command before removing state")
+        with ExitStack() as ownership:
+            for name in [".upg-supervisor.guard", ".upg-worker.guard", ".upg-validation.guard", ".upg-checkpoint.guard"]:
+                guard = guards.acquire(project_root(project), name)
+                if guard is None:
+                    raise ValueError("native project work remains active; wait before removing its ownership state")
+                ownership.enter_context(guard)
+            return _remove_files(project, yes)
+    return _remove_files(project, yes)
+
+
+@serialized
+def _remove_files(project, yes):
     if not yes:
         raise ValueError("remove requires --yes")
     cfg = config()
@@ -897,6 +962,9 @@ def remove(project, yes):
             raise ValueError("refusing to remove drifted/unowned binding: " + "; ".join(errors))
         else:
             managed = binding.get("managed_files", [])
+        watcher = binding.get("git_checkpoint", {}).get("watcher", {})
+        if watcher.get("token") or watcher.get("pid") or watcher.get("desired_running"):
+            raise ValueError("observer ownership changed; explicitly stop before removing state")
         if binding.get("git_checkpoint", {}).get("journal"):
             raise ValueError("reconcile the pending Git transaction before removing its recovery state")
         if binding.get("field_test_reporting") is True:
@@ -960,7 +1028,7 @@ def main():
     git_policy.set_defaults(bootstrap_enabled=None)
     watch = sub.add_parser("git-watch")
     watch.add_argument("project", nargs="?", default=".")
-    watch.add_argument("--action", choices=["configure", "start", "stop", "status", "tick"], required=True)
+    watch.add_argument("--action", choices=["configure", "start", "stop", "status", "tick", "recover"], required=True)
     watch.add_argument("--input")
     export = sub.add_parser("export")
     export.add_argument("project", nargs="?", default=".")
@@ -1016,11 +1084,12 @@ def main():
             watcher = binding.get("git_checkpoint", {}).get("watcher", {})
             if (binding.get("git_checkpoint", {}).get("enabled")
                     and watcher.get("configuration", {}).get("enabled")
-                    and watcher.get("status") not in {"stopped", "stopping"}):
+                    and watcher.get("supervisor", {}).get("enabled")):
                 import git_watch
-                result["watcher"] = git_watch.start(args.project)["watcher"]
+                result["watcher"] = git_watch.autostart(args.project)["watcher"]
         print(json.dumps(result, indent=2, sort_keys=True))
-        if result.get("watcher", {}).get("status") in {"blocked", "stale", "cancelled"}:
+        if (result.get("watcher", {}).get("status") in {"blocked", "stale", "cancelled"}
+                or result.get("watcher", {}).get("supervisor", {}).get("status") == "blocked"):
             return 1
         if result.get("git_checkpoint", {}).get("status") == "blocked":
             return 1

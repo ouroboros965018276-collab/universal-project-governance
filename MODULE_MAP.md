@@ -1,6 +1,6 @@
 # 模块导航
 
-当前候选：**3.0.0-rc.20.3**。版本与发布状态见[当前项目状态](PROJECT_STATE.md)。
+当前候选：**3.0.0-rc.20.4**。版本与发布状态见[当前项目状态](PROJECT_STATE.md)。
 
 ```mermaid
 flowchart LR
@@ -20,7 +20,7 @@ flowchart LR
 |---|---|---|---|---|
 | 规则、风险、局部或结构模式 | [治理模型](governance-src/model/governance-model.json)、[规划器](governance-src/runtime-scripts/plan_governance.py) | [任务输入](governance-src/schemas/task-context.schema.json) → [治理计划](governance-src/schemas/governance-plan.schema.json)；[可选项目提示](governance-src/profiles/) | [规则检查](tools/governance_lint.py)、[规划与运行时测试](tests/test_compiled_runtime.py)、[按需工作流测试](tests/test_operational_guidance.py) | 计划投影命中的原闭包及工作流块；完整 Skill 常驻，未知项目提示仍用通用规则 |
 | 安装、绑定、完成、导出或卸载 | [仓库命令入口](upg.py) → [生命周期](governance-src/runtime-scripts/project_tool.py) | [执行记录](governance-src/schemas/execution.schema.json)、[灰测报告](governance-src/schemas/field-report.schema.json)；[资格运行器](qualification/lib/execution.py) | [生命周期测试](tests/test_compiled_runtime.py)、[完成结果测试](tests/test_completion_outcomes.py) | 绑定与既有工作流；保留已启用的报告状态和原始开始事实 |
-| 自动 Git 阶段提交、去重或恢复 | [生命周期](governance-src/runtime-scripts/project_tool.py) → [Git 检查点](governance-src/runtime-scripts/git_checkpoint.py) | [配置与行为契约](docs/git-checkpoints.md)；绑定内有界配置与恢复状态，复用工作流 begin/finish | [Git 检查点测试](tests/test_git_checkpoints.py)、[完成结果测试](tests/test_completion_outcomes.py) | 显式启用与允许范围；冷却、完成或显式交接/风险收束、噪声与重复排除；无后台计时器或自动 push |
+| 自动 Git 阶段提交、去重或恢复 | [生命周期](governance-src/runtime-scripts/project_tool.py) → [Git 检查点](governance-src/runtime-scripts/git_checkpoint.py)、[观察器](governance-src/runtime-scripts/git_watch.py)、[进程锁](governance-src/runtime-scripts/process_guard.py) | [配置与行为契约](docs/git-checkpoints.md)；绑定内有界配置与恢复状态，复用工作流 begin/finish | [Git 检查点测试](tests/test_git_checkpoints.py)、[完成结果测试](tests/test_completion_outcomes.py) | 显式启用与允许范围；冷却、完成或显式交接/风险收束、噪声与重复排除；项目进入后会话监督恢复；不注册系统启动项、无模型调用或自动 push |
 | 状态校验、验证引用或交接 | [状态工具](governance-src/runtime-scripts/state_tool.py) | [执行记录](governance-src/schemas/execution.schema.json) → [交接记录](governance-src/schemas/handoff.schema.json)；生命周期与后续接手者 | [验证连续性测试](tests/test_validation_continuity.py)、[证据连续性测试](tests/test_rc9_evidence_continuity.py) | 按范围、运行标识和已测修订核对证据；后续改动保留待重测状态 |
 | 中断恢复、过期索引或源码矛盾 | [事实恢复](governance-src/runtime-scripts/project_facts.py) ← [状态工具](governance-src/runtime-scripts/state_tool.py) | 显式文件范围、[交接契约](governance-src/schemas/handoff.schema.json)；[恢复说明](docs/project-fact-recovery.md) | [恢复测试](tests/test_project_recovery.py)、[真实工具恢复契约测试](tests/test_fact_recovery_tools.py) | 有界静态读取；未知意图、动态行为和未覆盖范围保持未知 |
 | 指令表达、生成或完整性 | [指令模板](governance-src/templates/)、[编译器](compiler/compile_governance.py)、[完整性工具源码](governance-src/runtime-scripts/validate_integrity.py) | [治理源码职责](governance-src/README.md#规范职责) → [生成包](universal-project-governance/) | [编译与运行时测试](tests/test_compiled_runtime.py)、[全局指令投影测试](tests/test_context_discipline.py)、[包校验](tools/validate_skill_bundle.py) | 只改规范源码后生成；语义、编译或包字节变化影响运行时及资格身份 |
@@ -52,4 +52,3 @@ Skill 保留全部全局义务；plan 是任务投影，按原 policy 闭包和�
 
 [使用入口](README.md) · [决策](DECISIONS.md) · [变更记录](CHANGELOG.md) · [历史审计](audits/) · [许可与来源](third_party/notices/README.md)。历史记录保留原来的数字、引用和证据范围，不能据此推断当前收益或资格已成立。
 
-RC20.3 autonomous Git adoption: [Git helper](governance-src/runtime-scripts/git_checkpoint.py), [independent observer](governance-src/runtime-scripts/git_watch.py), [bootstrap regressions](tests/test_git_bootstrap.py), [native observer regressions](tests/test_git_watch.py); CLI/configuration and scope are in [Git checkpoints](docs/git-checkpoints.md).

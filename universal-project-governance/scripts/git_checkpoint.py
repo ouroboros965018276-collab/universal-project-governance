@@ -18,6 +18,8 @@ import subprocess
 import time
 import uuid
 
+import process_guard
+
 MAX_PATHS = 256
 MAX_RECEIPTS = 256  # Covers the lifecycle's bounded 200 active stage receipts.
 _live = set()
@@ -52,7 +54,7 @@ def _git(root, args, index=None, check=True, timeout=30, admin=None):
         env = _env(index)
         if admin is not None:
             env.update(GIT_DIR=str(admin), GIT_WORK_TREE=str(root))
-        result = subprocess.run([executable, "--literal-pathspecs", "-C", str(root)] + list(args),
+        result = process_guard.run([executable, "--literal-pathspecs", "-C", str(root)] + list(args),
                                 env=env, stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE, timeout=timeout, check=False)
     except subprocess.TimeoutExpired:
@@ -345,7 +347,7 @@ def _artifact(directory, journal):
     path = directory / name
     if path.is_symlink() or not path.is_dir():
         raise CheckpointError("missing-recovery-artifact")
-    if any((path / name).is_symlink() for name in ["candidate-index", "next-index", "original-index"]):
+    if any((path / name).is_symlink() for name in ["candidate-index", "next-index", "original-index", "owned-index-lock"]):
         raise CheckpointError("symlinked-recovery-artifact")
     return path
 
@@ -370,7 +372,7 @@ def _clean(directory):
                 path.rmdir()
             except OSError:
                 pass
-    for name in ["candidate-index", "candidate-index.lock", "next-index", "next-index.lock", "original-index"]:
+    for name in ["candidate-index", "candidate-index.lock", "next-index", "next-index.lock", "original-index", "owned-index-lock"]:
         path = directory / name
         if path.is_file() and not path.is_symlink():
             path.unlink()
@@ -381,36 +383,41 @@ def _clean(directory):
 
 
 @contextmanager
-def _index_lock(index, journal=None):
+def _index_lock(index, journal):
+    # Intent and its owned inode exist durably before a real native lock can
+    # appear. A crash between link() and the next instruction is recoverable:
+    # only this exact inode, under the exclusive checkpoint OS guard, is ours.
+    if journal.get("lock_protocol") != "hardlink-v1" or journal.get("lock_source") != "owned-index-lock":
+        raise CheckpointError("legacy-native-index-lock-requires-inspection")
+    artifact = _artifact(index.parent, journal)
+    source = artifact / "owned-index-lock"
+    if not source.is_file() or source.is_symlink() or _digest(source.read_bytes()) != journal.get("lock_sha256"):
+        raise CheckpointError("owned-index-lock-source-drift")
     lock = index.with_name("index.lock")
-    owned, stream, identity = False, None, None
+    stream, owned = None, False
     try:
         try:
-            stream = lock.open("xb")
+            os.link(str(source), str(lock))
         except FileExistsError:
-            if not journal or lock.is_symlink() or _digest(lock.read_bytes()) != journal.get("lock_sha256"):
+            if lock.is_symlink() or not lock.is_file() or not os.path.samefile(str(source), str(lock)):
                 raise CheckpointError("git-index-busy")
-            owner = journal.get("owner_pid")
-            if isinstance(owner, bool) or not isinstance(owner, int) or owner <= 0:
-                raise CheckpointError("invalid-checkpoint-owner-metadata")
-            if owner != os.getpid():
-                # A PID alone cannot prove another process is dead or that it
-                # still owns this file. Never signal/probe a Windows process.
-                raise CheckpointError("stale-native-index-lock-requires-inspection")
             if journal.get("token") in _live:
                 raise CheckpointError("checkpoint-owner-still-running")
-            stream = lock.open("r+b")
+        except OSError:
+            raise CheckpointError("owned-index-lock-hardlink-unavailable")
+        if lock.is_symlink() or not os.path.samefile(str(source), str(lock)):
+            raise CheckpointError("git-index-lock-identity-drift")
         owned = True
-        stat = os.fstat(stream.fileno())
-        identity = stat.st_dev, stat.st_ino
+        stream = lock.open("r+b")
         yield stream, lock
     finally:
         if stream is not None:
             stream.close()
-        if owned and lock.is_file() and not lock.is_symlink():
-            stat = lock.stat()
-            if (stat.st_dev, stat.st_ino) == identity:
+        if owned and not process_guard.has_pending() and lock.is_file() and not lock.is_symlink() and source.is_file():
+            if os.path.samefile(str(source), str(lock)):
                 lock.unlink()
+        if journal.pop("_cleanup_ready", False):
+            _clean(artifact)
 
 
 def _verify_commit(root, commit, journal):
@@ -490,7 +497,10 @@ def _complete(root, directory, index, binding, save, journal, commit, stream, lo
         policy.clear()
         policy.update(previous_policy)
         raise
-    _clean(artifact)
+    # Keep the source inode until _index_lock has released its owned link.
+    # Recovery after index replacement can skip replace(), leaving index.lock
+    # to be removed there before the source artifact is retired.
+    journal["_cleanup_ready"] = True
     return result
 
 
@@ -583,7 +593,7 @@ def _transact(root, directory, branch, head, index, binding, save, journal):
             _live.discard(journal["token"])
 
 
-def run_checkpoint(root, binding, payload, event_id, save_binding, *, validated_sources=None):
+def _run_checkpoint(root, binding, payload, event_id, save_binding, *, validated_sources=None):
     """Run/recover one automatic checkpoint; metadata failure never invents success."""
     policy = binding.get("git_checkpoint", {})
     if not isinstance(policy, dict):
@@ -687,57 +697,82 @@ def run_checkpoint(root, binding, payload, event_id, save_binding, *, validated_
         artifact = directory / ("upg-checkpoint-" + uuid.uuid4().hex)
         artifact.mkdir()
         try:
-            with _index_lock(index) as (stream, lock):
-                staged = {_key(p) for p in _paths(_git(root, ["diff", "--cached", "--no-renames", "--name-only", "-z"] + (["HEAD"] if head is not None else [])).stdout)}
-                if any(_key(p) in staged for p in paths):
-                    raise CheckpointError("selected-path-has-staged-changes")
-                original = _index_bytes(index)
-                (artifact / "original-index").write_bytes(original or b"")
-                sources = _sources(root, paths)
-                if validated_sources is not None and sources != validated_sources:
-                    raise CheckpointError("validated-source-drift")
-                candidate = artifact / "candidate-index"
-                _git(root, ["read-tree", head] if head is not None else ["read-tree", "--empty"], candidate)
-                _git(root, ["add", "-A", "--"] + paths, candidate)
-                tree = _text(root, ["write-tree"], candidate)
-                if _head(root) != head:
-                    raise CheckpointError("head-drift-during-prepare")
-                if tree == (_text(root, ["rev-parse", head + "^{tree}"]) if head is not None else _empty_tree(root)):
-                    _retire_unchanged(policy, payload.get("workflow_id"), event_id, token)
-                    _clean(artifact)
-                    return result("unchanged", "candidate-tree-unchanged")
-                next_index = artifact / "next-index"
-                if original is None:
-                    _git(root, ["read-tree", "--empty"], next_index)
-                else:
-                    next_index.write_bytes(original)
-                _git(root, ["reset", "-q", tree, "--"] + paths, next_index)
-                next_raw = next_index.read_bytes()
-                if _index_digest(index) != (_digest(original) if original is not None else None) or _head(root) != head:
-                    raise CheckpointError("head-or-index-drift-during-prepare")
-                task = " ".join(re.sub(r"[\x00-\x1f\x7f]", " ", str(payload.get("task", "verified change"))).split())[:100]
-                stage = " ".join(re.sub(r"[\x00-\x1f\x7f]", " ", str(payload.get("checkpoint_id", payload.get("status", "stage")))).split())[:48]
-                message = "upg: %s [%s:%s]\n\nUPG-Checkpoint: %s" % (task, boundary, stage, token)
-                message += "".join("\nUPG-Covered-Checkpoint: " + covered for covered, e in deferred.items()
-                                   if covered != token and e.get("workflow_id") == payload.get("workflow_id"))
-                journal = {"status": "prepared", "event_id": event_id, "parent": head,
-                           "workflow_id": payload.get("workflow_id"),
-                           "message": message, "boundary": boundary,
-                           "branch": branch, "tree": tree, "token": token, "paths": paths,
-                           "sources": sources, "index_sha256": (_digest(original) if original is not None else None),
-                           "next_index_sha256": _digest(next_raw), "lock_sha256": _digest(next_raw),
-                           "artifact_dir": artifact.name, "owner_pid": os.getpid()}
-                stream.write(next_raw)
-                stream.flush()
-                os.fsync(stream.fileno())
-                policy["journal"] = journal
-                save_binding(binding)
-            # Reacquire the native lock with the durable intent available. Any
-            # external index/HEAD/source change in this interval is rejected.
+            staged = {_key(p) for p in _paths(_git(root, ["diff", "--cached", "--no-renames", "--name-only", "-z"] + (["HEAD"] if head is not None else [])).stdout)}
+            if any(_key(p) in staged for p in paths):
+                raise CheckpointError("selected-path-has-staged-changes")
+            original = _index_bytes(index)
+            (artifact / "original-index").write_bytes(original or b"")
+            sources = _sources(root, paths)
+            if validated_sources is not None and sources != validated_sources:
+                raise CheckpointError("validated-source-drift")
+            candidate = artifact / "candidate-index"
+            _git(root, ["read-tree", head] if head is not None else ["read-tree", "--empty"], candidate)
+            _git(root, ["add", "-A", "--"] + paths, candidate)
+            tree = _text(root, ["write-tree"], candidate)
+            if _head(root) != head:
+                raise CheckpointError("head-drift-during-prepare")
+            if tree == (_text(root, ["rev-parse", head + "^{tree}"]) if head is not None else _empty_tree(root)):
+                _retire_unchanged(policy, payload.get("workflow_id"), event_id, token)
+                _clean(artifact)
+                return result("unchanged", "candidate-tree-unchanged")
+            next_index = artifact / "next-index"
+            if original is None:
+                _git(root, ["read-tree", "--empty"], next_index)
+            else:
+                next_index.write_bytes(original)
+            _git(root, ["reset", "-q", tree, "--"] + paths, next_index)
+            next_raw = next_index.read_bytes()
+            if _index_digest(index) != (_digest(original) if original is not None else None) or _head(root) != head:
+                raise CheckpointError("head-or-index-drift-during-prepare")
+            task = " ".join(re.sub(r"[\x00-\x1f\x7f]", " ", str(payload.get("task", "verified change"))).split())[:100]
+            stage = " ".join(re.sub(r"[\x00-\x1f\x7f]", " ", str(payload.get("checkpoint_id", payload.get("status", "stage")))).split())[:48]
+            message = "upg: %s [%s:%s]\n\nUPG-Checkpoint: %s" % (task, boundary, stage, token)
+            message += "".join("\nUPG-Covered-Checkpoint: " + covered for covered, e in deferred.items()
+                               if covered != token and e.get("workflow_id") == payload.get("workflow_id"))
+            journal = {"status": "prepared", "event_id": event_id, "parent": head,
+                       "workflow_id": payload.get("workflow_id"),
+                       "message": message, "boundary": boundary,
+                       "branch": branch, "tree": tree, "token": token, "paths": paths,
+                       "sources": sources, "index_sha256": (_digest(original) if original is not None else None),
+                       "next_index_sha256": _digest(next_raw), "lock_sha256": _digest(next_raw),
+                       "artifact_dir": artifact.name, "owner_pid": os.getpid(),
+                       "lock_protocol": "hardlink-v1", "lock_source": "owned-index-lock"}
+            with (artifact / "owned-index-lock").open("xb") as owned_source:
+                owned_source.write(next_raw)
+                owned_source.flush()
+                os.fsync(owned_source.fileno())
+            policy["journal"] = journal
+            save_binding(binding)
+            # Only now may link() acquire the native lock. External index,
+            # HEAD and source changes since preparation are still rejected.
             return _transact(root, directory, branch, head, index, binding, save_binding, journal)
         except Exception:
-            if not policy.get("journal"):
+            if not policy.get("journal") and not process_guard.has_pending():
                 _clean(artifact)
             raise
     except (OSError, CheckpointError) as error:
         return result("blocked", str(error))
+
+
+def run_checkpoint(root, binding, payload, event_id, save_binding, *, validated_sources=None):
+    """Serialize native checkpoint ownership, including inherited native work."""
+    policy = binding.get("git_checkpoint", {})
+    if not isinstance(policy, dict) or not policy.get("enabled"):
+        return _run_checkpoint(root, binding, payload, event_id, save_binding,
+                               validated_sources=validated_sources)
+    guard = None
+    try:
+        guard = process_guard.acquire(root, ".upg-checkpoint.guard")
+        if guard is None:
+            value = {"status": "blocked", "reason": "checkpoint-native-owner-still-running"}
+            policy["result"] = value
+            save_binding(binding)
+            return value
+        with guard, process_guard.holding(guard):
+            return _run_checkpoint(root, binding, payload, event_id, save_binding,
+                                   validated_sources=validated_sources)
+    except OSError as error:
+        value = {"status": "blocked", "reason": str(error)}
+        policy["result"] = value
+        save_binding(binding)
+        return value

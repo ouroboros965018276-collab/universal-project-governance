@@ -15,7 +15,7 @@ class DecisionRelevanceGuidanceTests(unittest.TestCase):
         model = json.loads((ROOT / "governance-src/model/governance-model.json").read_bytes())
         core = {k: v for k, v in model.items()
                 if k not in ("version", "execution_guidance", "operational_guidance")}
-        self.assertEqual(core["project_binding"]["git_checkpoint"], {'enabled': False, 'min_interval_seconds': 300, 'allowed_paths': [], 'status_paths': [], 'bootstrap': True, 'watcher': {'configuration': {'enabled': False, 'poll_seconds': 5, 'quiet_seconds': 15, 'validators': []}}})
+        self.assertEqual(core["project_binding"]["git_checkpoint"], {'enabled': False, 'min_interval_seconds': 300, 'allowed_paths': [], 'status_paths': [], 'bootstrap': True, 'watcher': {'configuration': {'enabled': False, 'poll_seconds': 5, 'quiet_seconds': 15, 'validators': []}, 'supervisor': {'enabled': False}}})
         # RC20.2 adds this explicit optional capability; all earlier core fields
         # retain their original digest instead of silently refreshing it.
         core["project_binding"] = {key: value for key, value in core["project_binding"].items()
@@ -26,7 +26,7 @@ class DecisionRelevanceGuidanceTests(unittest.TestCase):
         old_git = ("Git checkpoints follow meaningful verified stages, risk or handoff boundaries under project/user policy; "
                    "group related edits, inspect the diff, skip unchanged/duplicate status-only commits; "
                    "never commit per tool call or push without authorization.")
-        helper_git = 'Git: git-configure explicitly enables scope/bootstrap; begin/finish save verified stages with cooldown/dedup and completion or explicit handoff/risk flush. Hosts without lifecycle: configure/start git-watch once with local validator argv; the independent watcher saves stable validated changes and yields to active work. Respect disabled/scope/dirty-index guards; report blocked/unavailable; no implicit push.'
+        helper_git = 'Git: git-configure explicitly enables scope/bootstrap; begin/finish save verified stages with cooldown/dedup and completion or explicit handoff/risk flush. Hosts without lifecycle: configure/start git-watch once with local validator argv; the independent watcher saves stable validated changes and yields to active work. Project entry or explicit git-watch start launches a local supervisor which waits for worker exit and recovers crashes; no OS startup registration; explicit stop remains stopped. Respect disabled/scope/dirty-index guards; report blocked/unavailable; no implicit push.'
         operational = [dict(group) for group in model["operational_guidance"]]
         tracked = next(group for group in operational if group["id"] == "tracked_state")
         self.assertEqual(tracked["statement"].count(helper_git), 1)
