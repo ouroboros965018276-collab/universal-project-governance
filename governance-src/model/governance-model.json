@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "name": "universal-project-governance",
-  "version": "3.0.0-rc.20.2",
+  "version": "3.0.0-rc.20.3",
   "architecture": "compiled-governance",
   "principles": [
     "ONE_SEMANTIC_RULE_ONE_CANONICAL_DEFINITION",
@@ -868,7 +868,16 @@
       "enabled": false,
       "min_interval_seconds": 300,
       "allowed_paths": [],
-      "status_paths": []
+      "status_paths": [],
+      "bootstrap": true,
+      "watcher": {
+        "configuration": {
+          "enabled": false,
+          "poll_seconds": 5,
+          "quiet_seconds": 15,
+          "validators": []
+        }
+      }
     }
   },
   "operational_guidance": [
@@ -879,7 +888,7 @@
         "HANDOFF_CONTINUITY"
       ],
       "on_field_reporting": true,
-      "statement": "Non-trivial/cross-session: stable workflow ID; minimal project_tool begin checkpoint if available. Immutable start facts; update only observed after-state/result/validation revisions and sourced occurrence time; Git committer time dates commits, never work start. Follow the declared current-stage schema; safely retire superseded fields. Keep required facts/unknowns in approved fields/evidence; if they cannot fit, disclose bounded delivery gaps, never drop them or add fields/files merely to mirror policies. Structured state canonical, Markdown rendered; no second history database. Use state_tool validate/render/compact/export as needed; validate refs against project root. When writable, one current handoff for unfinished work or actor/session transitions. One validation source: run ID/scope/denominator/tested state/result/pending retest; no overlapping counts or equating focused passes with full regression. Order by causal parents/revisions and persistent sequence; recorded_at=observation time. Preserve previous change; reconcile stale handoffs with current truth. Git: explicit project_tool git-configure enables allowed scope; begin captures baseline, finish commits meaningful stages with cooldown/dedup; completion or explicit git_boundary handoff/risk flushes pending changes. Respect disabled settings; inspect/report blocked or unavailable results; no implicit push. Tracked non-trivial boundaries: project_tool finish if available, same workflow ID/observed change; unfinished partial/blocked, ID active/history intact. Reporting on: exactly one report append; off: bounded latest/previous, no ledger. Partial/blocked stages use stable checkpoint_id; identical retries add nothing, conflicts fail; completion stays unique. Reference existing current project JSON via current_state (path/SHA); status detects drift. latest_change is completed history, active last_outcome is progress; never mirror the project state. Bound scopes/metadata/evidence; no source bodies/secrets/private reasoning. Export and verify before epoch rotation; never reset sequence. Recheck binding; helper gaps remain verification gaps, never backfill historical success.",
+      "statement": "Non-trivial/cross-session: stable workflow ID; minimal project_tool begin checkpoint if available. Immutable start facts; update only observed after-state/result/validation revisions and sourced occurrence time; Git committer time dates commits, never work start. Follow the declared current-stage schema; safely retire superseded fields. Keep required facts/unknowns in approved fields/evidence; if they cannot fit, disclose bounded delivery gaps, never drop them or add fields/files merely to mirror policies. Structured state canonical, Markdown rendered; no second history database. Use state_tool validate/render/compact/export as needed; validate refs against project root. When writable, one current handoff for unfinished work or actor/session transitions. One validation source: run ID/scope/denominator/tested state/result/pending retest; no overlapping counts or equating focused passes with full regression. Order by causal parents/revisions and persistent sequence; recorded_at=observation time. Preserve previous change; reconcile stale handoffs with current truth. Git: git-configure explicitly enables scope/bootstrap; begin/finish save verified stages with cooldown/dedup and completion or explicit handoff/risk flush. Hosts without lifecycle: configure/start git-watch once with local validator argv; the independent watcher saves stable validated changes and yields to active work. Respect disabled/scope/dirty-index guards; report blocked/unavailable; no implicit push. Tracked non-trivial boundaries: project_tool finish if available, same workflow ID/observed change; unfinished partial/blocked, ID active/history intact. Reporting on: exactly one report append; off: bounded latest/previous, no ledger. Partial/blocked stages use stable checkpoint_id; identical retries add nothing, conflicts fail; completion stays unique. Reference existing current project JSON via current_state (path/SHA); status detects drift. latest_change is completed history, active last_outcome is progress; never mirror the project state. Bound scopes/metadata/evidence; no source bodies/secrets/private reasoning. Export and verify before epoch rotation; never reset sequence. Recheck binding; helper gaps remain verification gaps, never backfill historical success.",
       "report_levels": [
         "engineering",
         "audit"

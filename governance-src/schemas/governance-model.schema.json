@@ -187,7 +187,9 @@
             "enabled",
             "min_interval_seconds",
             "allowed_paths",
-            "status_paths"
+            "status_paths",
+            "bootstrap",
+            "watcher"
           ],
           "properties": {
             "enabled": {
@@ -218,6 +220,81 @@
                 "type": "string",
                 "minLength": 1,
                 "maxLength": 1024
+              }
+            },
+            "bootstrap": {
+              "type": "boolean",
+              "default": true
+            },
+            "watcher": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "configuration"
+              ],
+              "default": {
+                "configuration": {
+                  "enabled": false,
+                  "poll_seconds": 5,
+                  "quiet_seconds": 15,
+                  "validators": []
+                }
+              },
+              "properties": {
+                "configuration": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "enabled",
+                    "poll_seconds",
+                    "quiet_seconds",
+                    "validators"
+                  ],
+                  "properties": {
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "poll_seconds": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 60
+                    },
+                    "quiet_seconds": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 3600
+                    },
+                    "validators": {
+                      "type": "array",
+                      "maxItems": 8,
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "argv",
+                          "timeout_seconds"
+                        ],
+                        "properties": {
+                          "argv": {
+                            "type": "array",
+                            "minItems": 1,
+                            "maxItems": 32,
+                            "items": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 4096
+                            }
+                          },
+                          "timeout_seconds": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 300
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
               }
             }
           }

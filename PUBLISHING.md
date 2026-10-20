@@ -1,6 +1,6 @@
 # 发布与测试冻结门禁
 
-当前候选：**3.0.0-rc.20.2 — Executable Git Checkpoints**。
+当前候选：**3.0.0-rc.20.3 — Autonomous Git Adoption**。
 
 RC20 从已合并的 RC19 `bd4a4d5c1c6fb9fca829e410729879d1b01f05b9` 开始。当前发布、验证和安装事实统一见[项目状态](PROJECT_STATE.md)；[RC19 安装验收](audits/rc19-installation.audit.json)是历史基线，不能验证 RC20。候选仍需自身的编译、回归、导航、完整性、打包及安装验收。规则来源比较保留每次注册调用、失败和 unknown 用量围栏；静态检查或更短文档都不证明净收益。Stable 仍须通过原正式资格门禁。
 
@@ -61,3 +61,5 @@ CI 还须通过 Linux Python 3.8/3.11/3.13、离线演化 Python 3.10/3.13、Win
 ## 冻结规则
 
 当前候选统一生成 `qualification/FREEZE.json` 后，结果轮中不得修改冻结面；变化需要新指纹。新 Skill+plan 投影的编译契约与旧专用收集器分开验证，不放宽旧冻结实验的 validator，也不修改其历史审计。
+
+RC20.3 adds independent process and initial-repository behavior. Verify actual native processes/Git for initialization, zero-parent commits, parent/index protection, autonomous external edits, configured validators, drift, cooldown, stop/restart and manual workflow priority. Keep model calls at zero for this deterministic feature. Final source CI must fully pass; afterward verify default-main installation and installed byte identity, and publish one bounded acceptance observation.

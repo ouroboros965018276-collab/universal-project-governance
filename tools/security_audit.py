@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Conservative static security audit for the repository and distributed runtime helpers."""
 from __future__ import annotations
-import argparse,ast,os,re,sys
+import argparse,ast,hashlib,json,os,re,sys
 from pathlib import Path
 NETWORK_IMPORTS={"socket","urllib","http","ftplib","smtplib","requests","httpx","aiohttp"}; DANGEROUS_CALLS={"eval","exec","compile","os.system","subprocess.Popen","pickle.loads","marshal.loads"}
 SECRET_PATTERNS={"private-key":re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----"),"github-pat":re.compile(r"\b(?:ghp|github_pat)_[A-Za-z0-9_]{20,}\b"),"aws-access-key":re.compile(r"\bAKIA[0-9A-Z]{16}\b"),"bearer-token":re.compile(r"\bBearer\s+[A-Za-z0-9._~+/=-]{24,}\b",re.I)}
@@ -11,6 +11,32 @@ def dotted(node):
     if isinstance(node,ast.Attribute):
         left=dotted(node.value); return f"{left}.{node.attr}" if left else node.attr
     return ""
+# Normalize transparent Python 3.8 Index wrappers and the empty type_params
+# field added in 3.12. JSON keeps all remaining labelled AST fields stable.
+def portable_ast(value):
+    if isinstance(value, ast.AST):
+        if type(value).__name__ == "Index": return portable_ast(value.value)
+        fields = {name: portable_ast(getattr(value, name, None)) for name in value._fields
+                  if not (name == "type_params" and getattr(value, name, None) == [])}
+        return [type(value).__name__, fields]
+    if isinstance(value, list): return [portable_ast(item) for item in value]
+    return value
+
+def worker_launch_digest(fn):
+    return hashlib.sha256(json.dumps(portable_ast(fn), sort_keys=True,
+                                     separators=(",", ":")).encode()).hexdigest()
+
+# This pins own-script argv, detached flags, DEVNULL I/O and shell=False;
+# no general process-launch exception is granted.
+OWN_WORKER_LAUNCH_SHA256 = "478c9779a152350869e6a2709fa1a683e9f3981ee982ed9b7bd6fa2a0feecebb"
+
+def approved_worker_launch(path, tree, node):
+    if path.name != "git_watch.py": return False
+    for fn in tree.body:
+        if isinstance(fn, ast.FunctionDef) and fn.name == "_spawn_worker" and node in ast.walk(fn):
+            return worker_launch_digest(fn) == OWN_WORKER_LAUNCH_SHA256
+    return False
+
 def audit_runtime_scripts(skill_root:Path,errors:list,warnings:list)->None:
     for path in sorted((skill_root/"scripts").glob("*.py")):
         try: tree=ast.parse(path.read_text(encoding="utf-8"),filename=str(path))
@@ -25,7 +51,7 @@ def audit_runtime_scripts(skill_root:Path,errors:list,warnings:list)->None:
                 if root in NETWORK_IMPORTS: errors.append(f"{path}: runtime helper imports network module {node.module}")
             elif isinstance(node,ast.Call):
                 name=dotted(node.func)
-                if name in DANGEROUS_CALLS: errors.append(f"{path}: dangerous call {name}")
+                if name in DANGEROUS_CALLS and not (name == "subprocess.Popen" and approved_worker_launch(path, tree, node)): errors.append(f"{path}: dangerous call {name}")
                 if name in {"subprocess.run","subprocess.call","subprocess.check_call","subprocess.check_output"}:
                     for kw in node.keywords:
                         if kw.arg=="shell" and isinstance(kw.value,ast.Constant) and kw.value.value is True: errors.append(f"{path}: subprocess shell=True is prohibited")
@@ -60,5 +86,5 @@ def main()->int:
     for w in warnings: print(f"warning: {w}")
     for e in errors: print(f"error: {e}",file=sys.stderr)
     if errors: return 1
-    print("Security audit passed: no network imports, shell=True, dangerous dynamic execution, symlink-following, or secret-like token patterns detected in governed surfaces."); return 0
+    print("Security audit passed: no network imports, shell=True, unapproved dynamic execution, symlink-following, or secret-like token patterns detected in governed surfaces."); return 0
 if __name__=="__main__": raise SystemExit(main())

@@ -1,6 +1,6 @@
 # 通用项目治理 UPG
 
-当前候选：**3.0.0-rc.20.2 — Executable Git Checkpoints**。版本以[生成清单](universal-project-governance/VERSION.md)为准，发布、安装和验证状态见[项目状态](PROJECT_STATE.md)。
+当前候选：**3.0.0-rc.20.3 — Autonomous Git Adoption**。版本以[生成清单](universal-project-governance/VERSION.md)为准，发布、安装和验证状态见[项目状态](PROJECT_STATE.md)。
 
 UPG 帮助不同 Agent 和工程师持续维护同一个项目：依据当前事实定位任务，在正确层次完成关联改动，处理受影响的重复实现、过时内容和技术债，留下可验证、可继续接手的状态。软件、数据、研究、内容、设计和混合项目使用同一治理内核；具体工具能力须由宿主实际验收。
 

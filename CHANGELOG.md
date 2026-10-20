@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.0.0-rc.20.3 — 2026-10-20 — candidate evolution
+
+- Initializes an explicitly authorized project Git root and supports native zero-parent first commits, including missing index, scoped initial adoption, parent-repository isolation and unchanged user identity/configuration.
+- Adds a project-local independent watcher with configured local validators, quiet/cooldown boundaries, durable dedup, source revalidation, cooperative stop and manual-workflow priority. Hosts need not call begin/finish after the watcher starts; no model invocation or implicit push is added.
+- Preserves prior measurements and failure criteria. Actual final-source CI, installation identity, work order and remaining limitations are recorded in PROJECT_STATE.md and the current Git audit; no status-only commit loop.
+
 ## 3.0.0-rc.20.2 — 2026-10-20 — candidate correction
 
 - Connects opt-in Git checkpoints to the existing workflow begin/finish lifecycle: explicit allowed paths, pre-existing dirty-path exclusion, meaningful-change detection, partial-stage cooldown, completion or explicit handoff/risk flush and duplicate/status-noise suppression.
