@@ -1,11 +1,12 @@
 # Changelog
 
-## 3.0.0-rc.20.5 — Foreground Project Sessions
+## 3.0.0-rc.20.5 — 2026-10-21 — Foreground Project Sessions
 
-- Replace detached project-entry observation with an explicit foreground host-session lifetime. Host exit or owner crash ends the owned observer subtree; no OS startup or host configuration injection.
-- Recover a supervisor exit within an active session. Keep existing scoped change recognition, validation, stage cooldown, deduplication and explicit-stop semantics.
-- Without a reliable host-session end signal, preserve finite lifecycle checkpoints/ticks and report the adapter gap instead of starting a resident process.
-- Necessary focused native and final static/package checks passed; exact-source CI and installed delivery acceptance pending. Original failures retained; no new external paid model trials.
+- Replace detached observation with an explicit foreground host-session lifetime. Host exit or owner crash ends the owned observer subtree; no OS startup or host configuration injection.
+- Recover worker and supervisor exits during the same active session while retaining scoped change recognition, validation, stage cooldown, deduplication and explicit-stop semantics.
+- Require a command that waits for the real host session. Without a reliable adapter, retain finite lifecycle checkpoints/ticks without a resident fallback; arbitrary-editor and actual Codex desktop close acceptance are not established.
+- Source PR/push CI before the last single-case fixture calibration each passed11/11. Installed22/main bytes, integrity21/module7, two unique native cases (inherited1 plus affected-retest1) and fresh official enabled1/errors0/exit0 were verified; the initial installed1PASS/1FAIL and first affected idle-label failure remain retained; actual HEAD/count/validator identity verifies deduplication. This acceptance head's own CI remains authoritative on GitHub and work order.
+- Preserve failure records from the initial51-test run, bounded affected retests, initial CI failure and contract corrections. No new external paid model trials, Stable promotion or timestamp-only commit loop.
 
 ## 3.0.0-rc.20.4 — 2026-10-20 — candidate recovery
 

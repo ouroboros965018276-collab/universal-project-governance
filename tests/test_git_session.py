@@ -81,10 +81,15 @@ class GitSessionTests(unittest.TestCase):
         self.assertNotEqual(second["supervisor"]["token"], first["supervisor"]["token"])
         self.wait_for(lambda: self.count() == 3, timeout=60)
         self.assertEqual(self.git("show", "HEAD:source.txt"), b"later source requires a new foreground session\n")
-        self.watch("tick")
+        # Commit visibility is not completion of the live publisher's writer
+        # section. End the resumed session before the finite deduplication tick.
+        self.finish_session(resumed)
+        before_tick_head = self.git("rev-parse", "HEAD")
+        tick = self.watch("tick")
+        self.assertIn(tick["watcher"]["status"], ("idle", "committed", "duplicate", "unchanged"), tick)
+        self.assertEqual(self.git("rev-parse", "HEAD"), before_tick_head)
         self.assertEqual(self.count(), 3)
         self.assertEqual(self.validator_count(), 2)
-        self.finish_session(resumed)
         self.assertEqual(self.count(), 3)
 
     def test_abrupt_owner_exit_stops_native_validation_tree_without_publishing(self):
