@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "document_kind": "bounded-executable-git-checkpoint-release",
-  "observed_at": "2026-10-20T12:54:05.746774+00:00",
+  "observed_at": "2026-10-20T13:06:15.405840+00:00",
   "version": "3.0.0-rc.20.2",
-  "status": "SOURCE_VALIDATED_AWAITING_CI_AND_INSTALLATION",
+  "status": "PASS_BOUNDED_EXECUTABLE_GIT_RELEASE",
   "work_order": "https://github.com/ouroboros965018276-collab/universal-project-governance/issues/26",
   "baseline_revision": "53a229bfc609fd55a0028adc12bf77d42c051555",
   "canonical_current_observation": "This audit owns current RC20.2 delivery facts; RC20.1 audit and paid studies remain historical.",
@@ -333,11 +333,103 @@
       "scope": "Pre-final helper import and pre-contract-correction run. Three failures exposed missing model schema property and obsolete core/delivery invariants, corrected with strict new type checks and unchanged old digests. Final cross-platform CI required; this is not claimed as a passing full run."
     },
     "qualification_freeze_sha256": "d42e2ae02b5976d9eaa2ca2f125302064a90556e24ab1100862fa4465d5a752f",
-    "runtime_delivered_files": 19
+    "runtime_delivered_files": 19,
+    "final_source_ci": {
+      "status": "PASS",
+      "source_revision": "ccbccfc22ea997608364fc2be4dd78d13ec48d9a",
+      "run_id": 39426044604,
+      "url": "https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/39426044604",
+      "jobs_passed": 11,
+      "jobs_total": 11,
+      "linux_python311": {
+        "collected": 1361,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 2
+      },
+      "windows_python311": {
+        "collected": 1361,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "python38_scope": "Compatibility matrix collected926 with534 skips, not claimed as1361 complete modern tests.",
+      "raw_receipt": ".governance/git-stage-ci-final.json"
+    },
+    "default_main_installation_ci": {
+      "status": "PASS",
+      "revision": "cea1cbc855495ba18597d2a9a843708b015eadeb",
+      "run_id": 39427167718,
+      "source_integrity": "PASS",
+      "clean_remote_default_branch_skill_install": "PASS",
+      "scope": "Default-main source integrity and clean remote installation, not a claim that all repeated main jobs have completed.",
+      "raw_receipt": ".governance/git-stage-main-install-ci.json"
+    },
+    "installed_public_lifecycle": {
+      "passed": true,
+      "tests": 4,
+      "integrity_generated_files": 18,
+      "discovered_enabled_upg": 1,
+      "discovery_errors": 0,
+      "new_paid_model_calls": 0,
+      "raw_receipt": ".governance/git-stage-install.json"
+    },
+    "release_package_sha256": "27c6e7554e25840872ea27edd11b285733220027a9265bd1632c1fa04feacd73"
   },
   "delivery": {
-    "github": "PENDING",
-    "installation": "PENDING"
+    "github": {
+      "status": "MERGED",
+      "pull_request": "https://github.com/ouroboros965018276-collab/universal-project-governance/pull/27",
+      "source_revision": "ccbccfc22ea997608364fc2be4dd78d13ec48d9a",
+      "merge_revision": "cea1cbc855495ba18597d2a9a843708b015eadeb",
+      "default_branch": "main",
+      "source_ci_jobs_passed": 11,
+      "source_ci_run": 39426044604,
+      "default_main_remote_installation_passed": true
+    },
+    "installation": {
+      "status": "PASS",
+      "observed_at": "2026-10-20T13:03:46.507748+00:00",
+      "version": "3.0.0-rc.20.2",
+      "source_revision": "cea1cbc855495ba18597d2a9a843708b015eadeb",
+      "target": "C:\\Users\\96501\\.codex\\skills\\universal-project-governance",
+      "backup": "D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution\\.governance\\installed-rc20-2-backup-5d15b12caf02",
+      "backup_files": 21,
+      "backup_readback": true,
+      "delivered_files": 19,
+      "changed_files": [
+        "SKILL.md",
+        "VERSION.md",
+        "policy-index.json",
+        "schemas/field-report.schema.json",
+        "scripts/git_checkpoint.py",
+        "scripts/project_tool.py",
+        "integrity/manifest.json"
+      ],
+      "all_bytes_equal_default_main": true,
+      "unmanaged_files_preserved": true,
+      "host_configuration_changed": false
+    },
+    "fresh_discovery": {
+      "official_cli": "C:\\Users\\96501\\.agent-environment\\runtimes\\codex-0.162.0-alpha.20\\bin\\codex.exe",
+      "enabled_upg": 1,
+      "errors": 0,
+      "process_exit": 0,
+      "new_model_calls": 0,
+      "scope": "Not claimed; fresh official discovery and installed bytes only."
+    },
+    "project_git_opt_in": {
+      "enabled": true,
+      "allowed_paths": [
+        "."
+      ],
+      "status_paths": [],
+      "min_interval_seconds": 300,
+      "baseline_head": "cea1cbc855495ba18597d2a9a843708b015eadeb",
+      "preexisting_dirty_path_count": 5,
+      "receipt_location": ".governance/upg.json git_checkpoint plus Git UPG-Checkpoint trailers; final lifecycle publication follows these observed release checks."
+    },
+    "receipt_publication": "This audit publishes observed source CI, merge, installation and opt-in facts. The final lifecycle Git receipt belongs in binding/Git, avoiding a self-referential commit-id rewrite or another timestamp commit. Documentation follow-up changes no tested runtime bytes."
   },
   "preliminary_failures": [
     {
@@ -354,10 +446,11 @@
     }
   ],
   "remaining_goals": [
-    "Independent cross-agent joint token/time benefit is NOT_ESTABLISHED; formal qualification UNASSESSED; locked NOT_RUN; no Stable claim.",
-    "No autonomous background agent exists on hosts that never call the installed begin/finish lifecycle.",
-    "Git capability/permission opt-in still required in each project; no-Git and unsupported repository modes must be reported.",
-    "Hard-kill stale UPG writer lock or unproven concurrent/hook source/index divergence can require owner inspection; no automatic destructive recovery."
+    "Independent cross-agent joint token/time benefit is NOT_ESTABLISHED; formal qualification UNASSESSED; locked NOT_RUN; no Stable or universal perfection claim.",
+    "Hosts must actually call begin/finish; no autonomous background daemon, host-wide interception or guaranteed execution by every model exists.",
+    "Each project needs explicit Git capability/scope opt-in. Repositories without Git or first commit are not initialized automatically; detached/sparse/split-index/conflicted and unsupported effective-config contexts block.",
+    "Hard-kill stale UPG/native writer locks and unproven concurrent/hook source/index divergence can require owner inspection; no destructive automatic recovery.",
+    "Insight application remains partial/unaccepted at prior observation. No application changes or full-product acceptance were performed this task."
   ],
   "preserved_preexisting_changes": {
     "audits/rc19-nine-native-development-v2.preregistration.json": "6b92bad0ea3a542993dd261b3c73bdf5d3731411119bfa3988fca87e602e486a",
@@ -419,9 +512,30 @@
   "inherited_original_goals": {
     "authority": "audits/rc20-self-review.audit.json capabilities section is historical baseline; this audit supersedes only its Git guidance-only assessment.",
     "attribution_task_scope_state_risk_offline_evolution": "Implemented contracts with evidence limits retained from RC20.1.",
-    "current_git_goal": "Under final validation: executable lifecycle rather than guidance-only.",
+    "current_git_goal": "IMPLEMENTED_AND_ENGINEERING_VERIFIED: executable opt-in lifecycle commits, not guidance only.",
     "insight_application": "No new changes this task. Prior observed project-state synchronization passed; entire application remains partial/unaccepted, source_verified false at that observation.",
     "independent_model_efficacy": "NOT_ESTABLISHED; no new paid run."
   },
-  "source_publication_policy": "One meaningful source stage commit bootstraps the new mechanism; after verified release and installation the project opts in and final delivery observation is an automatic lifecycle stage. No timer, per-tool commits or automatic push."
+  "source_publication_policy": "One meaningful source stage commit bootstraps the new mechanism; after verified release and installation the project opts in and final delivery observation is an automatic lifecycle stage. No timer, per-tool commits or automatic push.",
+  "preparation_observations": [
+    {
+      "entry": "root merge orchestration",
+      "result": "JavaScript syntax preparation failed before any nested tool dispatch; GitHub merge had not started. Corrected script then dispatched exact-head merge successfully."
+    },
+    {
+      "entry": "CI read-only status",
+      "result": "One status response lacked the expected structured payload; parsing failed. One read-only retry observed11/11 success; no business write was attempted in the failed read."
+    }
+  ],
+  "raw_receipt_sha256": {
+    ".governance/git-stage-core-checks.json": "72b699537256e9ce92ae89cbc9f64fcf9afc3f699f4c3d83bc36d0986258597e",
+    ".governance/git-stage-full-tests.json": "32b4e19090ae42fd48e231df7805568c3fcd8b921cead31bdbe5e10200c89188",
+    ".governance/git-stage-full-tests.log": "f2b45822b4424fb8e5fcd7a768f1cc725e6319a3a6f838c779ee2dbf636a8e55",
+    ".governance/git-stage-final-checks.json": "11da693f71143eadd28c7fbe3415cf1f832cb4c23f2bf71437f11a2a73dddcd0",
+    ".governance/git-stage-contract-checks.json": "5acc37cf3634325c69ca57becf59094ee83f7274fdaf6987df03ddf41b7566d1",
+    ".governance/git-stage-ci-final.json": "42f8ce6e2ea4e7e0953c7d82db9f9eea4648f7a82b0f767afebbbd82976f9015",
+    ".governance/git-stage-main-install-ci.json": "0751b605de03c740c0150f2d091d27a6a977b6344fbab406c233960de53eaa90",
+    ".governance/git-stage-install.json": "0e95944462d632f7f941e3bd47822deddd812fbd1247861a186ede3a7588091f",
+    ".governance/git-stage-project-opt-in.json": "420d25b62f1a54e79ccc69f14ff931d5a28f31bb8f838a112a31da4e3c8556ea"
+  }
 }

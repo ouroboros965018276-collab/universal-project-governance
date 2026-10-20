@@ -1,6 +1,6 @@
 # 当前项目状态
 
-当前候选：**3.0.0-rc.20.2**。本次工单是 [#26：有效改动识别、阶段 Git 自动提交与去重](https://github.com/ouroboros965018276-collab/universal-project-governance/issues/26)。实际验证、发布和安装事实统一见 [Git 机制审计](audits/rc20-git-checkpoints.audit.json)；尚未观察到的步骤保持待办。此前已发布并安装的 RC20.1 见[历史自审](audits/rc20-self-review.audit.json)。
+当前已合并并安装：**3.0.0-rc.20.2**，[PR #27](https://github.com/ouroboros965018276-collab/universal-project-governance/pull/27) 已合入 `main`。本次工单是 [#26：有效改动识别、阶段 Git 自动提交与去重](https://github.com/ouroboros965018276-collab/universal-project-governance/issues/26)。唯一当前工程验收记录是 [Git 机制审计](audits/rc20-git-checkpoints.audit.json)；RC20.1 [自审](audits/rc20-self-review.audit.json) 保持历史身份。
 
 ## 这次改变什么
 
@@ -10,7 +10,9 @@ Git 提交现在进入可执行生命周期：项目显式启用范围后，`beg
 
 ## 验证范围
 
-使用真实隔离本地 Git 仓库检查提交、去重、索引保护、路径限制、钩子失败、并发变化和恢复；再校验公开生命周期、生成一致性、关键回归及安装。原始研究输入和结果冻结保留，不能将旧研究资格套给新候选。
+最终 Git helper 与公开生命周期 **30/30**、模型／历史生命周期／冻结研究相关回归 **60/60** 通过。最终源码 CI **11/11** 通过；Linux 与 Windows Python 3.11 均运行 **1,361** 项测试且零失败、零错误。初始本地回归发现的三项契约遗漏和修复过程完整保留在审计中。
+
+本地安装 **19** 个交付文件逐字节匹配已合并主分支，安装副本的 **4** 项真实 Git 生命周期检查通过；新官方进程发现唯一启用的 UPG，无加载错误。主分支远程安装验收通过。本项目已显式启用阶段 Git 保存；实际提交收据保存在原绑定与 Git 历史。原始研究输入和结果继续冻结，不能将旧研究资格套给新候选。
 
 本功能的关键行为可直接由 Git 对象、分支、索引和文件字节验证，没有需要额外付费模型调用的缺口。本次不扩大付费实测。具体执行结果和费用判断只从审计记录读取，不把测试计划写成通过。
 
