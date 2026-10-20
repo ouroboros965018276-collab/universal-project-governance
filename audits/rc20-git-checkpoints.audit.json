@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "document_kind": "autonomous-project-git-adoption-release",
-  "observed_at": "2026-10-20T14:15:46.646876+00:00",
+  "observed_at": "2026-10-20T14:31:08.673832+00:00",
   "version": "3.0.0-rc.20.3",
-  "status": "SOURCE_VALIDATED_CI_PENDING",
+  "status": "SOURCE_AND_INSTALLATION_VERIFIED",
   "work_order": "https://github.com/ouroboros965018276-collab/universal-project-governance/issues/26",
   "baseline_revision": "3a96b2739f8b537ec355152cc5669d6508f7ebfb",
   "canonical_current_observation": "Current RC20.3 engineering facts only; prior RC20.2 release remains exactly preserved in Git at baseline_revision.",
@@ -162,7 +162,8 @@
         "focused_retest": "2 affected cases passed on final helper/watcher/runtime bytes. Other 12 earlier watcher case results are inherited, not claimed rerun on this final source.",
         "remaining_verification": "Root owns affected helper/bootstrap/lifecycle regression, static checks, and complete final-source CI."
       },
-      "raw_receipt": ".governance/rc203-watch-final.json"
+      "raw_receipt": ".governance/rc203-watch-final.json",
+      "final_whole_suite_confirmation": "All14 observer cases are included in the actual final-source CI1390-test discovery on Linux/Windows3.11/3.13, with zero failures/errors. The original13-pass/1-fail local observation remains historical above."
     },
     "portable_launch_security": {
       "status": "PASS",
@@ -298,12 +299,262 @@
       "limit": "Development observation of the unchanged fixed launch mechanism; final native worker/installed/root observations remain distinct."
     },
     "final_source_ci": {
-      "status": "PENDING"
+      "observed_at": "2026-10-20 14:27:36 UTC",
+      "source_revision": "07dbba8f85fd7ffcffc1bac18277c67703130559",
+      "pull_request": 28,
+      "pr_run": 39437856552,
+      "push_run": 39437753748,
+      "status": "PASS",
+      "jobs": [
+        {
+          "id": 118679543098,
+          "name": "upstream-agent-skills",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 118679543269,
+          "name": "skills-cli",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 118679543367,
+          "name": "runtime-matrix (3.11)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 118679543372,
+          "name": "windows-runtime (3.13)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 118679543426,
+          "name": "offline-evolution (3.13)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 118679543437,
+          "name": "source-runtime-integrity",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 118679543449,
+          "name": "windows-runtime (3.11)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 118679543455,
+          "name": "runtime-matrix (3.13)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 118679543596,
+          "name": "runtime-matrix (3.8)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 118679543653,
+          "name": "offline-evolution (3.10)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 118679543877,
+          "name": "qualification-contract",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ],
+      "push_jobs": [
+        {
+          "id": 118679186694,
+          "name": "skills-cli",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 118679186707,
+          "name": "offline-evolution (3.13)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 118679186856,
+          "name": "offline-evolution (3.10)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 118679186877,
+          "name": "source-runtime-integrity",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 118679186928,
+          "name": "upstream-agent-skills",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 118679187019,
+          "name": "runtime-matrix (3.8)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 118679187020,
+          "name": "runtime-matrix (3.11)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 118679187034,
+          "name": "windows-runtime (3.11)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 118679187058,
+          "name": "runtime-matrix (3.13)",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 118679187124,
+          "name": "qualification-contract",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "id": 118679187448,
+          "name": "windows-runtime (3.13)",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ],
+      "test_logs": [
+        {
+          "job_id": 118679543367,
+          "name": "runtime-matrix (3.11)",
+          "summary": [
+            "2026-10-20T14:19:26.2738058Z Ran 1390 tests in 117.148s",
+            "2026-10-20T14:19:26.2738428Z OK (skipped=2)",
+            "2026-10-20T14:19:26.5958203Z sha256:  f9255dcea067b175b3c3f7fea7ff9a2ace38bce5621005396d226a0d55466321"
+          ],
+          "conclusion": "success"
+        },
+        {
+          "job_id": 118679543455,
+          "name": "runtime-matrix (3.13)",
+          "summary": [
+            "2026-10-20T14:19:20.8910361Z Ran 1390 tests in 110.668s",
+            "2026-10-20T14:19:20.8910630Z OK (skipped=2)",
+            "2026-10-20T14:19:21.2065465Z sha256:  f9255dcea067b175b3c3f7fea7ff9a2ace38bce5621005396d226a0d55466321"
+          ],
+          "conclusion": "success"
+        },
+        {
+          "job_id": 118679543596,
+          "name": "runtime-matrix (3.8)",
+          "summary": [
+            "2026-10-20T14:18:58.1866773Z Ran 955 tests in 83.253s",
+            "2026-10-20T14:18:58.1866912Z OK (skipped=534)",
+            "2026-10-20T14:18:58.5690537Z sha256:  f9255dcea067b175b3c3f7fea7ff9a2ace38bce5621005396d226a0d55466321"
+          ],
+          "conclusion": "success"
+        },
+        {
+          "job_id": 118679543372,
+          "name": "windows-runtime (3.13)",
+          "conclusion": "success",
+          "summary": [
+            "2026-10-20T14:26:32.3334197Z Ran 1390 tests in 534.913s\r",
+            "2026-10-20T14:26:33.0133070Z sha256:  f9255dcea067b175b3c3f7fea7ff9a2ace38bce5621005396d226a0d55466321\r"
+          ]
+        },
+        {
+          "job_id": 118679543449,
+          "name": "windows-runtime (3.11)",
+          "conclusion": "success",
+          "summary": [
+            "2026-10-20T14:26:25.4942460Z Ran 1390 tests in 527.985s\r",
+            "2026-10-20T14:26:26.2807338Z sha256:  f9255dcea067b175b3c3f7fea7ff9a2ace38bce5621005396d226a0d55466321\r"
+          ]
+        }
+      ],
+      "merge_revision": "61d35ecadffa132139c7477c7f6b3ce18ecacf44",
+      "new_paid_model_calls": 0
+    },
+    "installed_copy": {
+      "status": "PASS",
+      "source_revision": "61d35ecadffa132139c7477c7f6b3ce18ecacf44",
+      "version": "3.0.0-rc.20.3",
+      "delivered_files": 20,
+      "runtime_file_sha256": {
+        "INTEGRITY.md": "3e2404344195b4795ad4cb07944acac5bb1070a9e40c92c4da792abeb6e3774d",
+        "LICENSE": "50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a",
+        "SKILL.md": "585d752a8ba9810af5e2a0e6f50d73497895e25a384a232554bc8743ae4d39b8",
+        "VERSION.md": "a9c26303e014d489a0078b36583c36e06b65d2dae3a08b0c332106cb7fcb82e8",
+        "integrity/manifest.json": "3437972d69575f7421721e47366e6443264aaaec9beeefb8d08cfd8bac91569a",
+        "policy-index.json": "8d164600d17d8b7e269bb08b44f9af094af5fd2a8e23f5c98e402ec31c5c9f45",
+        "schemas/audit.schema.json": "a5e15c26eff86e3c4e2e174fb121ef22981628307f09cf18d09a589e738ea889",
+        "schemas/execution.schema.json": "d2a7cddc9d98c8101294df302259ba18217c27b9e7c8fee43d96c82ff6bde1d7",
+        "schemas/feedback.schema.json": "22da61a114a1e89ee641ac25e90e23d6231003351df15918d4265f9900091954",
+        "schemas/field-report.schema.json": "9c58db8a99af7312bf75f96bad391ae54e968bc1f58cc200864b39b1630cd7ba",
+        "schemas/governance-plan.schema.json": "1e1ef2e692bea3752ece6e292d2e7c3d67abfbe3b58dd93ec75655f2aff9b25e",
+        "schemas/handoff.schema.json": "994769e2a35b4d2189c509b8c5fce6ba76e4941fa4cadaa51f8f02f48b338a97",
+        "schemas/task-context.schema.json": "acc323f7d86f8dad5d8694e7fcf566dad6987d077877fbe6dbc819029936ad38",
+        "scripts/git_checkpoint.py": "fe1e7279c16856179870fba1a6c06dd5e0270c38d6f83d3cefe39e13affe6793",
+        "scripts/git_watch.py": "59b42de0c5b2b2cd45a57ba5137ce92ea46a8e03a1748acb1f9d006c3db6001d",
+        "scripts/plan_governance.py": "aad1d34983c813f508d1845b6ad94d8adb4afcdc6352ef6b5692550623729697",
+        "scripts/project_facts.py": "f355e0fa241a1032c94d4959b610b86c2d0ad48b2c62bbfed1ded65bfa4bd9ee",
+        "scripts/project_tool.py": "a9922d6f433ce0d1c9fd0543c6655cded432d73eba567c712f3970f726c888b9",
+        "scripts/state_tool.py": "193cb9657c32dedb253727e93a13bcb6f39306331fc8a90d1319e337f5b088a0",
+        "scripts/validate_integrity.py": "cf09558e67b4488db88c5ce9836e9f1cf1c8bae97d6e1444bb9d2d80409157c0"
+      },
+      "backup": "D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution\\.governance\\installed-rc203-backup-5bdb098fc8aa",
+      "backup_files": 23,
+      "backup_readback": true,
+      "unmanaged_files_preserved": true,
+      "installed_native_tests": 8,
+      "installed_module_paths": {
+        "state_tool": "C:\\Users\\96501\\.codex\\skills\\universal-project-governance\\scripts\\state_tool.py",
+        "project_facts": "C:\\Users\\96501\\.codex\\skills\\universal-project-governance\\scripts\\project_facts.py",
+        "git_checkpoint": "C:\\Users\\96501\\.codex\\skills\\universal-project-governance\\scripts\\git_checkpoint.py",
+        "project_tool": "C:\\Users\\96501\\.codex\\skills\\universal-project-governance\\scripts\\project_tool.py",
+        "git_watch": "C:\\Users\\96501\\.codex\\skills\\universal-project-governance\\scripts\\git_watch.py"
+      },
+      "fresh_official_discovery": {
+        "official_cli": "C:\\Users\\96501\\.agent-environment\\runtimes\\codex-0.162.0-alpha.20\\bin\\codex.exe",
+        "enabled_matching_skills": 1,
+        "all_skill_errors": [],
+        "process_returncode": 0,
+        "new_model_calls": 0,
+        "scope": "Fresh official discovery and verified installed bytes; no retrospective claim about this parent conversation loading the new skill."
+      },
+      "raw_receipt": ".governance/rc203-install.json"
     }
   },
   "delivery": {
-    "github": "PENDING complete source CI and default-main merge",
-    "installation": "PENDING backup,20-file main identity,8 installed native checks and fresh official discovery"
+    "github": {
+      "status": "MERGED",
+      "source_revision": "07dbba8f85fd7ffcffc1bac18277c67703130559",
+      "source_pull_request": "https://github.com/ouroboros965018276-collab/universal-project-governance/pull/28",
+      "merge_revision": "61d35ecadffa132139c7477c7f6b3ce18ecacf44",
+      "default_main_observed_at_install": "61d35ecadffa132139c7477c7f6b3ce18ecacf44"
+    },
+    "installation": "PASS20 files match default-main runtime;8 installed real-Git cases and fresh official discovery pass",
+    "acceptance_stage": "This file and PROJECT_STATE record observed source-CI/install facts once. Later checks on the acceptance commit are authoritative on GitHub and linked work_order/current ignored lifecycle, without another timestamp-only commit.",
+    "project_observer": "Enable after the release workflow completes; its current token/heartbeat belong in original ignored binding/status, not a tracked polling log."
   },
   "remaining_goals": [
     "Independent cross-agent joint token/time benefit NOT_ESTABLISHED; formal UNASSESSED; locked NOT_RUN; no Stable/perfection claim.",
@@ -333,6 +584,10 @@
     {
       "entry": "bootstrap agent sandbox preparation",
       "result": "Restricted py/TEMP preparation failed before business Git tests. Retried through its verified scoped actual-project entry; unique empty temporary directory checked and removed non-recursively."
+    },
+    {
+      "entry": "source stage script preparation",
+      "result": "A nested quoting syntax error prevented the preparation command body from starting; corrected before audit, lifecycle or Git mutation. The subsequent observed business commit was not blindly retried."
     }
   ],
   "source_sha256": {
@@ -357,5 +612,18 @@
     "Actual receipt-write failure exposed premature recovery-artifact cleanup. Restore pre-receipt in-memory policy on persistence failure; original-event recovery makes no extra commit or validator call.",
     "Portable labelled AST identity preserves the sole fixed own-worker launch across supported Python versions without broadening process permission."
   ],
-  "commit_policy": "One meaningful source checkpoint and one final acceptance observation; no progress/timestamp-only commit loop. New paid model calls remain zero."
+  "commit_policy": "One meaningful source checkpoint and one final acceptance observation; no progress/timestamp-only commit loop. New paid model calls remain zero.",
+  "source_checkpoint": {
+    "revision": "07dbba8f85fd7ffcffc1bac18277c67703130559",
+    "automatic": true,
+    "declared_and_verified_paths": 28,
+    "exact_retry": "duplicate",
+    "before_count": 61,
+    "after_count": 62,
+    "after_retry_count": 62
+  },
+  "merge_boundary": {
+    "explicit_schedule_pause": true,
+    "reason": "Preserve the strict lifecycle HEAD guard across the verified external GitHub merge; no baseline was silently rewritten. Scheduling resumes after completion using the independent observer configuration."
+  }
 }
