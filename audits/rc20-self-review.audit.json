@@ -1,0 +1,311 @@
+{
+  "schema_version": 1,
+  "document_kind": "bounded-rc20-self-audit-and-correction",
+  "observed_at": "2026-10-20T11:40:59.914053+00:00",
+  "version": "3.0.0-rc.20.1",
+  "status": "LOCAL_CORRECTIONS_AND_INSTALLATION_PASSED_REMOTE_CI_PENDING",
+  "baseline_revision": "db6499e9e4e5ca8f8444b9f9cf350261aa8bbc31",
+  "authority": "Current bounded self-review and correction delivery observation; PROJECT_STATE.md routes here. Original RC20 release/installation audit remains historical and is not overwritten.",
+  "historical_release_audit": "audits/rc20-release-engineering.audit.json",
+  "method": "Three independent source reviews plus root evidence reconciliation; inherit original measurements and run only affected deterministic checks/required core release gates.",
+  "new_paid_model_calls": 0,
+  "workspace_health": {
+    "invocation_id": "93d30e34313545afa49e9aecef5cfad8",
+    "entry": "Codex desktop root functions.exec PowerShell",
+    "project_path": "D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution",
+    "observed_at": "2026-10-20T11:28:08.2440850Z",
+    "powershell": "7.6.5",
+    "python": "3.12.10",
+    "git": "2.53.0.windows.3",
+    "write_read_delete": "passed; unique CreateNew handle, exact readback and verified cleanup",
+    "raw_result": "Retained in current tool transcript under invocation_id; entry label is declared, not vendor attestation."
+  },
+  "findings": [
+    {
+      "id": "F1",
+      "priority": "P1",
+      "problem": "Direct report can persist ledger then interrupt before binding update without active_workflow; status previously reports healthy stale completion.",
+      "status": "CORRECTED_AND_TARGETED_CHECKED",
+      "source": "governance-src/runtime-scripts/project_tool.py",
+      "required_behavior": "Reject unreconciled retained completion and recover exact retry without duplicate ledger append."
+    },
+    {
+      "id": "F2",
+      "priority": "P2",
+      "problem": "Delimiter-containing workflow identity can collide with another partial checkpoint event identity.",
+      "status": "CORRECTED_AND_TARGETED_CHECKED",
+      "source": "governance-src/runtime-scripts/project_tool.py",
+      "required_behavior": "Distinct workflows/stages retain distinct event identities; exact legacy retries and starts remain intact."
+    },
+    {
+      "id": "F3",
+      "priority": "P2",
+      "problem": "Local handoff still stated PR24 open and RC19 installed after verified RC20 release.",
+      "status": "CORRECTED_AND_TARGETED_CHECKED",
+      "resolution": "Preserved exact previous handoff bytes in ignored historical archive; current handoff uses schema and current task facts."
+    },
+    {
+      "id": "F4",
+      "priority": "P3",
+      "problem": "Offline evolution document independently declared RC19 as current candidate.",
+      "status": "CORRECTED_AND_TARGETED_CHECKED",
+      "resolution": "Replace dynamic version copy with PROJECT_STATE.md reference; retain historical experiment identities."
+    },
+    {
+      "id": "F5",
+      "priority": "P2",
+      "problem": "Fixed historical study regression tests implicitly consumed the current candidate version; a new candidate causes historical identity mismatch.",
+      "status": "CORRECTED_AND_TARGETED_CHECKED",
+      "required_behavior": "Reconstruct old RC20 model explicitly and require its existing digest; reject newer version under old study, leave production admission/old fixtures unchanged."
+    }
+  ],
+  "capabilities": [
+    {
+      "goal": "Five upstream acknowledgments and selective adaptation",
+      "assessment": "IMPLEMENTED",
+      "evidence": [
+        "THIRD_PARTY_NOTICES.md",
+        "third_party/upstream-sources.json",
+        "docs/upstream-rule-map.md"
+      ],
+      "limits": "Pinned concepts and exclusions; attribution is not effectiveness proof."
+    },
+    {
+      "goal": "Task-scoped reading, relevant writing and complete responsible-layer change",
+      "assessment": "IMPLEMENTED_CONTRACTS_AND_EXPOSED_CHECKS",
+      "evidence": [
+        "governance-src/model/governance-model.json",
+        "MODULE_MAP.md",
+        "tests/test_context_discipline_acceptance.py"
+      ],
+      "limits": "No proof that every model always obeys."
+    },
+    {
+      "goal": "One current truth, chronology and restart recovery",
+      "assessment": "IMPLEMENTED_WITH_CURRENT_CORRECTIONS",
+      "evidence": [
+        "governance-src/runtime-scripts/project_tool.py",
+        "tests/test_completion_outcomes.py",
+        "tests/test_rc9_evidence_continuity.py"
+      ],
+      "limits": "Current-state hash detects byte drift after an explicit reference is registered; product semantics still need project validation."
+    },
+    {
+      "goal": "Adaptive risk, small-change light path and governance-core protection",
+      "assessment": "IMPLEMENTED",
+      "evidence": [
+        "governance-src/runtime-scripts/plan_governance.py",
+        "tools/governance_lint.py",
+        "governance-src/runtime-scripts/validate_integrity.py"
+      ],
+      "limits": "Integrity detects changes; host permissions remain the real access boundary."
+    },
+    {
+      "goal": "Bounded SkillOpt reflection and three numerical search methods",
+      "assessment": "IMPLEMENTED_OFFLINE_ONLY",
+      "evidence": [
+        "evolution/controller.py",
+        "evolution/contracts.py",
+        "evolution/source_bridge.py",
+        "evolution/promotion.py"
+      ],
+      "limits": "Unknown usage stops dispatch; proposals do not auto-promote or prove benefit."
+    },
+    {
+      "goal": "Adaptive non-repetitive Git stages",
+      "assessment": "IMPLEMENTED_AGENT_GUIDANCE",
+      "evidence": [
+        "governance-src/model/governance-model.json",
+        "tests/test_operational_guidance.py"
+      ],
+      "limits": "Meaningful verified/risk/handoff stages, inspect diff, skip unchanged/duplicate status-only commits. No background timer/hook/autocommit service; no universal future guarantee."
+    },
+    {
+      "goal": "Independent cross-agent benefit and Stable qualification",
+      "assessment": "NOT_ESTABLISHED",
+      "evidence": [
+        "audits/rc20-primary22-insufficient-balance.audit.json",
+        "PUBLISHING.md"
+      ],
+      "limits": "Formal qualification UNASSESSED; locked NOT_RUN; retain negatives, failed calls and unknown costs."
+    }
+  ],
+  "insight_observation": {
+    "mode": "READ_ONLY; another session is actively maintaining this project",
+    "observed_runtime": "3.0.0-rc.20",
+    "ledger_reports": 6,
+    "active_checkpoint": "consolidation-in-progress-20261020",
+    "current_state_path": "docs/insight-upgrade/execution_status.json",
+    "current_state_sha256": "8893227ae820edcbc717b9d6d216ebf5edcbd1c0ecbd37803a41c9aec0d57040",
+    "upg_status": "ok:true at review time",
+    "latest_change": "2026-10-04 completion deliberately preserved; current R00-R12 workflow is partial",
+    "readme_roles": "Explicit canonical product state vs UPG binding/activity and historical ledger; app 2.0.0 separate from UPG runtime.",
+    "project_check": "Observed stale derived storage-cleanup projection while other cleanup session is in progress. Requires that session to sync/check before completion; no application completion inferred.",
+    "application_changes_by_this_review": 0,
+    "application_tests_rerun": 0
+  },
+  "baseline_remote": {
+    "default_branch": "main",
+    "revision": "db6499e9e4e5ca8f8444b9f9cf350261aa8bbc31",
+    "ci_run": 39412023393,
+    "ci_jobs_passed": 11,
+    "source_test_count": 1326,
+    "test_count_scope": "Historical RC20 CI; not a fresh count for correction."
+  },
+  "checks": {
+    "local_core_gates": [
+      {
+        "command": [
+          "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+          "compiler/compile_governance.py",
+          "--check"
+        ],
+        "observed_at": "2026-10-20T11:33:41.047394+00:00",
+        "returncode": 0,
+        "elapsed_seconds": 0.23399999999946886
+      },
+      {
+        "command": [
+          "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+          "tools/validate_repository.py",
+          "."
+        ],
+        "observed_at": "2026-10-20T11:33:43.349184+00:00",
+        "returncode": 0,
+        "elapsed_seconds": 2.2969999999995707
+      },
+      {
+        "command": [
+          "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+          "tools/security_audit.py",
+          "."
+        ],
+        "observed_at": "2026-10-20T11:33:45.568341+00:00",
+        "returncode": 0,
+        "elapsed_seconds": 2.217999999999847
+      },
+      {
+        "command": [
+          "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+          "tools/validate_navigation.py",
+          "."
+        ],
+        "observed_at": "2026-10-20T11:33:45.705208+00:00",
+        "returncode": 0,
+        "elapsed_seconds": 0.14100000000053114
+      },
+      {
+        "command": [
+          "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+          "universal-project-governance/scripts/state_tool.py",
+          "validate",
+          ".governance/handoff.json",
+          "--project-root",
+          "."
+        ],
+        "observed_at": "2026-10-20T11:33:45.820524+00:00",
+        "returncode": 0,
+        "elapsed_seconds": 0.10899999999946886
+      }
+    ],
+    "initial_full_regression": {
+      "collected": 1329,
+      "failures": 1,
+      "errors": 9,
+      "skipped": 3,
+      "elapsed_seconds": 223.04700000000048,
+      "failure_scope": "Only test_engineering_study: frozen RC20 study test loaded current RC20.1 model version; runtime and other test modules passed. Test-only reconstruction correction pending; original failures retained.",
+      "raw_receipt": ".governance/self-audit-checks.json"
+    },
+    "historical_study_module": {
+      "tests": 15,
+      "passed": true,
+      "raw_receipt": ".governance/self-audit-historical-study-check.json",
+      "scope": "No production admission or historical fixture changes; complete frozen model digest still required."
+    },
+    "final_full_ci": "PENDING; do not report initial local full run as green."
+  },
+  "delivery": {
+    "published": "PENDING_GITHUB_CI_AND_MERGE",
+    "installed": {
+      "observed_at": "2026-10-20T11:39:57.213203+00:00",
+      "version": "3.0.0-rc.20.1",
+      "target": "C:\\Users\\96501\\.codex\\skills\\universal-project-governance",
+      "backup": "D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution\\.governance\\installed-rc20-backup-98ffd40af007",
+      "backup_files": 20,
+      "backup_readback": true,
+      "delivered_files": 18,
+      "changed_files": [
+        "policy-index.json",
+        "SKILL.md",
+        "VERSION.md",
+        "scripts/project_tool.py",
+        "integrity/manifest.json"
+      ],
+      "all_bytes_equal_candidate": true,
+      "unmanaged_files_preserved": true,
+      "checks": [
+        {
+          "check": "installed integrity",
+          "returncode": 0,
+          "stdout": "Integrity check passed (17 generated runtime files).\n",
+          "stderr": ""
+        },
+        {
+          "check": "installed lifecycle regressions",
+          "count": 28,
+          "passed": true,
+          "raw": "............................\n----------------------------------------------------------------------\nRan 28 tests in 3.383s\n\nOK\n"
+        }
+      ],
+      "host_configuration_changed": false
+    },
+    "fresh_session_discovery": {
+      "enabled_upg": 1,
+      "errors": 0,
+      "force_reload": true,
+      "process_returncode": 0,
+      "new_model_calls": 0,
+      "parent_conversation_activation": "Not claimed"
+    }
+  },
+  "preserved_preexisting_changes": {
+    "audits/rc19-nine-native-development-v2.preregistration.json": "6b92bad0ea3a542993dd261b3c73bdf5d3731411119bfa3988fca87e602e486a",
+    "audits/rc20-paired-real-python-development-v2.audit.json": "997dc558fa0ba64924a369ce3fe96db0a4adec4ef60f9c088995f8f05415b71b",
+    "audits/rc20-stage-schema-engineering.audit.json": "d3c32da2563aed156bb1d8816e76561b8754ed3cb2e48775d264d89717cfda2a",
+    "audits/rc20-stdlib-project-development-v8.preflight.json": "098ccc65378c3f7ac8284fba2bf0608d95835a1eb730f8e6bbe52436391124cf"
+  },
+  "empirical_joint_token_time_benefit": "NOT_ESTABLISHED",
+  "formal_qualification": "UNASSESSED",
+  "locked_trials": "NOT_RUN",
+  "stable": false,
+  "universal_perfection": "NOT_CLAIMED",
+  "focused_regressions": {
+    "count": 28,
+    "passed": true,
+    "new_tests": 3,
+    "old_source_counterexamples": "New inactive-workflow crash and delimiter collision regressions failed against pre-fix HEAD; legacy retry compatibility retained.",
+    "independent_patch_review": "No blocking issue; four additional pure-memory identity checks pass."
+  },
+  "qualification_freeze_sha256": "a9483e82b72206ebe991b043138d07e45ee29c5a3c3f06703264bd4ab47819b2",
+  "scope_limits": [
+    "Current-state byte freshness does not prove product semantic completeness.",
+    "Unaudited projects without registered canonical references cannot receive drift guarantees.",
+    "The same bounded existing history/unknown rules remain; no new permanent per-task ledger."
+  ],
+  "retained_empirical_analysis": {
+    "scope": "Historical diagnostics, not current-candidate efficacy.",
+    "observations": [
+      "Earlier artifact token improvement did not establish joint elapsed-time benefit.",
+      "Original RC20 comparisons include task failures and serious vetoes, provider refusals/balance rejection and unknown usage; incomplete families and exposed development tasks do not establish generalization.",
+      "Latest working-set comparison stopped after 8 published roles / 7 completed and 80 API calls; 2192686 known reported tokens remain historical and not a bill/inference over unknown attempts."
+    ],
+    "consequence": "Keep bounded engineering correction separate from independent paired efficacy and Stable qualification."
+  },
+  "raw_receipt_sha256": {
+    ".governance/self-audit-checks.json": "f624b21617d407d1d679d68a819ce0e1884074205194f001a40a32229d3fcd6a",
+    ".governance/self-audit-install.json": "12997d1104d6f11400f70c2430e3898e4df3c5c2a43008448e00f25f7644fc7f",
+    ".governance/self-audit-discovery.json": "e0f9c01aa639cd9917d6f9535aeefe8106b949a517b14ad21d397fe5136123e2",
+    ".governance/self-audit-historical-study-check.json": "76ff0a4f1b740236757675e1fdb05d573b76494e69577c8f7b79b89bb363f04c"
+  }
+}

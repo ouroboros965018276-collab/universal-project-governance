@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Current candidate: **3.0.0-rc.20 — Task Context and Complete Change Discipline**.
+Current candidate: **3.0.0-rc.20.1 — Task Context and Complete Change Discipline**.
 
 ## First modifying activation
 

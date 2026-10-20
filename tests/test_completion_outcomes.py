@@ -410,6 +410,77 @@ class CompletionOutcomeTests(unittest.TestCase):
             self.assertEqual(len(self.ledger(td)["reports"]), 1)
             self.assertEqual(tool.status(td)["current_state"], stage["current_state"])
 
+    def test_direct_completion_crash_is_unhealthy_until_exact_retry_reconciles(self):
+        for prior_completion in (False, True):
+            with self.subTest(prior_completion=prior_completion), tempfile.TemporaryDirectory(prefix="completion-test-", dir=ROOT) as td:
+                tool.ensure(td, field_test_reporting=True)
+                parent = None
+                if prior_completion:
+                    first = dict(workflow_id="first", change=change())
+                    tool.record_report(td, write(Path(td) / "first.json", report(first)))
+                    parent = tool.status(td)["latest_change"]["event_id"]
+                start = dict(workflow_id="direct-after-crash", change=change())
+                start["change"]["parent_event_id"] = parent
+                payload = report(start)
+                path = write(Path(td) / "direct.json", payload)
+                with patch.object(tool, "_reconcile_completion", side_effect=OSError("simulated crash")):
+                    with self.assertRaises(OSError):
+                        tool.record_report(td, path)
+                state = tool.status(td)
+                self.assertFalse(state["ok"])
+                self.assertEqual(state["reason"], "checkpoint-unreconciled")
+                self.assertIsNone(state["active_workflow"])
+                count = len(self.ledger(td)["reports"])
+                retry = tool.record_report(td, path)
+                self.assertTrue(retry["idempotent"])
+                self.assertEqual(len(self.ledger(td)["reports"]), count)
+                self.assertTrue(tool.status(td)["ok"])
+                self.assertEqual(tool.status(td)["latest_change"]["workflow_id"], start["workflow_id"])
+
+    def test_colon_workflow_names_do_not_collide_with_partial_checkpoint_ids(self):
+        for reporting in (False, True):
+            with self.subTest(reporting=reporting), tempfile.TemporaryDirectory(prefix="completion-test-", dir=ROOT) as td:
+                start = self.begin(td, reporting, "first")
+                partial = dict(report(start, "partial"), checkpoint_id="complete")
+                self.finish(td, partial)
+                partial_event = tool.status(td)["current_outcome"]["event_id"]
+                self.finish(td, report(start))
+                parent = tool.status(td)["latest_change"]["event_id"]
+                # Windows filenames cannot contain colons, but workflow IDs can.
+                colon_start = dict(workflow_id="first:partial", change=change())
+                colon_start["change"]["parent_event_id"] = parent
+                tool.begin_workflow(td, write(Path(td) / "colon-start.json", colon_start))
+                completed = report(colon_start)
+                self.finish(td, completed)
+                state = tool.status(td)
+                self.assertTrue(state["ok"])
+                self.assertIsNone(state["active_workflow"])
+                self.assertEqual(state["latest_change"]["workflow_id"], "first:partial")
+                if reporting:
+                    self.assertNotEqual(state["latest_change"]["event_id"], partial_event)
+                    self.assertEqual(len({row["event_id"] for row in self.ledger(td)["reports"]}), 3)
+                retry = self.finish(td, completed)
+                self.assertTrue(retry["idempotent"])
+                self.assertEqual(retry["event_id"], state["latest_change"]["event_id"])
+                self.assertEqual(tool.status(td), state)
+
+    def test_legacy_delimited_completion_identity_keeps_its_original_id_on_retry(self):
+        for reporting in (False, True):
+            with self.subTest(reporting=reporting), tempfile.TemporaryDirectory(prefix="completion-test-", dir=ROOT) as td:
+                tool.ensure(td, field_test_reporting=reporting)
+                start = dict(workflow_id="legacy:partial", change=change())
+                tool.begin_workflow(td, write(Path(td) / "legacy-start.json", start))
+                completed = report(start)
+                self.finish(td, completed)
+                state = tool.status(td)
+                self.assertEqual(state["latest_change"]["event_id"], "0:legacy:partial:complete")
+                # A fresh runtime must recognize the retained identity rather
+                # than allocating a new ID or rejecting a colon in its name.
+                retry = self.finish(td, completed)
+                self.assertTrue(retry["idempotent"])
+                self.assertEqual(retry["event_id"], "0:legacy:partial:complete")
+                self.assertEqual(tool.status(td), state)
+
     def test_known_outcome_time_requires_observed_source(self):
         for reporting in (False, True):
             with self.subTest(reporting=reporting), tempfile.TemporaryDirectory(prefix="completion-test-", dir=ROOT) as td:

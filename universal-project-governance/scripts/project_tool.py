@@ -256,6 +256,12 @@ def status(project):
             row.get("workflow_id") == active.get("workflow_id")
             and row.get("sequence", 0) > active.get("last_outcome", {}).get("sequence", 0)
             for row in ledger["reports"] if isinstance(row, dict))
+        # The public report command also accepts completed observations without
+        # an active workflow. Its ledger commit can precede the binding update.
+        pending_outcome = pending_outcome or any(
+            row.get("status") == "complete"
+            and row.get("sequence", 0) > binding.get("latest_change", {}).get("sequence", 0)
+            for row in ledger["reports"] if isinstance(row, dict))
 
     current_state = binding.get("current_state")
     state_errors = []
@@ -266,7 +272,7 @@ def status(project):
             state_errors.append(str(exc))
     return {
         "ok": not state_errors and not pending_outcome,
-        **({"reason": "checkpoint-unreconciled", "errors": ["ledger commit newer than active checkpoint; retry the original finish input"]} if pending_outcome else {}),
+        **({"reason": "checkpoint-unreconciled", "errors": ["ledger commit newer than binding checkpoint; retry the original report/finish input"]} if pending_outcome else {}),
         **({"reason": "current-state-drift", "errors": state_errors} if state_errors else {}),
         "runtime_version": index()["version"],
         "binding_runtime_version": binding.get("runtime_version"),
@@ -305,8 +311,24 @@ def _verify_current_state(project, ref):
 def _receipt_key(payload):
     return payload["status"] + (":" + payload["checkpoint_id"] if "checkpoint_id" in payload else "")
 
-def _event_id(epoch, payload):
-    return "%d:%s:%s" % (epoch, payload["workflow_id"], _receipt_key(payload))
+def _same_report_identity(entry, payload, epoch):
+    # Binding completion checkpoints omit status; ledger entries retain it.
+    return (entry.get("epoch", 0) == epoch
+            and entry.get("workflow_id") == payload["workflow_id"]
+            and entry.get("status", "complete") == payload["status"]
+            and entry.get("checkpoint_id") == payload.get("checkpoint_id"))
+
+def _event_id(epoch, payload, retained=()):
+    base = "%d:%s:%s" % (epoch, payload["workflow_id"], _receipt_key(payload))
+    # Keep existing IDs and ordinary IDs stable. Workflow names may contain
+    # delimiters, so a readable ID alone cannot establish report identity.
+    used = {entry.get("event_id") for entry in retained if isinstance(entry, dict)}
+    event_id = base
+    suffix = 0
+    while event_id in used:
+        suffix += 1
+        event_id = base + ":collision-%d" % suffix
+    return event_id
 def _metadata_errors(value):
     encoded = json.dumps(value, ensure_ascii=False)
     errors = []
@@ -436,8 +458,7 @@ def _checkpoint_retry(binding, payload):
     for previous in [binding.get("latest_change", {}), binding.get("previous_change", {})]:
         if not isinstance(previous, dict):
             continue
-        event_id = _event_id(previous.get("epoch", 0), payload)
-        if previous.get("event_id") == event_id:
+        if _same_report_identity(previous, payload, previous.get("epoch", 0)):
             if previous.get("payload_sha256") != _completion_payload_sha256(payload):
                 raise ValueError("conflicting or unverifiable retry for workflow completion identity")
             return previous
@@ -553,13 +574,12 @@ def _record_report_payload(project, payload, require_active=False):
     ledger = load_json(report_path)
     binding = load_json(resolve(project, cfg["binding_file"]))
     active = binding.get("active_workflow")
-    event_id = _event_id(ledger["epoch"], payload)
     for previous in ledger["reports"]:
-        if previous.get("event_id") == event_id:
+        if _same_report_identity(previous, payload, ledger["epoch"]):
             if _completion_payload_sha256(previous) != _completion_payload_sha256(payload):
                 raise ValueError("conflicting retry for workflow report identity")
             _reconcile_completion(project, previous)
-            return {"sequence": previous["sequence"], "report_count": len(ledger["reports"]), "idempotent": True, "event_id": event_id}
+            return {"sequence": previous["sequence"], "report_count": len(ledger["reports"]), "idempotent": True, "event_id": previous["event_id"]}
     if require_active:
         previous = _checkpoint_retry(binding, payload)
         if previous:
@@ -582,6 +602,8 @@ def _record_report_payload(project, payload, require_active=False):
         raise ValueError("completion must reference the latest completed event")
     if len(ledger["reports"]) >= int(cfg["max_reports"]):
         raise ValueError("field report ledger is full; export and purge it before recording more reports")
+    event_id = _event_id(ledger["epoch"], payload, ledger["reports"] + [
+        binding.get("latest_change"), binding.get("previous_change")])
     entry = dict(payload)
     if active:
         entry["start_change"] = active["change"]
@@ -616,7 +638,7 @@ def finish_workflow(project, input_path):
     if not isinstance(latest, dict):
         raise ValueError("latest completion state is invalid; reconcile preserved project state before finishing")
     workflow_id = payload["workflow_id"]
-    event_id = _event_id(latest.get("epoch", 0), payload)
+    event_id = _event_id(latest.get("epoch", 0), payload, [latest, binding.get("previous_change")])
     payload_sha256 = _completion_payload_sha256(payload)
 
     previous = _checkpoint_retry(binding, payload)

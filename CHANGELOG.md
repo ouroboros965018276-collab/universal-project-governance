@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.0.0-rc.20.1 — 2026-10-20 — candidate correction
+
+- Audits and corrects the report-ledger/binding interruption gap without an active workflow, and prevents delimiter collisions between workflow/checkpoint event identities while preserving exact retries and historical records.
+- Replaces a stale current-version heading with a reference to project state; refreshes the local current handoff while retaining its previous bytes as history.
+- Retains RC20 guidance, adaptive Git cadence, existing experiment outcomes and qualification thresholds. New runtime identity requires fresh affected checks and installation verification; no new paid study or Stable claim.
+
 ## 3.0.0-rc.20 — 2026-10-14 — candidate
 
 - Integrates four canonical guidance groups for reader relevance, complete changes, evidence fidelity and task-scoped reading through the existing policy graph; required safety/quality closures remain protected.

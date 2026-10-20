@@ -1,6 +1,6 @@
 # Offline governance evolution
 
-Current candidate: **3.0.0-rc.19 — Project Fact Recovery and Measured Execution Cost**.
+Current candidate, release and installation status: [PROJECT_STATE.md](../PROJECT_STATE.md).
 
 RC17 introduced the repository-only optimizer around the compiled UPG runtime. The
 installed Skill still needs no model backend and its optional helpers support
