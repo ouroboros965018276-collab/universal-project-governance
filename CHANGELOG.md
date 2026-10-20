@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.0.0-rc.20.6 — 2026-10-21 — Project Host Adapters
+
+- Add explicit official Codex foreground CLI and project-owned input-channel EOF adapters, sharing the existing native observer owner, cleanup and active-session recovery.
+- Preserve meaningful scoped stages, validation, cooldown, deduplication and explicit stop. No system startup, host global configuration, detached fallback or paid model trials.
+- Record real CLI verification separately from generic pipe contracts and unverified Desktop GUI lifecycle. Current release evidence and remaining goals are in PROJECT_STATE.md and the Git audit.
+
 ## 3.0.0-rc.20.5 — 2026-10-21 — Foreground Project Sessions
 
 - Replace detached observation with an explicit foreground host-session lifetime. Host exit or owner crash ends the owned observer subtree; no OS startup or host configuration injection.

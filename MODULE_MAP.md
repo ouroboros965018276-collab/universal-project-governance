@@ -1,6 +1,6 @@
 # 模块导航
 
-当前候选：**3.0.0-rc.20.5**。版本与发布状态见[当前项目状态](PROJECT_STATE.md)。
+当前候选：**3.0.0-rc.20.6**。版本与发布状态见[当前项目状态](PROJECT_STATE.md)。
 
 ```mermaid
 flowchart LR

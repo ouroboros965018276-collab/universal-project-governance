@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Explicit project-local Git observer, independent of an agent lifecycle.
+"""Explicit project-session Git observer, independent of an agent turn.
 
 One token owns a worker. Validators run outside the governance writer lock;
 publication rechecks ownership, configuration, HEAD and source bytes under it.
@@ -12,6 +12,9 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import select
+import shutil
+import stat
 import subprocess
 import sys
 import tempfile
@@ -23,6 +26,17 @@ import git_checkpoint as git
 import project_tool as project
 import process_guard as guards
 import session_lifetime as lifetime
+
+if os.name == "nt":
+    import ctypes
+    import msvcrt
+    from ctypes import wintypes
+
+    _PIPE_KERNEL = ctypes.WinDLL("kernel32", use_last_error=True)
+    _PIPE_KERNEL.PeekNamedPipe.argtypes = [wintypes.HANDLE, wintypes.LPVOID, wintypes.DWORD,
+                                           wintypes.LPVOID, ctypes.POINTER(wintypes.DWORD),
+                                           wintypes.LPVOID]
+    _PIPE_KERNEL.PeekNamedPipe.restype = wintypes.BOOL
 
 
 def validate_configuration(value):
@@ -393,7 +407,7 @@ def _session_owned(watcher):
 def _session_required(root):
     view = _view(_load(project.project_root(root))[3])
     view["watcher"].update(status="session-required", running=False,
-                          reason="project-session-required; use foreground git-watch session --command")
+                          reason="project-session-required; use git-watch session with a foreground host adapter")
     return view
 
 
@@ -458,29 +472,111 @@ def _retire_released_session(root):
             guard.close()
 
 
-def session(root, command):
-    """Own observers only for an explicit foreground host that waits for its session.
+def _session_command(root, command, host, executable):
+    """Resolve a fixed foreground contract before creating project state."""
+    if host == "command":
+        if executable is not None:
+            raise ValueError("command host does not accept an executable override")
+        return lifetime._argv(command)
+    if host not in {"codex-cli", "stdin"}:
+        raise ValueError("project session host must be command, codex-cli or stdin")
+    if command is not None:
+        raise ValueError(host + " host does not accept command arguments")
+    if host == "stdin":
+        if executable is not None:
+            raise ValueError("stdin host does not accept an executable override")
+        return None
+    if (not isinstance(executable, str) or not executable or "\0" in executable):
+        raise ValueError("codex-cli host requires an explicit existing executable")
+    resolved = shutil.which(executable)
+    if resolved is None:
+        raise ValueError("codex-cli executable is unavailable")
+    return [resolved, "--no-daemon", "--no-alt-screen", "--cd", str(root)]
 
-    A launcher which detaches from its UI is not a project lifetime adapter.
-    There is no background fallback when the host cannot provide this signal.
+
+def _session_stdin():
+    """Accept only a dedicated pipe whose writer owns this project session."""
+    try:
+        fd = sys.stdin.fileno()
+        if type(fd) is not int or fd < 0 or not stat.S_ISFIFO(os.fstat(fd).st_mode):
+            raise ValueError("stdin project session requires a dedicated pipe")
+        return fd
+    except (AttributeError, OSError, ValueError) as error:
+        raise ValueError("stdin project session requires a dedicated pipe") from error
+
+
+def _session_input_available(fd):
+    """Poll without blocking, including Windows anonymous-pipe EOF."""
+    if os.name != "nt":
+        return 4096 if select.select([fd], [], [], 0)[0] else 0
+    available = wintypes.DWORD()
+    if not _PIPE_KERNEL.PeekNamedPipe(msvcrt.get_osfhandle(fd), None, 0, None,
+                                      ctypes.byref(available), None):
+        code = ctypes.get_last_error()
+        if code == 109:  # ERROR_BROKEN_PIPE: the owning writer closed.
+            return -1
+        raise ctypes.WinError(code)
+    return min(4096, available.value)
+
+
+def _read_session_input(fd, ended):
+    """Discard bounded bytes until EOF; never parse or retain host content."""
+    previous_mode = msvcrt.setmode(fd, os.O_BINARY) if os.name == "nt" else None
+    try:
+        while not ended.is_set():
+            available = _session_input_available(fd)
+            if available < 0:
+                return
+            if available:
+                if not os.read(fd, min(4096, available)):
+                    return
+            else:
+                ended.wait(0.05)
+    finally:
+        if previous_mode is not None:
+            msvcrt.setmode(fd, previous_mode)
+
+
+def session(root, command=None, *, host="command", executable=None):
+    """Own observers while a foreground child or dedicated input pipe is open.
+
+    Command hosts must wait for their actual project session. The fixed Codex
+    profile disables its shared daemon; stdin requires a project-owned pipe.
+    Detaching launchers and generic shared-server connections are not adapters.
     """
     root = project.project_root(root)
-    if not command:
-        raise ValueError("project session requires --command and a foreground host argv")
+    command = _session_command(root, command, host, executable)
+    input_fd = _session_stdin() if host == "stdin" else None
     project.ensure(root)
     session_guard = guards.acquire(root, ".upg-session.guard")
     if session_guard is None:
         raise ValueError("another foreground project session owns this project")
     with session_guard, lifetime.Session(root) as life:
         _bind_session(root, life.token)
-        host = None
+        process = None
         ended = threading.Event()
+        outcome = {"returncode": None, "error": None}
+        monitor = None
         try:
-            host = lifetime.run_host(command, cwd=str(root))
+            if command is not None:
+                process = lifetime.run_host(command, cwd=str(root))
+
             def close_when_host_ends():
-                host.wait()
-                ended.set()
-                life.close()
+                try:
+                    if input_fd is not None:
+                        _read_session_input(input_fd, ended)
+                        outcome["returncode"] = 0
+                    else:
+                        outcome["returncode"] = process.wait()
+                except BaseException as error:
+                    outcome["error"] = error
+                finally:
+                    ended.set()
+                    try:
+                        life.close()
+                    except BaseException as error:
+                        outcome["error"] = outcome["error"] or error
+
             monitor = threading.Thread(target=close_when_host_ends, name="upg-host-session", daemon=True)
             monitor.start()
             delay, retry_at = 1, 0
@@ -508,9 +604,14 @@ def session(root, command):
                         delay = min(60, delay * 2)
                     retry_at = time.monotonic() + delay
                 ended.wait(0.2)
-            returncode = host.poll()
         finally:
+            ended.set()
             life.close()
+            if input_fd is not None and monitor is not None:
+                # The cancellable pipe poll cannot survive this session entry.
+                monitor.join(timeout=1)
+                if monitor.is_alive():
+                    raise ValueError("project session input monitor did not stop")
             # Native release is required before acknowledging a stopped session.
             # A journal is retained for interrupted transaction recovery.
             deadline = time.monotonic() + 5
@@ -534,7 +635,9 @@ def session(root, command):
                 finally:
                     for guard in reversed(acquired):
                         guard.close()
-        result["host_returncode"] = returncode
+        if outcome["error"] is not None:
+            raise outcome["error"]
+        result["host_returncode"] = outcome["returncode"]
         return result
 
 
