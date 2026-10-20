@@ -968,7 +968,7 @@
     "release_operation_forces": "audit"
   },
   "schema_version": 1,
-  "source_sha256": "510fb6d108de0dc6dd75af2e9586913a8033fd3d9b86b07732603edb3455bfd5",
+  "source_sha256": "39bec678673c98f111fffd58ed211d1e5a327a575ec9126b320d384c00f0cd5e",
   "structural_integration": {
     "exempt_operations": [
       "release"
