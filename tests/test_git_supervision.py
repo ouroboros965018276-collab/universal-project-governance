@@ -1,8 +1,8 @@
-"""Two bounded real-process project supervision checks; no host startup APIs."""
+"""Bounded public-session native supervision checks; no host startup APIs."""
 import json
-from pathlib import Path
+import os
+import signal
 import subprocess
-import sys
 import time
 import unittest
 
@@ -11,7 +11,6 @@ import test_git_watch as fixture
 
 @unittest.skipUnless(fixture.shutil.which("git"), "real Git executable required")
 class GitSupervisionTests(unittest.TestCase):
-    # Reuse only disposable fixture helpers; do not inherit the old test matrix.
     setUp = fixture.GitWatchTests.setUp
     cleanup = fixture.GitWatchTests.cleanup
     write = fixture.GitWatchTests.write
@@ -22,18 +21,10 @@ class GitSupervisionTests(unittest.TestCase):
     count = fixture.GitWatchTests.count
     validator_count = fixture.GitWatchTests.validator_count
     wait_for = fixture.GitWatchTests.wait_for
-
-    def state(self):
-        # Windows replace can briefly deny a concurrent reader; keep a real
-        # persistent permission failure visible instead of masking it.
-        deadline = time.monotonic() + 1
-        while True:
-            try:
-                return json.loads((self.root / ".governance/upg.json").read_text(encoding="utf-8"))["git_checkpoint"]["watcher"]
-            except PermissionError:
-                if time.monotonic() >= deadline:
-                    raise
-                time.sleep(.02)
+    state = fixture.GitWatchTests.state
+    start_session = fixture.GitWatchTests.start_session
+    finish_session = fixture.GitWatchTests.finish_session
+    close_sessions = fixture.GitWatchTests.close_sessions
 
     def stop_all(self):
         deadline = time.monotonic() + 30
@@ -50,138 +41,171 @@ class GitSupervisionTests(unittest.TestCase):
         self.assertFalse(state.get("token"))
         self.assertFalse(state.get("supervisor", {}).get("token"))
 
-    def owned_host(self, public_launch):
-        # The routine boundary keeps actual worker Popen handles in its owner;
-        # the separate public-launch boundary uses the real fresh supervisor.
-        mode = "public" if public_launch else "routine"
-        script = '''import json,subprocess,sys,threading,time
+    def test_public_session_recovers_owned_supervisor_crash_without_another_activation(self):
+        self.configure()
+        # The fault controller retains the real supervisor Popen created by the
+        # unchanged public runtime entry. No PID from a document is signalled.
+        script = """import json,sys,threading,time
 from pathlib import Path
 sys.path.insert(0,sys.argv[1])
 import git_watch
-p=Path.cwd()/'.governance'
-mode=sys.argv[2]
+root=Path.cwd()
+p=root/'.governance'
 children=[]
-original_worker=git_watch._spawn_worker
-original_supervisor=git_watch._spawn_supervisor
-
-def own_worker(*args,**kwargs):
- child=original_worker(*args,**kwargs)
- children.append(child)
- if len(children)==1:
-  (p/'first-owned-worker.json').write_text(json.dumps({'pid':child.pid}))
- return child
+original=git_watch._spawn_supervisor
 
 def own_supervisor(*args,**kwargs):
- child=original_supervisor(*args,**kwargs)
+ child=original(*args,**kwargs)
  children.append(child)
- (p/'public-owned-supervisor.json').write_text(json.dumps({'pid':child.pid}))
+ (p/'owned-supervisors.json').write_text(json.dumps([c.pid for c in children]))
  return child
 
-def crash_controller():
- while not (p/'finish-owned-host').exists():
-  if (p/'crash-first-owned-worker').exists():
-   assert children, 'no actual owned worker handle'
-   child=children[0]
-   if child.poll() is None:
-    child.kill()
-    child.wait(timeout=10)
-   (p/'owned-crash-complete').write_text(json.dumps({'pid':child.pid,'returncode':child.returncode}))
-   return
+def crash():
+ deadline=time.monotonic()+90
+ while not (p/'crash-owned-supervisor').exists() and time.monotonic()<deadline:
   time.sleep(.03)
+ if not (p/'crash-owned-supervisor').exists():
+  return
+ assert children, 'no actual owned supervisor handle'
+ child=children[0]
+ child.kill()
+ child.wait(timeout=10)
+ (p/'owned-crash-complete').write_text(json.dumps({'pid':child.pid,'returncode':child.returncode}))
 
-if mode=='public':
- git_watch._spawn_supervisor=own_supervisor
- view=git_watch.start(Path.cwd())
- assert len(children)==1 and children[0].pid==view['watcher']['supervisor']['pid']
- (p/'owned-host-ready').write_text(json.dumps(view))
- until=time.monotonic()+150
- while not (p/'finish-owned-host').exists() and time.monotonic()<until:
-  time.sleep(.03)
- assert (p/'finish-owned-host').exists(), 'test must normally stop its public supervisor'
-else:
- git_watch._spawn_worker=own_worker
- git_watch._set_start_intent(Path.cwd())
- view,token=git_watch._reserve_supervisor(Path.cwd())
- assert token
- thread=threading.Thread(target=crash_controller,daemon=True)
- thread.start()
- (p/'owned-host-ready').write_text(json.dumps(view))
- result=git_watch.supervise(Path.cwd(),token)
- assert result==0
- thread.join(timeout=2)
+git_watch._spawn_supervisor=own_supervisor
+thread=threading.Thread(target=crash,daemon=True)
+thread.start()
+result=git_watch.session(root,sys.argv[2:])
+thread.join(timeout=2)
+assert result['host_returncode']==0,result
 for child in children:
  child.wait(timeout=15)
 assert all(child.returncode is not None for child in children)
-(p/'owned-host-children-exited').write_text(json.dumps([{'pid':c.pid,'returncode':c.returncode} for c in children]))
-'''
-        self.write(".governance/owned-supervision-host.py", script)
-        host = subprocess.Popen([sys.executable, str(self.root / ".governance/owned-supervision-host.py"),
-                                 str(fixture.CLI.parent), mode], cwd=self.root,
-                                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        def finish():
-            try:
-                if host.poll() is None:
-                    self.stop_all()
-                    self.write(".governance/finish-owned-host", "normal owner cleanup\n")
-                output, error = host.communicate(timeout=20)
-                self.assertEqual(host.returncode, 0, error.decode("utf-8", "replace") + output.decode("utf-8", "replace"))
-            finally:
-                self.assertIsNotNone(host.poll(), "owned host must actually exit before fixture deletion")
-        self.addCleanup(finish)
-        self.wait_for(lambda: (self.root / ".governance/owned-host-ready").exists() or host.poll() is not None, timeout=25)
-        if host.poll() is not None:
-            output, error = host.communicate()
-            self.fail(error.decode("utf-8", "replace") + output.decode("utf-8", "replace"))
-        return host
-
-    def test_production_supervisor_routine_recovers_owned_crash_without_another_activation(self):
-        self.configure()
-        host = self.owned_host(public_launch=False)
-        self.wait_for(lambda: ((self.root / ".governance/first-owned-worker.json").exists()
-                              and self.state().get("pid")
-                              and self.state().get("supervisor", {}).get("status") == "watching"), timeout=25)
+(p/'owned-children-exited').write_text(json.dumps([{'pid':c.pid,'returncode':c.returncode} for c in children]))
+"""
+        self.write(".governance/owned-session.py", script)
+        record = self.start_session(self.root / ".governance/owned-session.py")
         first = self.state()
-        owned = json.loads((self.root / ".governance/first-owned-worker.json").read_text())
-        self.assertEqual(first["pid"], owned["pid"])
-        self.assertEqual(first["supervisor"]["pid"], host.pid)
-        self.assertEqual(first["supervisor"]["status"], "watching")
-        self.write(".governance/crash-first-owned-worker", "kill only the captured real child\n")
+        self.write(".governance/crash-owned-supervisor", "terminate the captured child handle\n")
         self.wait_for(lambda: (self.root / ".governance/owned-crash-complete").exists(), timeout=15)
-        exited = json.loads((self.root / ".governance/owned-crash-complete").read_text())
-        self.assertEqual(exited["pid"], first["pid"])
-        self.assertIsNotNone(exited["returncode"])
-        self.write("source.txt", "validated source after supervised crash\n")
-        # No recover/start/ensure call occurs between crash and observation.
-        self.wait_for(lambda: bool(self.state().get("pid") and self.state().get("token") != first["token"]), timeout=30)
+        crashed = json.loads((self.root / ".governance/owned-crash-complete").read_text())
+        self.assertEqual(crashed["pid"], first["supervisor"]["pid"])
+        self.assertIsNotNone(crashed["returncode"])
+        # No ensure/recover/start invocation occurs after the captured crash.
+        self.wait_for(lambda: bool(self.state().get("supervisor", {}).get("pid")
+                                  and self.state()["supervisor"]["token"] != first["supervisor"]["token"]
+                                  and self.state()["supervisor"].get("status") == "watching"), timeout=40)
         recovered = self.state()
-        self.assertNotEqual(recovered["pid"], first["pid"])
-        self.assertEqual(recovered["supervisor"]["pid"], host.pid)
-        self.assertEqual(recovered["supervisor"]["token"], first["supervisor"]["token"])
+        self.assertNotEqual(recovered["supervisor"]["pid"], first["supervisor"]["pid"])
+        self.assertIsNone(record["process"].poll(), "same foreground session must still own recovery")
+        current = [fixture.ProcessObservation(recovered["pid"]), fixture.ProcessObservation(recovered["supervisor"]["pid"])]
+        record["observations"].extend(current)
+        self.write("source.txt", "validated source after supervised crash\n")
         self.wait_for(lambda: self.count() == 2 and self.state()["status"] in {"idle", "committed"}, timeout=60)
         self.assertEqual(self.git("show", "HEAD:source.txt"), b"validated source after supervised crash\n")
         self.assertEqual(self.validator_count(), 1)
         self.watch("tick")
         self.assertEqual(self.count(), 2)
         self.assertEqual(self.validator_count(), 1)
-        self.stop_all()
-        self.write(".governance/finish-owned-host", "finished bounded calibration\n")
-        output, error = host.communicate(timeout=20)
-        self.assertEqual(host.returncode, 0, error.decode("utf-8", "replace") + output.decode("utf-8", "replace"))
+        self.finish_session(record)
+        self.assertTrue((self.root / ".governance/owned-children-exited").exists())
 
-    def test_public_start_launches_supervisor_then_stop_and_ensure_leave_all_processes_stopped(self):
+    @unittest.skipUnless(os.name == "nt" or (hasattr(os, "pidfd_open") and hasattr(signal, "pidfd_send_signal")),
+                         "native exact-process worker fault injection requires a Job handle or pidfd")
+    def test_public_session_recovers_actual_worker_crash_without_another_activation(self):
         self.configure()
-        host = self.owned_host(public_launch=True)
-        self.wait_for(lambda: self.state().get("pid") and self.state().get("supervisor", {}).get("pid"), timeout=25)
+        script = """import json,os,signal,sys,threading,time
+from pathlib import Path
+sys.path.insert(0,sys.argv[1])
+import git_watch,session_lifetime
+root=Path.cwd()
+p=root/'.governance'
+
+def crash():
+ deadline=time.monotonic()+90
+ while not (p/'crash-owned-worker').exists() and time.monotonic()<deadline:
+  time.sleep(.03)
+ if not (p/'crash-owned-worker').exists():
+  return
+ life=session_lifetime.current()
+ assert life is not None and life.active
+ state=json.loads((p/'upg.json').read_text())['git_checkpoint']['watcher']
+ assert state['session']['token']==life.token
+ pid=state['pid']
+ supervisor=life.supervisor
+ assert supervisor is not None and supervisor.poll() is None
+ if os.name=='nt':
+  import ctypes
+  from ctypes import wintypes
+  k=ctypes.WinDLL('kernel32',use_last_error=True)
+  k.OpenProcess.argtypes=[wintypes.DWORD,wintypes.BOOL,wintypes.DWORD]
+  k.OpenProcess.restype=wintypes.HANDLE
+  k.IsProcessInJob.argtypes=[wintypes.HANDLE,wintypes.HANDLE,ctypes.POINTER(wintypes.BOOL)]
+  k.IsProcessInJob.restype=wintypes.BOOL
+  k.TerminateProcess.argtypes=[wintypes.HANDLE,wintypes.UINT]
+  k.TerminateProcess.restype=wintypes.BOOL
+  k.WaitForSingleObject.argtypes=[wintypes.HANDLE,wintypes.DWORD]
+  k.WaitForSingleObject.restype=wintypes.DWORD
+  k.CloseHandle.argtypes=[wintypes.HANDLE]
+  handle=k.OpenProcess(0x100000|0x400|0x1,False,pid)
+  assert handle,ctypes.get_last_error()
+  try:
+   inside=wintypes.BOOL()
+   assert k.IsProcessInJob(handle,life.job,ctypes.byref(inside)),ctypes.get_last_error()
+   assert inside.value,'captured process is outside our actual observer Job'
+   assert k.WaitForSingleObject(handle,0)==258,'worker already exited'
+   assert k.TerminateProcess(handle,37),ctypes.get_last_error()
+   assert k.WaitForSingleObject(handle,5000)==0,'captured worker handle did not signal exit'
+  finally:
+   k.CloseHandle(handle)
+ else:
+  import select
+  fd=os.pidfd_open(pid)
+  try:
+   assert os.getpgid(pid)==supervisor.pid and os.getsid(pid)==supervisor.pid
+   signal.pidfd_send_signal(fd,signal.SIGKILL)
+   assert select.select([fd],[],[],5)[0],'captured worker pidfd did not signal exit'
+  finally:
+   os.close(fd)
+ (p/'owned-worker-crash-complete').write_text(json.dumps({'pid':pid,'exited':True}))
+
+thread=threading.Thread(target=crash,daemon=True)
+thread.start()
+result=git_watch.session(root,sys.argv[2:])
+thread.join(timeout=2)
+assert result['host_returncode']==0,result
+"""
+        self.write(".governance/owned-worker-session.py", script)
+        record = self.start_session(self.root / ".governance/owned-worker-session.py")
+        first = self.state()
+        self.write(".governance/crash-owned-worker", "signal only a captured and contained native process\n")
+        self.wait_for(lambda: (self.root / ".governance/owned-worker-crash-complete").exists(), timeout=20)
+        crashed = json.loads((self.root / ".governance/owned-worker-crash-complete").read_text())
+        self.assertEqual(crashed["pid"], first["pid"])
+        self.assertTrue(crashed["exited"])
+        self.wait_for(lambda: self.state().get("pid") and self.state().get("token") != first["token"]
+                      and self.state().get("supervisor", {}).get("status") == "watching", timeout=40)
+        recovered = self.state()
+        self.assertNotEqual(recovered["pid"], first["pid"])
+        self.assertEqual(recovered["supervisor"]["pid"], first["supervisor"]["pid"])
+        self.assertEqual(recovered["supervisor"]["token"], first["supervisor"]["token"])
+        record["observations"].append(fixture.ProcessObservation(recovered["pid"]))
+        self.write("source.txt", "validated stage after actual worker crash\n")
+        self.wait_for(lambda: self.count() == 2, timeout=60)
+        self.assertEqual(self.git("show", "HEAD:source.txt"), b"validated stage after actual worker crash\n")
+        self.assertEqual(self.validator_count(), 1)
+        self.watch("tick")
+        self.assertEqual(self.count(), 2)
+        self.assertEqual(self.validator_count(), 1)
+        self.finish_session(record)
+
+    def test_public_session_stop_and_ensure_leave_observers_stopped_while_host_is_active(self):
+        self.configure()
+        record = self.start_session()
         started = self.state()
-        owned = json.loads((self.root / ".governance/public-owned-supervisor.json").read_text())
-        self.assertEqual(started["supervisor"]["pid"], owned["pid"])
-        self.assertNotEqual(started["supervisor"]["pid"], host.pid)
         self.assertTrue(started["supervisor"]["enabled"])
         self.stop_all()
-        self.write(".governance/finish-owned-host", "ordinary cooperative stop\n")
-        output, error = host.communicate(timeout=20)
-        self.assertEqual(host.returncode, 0, error.decode("utf-8", "replace") + output.decode("utf-8", "replace"))
-        self.assertTrue((self.root / ".governance/owned-host-children-exited").exists())
+        self.assertIsNone(record["process"].poll(), "explicit stop need not close the editor host")
         self.write("source.txt", "owner edit after explicit stop\n")
         self.cli("ensure", str(self.root))
         time.sleep(1.2)
@@ -191,6 +215,12 @@ assert all(child.returncode is not None for child in children)
         self.assertFalse(stopped.get("supervisor", {}).get("pid"))
         self.assertEqual(self.count(), 1)
         self.assertEqual(self.validator_count(), 0)
+        blocked = self.cli("remove", str(self.root), "--yes", expected=(2,))
+        self.assertIn(b"native project work remains active", blocked.stderr)
+        self.assertTrue((self.root / ".governance/upg.json").is_file())
+        self.finish_session(record)
+        self.cli("remove", str(self.root), "--yes")
+        self.assertFalse((self.root / ".governance/upg.json").exists())
         self.assertFalse((fixture.CLI.parent / "git_autostart.py").exists())
         self.cli("git-autostart", str(self.root), "--action", "status", expected=(2,))
 

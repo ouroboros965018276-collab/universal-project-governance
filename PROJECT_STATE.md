@@ -1,9 +1,9 @@
 # 当前项目状态
 
-当前工程升级：**3.0.0-rc.20.4**，源码 CI 与本地安装已验收。[工单 #26](https://github.com/ouroboros965018276-collab/universal-project-governance/issues/26)；唯一当前工程验收记录为 [Git 审计](audits/rc20-git-checkpoints.audit.json)。开机／登录启动方案已按用户要求撤销，本轮系统启动校准任务与运行进程已清理，适配原型已从源码和交付移除；撤销证据保留为历史。
+当前候选：**3.0.0-rc.20.5**，项目会话结束自动停止与活跃会话内监督恢复升级进行中。[工单 #26](https://github.com/ouroboros965018276-collab/universal-project-governance/issues/26) 已重新打开。RC20.4 的独立后台观察器已明确停止，状态为stopped、worker/supervisor PID清空；上一轮会话外持续行为已被用户最新要求撤销。
 
-进入项目或明确 start 才运行会话监督；健康子进程使用阻塞等待，监督进程不增加 Git 扫描。异常退出通过系统锁证明后按退避恢复，继续使用原范围、校验、有效阶段、冷却和去重；明确停止后不复活。原生索引恢复、无窗口标准流、唯一临时文件、持锁移除和状态准确性已校准，原始失败及修复记录保留。
+新代码从前台宿主命令的真实存活期持有会话生存能力；结束或所有者异常退出即终止观察子树，活跃会话内恢复监督退出。没有可靠结束信号的宿主只执行有限检查点／单次观察，不注册系统启动项或注入宿主配置。必要本地校准与10项最终静态／打包门禁已通过；源码CI、主分支及本地安装核对仍待完成，不能据此宣称整体验收。初跑51项失败、Windows管道类型修正及有界单项复核都保留在审计中。
 
-最终源码两轮 CI 各11/11通过；21个交付文件与主分支／本地安装逐字节相同，安装副本8项真实 Git、完整性20文件和新官方进程发现1个已启用 Skill／零错误均通过。该验收提交自身的后续 CI 以 GitHub 当前提交与工单为准，不为回填时间或自身哈希循环提交。
+原范围、有效改动识别、阶段校验、300秒冷却、去重和明确停止语义保留。原RC20.4证据见[上一轮固定审计](https://github.com/ouroboros965018276-collab/universal-project-governance/blob/8d7e6db7394e413de2d1a3e60d57d5dcb71de29a/audits/rc20-git-checkpoints.audit.json)，本轮结果归入[当前工程审计](audits/rc20-git-checkpoints.audit.json)。不为状态和CI时间循环提交。
 
-本轮新增外部付费模型实测 **0**。本次系统会话首次入口或明确启动前不运行；启动命令／编辑器退出不会自动停止，需明确 stop。监督进程自身退出后由下一次项目入口恢复。独立跨 Agent 质量与 token／总耗时净收益未建立，正式资格 UNASSESSED、locked NOT_RUN，尚非 Stable。未知旧锁、高级 Git、任意脱离的子孙进程与断电持久性仍有边界；Insight 应用维持先前 partial／未整体验收状态。
+本轮新增外部付费模型实测0。跨Agent质量与token／总耗时净收益未建立，正式UNASSESSED、locked NOT_RUN，尚非Stable。Insight应用仍是先前partial／未整体验收状态。本轮不会宣称任意宿主零配置接管、任意脱离的第三方后代或断电持久性已获得普遍保证。

@@ -3,9 +3,9 @@
   "files": {
     "INTEGRITY.md": "3e2404344195b4795ad4cb07944acac5bb1070a9e40c92c4da792abeb6e3774d",
     "LICENSE": "50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a",
-    "SKILL.md": "a06ced95ddccb34b4cba3a1578c3dfc46d0cb92f0907a64a46d6962f3d2c6d9c",
-    "VERSION.md": "1e24e7cb350ad444dd0c64ba2a64f61280785797fb1f3a24aa1909dc31ef8349",
-    "policy-index.json": "97107cfd14581701a72dbb708e187b8f128b36e2d1f2e7a02aae0e31802b08ed",
+    "SKILL.md": "5d67b0204fe36e74be8844a662feaca71a553a57a4b9f0f014ca5688a10dd7a7",
+    "VERSION.md": "f4e1c966a286123e83da57b492c31c0a438641c2b62f8ee25399dfe03e5a2019",
+    "policy-index.json": "2081a58b87fd61e715d791f4526fccd03ae2e4042b0663744eb2f388bf59eba5",
     "schemas/audit.schema.json": "a5e15c26eff86e3c4e2e174fb121ef22981628307f09cf18d09a589e738ea889",
     "schemas/execution.schema.json": "d2a7cddc9d98c8101294df302259ba18217c27b9e7c8fee43d96c82ff6bde1d7",
     "schemas/feedback.schema.json": "22da61a114a1e89ee641ac25e90e23d6231003351df15918d4265f9900091954",
@@ -14,15 +14,16 @@
     "schemas/handoff.schema.json": "994769e2a35b4d2189c509b8c5fce6ba76e4941fa4cadaa51f8f02f48b338a97",
     "schemas/task-context.schema.json": "acc323f7d86f8dad5d8694e7fcf566dad6987d077877fbe6dbc819029936ad38",
     "scripts/git_checkpoint.py": "ab1b1721607e267c5b39f709cdc8d309d4137cf10eb923231862014742d8ea42",
-    "scripts/git_watch.py": "5d7f3d4eafd0017c246c01cad724b59982937ab5cfb6de32c9b8bd14f7f9d0a9",
+    "scripts/git_watch.py": "e3812079fbe000c2127c619267c94e87ffaefccd9399d638bf0ee637072299a3",
     "scripts/plan_governance.py": "aad1d34983c813f508d1845b6ad94d8adb4afcdc6352ef6b5692550623729697",
-    "scripts/process_guard.py": "1ad3bf19e694c6ca487f3a396b3feaabbc41c9c2b6d1e69d12f76040fcf7fe92",
+    "scripts/process_guard.py": "873aaa7ebd732c2413369b1877ebf6172e98a1d05599d3aee468dea03cc76eb5",
     "scripts/project_facts.py": "f355e0fa241a1032c94d4959b610b86c2d0ad48b2c62bbfed1ded65bfa4bd9ee",
-    "scripts/project_tool.py": "14a32274743ef748d95da36a1770728125faee80d5e6a5aacf42b4196bc218ce",
+    "scripts/project_tool.py": "f8769cf3b313bbdc0e0696b815f55e9a1ab6a61ca53004f073d996dcb092ab7a",
+    "scripts/session_lifetime.py": "b758115a98ad9f9b56294d470875d40cb3713e38a283de4e741ae84b492585bf",
     "scripts/state_tool.py": "193cb9657c32dedb253727e93a13bcb6f39306331fc8a90d1319e337f5b088a0",
     "scripts/validate_integrity.py": "cf09558e67b4488db88c5ce9836e9f1cf1c8bae97d6e1444bb9d2d80409157c0"
   },
-  "generated_for_version": "3.0.0-rc.20.4",
+  "generated_for_version": "3.0.0-rc.20.5",
   "schema_version": 1,
-  "source_sha256": "d1572871253173a8c26bfae5e7f1e74c413bbb3d45e9c2af4ef73b4a41d9e296"
+  "source_sha256": "469bdc7f0d9ce7eb0398c61348ad721537fc30a744b13cca511eb1ba8e372f3b"
 }

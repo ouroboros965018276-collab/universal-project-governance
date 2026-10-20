@@ -1,5 +1,12 @@
 # Changelog
 
+## 3.0.0-rc.20.5 — Foreground Project Sessions
+
+- Replace detached project-entry observation with an explicit foreground host-session lifetime. Host exit or owner crash ends the owned observer subtree; no OS startup or host configuration injection.
+- Recover a supervisor exit within an active session. Keep existing scoped change recognition, validation, stage cooldown, deduplication and explicit-stop semantics.
+- Without a reliable host-session end signal, preserve finite lifecycle checkpoints/ticks and report the adapter gap instead of starting a resident process.
+- Necessary focused native and final static/package checks passed; exact-source CI and installed delivery acceptance pending. Original failures retained; no new external paid model trials.
+
 ## 3.0.0-rc.20.4 — 2026-10-20 — candidate recovery
 
 - Adds project-session supervision triggered by project entry or explicit observer start, using the existing binding. The supervisor blocks while its worker is healthy and recovers crashes with bounded backoff; no OS startup entry or scheduled task is registered.
