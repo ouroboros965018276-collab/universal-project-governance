@@ -1,456 +1,315 @@
 {
   "schema_version": 1,
-  "document_kind": "bounded-executable-git-checkpoint-release",
-  "observed_at": "2026-10-20T13:06:15.405840+00:00",
-  "version": "3.0.0-rc.20.2",
-  "status": "PASS_BOUNDED_EXECUTABLE_GIT_RELEASE",
+  "document_kind": "autonomous-project-git-adoption-release",
+  "observed_at": "2026-10-20T14:15:46.646876+00:00",
+  "version": "3.0.0-rc.20.3",
+  "status": "SOURCE_VALIDATED_CI_PENDING",
   "work_order": "https://github.com/ouroboros965018276-collab/universal-project-governance/issues/26",
-  "baseline_revision": "53a229bfc609fd55a0028adc12bf77d42c051555",
-  "canonical_current_observation": "This audit owns current RC20.2 delivery facts; RC20.1 audit and paid studies remain historical.",
+  "baseline_revision": "3a96b2739f8b537ec355152cc5669d6508f7ebfb",
+  "canonical_current_observation": "Current RC20.3 engineering facts only; prior RC20.2 release remains exactly preserved in Git at baseline_revision.",
+  "previous_verified_release": {
+    "version": "3.0.0-rc.20.2",
+    "revision": "3a96b2739f8b537ec355152cc5669d6508f7ebfb",
+    "audit_path": "audits/rc20-git-checkpoints.audit.json",
+    "final_head_ci_run": 39427759804,
+    "ci_jobs_passed": 11,
+    "ci_jobs_total": 11,
+    "status": "PASS observed this task"
+  },
+  "workspace_health": {
+    "invocation_id": "477daa19c28c415189add1244bff831b",
+    "entry": "Codex desktop root functions.exec PowerShell, managed scoped escalation",
+    "project_path": "D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution",
+    "observed_at": "2026-10-20T13:18:43.6682645Z",
+    "powershell": "7.6.5",
+    "python": "3.12.10",
+    "git": "2.53.0.windows.3",
+    "write_read_delete": "PASS unique CreateNew handle/readback/DeleteOnClose cleanup",
+    "raw_result": "Current task tool transcript 90b302; each implementation agent checked its own actual entry.",
+    "permissions": "Current user-selected managed/auto-review mode retained; project writes use reviewed scoped tools."
+  },
   "scope": [
-    "Executable automatic commits inside the existing finish lifecycle after explicit project opt-in.",
-    "Actual candidate trees, task scope and baseline-dirty isolation; normal partial stage cadence and explicit handoff/risk/completion flush.",
-    "Bounded same-binding transaction recovery, native Git index locking and unrelated staged content preservation.",
-    "Regenerate, verify affected contracts/core gates, publish default main and verify installed runtime."
-  ],
-  "changes": [
-    "New optional git_checkpoint.py runtime helper and canonical defaults.",
-    "Existing project_tool git-configure/begin/finish/status/remove integration, no second managed ledger.",
-    "Optional git_boundary report field prevents ordinary handoff document refresh from defeating cadence.",
-    "Historical fixed-study model is now an immutable fixture with its original exact digest, independent of later candidate semantics."
+    "Explicit Git root initialization and verified native zero-parent commits with scoped initial adoption.",
+    "Independent project observer for hosts which never call begin/finish.",
+    "Quiet/cooldown/dedup/validator/source/token protection, manual workflow priority and cooperative stop.",
+    "Necessary real local Git/native process checks; final CI, main/installed byte identity and one bounded acceptance observation."
   ],
   "new_paid_model_calls": 0,
   "paid_test_decision": {
     "needed": false,
-    "reason": "Git effects, index/ref safety, dedup/cadence and interruption can be directly calibrated with real isolated local Git and deterministic tests. A paid model response cannot establish those invariants. Existing independent model efficacy/cost evidence is retained, not replayed."
+    "reason": "This feature is established by actual Git objects, native processes, source/index identities and deterministic local validators. No paid model trial is required or added."
   },
   "checks": {
-    "first_core_gates": [
-      {
-        "command": [
-          "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
-          "compiler/compile_governance.py",
-          "--check"
-        ],
-        "observed_at": "2026-10-20T12:44:19.826161+00:00",
-        "returncode": 0,
-        "elapsed_seconds": 0.266
-      },
-      {
-        "command": [
-          "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
-          "tools/governance_lint.py",
-          "."
-        ],
-        "observed_at": "2026-10-20T12:44:20.092099+00:00",
-        "returncode": 0,
-        "elapsed_seconds": 0.109
-      },
-      {
-        "command": [
-          "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
-          "tools/validate_qualification.py",
-          "."
-        ],
-        "observed_at": "2026-10-20T12:44:20.198910+00:00",
-        "returncode": 0,
-        "elapsed_seconds": 0.625
-      },
-      {
-        "command": [
-          "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
-          "tools/qualification_freeze.py",
-          ".",
-          "--check"
-        ],
-        "observed_at": "2026-10-20T12:44:20.825546+00:00",
-        "returncode": 0,
-        "elapsed_seconds": 0.157
-      },
-      {
-        "command": [
-          "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
-          "tools/validate_repository.py",
-          "."
-        ],
-        "observed_at": "2026-10-20T12:44:20.973534+00:00",
-        "returncode": 0,
-        "elapsed_seconds": 1.468
-      },
-      {
-        "command": [
-          "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
-          "tools/validate_skill_bundle.py",
-          "universal-project-governance"
-        ],
-        "observed_at": "2026-10-20T12:44:22.446464+00:00",
-        "returncode": 0,
-        "elapsed_seconds": 0.141
-      },
-      {
-        "command": [
-          "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
-          "universal-project-governance/scripts/validate_integrity.py",
-          "universal-project-governance"
-        ],
-        "observed_at": "2026-10-20T12:44:22.589985+00:00",
-        "returncode": 0,
-        "elapsed_seconds": 0.109
-      },
-      {
-        "command": [
-          "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
-          "tools/security_audit.py",
-          "."
-        ],
-        "observed_at": "2026-10-20T12:44:22.702811+00:00",
-        "returncode": 0,
-        "elapsed_seconds": 1.25
-      },
-      {
-        "command": [
-          "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
-          "tools/validate_navigation.py",
-          "."
-        ],
-        "observed_at": "2026-10-20T12:44:23.941711+00:00",
-        "returncode": 0,
-        "elapsed_seconds": 0.141
-      },
-      {
-        "command": [
-          "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
-          "-m",
-          "unittest",
-          "discover",
-          "-s",
-          "tests",
-          "-p",
-          "test_git_lifecycle.py",
-          "-v"
-        ],
-        "observed_at": "2026-10-20T12:44:24.085216+00:00",
-        "returncode": 0,
-        "elapsed_seconds": 16.766
-      }
-    ],
-    "public_lifecycle": {
-      "passed": true,
-      "tests": 4,
-      "raw_receipt": ".governance/git-stage-core-checks.json",
-      "note": "Before final noop event receipt correction; final affected/helper checks and CI required."
-    },
-    "final_core_contract_gates": [
-      {
-        "command": [
-          "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
-          "compiler/compile_governance.py",
-          "--check"
-        ],
-        "observed_at": "2026-10-20T12:53:21.068808+00:00",
-        "returncode": 0,
-        "elapsed_seconds": 0.282
-      },
-      {
-        "command": [
-          "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
-          "tools/governance_lint.py",
-          "."
-        ],
-        "observed_at": "2026-10-20T12:53:21.353279+00:00",
-        "returncode": 0,
-        "elapsed_seconds": 0.125
-      },
-      {
-        "command": [
-          "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
-          "tools/validate_qualification.py",
-          "."
-        ],
-        "observed_at": "2026-10-20T12:53:21.474524+00:00",
-        "returncode": 0,
-        "elapsed_seconds": 0.734
-      },
-      {
-        "command": [
-          "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
-          "tools/qualification_freeze.py",
-          ".",
-          "--check"
-        ],
-        "observed_at": "2026-10-20T12:53:22.206804+00:00",
-        "returncode": 0,
-        "elapsed_seconds": 0.156
-      },
-      {
-        "command": [
-          "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
-          "tools/validate_repository.py",
-          "."
-        ],
-        "observed_at": "2026-10-20T12:53:22.362684+00:00",
-        "returncode": 0,
-        "elapsed_seconds": 1.735
-      },
-      {
-        "command": [
-          "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
-          "tools/validate_skill_bundle.py",
-          "universal-project-governance"
-        ],
-        "observed_at": "2026-10-20T12:53:24.108812+00:00",
-        "returncode": 0,
-        "elapsed_seconds": 0.171
-      },
-      {
-        "command": [
-          "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
-          "universal-project-governance/scripts/validate_integrity.py",
-          "universal-project-governance"
-        ],
-        "observed_at": "2026-10-20T12:53:24.277549+00:00",
-        "returncode": 0,
-        "elapsed_seconds": 0.141
-      },
-      {
-        "command": [
-          "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
-          "tools/security_audit.py",
-          "."
-        ],
-        "observed_at": "2026-10-20T12:53:24.417909+00:00",
-        "returncode": 0,
-        "elapsed_seconds": 1.266
-      },
-      {
-        "command": [
-          "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
-          "tools/validate_navigation.py",
-          "."
-        ],
-        "observed_at": "2026-10-20T12:53:25.676257+00:00",
-        "returncode": 0,
-        "elapsed_seconds": 0.14
-      },
-      {
-        "command": [
-          "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
-          "tools/package_release.py",
-          "universal-project-governance",
-          "--output-dir",
-          ".governance/git-stage-package"
-        ],
-        "observed_at": "2026-10-20T12:53:25.822477+00:00",
-        "returncode": 0,
-        "elapsed_seconds": 0.813
-      },
-      {
-        "command": [
-          "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
-          "-m",
-          "unittest",
-          "discover",
-          "-s",
-          "tests",
-          "-p",
-          "test_operational_guidance.py",
-          "-v"
-        ],
-        "observed_at": "2026-10-20T12:53:26.639939+00:00",
-        "returncode": 0,
-        "elapsed_seconds": 1.109
-      },
-      {
-        "command": [
-          "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
-          "-m",
-          "unittest",
-          "discover",
-          "-s",
-          "tests",
-          "-p",
-          "test_decision_relevance_guidance.py",
-          "-v"
-        ],
-        "observed_at": "2026-10-20T12:53:27.747267+00:00",
-        "returncode": 0,
-        "elapsed_seconds": 0.188
-      },
-      {
-        "command": [
-          "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
-          "-m",
-          "unittest",
-          "discover",
-          "-s",
-          "tests",
-          "-p",
-          "test_engineering_study.py",
-          "-v"
-        ],
-        "observed_at": "2026-10-20T12:53:27.928616+00:00",
-        "returncode": 0,
-        "elapsed_seconds": 0.718
-      },
-      {
-        "command": [
-          "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
-          "-m",
-          "unittest",
-          "discover",
-          "-s",
-          "tests",
-          "-p",
-          "test_completion_outcomes.py",
-          "-v"
-        ],
-        "observed_at": "2026-10-20T12:53:28.648751+00:00",
-        "returncode": 0,
-        "elapsed_seconds": 3.594
-      }
-    ],
-    "real_git_and_public_lifecycle": {
-      "passed": true,
-      "tests": 30,
-      "elapsed_seconds": 116.015,
-      "raw_receipt": ".governance/git-stage-final-checks.json",
-      "helper_sha256": "95e741021781ec4a3ce7090ed636432e1ae62c58d087556115bd38211a39decf",
-      "project_tool_sha256": "57b957525de9c50cb8bf2077963eee5c6200af41ce4258e7d308a050f3c7a1b1",
-      "scope": "Final helper/lifecycle bytes. Later model schema and old invariant-test corrections change metadata only, not these scripts."
-    },
-    "historical_state_and_model_contract_regressions": {
-      "passed": true,
-      "tests": 60,
-      "raw_receipt": ".governance/git-stage-contract-checks.json"
-    },
-    "initial_local_full_regression": {
-      "collected": 1359,
-      "failures": 3,
-      "errors": 0,
+    "development_full_suite": {
+      "status": "PASS",
+      "tests": 1382,
       "skipped": 3,
-      "raw_receipt": ".governance/git-stage-full-tests.json",
-      "raw_log": ".governance/git-stage-full-tests.log",
-      "scope": "Pre-final helper import and pre-contract-correction run. Three failures exposed missing model schema property and obsolete core/delivery invariants, corrected with strict new type checks and unchanged old digests. Final cross-platform CI required; this is not claimed as a passing full run."
+      "raw": ".governance/rc203-check-11.log",
+      "source_sha256": {
+        "governance-src/model/governance-model.json": "1f9c3b234d12df8c4c296f4e371d4eeec50a35048af41ff42b40faea99f84ea9",
+        "governance-src/runtime-scripts/project_tool.py": "a9922d6f433ce0d1c9fd0543c6655cded432d73eba567c712f3970f726c888b9",
+        "governance-src/runtime-scripts/git_checkpoint.py": "a16f8691a94b0a8d4b7eb07cfd42b35bd475e19dba7c96dc639dfae6b084de01",
+        "governance-src/runtime-scripts/git_watch.py": "dd08d2349880dee3dc490d91ad944e4da0c70a3f9ce42e592de5e45dbe345817",
+        "qualification/FREEZE.json": "25f10c42af6a10b266fd021bcd206690e612fda8dfdd8110267589a76b2ccc78"
+      },
+      "limit": "Observed before final focused observer/receipt/portable-security corrections; final-source complete CI remains required."
     },
-    "qualification_freeze_sha256": "d42e2ae02b5976d9eaa2ca2f125302064a90556e24ab1100862fa4465d5a752f",
-    "runtime_delivered_files": 19,
+    "final_helper_bootstrap_lifecycle": {
+      "status": "PASS",
+      "tests": 40,
+      "source_sha256": {
+        "governance-src/runtime-scripts/git_checkpoint.py": "fe1e7279c16856179870fba1a6c06dd5e0270c38d6f83d3cefe39e13affe6793",
+        "governance-src/runtime-scripts/project_tool.py": "a9922d6f433ce0d1c9fd0543c6655cded432d73eba567c712f3970f726c888b9"
+      },
+      "checks": [
+        {
+          "check": "helper",
+          "returncode": 0,
+          "raw": ".governance/rc203-post-receipt-helper.log",
+          "summary": "_change) ... ok\r\ntest_rejecting_hook_preserves_head_index_and_worktree (test_git_checkpoints.GitCheckpointTests.test_rejecting_hook_preserves_head_index_and_worktree) ... ok\r\ntest_reverted_deferred_change_clears_pending_state_without_extra_commit (test_git_checkpoints.GitCheckpointTests.test_reverted_deferred_change_clears_pending_state_without_extra_commit) ... ok\r\ntest_selected_file_changed_after_preparation_is_not_committed_as_verified (test_git_checkpoints.GitCheckpointTests.test_selected_file_changed_after_preparation_is_not_committed_as_verified) ... ok\r\ntest_selected_partial_staging_blocks_without_losing_index_or_worktree (test_git_checkpoints.GitCheckpointTests.test_selected_partial_staging_blocks_without_losing_index_or_worktree) ... ok\r\ntest_sensitive_and_ignored_selected_files_never_enter_commit (test_git_checkpoints.GitCheckpointTests.test_sensitive_and_ignored_selected_files_never_enter_commit) ... ok\r\ntest_unrelated_staged_and_untracked_changes_are_preserved (test_git_checkpoints.GitCheckpointTests.test_unrelated_staged_and_untracked_changes_are_preserved) ... ok\r\ntest_updating_handoff_document_alone_does_not_bypass_partial_stage_cadence (test_git_checkpoints.GitCheckpointTests.test_updating_handoff_document_alone_does_not_bypass_partial_stage_cadence) ... ok\r\n\r\n----------------------------------------------------------------------\r\nRan 26 tests in 88.763s\r\n\r\nOK\r\n"
+        },
+        {
+          "check": "bootstrap",
+          "returncode": 0,
+          "raw": ".governance/rc203-post-receipt-bootstrap.log",
+          "summary": "y_initializes_commits_latest_source_and_deduplicates (test_git_bootstrap.GitBootstrapTests.test_explicit_no_repository_initializes_commits_latest_source_and_deduplicates) ... ok\r\ntest_initial_commit_preserves_unrelated_staged_entries (test_git_bootstrap.GitBootstrapTests.test_initial_commit_preserves_unrelated_staged_entries) ... ok\r\ntest_initialization_requires_explicit_authorization (test_git_bootstrap.GitBootstrapTests.test_initialization_requires_explicit_authorization) ... ok\r\ntest_large_untracked_neighborhood_outside_scope_does_not_block_initial_commit (test_git_bootstrap.GitBootstrapTests.test_large_untracked_neighborhood_outside_scope_does_not_block_initial_commit) ... ok\r\ntest_missing_identity_and_rejecting_hook_are_reported_and_recover_without_duplicate (test_git_bootstrap.GitBootstrapTests.test_missing_identity_and_rejecting_hook_are_reported_and_recover_without_duplicate) ... ok\r\ntest_selected_staged_initial_source_blocks_without_losing_owner_index (test_git_bootstrap.GitBootstrapTests.test_selected_staged_initial_source_blocks_without_losing_owner_index) ... ok\r\ntest_validated_source_hash_cannot_authorize_later_bytes_before_helper_capture (test_git_bootstrap.GitBootstrapTests.test_validated_source_hash_cannot_authorize_later_bytes_before_helper_capture) ... ok\r\n\r\n----------------------------------------------------------------------\r\nRan 10 tests in 31.592s\r\n\r\nOK\r\n"
+        },
+        {
+          "check": "lifecycle",
+          "returncode": 0,
+          "raw": ".governance/rc203-post-receipt-lifecycle.log",
+          "summary": "test_default_off_and_invalid_scope_do_not_grant_commit_permission (test_git_lifecycle.GitLifecycleTests.test_default_off_and_invalid_scope_do_not_grant_commit_permission) ... ok\r\ntest_deferred_scope_is_immutable_and_disable_explicitly_retires_scheduling (test_git_lifecycle.GitLifecycleTests.test_deferred_scope_is_immutable_and_disable_explicitly_retires_scheduling) ... ok\r\ntest_failed_git_commit_is_visible_and_same_finished_report_recovers (test_git_lifecycle.GitLifecycleTests.test_failed_git_commit_is_visible_and_same_finished_report_recovers) ... ok\r\ntest_finish_automatically_commits_and_exact_retry_does_not_duplicate_in_both_modes (test_git_lifecycle.GitLifecycleTests.test_finish_automatically_commits_and_exact_retry_does_not_duplicate_in_both_modes) ... ok\r\n\r\n----------------------------------------------------------------------\r\nRan 4 tests in 20.162s\r\n\r\nOK\r\n"
+        }
+      ]
+    },
+    "observer_focused": {
+      "coverage_cases": 14,
+      "earlier_run": {
+        "command": [
+          "py",
+          "-3",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "tests",
+          "-p",
+          "test_git_watch.py",
+          "-v"
+        ],
+        "tests": 14,
+        "passed": 13,
+        "failed": 1,
+        "returncode": 1,
+        "elapsed_seconds": 141.707,
+        "raw_source": "Verbatim concatenation of observed exec chunks; source/test identities recorded before the run."
+      },
+      "final_affected_retests": [
+        {
+          "command": [
+            "py",
+            "-3",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "tests",
+            "-p",
+            "test_git_watch.py",
+            "-k",
+            "published_commit_with_lost_receipt",
+            "-v"
+          ],
+          "tests": 1,
+          "passed": 1,
+          "failed": 0,
+          "returncode": 0,
+          "elapsed_seconds": 7.074,
+          "source_identity": "final_sha256"
+        },
+        {
+          "command": [
+            "py",
+            "-3",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "tests",
+            "-p",
+            "test_git_watch.py",
+            "-k",
+            "native_failed_validator",
+            "-v"
+          ],
+          "tests": 1,
+          "passed": 1,
+          "failed": 0,
+          "returncode": 0,
+          "elapsed_seconds": 13.301,
+          "source_identity": "final_sha256"
+        }
+      ],
+      "final_sha256": {
+        "governance-src/runtime-scripts/git_checkpoint.py": "fe1e7279c16856179870fba1a6c06dd5e0270c38d6f83d3cefe39e13affe6793",
+        "governance-src/runtime-scripts/git_watch.py": "59b42de0c5b2b2cd45a57ba5137ce92ea46a8e03a1748acb1f9d006c3db6001d",
+        "tests/test_git_watch.py": "8ef995e7914a1d54b3c71332a315e48bd17956a55a6b26db919198b1daa713ff",
+        "qualification/FREEZE.json": "fede91d0d5d384e730e9973ef6e1b6630d956fa2aeaa02a9d83c5ada8b76165c",
+        "universal-project-governance/integrity/manifest.json": "3437972d69575f7421721e47366e6443264aaaec9beeefb8d08cfd8bac91569a"
+      },
+      "coverage_limits": {
+        "earlier_module_run": "14 observed on prior source: 13 pass, 1 demonstrated failure. Kept unchanged above.",
+        "focused_retest": "2 affected cases passed on final helper/watcher/runtime bytes. Other 12 earlier watcher case results are inherited, not claimed rerun on this final source.",
+        "remaining_verification": "Root owns affected helper/bootstrap/lifecycle regression, static checks, and complete final-source CI."
+      },
+      "raw_receipt": ".governance/rc203-watch-final.json"
+    },
+    "portable_launch_security": {
+      "status": "PASS",
+      "tests": 5,
+      "raw": "Current task transcript685b6e; final-source static gate also passed.",
+      "reviewed_launch_digest": "478c9779a152350869e6a2709fa1a683e9f3981ee982ed9b7bd6fa2a0feecebb",
+      "limit": "Normalize empty type_params and transparent Python3.8 Index only; complete supported interpreter matrix remains required in CI."
+    },
+    "final_static_package": {
+      "status": "PASS",
+      "checks": [
+        {
+          "argv": [
+            "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+            "compiler/compile_governance.py",
+            "--check"
+          ],
+          "returncode": 0,
+          "elapsed_seconds": 0.297,
+          "raw": ".governance/rc203-post-receipt-gate-0.log"
+        },
+        {
+          "argv": [
+            "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+            "tools/governance_lint.py",
+            "."
+          ],
+          "returncode": 0,
+          "elapsed_seconds": 0.109,
+          "raw": ".governance/rc203-post-receipt-gate-1.log"
+        },
+        {
+          "argv": [
+            "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+            "tools/validate_qualification.py",
+            "."
+          ],
+          "returncode": 0,
+          "elapsed_seconds": 0.641,
+          "raw": ".governance/rc203-post-receipt-gate-2.log"
+        },
+        {
+          "argv": [
+            "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+            "tools/qualification_freeze.py",
+            ".",
+            "--check"
+          ],
+          "returncode": 0,
+          "elapsed_seconds": 0.14,
+          "raw": ".governance/rc203-post-receipt-gate-3.log"
+        },
+        {
+          "argv": [
+            "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+            "tools/validate_repository.py",
+            "."
+          ],
+          "returncode": 0,
+          "elapsed_seconds": 1.5,
+          "raw": ".governance/rc203-post-receipt-gate-4.log"
+        },
+        {
+          "argv": [
+            "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+            "tools/validate_skill_bundle.py",
+            "universal-project-governance"
+          ],
+          "returncode": 0,
+          "elapsed_seconds": 0.156,
+          "raw": ".governance/rc203-post-receipt-gate-5.log"
+        },
+        {
+          "argv": [
+            "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+            "universal-project-governance/scripts/validate_integrity.py",
+            "universal-project-governance"
+          ],
+          "returncode": 0,
+          "elapsed_seconds": 0.125,
+          "raw": ".governance/rc203-post-receipt-gate-6.log"
+        },
+        {
+          "argv": [
+            "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+            "tools/security_audit.py",
+            "."
+          ],
+          "returncode": 0,
+          "elapsed_seconds": 1.204,
+          "raw": ".governance/rc203-post-receipt-gate-7.log"
+        },
+        {
+          "argv": [
+            "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+            "tools/validate_navigation.py",
+            "."
+          ],
+          "returncode": 0,
+          "elapsed_seconds": 0.14,
+          "raw": ".governance/rc203-post-receipt-gate-8.log"
+        },
+        {
+          "argv": [
+            "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+            "tools/package_release.py",
+            "universal-project-governance",
+            "--output-dir",
+            ".governance/rc203-post-receipt-package"
+          ],
+          "returncode": 0,
+          "elapsed_seconds": 0.875,
+          "raw": ".governance/rc203-post-receipt-gate-9.log"
+        }
+      ],
+      "qualification_fingerprint": "sha256:07ad38059be6f069c9cd200ce6d22a7a16a26e2af1c48968830d5117d7df28a2",
+      "package_sha256": "f9255dcea067b175b3c3f7fea7ff9a2ace38bce5621005396d226a0d55466321",
+      "delivered_files": 20,
+      "manifest_covered_files": 19
+    },
+    "native_outer_host_boundary": {
+      "fixture": "D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution\\eval-workspaces\\rc203-host-boundary-bvrfz3y0",
+      "pid": 13916,
+      "token": "5318662156384eb3951634008f01762b",
+      "starting_cli_exited": true,
+      "scope": "Outer host tool execution will now return; next independent tool must observe this worker.",
+      "cross_tool_worker_survival": true,
+      "external_native_edit_committed": true,
+      "commit_count": 2,
+      "actual_process_exit_confirmed": true,
+      "status": "PASS",
+      "cleanup_confirmed": true,
+      "limit": "Development observation of the unchanged fixed launch mechanism; final native worker/installed/root observations remain distinct."
+    },
     "final_source_ci": {
-      "status": "PASS",
-      "source_revision": "ccbccfc22ea997608364fc2be4dd78d13ec48d9a",
-      "run_id": 39426044604,
-      "url": "https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/39426044604",
-      "jobs_passed": 11,
-      "jobs_total": 11,
-      "linux_python311": {
-        "collected": 1361,
-        "failures": 0,
-        "errors": 0,
-        "skipped": 2
-      },
-      "windows_python311": {
-        "collected": 1361,
-        "failures": 0,
-        "errors": 0,
-        "skipped": 0
-      },
-      "python38_scope": "Compatibility matrix collected926 with534 skips, not claimed as1361 complete modern tests.",
-      "raw_receipt": ".governance/git-stage-ci-final.json"
-    },
-    "default_main_installation_ci": {
-      "status": "PASS",
-      "revision": "cea1cbc855495ba18597d2a9a843708b015eadeb",
-      "run_id": 39427167718,
-      "source_integrity": "PASS",
-      "clean_remote_default_branch_skill_install": "PASS",
-      "scope": "Default-main source integrity and clean remote installation, not a claim that all repeated main jobs have completed.",
-      "raw_receipt": ".governance/git-stage-main-install-ci.json"
-    },
-    "installed_public_lifecycle": {
-      "passed": true,
-      "tests": 4,
-      "integrity_generated_files": 18,
-      "discovered_enabled_upg": 1,
-      "discovery_errors": 0,
-      "new_paid_model_calls": 0,
-      "raw_receipt": ".governance/git-stage-install.json"
-    },
-    "release_package_sha256": "27c6e7554e25840872ea27edd11b285733220027a9265bd1632c1fa04feacd73"
+      "status": "PENDING"
+    }
   },
   "delivery": {
-    "github": {
-      "status": "MERGED",
-      "pull_request": "https://github.com/ouroboros965018276-collab/universal-project-governance/pull/27",
-      "source_revision": "ccbccfc22ea997608364fc2be4dd78d13ec48d9a",
-      "merge_revision": "cea1cbc855495ba18597d2a9a843708b015eadeb",
-      "default_branch": "main",
-      "source_ci_jobs_passed": 11,
-      "source_ci_run": 39426044604,
-      "default_main_remote_installation_passed": true
-    },
-    "installation": {
-      "status": "PASS",
-      "observed_at": "2026-10-20T13:03:46.507748+00:00",
-      "version": "3.0.0-rc.20.2",
-      "source_revision": "cea1cbc855495ba18597d2a9a843708b015eadeb",
-      "target": "C:\\Users\\96501\\.codex\\skills\\universal-project-governance",
-      "backup": "D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution\\.governance\\installed-rc20-2-backup-5d15b12caf02",
-      "backup_files": 21,
-      "backup_readback": true,
-      "delivered_files": 19,
-      "changed_files": [
-        "SKILL.md",
-        "VERSION.md",
-        "policy-index.json",
-        "schemas/field-report.schema.json",
-        "scripts/git_checkpoint.py",
-        "scripts/project_tool.py",
-        "integrity/manifest.json"
-      ],
-      "all_bytes_equal_default_main": true,
-      "unmanaged_files_preserved": true,
-      "host_configuration_changed": false
-    },
-    "fresh_discovery": {
-      "official_cli": "C:\\Users\\96501\\.agent-environment\\runtimes\\codex-0.162.0-alpha.20\\bin\\codex.exe",
-      "enabled_upg": 1,
-      "errors": 0,
-      "process_exit": 0,
-      "new_model_calls": 0,
-      "scope": "Not claimed; fresh official discovery and installed bytes only."
-    },
-    "project_git_opt_in": {
-      "enabled": true,
-      "allowed_paths": [
-        "."
-      ],
-      "status_paths": [],
-      "min_interval_seconds": 300,
-      "baseline_head": "cea1cbc855495ba18597d2a9a843708b015eadeb",
-      "preexisting_dirty_path_count": 5,
-      "receipt_location": ".governance/upg.json git_checkpoint plus Git UPG-Checkpoint trailers; final lifecycle publication follows these observed release checks."
-    },
-    "receipt_publication": "This audit publishes observed source CI, merge, installation and opt-in facts. The final lifecycle Git receipt belongs in binding/Git, avoiding a self-referential commit-id rewrite or another timestamp commit. Documentation follow-up changes no tested runtime bytes."
+    "github": "PENDING complete source CI and default-main merge",
+    "installation": "PENDING backup,20-file main identity,8 installed native checks and fresh official discovery"
   },
-  "preliminary_failures": [
-    {
-      "entry": "root public lifecycle test fixture",
-      "result": "First 3-method run had 4 fixture setup errors: source project_tool loaded without compiled index; no automatic commit path reached. Corrected test harness to use compiled public runtime; original output retained in tool transcript 0918a5."
-    },
-    {
-      "entry": "independent real Git fixture",
-      "result": "Prepare-time index write attempt was correctly rejected by native Git lock; fixture expectation corrected to assert that refusal, preserving the real safety behavior."
-    },
-    {
-      "entry": "initial full local suite",
-      "result": "1359 collected; 3 failures,0 errors,3 skips. New Git default absent from closed source schema; old compact-expression digest projected new default/Git sentence; old delivery budget expected18 rather than19. Corrected affected source schema and targeted invariants; all original digest constants retained,17 affected tests pass."
-    }
-  ],
   "remaining_goals": [
-    "Independent cross-agent joint token/time benefit is NOT_ESTABLISHED; formal qualification UNASSESSED; locked NOT_RUN; no Stable or universal perfection claim.",
-    "Hosts must actually call begin/finish; no autonomous background daemon, host-wide interception or guaranteed execution by every model exists.",
-    "Each project needs explicit Git capability/scope opt-in. Repositories without Git or first commit are not initialized automatically; detached/sparse/split-index/conflicted and unsupported effective-config contexts block.",
-    "Hard-kill stale UPG/native writer locks and unproven concurrent/hook source/index divergence can require owner inspection; no destructive automatic recovery.",
-    "Insight application remains partial/unaccepted at prior observation. No application changes or full-product acceptance were performed this task."
+    "Independent cross-agent joint token/time benefit NOT_ESTABLISHED; formal UNASSESSED; locked NOT_RUN; no Stable/perfection claim.",
+    "Watcher requires an authorized local Python/Git process and running OS; no permission bypass or system startup service is installed.",
+    "Unsupported advanced Git contexts, arbitrary custom hooks and unresolved stale locks can still require owner inspection.",
+    "Insight application remains prior partial/unaccepted state; this task does not modify application code."
   ],
   "preserved_preexisting_changes": {
     "audits/rc19-nine-native-development-v2.preregistration.json": "6b92bad0ea3a542993dd261b3c73bdf5d3731411119bfa3988fca87e602e486a",
@@ -466,76 +325,37 @@
   "formal_qualification": "UNASSESSED",
   "locked_trials": "NOT_RUN",
   "stable": false,
-  "workspace_health": {
-    "invocation_id": "3b04623b60ec450397f1e622ff67fa55",
-    "entry": "Codex desktop root functions.exec PowerShell",
-    "project_path": "D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution",
-    "observed_at": "2026-10-20T12:13:53Z",
-    "powershell": "7.6.5",
-    "python": "3.12.10",
-    "git": "2.53.0.windows.3",
-    "write_read_delete": "PASS: unique project file CreateNew/write/readback/cleanup",
-    "raw_result": "Retained in this task tool transcript for invocation_id; each subagent verified its own declared entry."
-  },
-  "review_corrections": [
-    {
-      "problem": "Ordinary handoff document refresh bypassed cadence.",
-      "resolution": "Only explicit git_boundary handoff/risk or complete flush early; normal handoff updated is not a Git boundary."
-    },
-    {
-      "problem": "Pending paths could cross workflows and grant ownership of old dirty files.",
-      "resolution": "Bind pending_workflow_id; begin refuses replacing a pending workflow baseline."
-    },
-    {
-      "problem": "Deferred exact event retry could use new unvalidated bytes.",
-      "resolution": "Persist original source/scope fingerprint; require new verified stage when bytes change."
-    },
-    {
-      "problem": "HEAD could advance between precheck and native commit, publishing wrong parent/tree.",
-      "resolution": "Run native hooks/signing commit in private detached context, verify tree/parent/token, persist prepared oid then compare-and-swap exact real branch."
-    },
-    {
-      "problem": "Changing scope while paths awaited publication could falsely cover omitted paths.",
-      "resolution": "Public configuration rejects allow/status scope changes while pending/deferred; explicit disable retires scheduling and lists uncommitted paths without changing files."
-    },
-    {
-      "problem": "Reverted deferred paths leaked queue slots; noop events lacked receipts and could later reuse old validation.",
-      "resolution": "Retire only current workflow deferrals when all selected differences vanish; record unchanged receipt for every successful noop, with fixed256 cache covering current200-stage contract."
-    }
-  ],
-  "historical_study_preservation": {
-    "fixture": "tests/fixtures/engineering-study-frozen-rc20-model.json",
-    "full_model_sha256": "1134b46cb5ba6825b44e747e75dfbfbdd4ea878f0466d5675a60774dae99f399",
-    "original_protocols_results_and_thresholds": "UNCHANGED",
-    "production_admission": "UNCHANGED"
-  },
-  "inherited_original_goals": {
-    "authority": "audits/rc20-self-review.audit.json capabilities section is historical baseline; this audit supersedes only its Git guidance-only assessment.",
-    "attribution_task_scope_state_risk_offline_evolution": "Implemented contracts with evidence limits retained from RC20.1.",
-    "current_git_goal": "IMPLEMENTED_AND_ENGINEERING_VERIFIED: executable opt-in lifecycle commits, not guidance only.",
-    "insight_application": "No new changes this task. Prior observed project-state synchronization passed; entire application remains partial/unaccepted, source_verified false at that observation.",
-    "independent_model_efficacy": "NOT_ESTABLISHED; no new paid run."
-  },
-  "source_publication_policy": "One meaningful source stage commit bootstraps the new mechanism; after verified release and installation the project opts in and final delivery observation is an automatic lifecycle stage. No timer, per-tool commits or automatic push.",
   "preparation_observations": [
     {
-      "entry": "root merge orchestration",
-      "result": "JavaScript syntax preparation failed before any nested tool dispatch; GitHub merge had not started. Corrected script then dispatched exact-head merge successfully."
+      "entry": "restricted read-only Git status",
+      "result": "Sandbox Git status in the external linked worktree reported not a work tree; actual scoped escalated entry reports correct non-bare worktree and versions. No ACL or repository-corruption inference."
     },
     {
-      "entry": "CI read-only status",
-      "result": "One status response lacked the expected structured payload; parsing failed. One read-only retry observed11/11 success; no business write was attempted in the failed read."
+      "entry": "bootstrap agent sandbox preparation",
+      "result": "Restricted py/TEMP preparation failed before business Git tests. Retried through its verified scoped actual-project entry; unique empty temporary directory checked and removed non-recursively."
     }
   ],
-  "raw_receipt_sha256": {
-    ".governance/git-stage-core-checks.json": "72b699537256e9ce92ae89cbc9f64fcf9afc3f699f4c3d83bc36d0986258597e",
-    ".governance/git-stage-full-tests.json": "32b4e19090ae42fd48e231df7805568c3fcd8b921cead31bdbe5e10200c89188",
-    ".governance/git-stage-full-tests.log": "f2b45822b4424fb8e5fcd7a768f1cc725e6319a3a6f838c779ee2dbf636a8e55",
-    ".governance/git-stage-final-checks.json": "11da693f71143eadd28c7fbe3415cf1f832cb4c23f2bf71437f11a2a73dddcd0",
-    ".governance/git-stage-contract-checks.json": "5acc37cf3634325c69ca57becf59094ee83f7274fdaf6987df03ddf41b7566d1",
-    ".governance/git-stage-ci-final.json": "42f8ce6e2ea4e7e0953c7d82db9f9eea4648f7a82b0f767afebbbd82976f9015",
-    ".governance/git-stage-main-install-ci.json": "0751b605de03c740c0150f2d091d27a6a977b6344fbab406c233960de53eaa90",
-    ".governance/git-stage-install.json": "0e95944462d632f7f941e3bd47822deddd812fbd1247861a186ede3a7588091f",
-    ".governance/git-stage-project-opt-in.json": "420d25b62f1a54e79ccc69f14ff931d5a28f31bb8f838a112a31da4e3c8556ea"
-  }
+  "source_sha256": {
+    "governance-src/model/governance-model.json": "1f9c3b234d12df8c4c296f4e371d4eeec50a35048af41ff42b40faea99f84ea9",
+    "governance-src/runtime-scripts/project_tool.py": "a9922d6f433ce0d1c9fd0543c6655cded432d73eba567c712f3970f726c888b9",
+    "governance-src/runtime-scripts/git_checkpoint.py": "fe1e7279c16856179870fba1a6c06dd5e0270c38d6f83d3cefe39e13affe6793",
+    "governance-src/runtime-scripts/git_watch.py": "59b42de0c5b2b2cd45a57ba5137ce92ea46a8e03a1748acb1f9d006c3db6001d",
+    "qualification/FREEZE.json": "fede91d0d5d384e730e9973ef6e1b6630d956fa2aeaa02a9d83c5ada8b76165c",
+    "tools/security_audit.py": "9ed5b086ce5152cad015106656a11cc1317aba8842dfc21561e566b375e73fb2",
+    "tests/test_git_watch_security.py": "03b3b6c466270b350fdfe4ee204475796613a2e43d5850a19b2e27898983d80e",
+    "tests/test_git_bootstrap.py": "79f002e7288ecbd0e8c0b9409dd479501af1649024fc826cb2c684ff5830f127",
+    "tests/test_git_watch.py": "8ef995e7914a1d54b3c71332a315e48bd17956a55a6b26db919198b1daa713ff",
+    "universal-project-governance/integrity/manifest.json": "3437972d69575f7421721e47366e6443264aaaec9beeefb8d08cfd8bac91569a"
+  },
+  "review_corrections": [
+    "Follow verified same-branch fast-forward external commits using a new observer workflow; persist baseline through quiet/cooldown. Rollback/removal/fork remains blocked.",
+    "Recover the original durable observer journal before interpreting published HEAD as external progress; preserve original validation intent/event.",
+    "Retain original protected dirt only; edits created during validation remain eligible for the next stage.",
+    "Retry temporary writer-lock occupancy without killing the worker; failed diagnostic/stop acknowledgement writes cannot fake health.",
+    "Recheck token/generation/validation ownership before each validator; revoked ownership prevents the next command.",
+    "Failed-candidate backoff remains blocked in public health.",
+    "Actual receipt-write failure exposed premature recovery-artifact cleanup. Restore pre-receipt in-memory policy on persistence failure; original-event recovery makes no extra commit or validator call.",
+    "Portable labelled AST identity preserves the sole fixed own-worker launch across supported Python versions without broadening process permission."
+  ],
+  "commit_policy": "One meaningful source checkpoint and one final acceptance observation; no progress/timestamp-only commit loop. New paid model calls remain zero."
 }

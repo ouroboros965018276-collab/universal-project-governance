@@ -2,7 +2,8 @@
 """Bounded, opt-in Git checkpoints at observed governance stage boundaries.
 
 The binding owns the journal. Git owns commits and its native index lock; no
-timer, push, initialization, configuration rewrite or parallel ledger is used.
+timer, push, host-configuration rewrite or parallel ledger is used. Explicit
+bootstrap initializes only the selected project and can adopt its first files.
 """
 from __future__ import annotations
 
@@ -82,11 +83,38 @@ def _relative(value):
     return path.as_posix()
 
 
-def _repo(root):
+def _check_environment():
     overrides = {"GIT_DIR", "GIT_WORK_TREE", "GIT_COMMON_DIR", "GIT_INDEX_FILE", "GIT_OBJECT_DIRECTORY",
                  "GIT_ALTERNATE_OBJECT_DIRECTORIES", "GIT_NAMESPACE", "GIT_CEILING_DIRECTORIES"}
     if any(k.upper() in overrides or k.upper().startswith("GIT_CONFIG_") for k in os.environ):
         raise CheckpointError("git-environment-redirection-unsupported")
+
+
+def _head(root, admin=None):
+    result = _git(root, ["rev-parse", "--verify", "HEAD"], check=False, admin=admin)
+    if result.returncode:
+        return None
+    head = result.stdout.decode("ascii").strip()
+    if not re.fullmatch(r"[0-9a-f]{40,64}", head):
+        raise CheckpointError("invalid-git-head")
+    return head
+
+
+def _index_bytes(index):
+    return index.read_bytes() if index.exists() else None
+
+
+def _index_digest(index):
+    raw = _index_bytes(index)
+    return _digest(raw) if raw is not None else None
+
+
+def _empty_tree(root):
+    return _text(root, ["hash-object", "-t", "tree", os.devnull])
+
+
+def _repo(root):
+    _check_environment()
     root = Path(root).resolve()
     if (root / ".git").is_symlink():
         raise CheckpointError("symlinked-git-directory")
@@ -95,9 +123,11 @@ def _repo(root):
         raise CheckpointError("project-must-be-git-worktree-root")
     directory = Path(_text(root, ["rev-parse", "--absolute-git-dir"])).resolve()
     branch = _text(root, ["symbolic-ref", "--quiet", "HEAD"])
-    head = _text(root, ["rev-parse", "--verify", "HEAD"])
-    if not branch.startswith("refs/heads/") or not re.fullmatch(r"[0-9a-f]{40,64}", head):
-        raise CheckpointError("detached-or-unborn-head")
+    head = _head(root)
+    if not branch.startswith("refs/heads/"):
+        raise CheckpointError("detached-head")
+    if head is None and _git(root, ["show-ref", "--verify", "--quiet", branch], check=False).returncode != 1:
+        raise CheckpointError("unresolved-git-head")
     for name in ["MERGE_HEAD", "CHERRY_PICK_HEAD", "REVERT_HEAD", "rebase-merge", "rebase-apply", "sequencer"]:
         if (directory / name).exists():
             raise CheckpointError("git-operation-in-progress")
@@ -109,9 +139,87 @@ def _repo(root):
     if sparse.stdout.strip() == b"true":
         raise CheckpointError("sparse-checkout-unsupported")
     index = directory / "index"
-    if not index.is_file() or index.is_symlink():
+    if index.is_symlink() or (index.exists() and not index.is_file()) or (head is not None and not index.is_file()):
         raise CheckpointError("missing-or-symlinked-index")
     return root, directory, branch, head, index
+
+
+def _in_scope(path, policy):
+    allow = policy.get("allowed_paths", [])
+    if not isinstance(allow, list) or not allow:
+        raise CheckpointError("allowed-paths-required")
+    allowed = [_relative(p) for p in allow if p != "."]
+    return "." in allow or any(_key(path) == _key(p) or _key(path).startswith(_key(p) + os.sep) for p in allowed)
+
+
+def _excluded(path, policy):
+    return (any(part.lower() in {".git", ".governance"} for part in PurePosixPath(path).parts)
+            or _key(path) in {_key(_relative(p)) for p in policy.get("status_paths", [])})
+
+
+def _repository_observation(root):
+    directory = Path(_text(root, ["rev-parse", "--absolute-git-dir"])).resolve()
+    common = Path(_text(root, ["rev-parse", "--git-common-dir"]))
+    common = common.resolve() if common.is_absolute() else (root / common).resolve()
+    configs = {}
+    for path in [common / "config", directory / "config.worktree"]:
+        if path.is_symlink():
+            raise CheckpointError("symlinked-parent-git-config")
+        configs[str(path)] = _digest(path.read_bytes()) if path.is_file() else None
+    if (directory / "index").is_symlink():
+        raise CheckpointError("symlinked-parent-index")
+    branch = _git(root, ["symbolic-ref", "--quiet", "HEAD"], check=False).stdout.decode("utf-8", "surrogateescape").strip()
+    return {"root": str(root), "head": _head(root), "branch": branch,
+            "index_sha256": _index_digest(directory / "index"), "config_sha256": configs}
+
+
+def _parent_state(root):
+    found = _git(root, ["rev-parse", "--show-toplevel"], check=False)
+    if found.returncode:
+        return None
+    parent = Path(found.stdout.decode("utf-8", "surrogateescape").strip()).resolve()
+    return _repository_observation(parent) if parent != root else None
+
+
+def bootstrap(root, policy):
+    """Explicitly initialize this project only; never adopt its parent's Git."""
+    initialized = False
+    try:
+        _check_environment()
+        if not isinstance(policy, dict):
+            raise CheckpointError("invalid-git-checkpoint-policy")
+        root = Path(root).resolve()
+        if not root.is_dir():
+            raise CheckpointError("project-directory-required")
+        local = root / ".git"
+        if local.is_symlink():
+            raise CheckpointError("symlinked-git-directory")
+        if local.exists():
+            return dict(capture(root, policy), initialized=False, parent_isolated=False)
+        if policy.get("enabled") is not True or policy.get("bootstrap") is not True:
+            raise CheckpointError("git-bootstrap-not-enabled")
+        _in_scope("bootstrap-policy-probe", policy)  # Validate literal scopes before any write.
+        _excluded("bootstrap-policy-probe", policy)
+        parent_before = _parent_state(root)
+        # Native init respects the owner's project template/default-branch settings.
+        # An uncertain command is not repeated: inspect the resulting local repo.
+        failure = None
+        try:
+            process = _git(root, ["init", "--quiet"], check=False)
+            if process.returncode:
+                failure = "git-init-failed"
+        except CheckpointError as error:
+            failure = str(error)
+        initialized = local.exists()
+        if parent_before is not None and parent_before != _repository_observation(Path(parent_before["root"])):
+            raise CheckpointError("parent-git-state-changed-during-bootstrap")
+        if failure:
+            raise CheckpointError(failure)
+        snapshot = capture(root, policy)
+        return dict(snapshot, initialized=initialized, parent_isolated=parent_before is not None,
+                    parent_before=parent_before)
+    except (OSError, CheckpointError) as error:
+        return {"ok": False, "reason": str(error), "initialized": initialized}
 
 
 def capture(root, policy):
@@ -119,21 +227,39 @@ def capture(root, policy):
     try:
         root, directory, branch, head, index = _repo(root)
         records = _git(root, ["status", "--porcelain=v1", "-z", "--untracked-files=all"]).stdout.split(b"\0")
-        dirty, i = [], 0
+        dirty, untracked, i = [], [], 0
         while i < len(records):
             row = records[i]
             i += 1
             if not row:
                 continue
-            dirty.append(row[3:].decode("utf-8", "surrogateescape"))
+            path = row[3:].decode("utf-8", "surrogateescape")
+            dirty.append(path)
+            if row[:2] == b"??":
+                untracked.append(path)
             if b"R" in row[:2] or b"C" in row[:2]:
                 if i < len(records) and records[i]:
                     dirty.append(records[i].decode("utf-8", "surrogateescape"))
                     i += 1
+        if head is None:
+            # Initial adoption is explicit to this scope; unrelated project files
+            # neither grant ownership nor consume its bounded baseline budget.
+            dirty = [path for path in dirty if not _excluded(path, policy) and _in_scope(path, policy)]
         if len(set(dirty)) > MAX_PATHS:
             raise CheckpointError("baseline-path-limit")
+        adopted = {}
+        if head is None:
+            for path in untracked:
+                if _excluded(path, policy) or not _in_scope(path, policy):
+                    continue
+                try:
+                    adopted.update(_sources(root, [path]))
+                except CheckpointError:
+                    # Sensitive/symlinked files are never adopted by a broad scope.
+                    continue
         return {"ok": True, "head": head, "branch": branch,
-                "dirty_paths": sorted(set(dirty)), "observed_at": time.time()}
+                "dirty_paths": sorted(set(dirty)), "adoption_sources": adopted,
+                "observed_at": time.time()}
     except (OSError, CheckpointError) as error:
         return {"ok": False, "reason": str(error)}
 
@@ -187,23 +313,20 @@ def _select(root, policy, payload):
         raise CheckpointError("invalid-checkpoint-paths")
     if pending and policy.get("pending_workflow_id") != payload.get("workflow_id"):
         raise CheckpointError("pending-paths-belong-to-another-workflow")
-    allow = policy.get("allowed_paths", [])
-    if not isinstance(allow, list) or not allow:
-        raise CheckpointError("allowed-paths-required")
-    allowed = [_relative(p) for p in allow if p != "."]
-    status = {_key(_relative(p)) for p in policy.get("status_paths", [])}
+    _in_scope("checkpoint-policy-probe", policy)
+    _excluded("checkpoint-policy-probe", policy)
     dirty = {_key(p) for p in policy["start"]["snapshot"].get("dirty_paths", [])}
     previous_pending = {_key(p) for p in pending}
+    adopted = {_key(p) for p in policy["start"]["snapshot"].get("adoption_sources", {})} if policy["start"]["snapshot"].get("head") is None else set()
     selected = set()
     for value in declared + pending:
         path = _relative(value)
-        parts = PurePosixPath(path).parts
-        if any(part.lower() in {".git", ".governance"} for part in parts) or _key(path) in status:
+        if _excluded(path, policy):
             continue
-        if "." not in allow and not any(_key(path) == _key(p) or _key(path).startswith(_key(p) + os.sep) for p in allowed):
+        if not _in_scope(path, policy):
             continue
         _safe_file(root, path)
-        if _key(path) in dirty and _key(path) not in previous_pending:
+        if _key(path) in dirty and _key(path) not in previous_pending and _key(path) not in adopted:
             raise CheckpointError("preexisting-dirty-path")
         if _git(root, ["check-ignore", "--quiet", "--", path], check=False).returncode == 0:
             raise CheckpointError("ignored-selected-path")
@@ -231,13 +354,18 @@ def _clean(directory):
     # Exact owned files only; never recursively remove an unexpected artifact.
     admin = directory / "private-admin"
     if admin.is_dir() and not admin.is_symlink():
-        for relative in ["HEAD", "HEAD.lock", "commondir", "config.worktree", "COMMIT_EDITMSG", "ORIG_HEAD", "logs/HEAD", "logs/HEAD.lock"]:
+        for relative in ["HEAD", "HEAD.lock", "commondir", "config.worktree", "COMMIT_EDITMSG", "ORIG_HEAD", "logs/HEAD", "logs/HEAD.lock",
+                         "refs/worktree/upg-initial", "refs/worktree/upg-initial.lock",
+                         "logs/refs/worktree/upg-initial", "logs/refs/worktree/upg-initial.lock"]:
             path = admin / relative
-            if path.parent.is_symlink():
+            parts = PurePosixPath(relative).parts
+            if any(admin.joinpath(*parts[:i]).is_symlink() for i in range(1, len(parts))):
                 continue
             if path.is_file() and not path.is_symlink():
                 path.unlink()
-        for path in [admin / "logs", admin]:
+        for path in [admin / "refs/worktree", admin / "refs", admin / "logs/refs/worktree", admin / "logs/refs", admin / "logs", admin]:
+            if path.is_symlink() or any(parent.is_symlink() for parent in path.parents if parent != admin.parent and admin in parent.parents):
+                continue
             try:
                 path.rmdir()
             except OSError:
@@ -286,8 +414,10 @@ def _index_lock(index, journal=None):
 
 
 def _verify_commit(root, commit, journal):
+    if not isinstance(commit, str) or not re.fullmatch(r"[0-9a-f]{40,64}", commit):
+        return False
     fields = _text(root, ["show", "-s", "--format=%T%n%P%n%B", commit]).splitlines()
-    return (len(fields) >= 3 and fields[0] == journal["tree"] and fields[1] == journal["parent"]
+    return (len(fields) >= 3 and fields[0] == journal["tree"] and fields[1] == (journal["parent"] or "")
             and ("UPG-Checkpoint: " + journal["token"]) in fields[2:])
 
 
@@ -301,7 +431,7 @@ def _private_admin(root, directory, artifact, journal):
         common = Path(_text(root, ["rev-parse", "--git-common-dir"]))
         common = common.resolve() if common.is_absolute() else (root / common).resolve()
         (admin / "commondir").write_text(common.as_posix() + "\n", encoding="utf-8")
-        (admin / "HEAD").write_text(journal["parent"] + "\n", encoding="ascii")
+        (admin / "HEAD").write_text((journal["parent"] or "ref: refs/worktree/upg-initial") + "\n", encoding="ascii")
         local_config = directory / "config.worktree"
         if local_config.is_symlink():
             raise CheckpointError("symlinked-worktree-config")
@@ -322,11 +452,11 @@ def _complete(root, directory, index, binding, save, journal, commit, stream, lo
     next_raw = (artifact / "next-index").read_bytes()
     if _digest(next_raw) != journal["next_index_sha256"]:
         raise CheckpointError("prepared-index-drift")
-    current = _digest(index.read_bytes())
+    current = _index_digest(index)
     if current != journal["next_index_sha256"]:
         if current != journal["index_sha256"]:
             raise CheckpointError("real-index-drift")
-        if _text(root, ["rev-parse", "HEAD"]) != commit:
+        if _head(root) != commit:
             raise CheckpointError("head-drift-after-commit")
         stream.seek(0)
         stream.write(next_raw)
@@ -335,6 +465,7 @@ def _complete(root, directory, index, binding, save, journal, commit, stream, lo
         os.fsync(stream.fileno())
         stream.close()
         os.replace(str(lock), str(index))
+    previous_policy = dict(policy)
     receipt = {"commit": commit, "tree": journal["tree"], "event_id": journal["event_id"],
                "recorded_at": time.time(), "paths": journal["paths"], "workflow_id": journal["workflow_id"],
                "token": journal["token"]}
@@ -351,7 +482,14 @@ def _complete(root, directory, index, binding, save, journal, commit, stream, lo
     policy.pop("journal", None)
     result = {"status": "committed", "reason": "verified-stage", "commit": commit, "paths": journal["paths"]}
     policy["result"] = result
-    save(binding)
+    try:
+        save(binding)
+    except Exception:
+        # The durable binding may still own its journal. Retain recovery
+        # artifacts and the pre-receipt state until persistence is confirmed.
+        policy.clear()
+        policy.update(previous_policy)
+        raise
     _clean(artifact)
     return result
 
@@ -371,14 +509,14 @@ def _transact(root, directory, branch, head, index, binding, save, journal):
     with _index_lock(index, journal) as (stream, lock):
         if _text(root, ["symbolic-ref", "--quiet", "HEAD"]) != journal["branch"]:
             raise CheckpointError("branch-drift")
-        current_head = _text(root, ["rev-parse", "HEAD"])
+        current_head = _head(root)
         if current_head != journal["parent"]:
             if not _verify_commit(root, current_head, journal):
                 raise CheckpointError("pending-checkpoint-head-drift")
             return _complete(root, directory, index, binding, save, journal, current_head, stream, lock)
         if uncertain:
             raise CheckpointError("uncertain-commit-requires-inspection")
-        if _digest(index.read_bytes()) != journal["index_sha256"]:
+        if _index_digest(index) != journal["index_sha256"]:
             raise CheckpointError("real-index-drift")
         if _sources(root, journal["paths"]) != journal["sources"]:
             raise CheckpointError("selected-source-drift")
@@ -398,7 +536,7 @@ def _transact(root, directory, branch, head, index, binding, save, journal):
             admin = _private_admin(root, directory, artifact, journal)
             prepared = journal.get("prepared_commit")
             if not prepared:
-                prepared = _text(root, ["rev-parse", "HEAD"], admin=admin)
+                prepared = _head(root, admin=admin)
                 if prepared == journal["parent"]:
                     try:
                         process = _git(root, ["commit", "--quiet", "-m", journal["message"]], candidate,
@@ -406,7 +544,7 @@ def _transact(root, directory, branch, head, index, binding, save, journal):
                         failure = "git-commit-rejected" if process.returncode else None
                     except CheckpointError as error:
                         failure = str(error)
-                    prepared = _text(root, ["rev-parse", "HEAD"], admin=admin)
+                    prepared = _head(root, admin=admin)
                     if prepared == journal["parent"]:
                         if failure == "git-command-timeout":
                             journal["status"] = "uncertain"
@@ -422,16 +560,16 @@ def _transact(root, directory, branch, head, index, binding, save, journal):
                 save(binding)
             if not _verify_commit(root, prepared, journal):
                 raise CheckpointError("prepared-commit-drift")
-            if _sources(root, journal["paths"]) != journal["sources"] or _digest(index.read_bytes()) != journal["index_sha256"]:
+            if _sources(root, journal["paths"]) != journal["sources"] or _index_digest(index) != journal["index_sha256"]:
                 raise CheckpointError("source-or-index-drift-before-publish")
             if _text(root, ["symbolic-ref", "--quiet", "HEAD"]) != journal["branch"]:
                 raise CheckpointError("branch-drift-before-publish")
             try:
-                publication = _git(root, ["update-ref", journal["branch"], prepared, journal["parent"]], check=False)
+                publication = _git(root, ["update-ref", journal["branch"], prepared, journal["parent"] or "0" * len(journal["tree"])], check=False)
                 failure = "branch-compare-and-swap-rejected" if publication.returncode else None
             except CheckpointError as error:
                 failure = str(error)
-            after = _text(root, ["rev-parse", "HEAD"])
+            after = _head(root)
             if after != prepared or _text(root, ["symbolic-ref", "--quiet", "HEAD"]) != journal["branch"]:
                 if failure == "git-command-timeout":
                     journal["status"] = "uncertain"
@@ -445,7 +583,7 @@ def _transact(root, directory, branch, head, index, binding, save, journal):
             _live.discard(journal["token"])
 
 
-def run_checkpoint(root, binding, payload, event_id, save_binding):
+def run_checkpoint(root, binding, payload, event_id, save_binding, *, validated_sources=None):
     """Run/recover one automatic checkpoint; metadata failure never invents success."""
     policy = binding.get("git_checkpoint", {})
     if not isinstance(policy, dict):
@@ -494,9 +632,14 @@ def run_checkpoint(root, binding, payload, event_id, save_binding):
             return result("duplicate", "event-already-committed", commit=previous["commit"])
         last_commit = policy.get("last_commit", {})
         owned_head = last_commit.get("commit") if last_commit.get("workflow_id") == payload.get("workflow_id") else None
-        if branch != snapshot.get("branch") or head not in {snapshot.get("head"), owned_head}:
+        expected_head = owned_head if owned_head is not None else snapshot.get("head")
+        if branch != snapshot.get("branch") or head != expected_head:
             raise CheckpointError("head-or-branch-moved-since-baseline")
         paths = _select(root, policy, payload)
+        if validated_sources is not None and (not isinstance(validated_sources, dict)
+                                               or set(paths) != set(validated_sources)
+                                               or _sources(root, paths) != validated_sources):
+            raise CheckpointError("validated-source-drift")
         if not paths:
             _retire_unchanged(policy, payload.get("workflow_id"), event_id, token, retire_pending=False)
             return result("unchanged", "no-meaningful-declared-paths")
@@ -505,12 +648,12 @@ def run_checkpoint(root, binding, payload, event_id, save_binding):
         if original_deferred and (paths != original_deferred["paths"]
                                   or _sources(root, paths) != original_deferred["sources"]):
             raise CheckpointError("deferred-event-source-or-scope-drift")
-        staged = {_key(p) for p in _paths(_git(root, ["diff", "--cached", "--no-renames", "--name-only", "-z", "HEAD"]).stdout)}
+        staged = {_key(p) for p in _paths(_git(root, ["diff", "--cached", "--no-renames", "--name-only", "-z"] + (["HEAD"] if head is not None else [])).stdout)}
         if any(_key(p) in staged for p in paths):
             raise CheckpointError("selected-path-has-staged-changes")
         policy["pending_paths"] = paths
         policy["pending_workflow_id"] = payload.get("workflow_id")
-        difference = _git(root, ["diff", "--quiet", "HEAD", "--"] + paths, check=False)
+        difference = _git(root, ["diff", "--quiet"] + (["HEAD"] if head is not None else []) + ["--"] + paths, check=False)
         untracked = _git(root, ["ls-files", "--others", "--exclude-standard", "-z", "--"] + paths).stdout
         if difference.returncode > 1:
             raise CheckpointError("git-diff-failed")
@@ -535,34 +678,42 @@ def run_checkpoint(root, binding, payload, event_id, save_binding):
                                    "paths": paths, "sources": _sources(root, paths)}
                 policy["deferred_events"] = deferred
             return result("deferred", "coalescing-nearby-stages", pending_paths=paths)
-        prior = _text(root, ["log", "-1", "--format=%H", "--fixed-strings", "--grep=Checkpoint: " + token])
+        prior = _text(root, ["log", "-1", "--format=%H", "--fixed-strings", "--grep=Checkpoint: " + token]) if head is not None else ""
         if prior:
             return result("duplicate", "git-event-receipt-already-exists", commit=prior)
+        for identity in ["GIT_AUTHOR_IDENT", "GIT_COMMITTER_IDENT"]:
+            if _git(root, ["-c", "user.useConfigOnly=true", "var", identity], check=False).returncode:
+                raise CheckpointError("git-identity-not-configured")
         artifact = directory / ("upg-checkpoint-" + uuid.uuid4().hex)
         artifact.mkdir()
         try:
             with _index_lock(index) as (stream, lock):
-                staged = {_key(p) for p in _paths(_git(root, ["diff", "--cached", "--no-renames", "--name-only", "-z", "HEAD"]).stdout)}
+                staged = {_key(p) for p in _paths(_git(root, ["diff", "--cached", "--no-renames", "--name-only", "-z"] + (["HEAD"] if head is not None else [])).stdout)}
                 if any(_key(p) in staged for p in paths):
                     raise CheckpointError("selected-path-has-staged-changes")
-                original = index.read_bytes()
-                (artifact / "original-index").write_bytes(original)
+                original = _index_bytes(index)
+                (artifact / "original-index").write_bytes(original or b"")
                 sources = _sources(root, paths)
+                if validated_sources is not None and sources != validated_sources:
+                    raise CheckpointError("validated-source-drift")
                 candidate = artifact / "candidate-index"
-                _git(root, ["read-tree", head], candidate)
+                _git(root, ["read-tree", head] if head is not None else ["read-tree", "--empty"], candidate)
                 _git(root, ["add", "-A", "--"] + paths, candidate)
                 tree = _text(root, ["write-tree"], candidate)
-                if _text(root, ["rev-parse", "HEAD"]) != head:
+                if _head(root) != head:
                     raise CheckpointError("head-drift-during-prepare")
-                if tree == _text(root, ["rev-parse", head + "^{tree}"]):
+                if tree == (_text(root, ["rev-parse", head + "^{tree}"]) if head is not None else _empty_tree(root)):
                     _retire_unchanged(policy, payload.get("workflow_id"), event_id, token)
                     _clean(artifact)
                     return result("unchanged", "candidate-tree-unchanged")
                 next_index = artifact / "next-index"
-                next_index.write_bytes(original)
+                if original is None:
+                    _git(root, ["read-tree", "--empty"], next_index)
+                else:
+                    next_index.write_bytes(original)
                 _git(root, ["reset", "-q", tree, "--"] + paths, next_index)
                 next_raw = next_index.read_bytes()
-                if _digest(index.read_bytes()) != _digest(original) or _text(root, ["rev-parse", "HEAD"]) != head:
+                if _index_digest(index) != (_digest(original) if original is not None else None) or _head(root) != head:
                     raise CheckpointError("head-or-index-drift-during-prepare")
                 task = " ".join(re.sub(r"[\x00-\x1f\x7f]", " ", str(payload.get("task", "verified change"))).split())[:100]
                 stage = " ".join(re.sub(r"[\x00-\x1f\x7f]", " ", str(payload.get("checkpoint_id", payload.get("status", "stage")))).split())[:48]
@@ -573,7 +724,7 @@ def run_checkpoint(root, binding, payload, event_id, save_binding):
                            "workflow_id": payload.get("workflow_id"),
                            "message": message, "boundary": boundary,
                            "branch": branch, "tree": tree, "token": token, "paths": paths,
-                           "sources": sources, "index_sha256": _digest(original),
+                           "sources": sources, "index_sha256": (_digest(original) if original is not None else None),
                            "next_index_sha256": _digest(next_raw), "lock_sha256": _digest(next_raw),
                            "artifact_dir": artifact.name, "owner_pid": os.getpid()}
                 stream.write(next_raw)

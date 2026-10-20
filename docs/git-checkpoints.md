@@ -1,42 +1,53 @@
-# Git 阶段检查点
+# Git 自动接管与阶段保存
 
-RC20.2 在既有 `project_tool.py begin/finish` 生命周期中执行 Git 阶段提交。它判断已声明范围内的实际差异，按有意义阶段保存；提交成功不代替功能验证。当前发布与验收结果见 [PROJECT_STATE.md](../PROJECT_STATE.md)。
+RC20.3 支持已有仓库、无 `.git` 项目和尚无首个提交的仓库；一次配置后，独立观察进程可处理未调用 `begin/finish` 的编辑器或 Agent。当前验证与交付事实见 [PROJECT_STATE.md](../PROJECT_STATE.md)，不能从本说明推断已安装或已通过 CI。
 
-## 启用和使用
+## 初始化与范围
 
-使用已验证的 Python 入口，在生成或已安装的 Skill 目录运行辅助脚本。下面的路径仅为示例；按项目授权范围选择源码、测试和文档：
+用已验证的 Python 执行入口运行已安装或生成包中的脚本：
 
 ```bash
 python scripts/project_tool.py git-configure /path/to/project --enable --allow-path src --allow-path tests --allow-path README.md --status-path PROJECT_STATE.md --min-interval-seconds 300
-python scripts/project_tool.py status /path/to/project
 ```
 
-`--allow-path` 和 `--status-path` 可重复。允许路径是项目内的相对文件或目录；目录覆盖后代，`.` 明确允许整个项目。启用必须提供非空允许范围。声明的状态路径及 `.governance/` 排除在自动提交候选之外，避免状态、时间戳和治理收据反复制造提交。配置保留在 `.governance/upg.json` 的 `git_checkpoint` 中；默认关闭、冷却 300 秒、允许范围和状态路径为空。已有项目的选择不会被安装或普通接手隐式开启。
+Git 默认关闭；显式启用非空范围后，`bootstrap: true` 允许在指定项目根创建自己的 `.git`。即使项目在父仓库中，也不采纳或提交父仓库；初始化核对父 HEAD、索引和配置未改变。`--no-bootstrap` 可禁止初始化。缺 Git 程序、权限或明确作者身份时报告阻止，不安装工具、不猜身份、不修改全局配置。
+
+已有内容可在首次明确范围内采纳；校验覆盖最终字节，初始观察保留原哈希。已有暂存内容仍受保护：不把无关暂存带进首提交，目标本身已暂存时阻止。首提交通过原生 Git 钩子／签名、私有上下文及零旧值 CAS 产生，重试不盲目重建。
+
+`--allow-path`、`--status-path` 可重复。允许路径是相对文件或目录；`.` 明确允许整个项目。状态路径精确排除，`.governance/` 始终排除；不要把时间戳文件当作阶段成果。默认冷却 300 秒。符号链接、子模块、忽略文件、常见密钥名称、冲突和不支持的高级仓库模式仍会阻止，不声称能辨认所有敏感内容。
+
+## 未接入生命周期的宿主
+
+观察器直接检查项目文件和 Git，无需宿主逐次调用工作流。创建项目自己的配置 JSON，使用已核验的本地校验命令；下面的示例只检查 Git 差异格式，不能当作功能验收：
+
+```json
+{
+  "enabled": true,
+  "poll_seconds": 5,
+  "quiet_seconds": 15,
+  "validators": [
+    {"argv": ["git", "diff", "--check"], "timeout_seconds": 30}
+  ]
+}
+```
 
 ```bash
-python scripts/project_tool.py git-configure /path/to/project --disable
+python scripts/project_tool.py git-watch /path/to/project --action configure --input /path/to/watch-config.json
+python scripts/project_tool.py git-watch /path/to/project --action start
+python scripts/project_tool.py git-watch /path/to/project --action status
+python scripts/project_tool.py git-watch /path/to/project --action stop
 ```
 
-启用后继续使用原有工作流输入，不需要另跑提交循环：
+配置只保存选择；`start` 确认同令牌工作进程握手后才报告运行。启动器退出后，后台进程继续观察。普通激活入口 `ensure` 可恢复已配置且未显式停止的观察器。`stop` 合作撤销令牌，不按裸 PID 强杀其他进程；重启继续使用保留的基线。状态中的心跳是最近观察，不是永久存活保证。它不是开机服务，不改宿主钩子或系统启动配置。
 
-1. `begin` 保存本次工作基线。开始前已脏的文件排除在自动提交之外，不能把用户原有改动归入本次成果。
-2. 每次实际阶段边界通过 `finish` 上报。候选只来自 `changed_files` 声明的文件和本工作流已有待处理路径，并继续受允许范围约束；有实际差异、`integrity: pass` 和非空验证记录才提交。无变化、重复阶段和声明的状态文件不会生成提交。延期后的精确重试须保持原来源字节与范围；文件继续变化时使用新的已验证阶段。
-3. 普通未完成阶段在冷却期内保留待处理改动，后续阶段再判断；完成状态收束待提交改动；未完成工作的真正交接或风险边界须在 finish 输入中显式设置 `"git_boundary": "handoff"` 或 `"git_boundary": "risk"` 才提前收束。省略该字段时默认 `"verified"`，普通交接文件更新不绕过冷却。时间经过本身不会启动提交。
+候选来自实际允许范围的差异。开始前已有的脏文件留给原所有者；观察器等待字节稳定及冷却期，再执行配置的校验。校验在治理锁外运行；发布前重查所有权、手工工作流、HEAD、范围与字节，helper 再核对相同已校验来源。校验失败采用有界退避；相同内容不会每轮重跑，显式 `--action tick` 可立即再检查。输出仅保留摘要、退出码和截断标志，临时输出在单次超时后清理。配置的命令按参数执行、不经 shell；观察器自身不调用模型，用户自配命令的行为由配置决定。
 
-自动保存仍以实际 `begin/finish` 调用为触发入口。它没有后台监控或定时器，不会替未接入生命周期的工具、其他宿主或普通手工编辑自动执行，也不会自动 push。
+活跃手工工作流优先，观察器让位；治理写锁暂忙时退避后继续。相同分支的外部提交必须能证明是快进，观察器才跟随新基线；回退、改分支或删除 HEAD 需要明确重配。已发布但回执中断的检查点沿用原事务恢复，不伪造新的校验；提交期间新出现的有效改动留给下一阶段。停止或重配后，当前校验可结束，但不会再启动下一条。它不伪造任务完成报告或另建治理账本。配置和有限运行状态保存在原 `.governance/upg.json` 的 `git_checkpoint.watcher`，无默认推送。分离 HEAD、稀疏／分离索引、进行中的 Git 操作、自定义钩子不适用或无法证明安全的状态明确阻止。
 
-当前支持已有提交、附着分支、项目根即工作树根的普通仓库及 linked worktree。未初始化、未产生首个提交、分离 HEAD、稀疏检出、分离索引、进行中的合并或变基均会阻止；选中路径含符号链接、子模块、忽略文件或常见密钥文件名也会阻止。这里的验证来自阶段输入和已观察到的路径，不能推断任意文件已验证或自动辨认所有敏感内容。
+## 已接入的工作流与恢复
 
-## 结果和恢复
+`begin` 保存真实基线，`finish` 对声明文件执行有效差异识别。普通 partial 阶段按间隔合并；完成或显式 `git_boundary: handoff/risk` 收束。普通交接文档更新不绕过冷却。已延期事件和无变化事件均固定身份，不能用旧校验提交后来新字节。
 
-读取 `finish` 的实际 Git 结果：`committed` 才表示观察到提交成功；`unchanged`、`duplicate`、`disabled` 不产生提交；`deferred` 表示普通阶段仍在等待冷却；`blocked` 表示需处理 Git、范围或恢复问题。待提交改动或阻塞不能描述为已完成 Git 保存。
+`committed` 表示核实提交；`unchanged/duplicate/disabled` 不新增提交，`deferred/cooldown/waiting` 仍在等待，`blocked` 需要处理。阶段保存不等于全部功能验收。原生索引锁及分支 CAS 保护并发工作；遗留 UPG／Git 锁或无法证明的中断结果仍需所有者核对，不能直接删除锁当作修复。
 
-无 Git、未解决冲突、并发索引变动或提交钩子失败须报告具体失败，不能静默当作成功。未选中的暂存内容保留；选中路径已有暂存改动时阻止，不以全量 `git add` 收集其他工作。提交前后的恢复信息有界保留在原绑定内，Git 事务临时文件位于 Git 私有目录，不增加第二份治理账本。
-
-原生 Git 提交先在私有上下文运行钩子和签名，再核对预期父提交、树与收据，通过分支旧值比较后发布。私有上下文与当前仓库的有效 Git 配置不一致时直接阻止，不修改宿主配置。依赖原始 Git 目录或附着分支的自定义钩子仍可能不适用；实际拒绝结果保留，不能凭配置相同断言任意钩子行为等价。
-
-若提交后进程中断，重试先核对当前 Git 状态与已有事务信息，不能盲目再提交。操作系统强制终止可能留下 UPG 写锁或原生 Git 索引锁；跨进程遗留锁须由所有者检查实际进程、提交、索引和工作树后再恢复，不能直接把锁当作损坏或自动删除。凭当前状态不能证明的提交结果保持待核对。
-
-## 维护契约
-
-规范默认值和唯一指令入口在 [治理模型](../governance-src/model/governance-model.json) 的 `project_binding.git_checkpoint` 与 `tracked_state`；[生命周期](../governance-src/runtime-scripts/project_tool.py) 调用 [Git helper](../governance-src/runtime-scripts/git_checkpoint.py)。修改须保留显式授权范围、已有脏改动隔离、去重、冷却、收束及失败可见性，并在最终运行时和安装副本验证受影响行为。历史付费试验不因 Git 功能测试而重写，确定性回归不证明模型净收益或正式资格。
+规范默认值在 [治理模型](../governance-src/model/governance-model.json)，实现为 [生命周期](../governance-src/runtime-scripts/project_tool.py)、[Git helper](../governance-src/runtime-scripts/git_checkpoint.py) 和 [观察器](../governance-src/runtime-scripts/git_watch.py)。原始付费研究与正式资格不因本地 Git 校准而重写。

@@ -138,6 +138,18 @@ def _validate_git_policy(policy):
                 break
     if policy.get("enabled") and not policy.get("allowed_paths"):
         errors.append("enabled Git checkpoints require an explicit allowed path scope")
+    if "bootstrap" in policy and type(policy["bootstrap"]) is not bool:
+        errors.append("git_checkpoint.bootstrap must be boolean")
+    if "watcher" in policy:
+        watcher = policy["watcher"]
+        if not isinstance(watcher, dict) or not isinstance(watcher.get("configuration"), dict):
+            errors.append("git_checkpoint.watcher requires its configuration object")
+        else:
+            try:
+                from git_watch import validate_configuration
+                validate_configuration(watcher["configuration"])
+            except ValueError as error:
+                errors.append(str(error))
     return errors
 
 def _upgradeable_binding(value):
@@ -219,6 +231,12 @@ def ensure(project, field_test_reporting=None):
         for key in ["active_workflow", "latest_change", "previous_change", "export_receipt", "current_state", "current_state_sequence", "git_checkpoint"]:
             if key in current:
                 binding[key] = current[key]
+    # Add optional capability defaults without changing any existing choice or
+    # transient recovery metadata during in-place runtime upgrades.
+    defaults = expected_binding(origin, reporting)["git_checkpoint"]
+    merged = defaults
+    merged.update(binding.get("git_checkpoint", {}))
+    binding["git_checkpoint"] = merged
     if not reporting:
         write_json_atomic(binding_path, binding)
         return {
@@ -301,8 +319,15 @@ def status(project):
     git_state = binding.get("git_checkpoint", {})
     git_pending = bool(git_state.get("journal")) or (
         git_state.get("enabled") and git_state.get("result", {}).get("status") == "blocked")
+    watcher = git_state.get("watcher", {})
+    watcher_state = watcher.get("status")
+    watcher_stale = bool(watcher.get("token") and watcher.get("lease_until", 0) < time.time()
+                         and watcher_state not in {"stopped", "stopping"})
+    watcher_pending = bool(git_state.get("enabled") and watcher.get("configuration", {}).get("enabled")
+                           and (watcher_stale or watcher_state in {"blocked", "cancelled", "stale"}))
     return {
-        "ok": not state_errors and not pending_outcome and not git_pending,
+        "ok": not state_errors and not pending_outcome and not git_pending and not watcher_pending,
+        **({"reason": "git-watcher-pending", "errors": ["Git observer is blocked or its heartbeat is stale; inspect git-watch status before claiming automatic saving"]} if watcher_pending else {}),
         **({"reason": "git-checkpoint-pending", "errors": ["Git checkpoint requires reconciliation; retry its original finish input"]} if git_pending else {}),
         **({"reason": "checkpoint-unreconciled", "errors": ["ledger commit newer than binding checkpoint; retry the original report/finish input"]} if pending_outcome else {}),
         **({"reason": "current-state-drift", "errors": state_errors} if state_errors else {}),
@@ -327,7 +352,7 @@ def status(project):
     }
 
 @serialized
-def configure_git(project, enabled, allowed_paths=None, status_paths=None, min_interval_seconds=None):
+def configure_git(project, enabled, allowed_paths=None, status_paths=None, min_interval_seconds=None, bootstrap_enabled=None):
     ensure(project)
     path = resolve(project, config()["binding_file"])
     binding = load_json(path)
@@ -339,6 +364,8 @@ def configure_git(project, enabled, allowed_paths=None, status_paths=None, min_i
                 or (status_paths is not None and status_paths != policy.get("status_paths"))):
             raise ValueError("reconcile pending Git paths before changing their scope")
     policy["enabled"] = enabled
+    if bootstrap_enabled is not None:
+        policy["bootstrap"] = bootstrap_enabled
     if not enabled:
         # Explicitly disabling future automation abandons only its pending
         # scheduling, never files or Git contents. Live transactions were
@@ -357,7 +384,10 @@ def configure_git(project, enabled, allowed_paths=None, status_paths=None, min_i
         raise ValueError("; ".join(errors))
     active = binding.get("active_workflow")
     if enabled:
-        from git_checkpoint import capture
+        from git_checkpoint import bootstrap, capture
+        prepared = bootstrap(project_root(project), policy)
+        if not prepared.get("ok"):
+            raise ValueError("cannot prepare project Git: " + prepared.get("reason", "initialization unavailable"))
         observed = capture(project_root(project), policy)
         if not observed.get("ok"):
             raise ValueError("cannot enable Git checkpoints: " + observed.get("reason", "Git baseline unavailable"))
@@ -636,7 +666,10 @@ def begin_workflow(project, input_path):
     payload["observed_at"] = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
     binding["active_workflow"] = payload
     if binding.get("git_checkpoint", {}).get("enabled"):
-        from git_checkpoint import capture
+        from git_checkpoint import bootstrap, capture
+        prepared = bootstrap(project_root(project), binding["git_checkpoint"])
+        if not prepared.get("ok"):
+            raise ValueError("cannot prepare project Git: " + prepared.get("reason", "initialization unavailable"))
         binding["git_checkpoint"]["start"] = {
             "workflow_id": payload["workflow_id"],
             "snapshot": capture(project_root(project), binding["git_checkpoint"]),
@@ -921,6 +954,14 @@ def main():
     git_policy.add_argument("--allow-path", action="append")
     git_policy.add_argument("--status-path", action="append")
     git_policy.add_argument("--min-interval-seconds", type=int)
+    bootstrap_mode = git_policy.add_mutually_exclusive_group()
+    bootstrap_mode.add_argument("--bootstrap", dest="bootstrap_enabled", action="store_true")
+    bootstrap_mode.add_argument("--no-bootstrap", dest="bootstrap_enabled", action="store_false")
+    git_policy.set_defaults(bootstrap_enabled=None)
+    watch = sub.add_parser("git-watch")
+    watch.add_argument("project", nargs="?", default=".")
+    watch.add_argument("--action", choices=["configure", "start", "stop", "status", "tick"], required=True)
+    watch.add_argument("--input")
     export = sub.add_parser("export")
     export.add_argument("project", nargs="?", default=".")
     export.add_argument("--output", required=True)
@@ -950,14 +991,37 @@ def main():
             result = finish_workflow(args.project, args.input)
         elif args.cmd == "git-configure":
             result = configure_git(args.project, args.enable, args.allow_path,
-                                   args.status_path, args.min_interval_seconds)
+                                   args.status_path, args.min_interval_seconds, args.bootstrap_enabled)
+        elif args.cmd == "git-watch":
+            import git_watch
+            if args.action == "configure":
+                if not args.input:
+                    raise ValueError("git-watch configure requires --input")
+                result = git_watch.configure(args.project, load_json(args.input))
+            else:
+                if args.input:
+                    raise ValueError("--input is only accepted for git-watch configure")
+                result = getattr(git_watch, args.action)(args.project)
         elif args.cmd == "export":
             result = export_reports(args.project, args.output)
         elif args.cmd == "purge-reports":
             result = purge_reports(args.project, args.yes)
         elif args.cmd == "remove":
             result = remove(args.project, args.yes)
+        if args.cmd in {"install", "ensure", "git-configure"}:
+            # The ordinary activation entry can restore a configured observer,
+            # without requiring the host to adopt begin/finish. Explicit stop
+            # remains a durable choice until an explicit start.
+            binding = load_json(resolve(args.project, config()["binding_file"]))
+            watcher = binding.get("git_checkpoint", {}).get("watcher", {})
+            if (binding.get("git_checkpoint", {}).get("enabled")
+                    and watcher.get("configuration", {}).get("enabled")
+                    and watcher.get("status") not in {"stopped", "stopping"}):
+                import git_watch
+                result["watcher"] = git_watch.start(args.project)["watcher"]
         print(json.dumps(result, indent=2, sort_keys=True))
+        if result.get("watcher", {}).get("status") in {"blocked", "stale", "cancelled"}:
+            return 1
         if result.get("git_checkpoint", {}).get("status") == "blocked":
             return 1
         return 0

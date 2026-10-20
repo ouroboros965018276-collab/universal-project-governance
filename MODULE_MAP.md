@@ -1,6 +1,6 @@
 # 模块导航
 
-当前候选：**3.0.0-rc.20.2**。版本与发布状态见[当前项目状态](PROJECT_STATE.md)。
+当前候选：**3.0.0-rc.20.3**。版本与发布状态见[当前项目状态](PROJECT_STATE.md)。
 
 ```mermaid
 flowchart LR
@@ -51,3 +51,5 @@ Skill 保留全部全局义务；plan 是任务投影，按原 policy 闭包和�
 ## 状态与历史
 
 [使用入口](README.md) · [决策](DECISIONS.md) · [变更记录](CHANGELOG.md) · [历史审计](audits/) · [许可与来源](third_party/notices/README.md)。历史记录保留原来的数字、引用和证据范围，不能据此推断当前收益或资格已成立。
+
+RC20.3 autonomous Git adoption: [Git helper](governance-src/runtime-scripts/git_checkpoint.py), [independent observer](governance-src/runtime-scripts/git_watch.py), [bootstrap regressions](tests/test_git_bootstrap.py), [native observer regressions](tests/test_git_watch.py); CLI/configuration and scope are in [Git checkpoints](docs/git-checkpoints.md).
