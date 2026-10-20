@@ -12,13 +12,13 @@
     "Meaningful-stage Git checkpoints under existing project/user policy; no automatic timer, hook or tool-call commit",
     "Compiler-owned four guidance groups and selective acknowledged upstream rules; explicit opt-in efficient API profile; original profiles and budgets preserved"
   ],
-  "qualification_freeze_sha256": "9a5249a621a0dcd742bebdcd9ccd3e18d118445423853dd8e7d60b61ce8c9551",
+  "qualification_freeze_sha256": "77c81a161d279852782e85b889d4738ac8e5991c1c75457c26376a1d9ad96a76",
   "runtime_files": 18,
   "skill_utf8_bytes": 6580,
   "checks": {
-    "lifecycle_regressions": 24,
+    "lifecycle_regressions": 25,
     "engineering_gates_passed": 9,
-    "final_full_regression": "Normal-script-path full run in progress; two obsolete test expectations were corrected after import; all three affected final test methods passed separately. CI will run final files from fresh LF checkout.",
+    "final_full_regression": "Local normal-import run: 1325 tests, 2 obsolete assertions imported before correction, 0 errors, 3 skips; all three affected final test methods separately passed. Fresh CI at a6f3090 confirms 1325 tests pass on Linux 3.11 (2 skips). Final additional fail-closed sequence guard has 25 targeted passes; new final CI required.",
     "ci": "pending new commit"
   },
   "rc19_current_lifecycle_control": {

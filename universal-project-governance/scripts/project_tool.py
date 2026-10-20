@@ -635,7 +635,10 @@ def finish_workflow(project, input_path):
         raise ValueError("completion must reference the latest completed event")
     if payload.get("current_state", binding.get("current_state")) is not None:
         _verify_current_state(project, payload.get("current_state", binding.get("current_state")))
-    sequence = max(latest.get("sequence", 0), active.get("last_outcome", {}).get("sequence", 0)) + 1
+    sequences = [latest.get("sequence", 0), active.get("last_outcome", {}).get("sequence", 0)]
+    if any(type(n) is not int or n < 0 for n in sequences):
+        raise ValueError("latest completion sequence/epoch is invalid; reconcile preserved project state before finishing")
+    sequence = max(sequences) + 1
     epoch = latest.get("epoch", 0) if isinstance(latest, dict) else 0
     if type(sequence) is not int or sequence < 1 or type(epoch) is not int or epoch < 0:
         raise ValueError("latest completion sequence/epoch is invalid; reconcile preserved project state before finishing")

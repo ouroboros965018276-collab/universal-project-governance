@@ -383,6 +383,18 @@ class CompletionOutcomeTests(unittest.TestCase):
             self.finish(td, report(start))
             self.assertEqual(tool.status(td)["latest_change"]["sequence"], 3)
 
+    def test_invalid_sequence_is_not_masked_by_active_progress(self):
+        with tempfile.TemporaryDirectory(prefix="completion-test-", dir=ROOT) as td:
+            start = self.begin(td, False)
+            binding = Path(td) / ".governance/upg.json"
+            for bad in (-1, True, "1"):
+                state = json.loads(binding.read_bytes())
+                state["latest_change"] = {"sequence": bad, "epoch": 0}
+                write(binding, state)
+                with self.assertRaisesRegex(ValueError, "sequence/epoch is invalid"):
+                    self.finish(td, report(start))
+                self.assertIsNotNone(tool.status(td)["active_workflow"])
+
     def test_stage_reference_recovers_after_ledger_commit_before_binding_write(self):
         import hashlib
         with tempfile.TemporaryDirectory(prefix="completion-test-", dir=ROOT) as td:

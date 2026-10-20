@@ -12,7 +12,7 @@ RC20 将表达相关性、完整改动、事实保真和按需读取放进原有
 
 `D:\Insight` 已通过候选生命周期工具补入一个 partial 阶段：原三条报告和开始事实保留，当前引用指向既有 `execution_status.json`；工程 README 明确账本职责。应用／包版本 2.0.0 与 UPG 运行时版本分开。此次未改应用代码、未重跑应用测试或付费模型，Insight 整体交付与科学验收仍未完成。
 
-当前源的 24 项生命周期回归和 9 项工程门禁通过；整仓回归、最终 CI、默认分支与安装尚待核验。精确记录见[RC20 工程验收](audits/rc20-release-engineering.audit.json)。
+当前源的 25 项生命周期回归和 9 项工程门禁通过；整仓回归、最终 CI、默认分支与安装尚待核验。精确记录见[RC20 工程验收](audits/rc20-release-engineering.audit.json)。
 
 ## 实测证据的边界
 
