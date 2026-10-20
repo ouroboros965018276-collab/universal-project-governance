@@ -3,9 +3,9 @@
   "files": {
     "INTEGRITY.md": "3e2404344195b4795ad4cb07944acac5bb1070a9e40c92c4da792abeb6e3774d",
     "LICENSE": "50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a",
-    "SKILL.md": "1ad703e43678f241daa3fea15a38ff75c24d292445312c3b2c0fa3c67b843ec6",
-    "VERSION.md": "ade8b56830f54d2546793cedfc813b7b89753e4b46853e459de504d1230b1de2",
-    "policy-index.json": "4a69ad28367ecc8e88d536e112f55ff5156275f26d3712ce163dcac484cfe4a9",
+    "SKILL.md": "098eba98ec32cd8846d9869052965145d16cc5bb8a8c5d7c1e1a47a1d4898abd",
+    "VERSION.md": "e0e8c149a420a2a71f958ab61f114bece1a5ee924c6033e9cd505056fd030da5",
+    "policy-index.json": "695dc2470a0d87e0e74d802f0291de3e899ee30cbaf21f8bf06a31d9fed674d3",
     "schemas/audit.schema.json": "a5e15c26eff86e3c4e2e174fb121ef22981628307f09cf18d09a589e738ea889",
     "schemas/execution.schema.json": "d2a7cddc9d98c8101294df302259ba18217c27b9e7c8fee43d96c82ff6bde1d7",
     "schemas/feedback.schema.json": "22da61a114a1e89ee641ac25e90e23d6231003351df15918d4265f9900091954",
@@ -15,11 +15,11 @@
     "schemas/task-context.schema.json": "acc323f7d86f8dad5d8694e7fcf566dad6987d077877fbe6dbc819029936ad38",
     "scripts/plan_governance.py": "aad1d34983c813f508d1845b6ad94d8adb4afcdc6352ef6b5692550623729697",
     "scripts/project_facts.py": "f355e0fa241a1032c94d4959b610b86c2d0ad48b2c62bbfed1ded65bfa4bd9ee",
-    "scripts/project_tool.py": "6ca757fe61eab88da8e308620688d564ed8050bb943a4a75e2571aa7978ea7b3",
+    "scripts/project_tool.py": "a8745390c6d80f15843c2c067003e208351ae022b5d239c133624d8b3eb6b5c1",
     "scripts/state_tool.py": "193cb9657c32dedb253727e93a13bcb6f39306331fc8a90d1319e337f5b088a0",
     "scripts/validate_integrity.py": "cf09558e67b4488db88c5ce9836e9f1cf1c8bae97d6e1444bb9d2d80409157c0"
   },
-  "generated_for_version": "3.0.0-rc.20",
+  "generated_for_version": "3.0.0-rc.20.1",
   "schema_version": 1,
-  "source_sha256": "068d23f7afab71b8b4ea6bfb418a25f2ca19920c17df838710e6824e20d3657b"
+  "source_sha256": "b3432935cf064ad0416878e571379418c37434a0e2360a987764345b10549478"
 }

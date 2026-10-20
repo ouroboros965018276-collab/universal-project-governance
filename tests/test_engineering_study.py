@@ -18,8 +18,13 @@ if sys.version_info >= (3, 10):
 @unittest.skipIf(sys.version_info < (3, 10), 'optional engineering study requires Python 3.10+')
 class EngineeringStudyTests(unittest.TestCase):
     def setUp(self):
-        self.full = json.loads((ROOT / 'governance-src/model/governance-model.json').read_bytes())
+        self.current_candidate = json.loads((ROOT / 'governance-src/model/governance-model.json').read_bytes())
         self.baseline_delta = json.loads((ROOT / 'tests/fixtures/engineering-study-rc19-model-delta.json').read_bytes())
+        # This study remains bound to frozen RC20, not the installed candidate.
+        # Reconstruct only its version and verify the complete historical model.
+        self.full = copy.deepcopy(self.current_candidate)
+        self.full['version'] = '3.0.0-rc.20'
+        self.assertEqual(study.digest(self.full), self.baseline_delta['full_model_sha256'])
         self.baseline = copy.deepcopy(self.full)
         for field in self.baseline_delta['full_only_fields']:
             self.baseline.pop(field)
@@ -226,7 +231,7 @@ class EngineeringStudyTests(unittest.TestCase):
         registry['w001-source']['work_seconds'] = 1
         self.assertEqual(topology.fixed_registry()['w001-source']['work_seconds'], 600)
 
-    def test_real_fixed_rc19_git_model_and_actual_current_full_are_admitted(self):
+    def test_real_fixed_rc19_git_model_and_frozen_rc20_full_are_admitted(self):
         # The compact fixture was observed from the exact Git blob. Rebuilding
         # and matching its complete canonical digest checks the real old model,
         # without requiring historical Git objects in a shallow CI checkout.
@@ -237,6 +242,21 @@ class EngineeringStudyTests(unittest.TestCase):
         self.assertEqual(topology.condition_models()['rc19'], self.baseline)
         self.assertEqual(topology.condition_models()['full'], self.full)
         self.assertEqual(topology.counts()['actors'], 36)
+
+    def test_current_and_later_candidates_cannot_relabel_the_fixed_rc20_study(self):
+        self.assertNotEqual(self.current_candidate['version'], self.full['version'])
+        for version in (self.current_candidate['version'], '3.0.0-rc.21'):
+            with self.subTest(version=version):
+                candidate, prereg = copy.deepcopy(self.current_candidate), copy.deepcopy(self.prereg)
+                candidate['version'] = version
+                prereg['full_model_sha256'] = study.digest(candidate)
+                models = study.trusted_arm_models(candidate)
+                models['full'] = models.pop('full_rc20')
+                for arm, model in models.items():
+                    prereg['condition_bindings'][arm]['model_sha256'] = study.digest(model)
+                with self.assertRaisesRegex(ValueError, 'fixed RC19/full model identities differ'):
+                    study.EngineeringStudy(prereg, baseline_model=self.baseline, full_model=candidate,
+                        configuration=self.configuration, consumed_source_pins=self.pins)
 
     def test_reviewed_delta_does_not_allow_other_policy_or_safety_changes(self):
         for field in ('id', 'severity', 'triggers', 'requires', 'conflicts', 'report', 'closure',
