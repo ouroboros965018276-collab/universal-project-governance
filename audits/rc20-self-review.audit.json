@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "document_kind": "bounded-rc20-self-audit-and-correction",
-  "observed_at": "2026-10-20T11:40:59.914053+00:00",
+  "observed_at": "2026-10-20T11:52:18.291437+00:00",
   "version": "3.0.0-rc.20.1",
-  "status": "LF_METADATA_CORRECTED_REMOTE_CI_PENDING",
+  "status": "PASS_BOUNDED_CORRECTION_RELEASE",
   "baseline_revision": "db6499e9e4e5ca8f8444b9f9cf350261aa8bbc31",
   "authority": "Current bounded self-review and correction delivery observation; PROJECT_STATE.md routes here. Original RC20 release/installation audit remains historical and is not overwritten.",
   "historical_release_audit": "audits/rc20-release-engineering.audit.json",
@@ -57,6 +57,16 @@
       "problem": "Fixed historical study regression tests implicitly consumed the current candidate version; a new candidate causes historical identity mismatch.",
       "status": "CORRECTED_AND_TARGETED_CHECKED",
       "required_behavior": "Reconstruct old RC20 model explicitly and require its existing digest; reject newer version under old study, leave production admission/old fixtures unchanged."
+    },
+    {
+      "id": "F6",
+      "priority": "P1",
+      "problem": "Insight used .governance/execution/storage-cleanup.json both as original historical evidence and a generated current-state entry. A naive sync would overwrite the only historical report at that path.",
+      "status": "CORRECTED_AND_VERIFIED",
+      "resolution": "Archive original 11036 bytes by exact SHA, update storage_maintenance.record/record_sha256, regenerate three references and append one sourced partial checkpoint; existing product check passes.",
+      "historical_evidence_sha256": "7069251722822e3b4591cbe216a063814f0f40a30dafcffd76b382dd97359fa7",
+      "app_source_changed": false,
+      "whole_product_acceptance": "still partial/unaccepted"
     }
   ],
   "capabilities": [
@@ -131,18 +141,47 @@
     }
   ],
   "insight_observation": {
-    "mode": "READ_ONLY; another session is actively maintaining this project",
-    "observed_runtime": "3.0.0-rc.20",
-    "ledger_reports": 6,
-    "active_checkpoint": "consolidation-in-progress-20261020",
+    "mode": "Initial read-only review followed by bounded governance-state/evidence-reference reconciliation; no application source or tests changed.",
+    "observed_runtime": "3.0.0-rc.20.1",
+    "ledger_reports": 7,
+    "active_checkpoint": "storage-evidence-reference-reconciled-20261020",
     "current_state_path": "docs/insight-upgrade/execution_status.json",
-    "current_state_sha256": "8893227ae820edcbc717b9d6d216ebf5edcbd1c0ecbd37803a41c9aec0d57040",
+    "current_state_sha256": "aa8abfd08aa2657a91f7dc7867b481bf3b0e6cca70281beace262910b3011199",
     "upg_status": "ok:true at review time",
     "latest_change": "2026-10-04 completion deliberately preserved; current R00-R12 workflow is partial",
     "readme_roles": "Explicit canonical product state vs UPG binding/activity and historical ledger; app 2.0.0 separate from UPG runtime.",
-    "project_check": "Observed stale derived storage-cleanup projection while other cleanup session is in progress. Requires that session to sync/check before completion; no application completion inferred.",
+    "project_check": "PASS: existing product-state adapter checks three derived references, six original evidence hashes and UPG sequence 7. Accepted-source/full-app completion is not claimed.",
     "application_changes_by_this_review": 0,
-    "application_tests_rerun": 0
+    "application_tests_rerun": 0,
+    "before_reconciliation": {
+      "observed_runtime": "3.0.0-rc.20",
+      "ledger_reports": 6,
+      "active_checkpoint": "consolidation-in-progress-20261020",
+      "current_state_sha256": "8893227ae820edcbc717b9d6d216ebf5edcbd1c0ecbd37803a41c9aec0d57040",
+      "project_check": "Observed stale derived storage-cleanup projection while other cleanup session is in progress. Requires that session to sync/check before completion; no application completion inferred."
+    },
+    "reconciliation": {
+      "observed_at": "2026-10-20T11:50:03.809751+00:00",
+      "original_evidence_bytes": 11036,
+      "original_evidence_sha256": "7069251722822e3b4591cbe216a063814f0f40a30dafcffd76b382dd97359fa7",
+      "historical_archive": "validation_artifacts/consolidation-20261020/storage-cleanup-20261018-706925172282.historical.json",
+      "archive_readback": true,
+      "product_check": {
+        "status": "passed",
+        "canonical_state": "docs/insight-upgrade/execution_status.json",
+        "derived_references": 3,
+        "evidence_hashes_verified": 6,
+        "source_verified": false,
+        "upg_sequence": 7,
+        "upg_runtime_version": "3.0.0-rc.20.1",
+        "application_version": "2.0.0"
+      },
+      "canonical_state_sha256": "aa8abfd08aa2657a91f7dc7867b481bf3b0e6cca70281beace262910b3011199",
+      "reports": 7,
+      "app_source_changed": false,
+      "app_tests_rerun": 0,
+      "whole_delivery": "still partial/unaccepted; unchanged"
+    }
   },
   "baseline_remote": {
     "default_branch": "main",
@@ -223,42 +262,32 @@
       "raw_receipt": ".governance/self-audit-historical-study-check.json",
       "scope": "No production admission or historical fixture changes; complete frozen model digest still required."
     },
-    "final_full_ci": "PENDING; do not report initial local full run as green."
+    "final_full_ci": {
+      "status": "PASS",
+      "run_id": 39416958916,
+      "url": "https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/39416958916",
+      "reviewed_revision": "9335cbc0647123fd6448325f7445b63c96b86fd4",
+      "jobs_passed": 11,
+      "jobs_total": 11,
+      "linux_3_11_tests": 1330,
+      "linux_3_11_skipped": 2,
+      "linux_3_11_failures_errors": 0,
+      "scope": "Final source cross-platform CI. Later receipt/document-only changes inherit unchanged runtime/source evidence; do not infer a newer CI run succeeded."
+    },
+    "committed_tree": {
+      "compiler": "PASS",
+      "qualification_freeze": "PASS",
+      "receipt": ".governance/self-audit-committed-bytes-check.json"
+    }
   },
   "delivery": {
-    "published": "PENDING_GITHUB_CI_AND_MERGE",
-    "installed": {
-      "observed_at": "2026-10-20T11:39:57.213203+00:00",
-      "version": "3.0.0-rc.20.1",
-      "target": "C:\\Users\\96501\\.codex\\skills\\universal-project-governance",
-      "backup": "D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution\\.governance\\installed-rc20-backup-98ffd40af007",
-      "backup_files": 20,
-      "backup_readback": true,
-      "delivered_files": 18,
-      "changed_files": [
-        "policy-index.json",
-        "SKILL.md",
-        "VERSION.md",
-        "scripts/project_tool.py",
-        "integrity/manifest.json"
-      ],
-      "all_bytes_equal_candidate": true,
-      "unmanaged_files_preserved": true,
-      "checks": [
-        {
-          "check": "installed integrity",
-          "returncode": 0,
-          "stdout": "Integrity check passed (17 generated runtime files).\n",
-          "stderr": ""
-        },
-        {
-          "check": "installed lifecycle regressions",
-          "count": 28,
-          "passed": true,
-          "raw": "............................\n----------------------------------------------------------------------\nRan 28 tests in 3.383s\n\nOK\n"
-        }
-      ],
-      "host_configuration_changed": false
+    "published": {
+      "status": "MERGED_MAIN",
+      "pull_request": "https://github.com/ouroboros965018276-collab/universal-project-governance/pull/25",
+      "runtime_merge_revision": "5fad9ff3391ec63db78d3e5e5788d8c27b25b3e5",
+      "reviewed_source_revision": "9335cbc0647123fd6448325f7445b63c96b86fd4",
+      "merge_tree_equals_tested_tree": true,
+      "default_branch": "main"
     },
     "fresh_session_discovery": {
       "enabled_upg": 1,
@@ -305,7 +334,52 @@
         "stdout": "Integrity check passed (17 generated runtime files).\n",
         "stderr": ""
       }
-    }
+    },
+    "initial_installation_observation": {
+      "observed_at": "2026-10-20T11:39:57.213203+00:00",
+      "version": "3.0.0-rc.20.1",
+      "target": "C:\\Users\\96501\\.codex\\skills\\universal-project-governance",
+      "backup": "D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution\\.governance\\installed-rc20-backup-98ffd40af007",
+      "backup_files": 20,
+      "backup_readback": true,
+      "delivered_files": 18,
+      "changed_files": [
+        "policy-index.json",
+        "SKILL.md",
+        "VERSION.md",
+        "scripts/project_tool.py",
+        "integrity/manifest.json"
+      ],
+      "all_bytes_equal_candidate": true,
+      "unmanaged_files_preserved": true,
+      "checks": [
+        {
+          "check": "installed integrity",
+          "returncode": 0,
+          "stdout": "Integrity check passed (17 generated runtime files).\n",
+          "stderr": ""
+        },
+        {
+          "check": "installed lifecycle regressions",
+          "count": 28,
+          "passed": true,
+          "raw": "............................\n----------------------------------------------------------------------\nRan 28 tests in 3.383s\n\nOK\n"
+        }
+      ],
+      "host_configuration_changed": false
+    },
+    "installed": {
+      "status": "PASS",
+      "version": "3.0.0-rc.20.1",
+      "delivered_files": 18,
+      "all_bytes_equal_default_main": true,
+      "installed_lifecycle_tests": 28,
+      "fresh_official_discovery_enabled": 1,
+      "fresh_official_discovery_errors": 0,
+      "backup_retained": true,
+      "host_configuration_changed": false
+    },
+    "receipt_publication": "This observation is published as a documentation/audit-only follow-up; it does not change the tested runtime or infer future CI success."
   },
   "preserved_preexisting_changes": {
     "audits/rc19-nine-native-development-v2.preregistration.json": "6b92bad0ea3a542993dd261b3c73bdf5d3731411119bfa3988fca87e602e486a",
@@ -345,7 +419,10 @@
     ".governance/self-audit-install.json": "12997d1104d6f11400f70c2430e3898e4df3c5c2a43008448e00f25f7644fc7f",
     ".governance/self-audit-discovery.json": "e0f9c01aa639cd9917d6f9535aeefe8106b949a517b14ad21d397fe5136123e2",
     ".governance/self-audit-historical-study-check.json": "76ff0a4f1b740236757675e1fdb05d573b76494e69577c8f7b79b89bb363f04c",
-    ".governance/self-audit-install-lf-correction.json": "15e329dd63e82fa14e66d64d4977aef6c13ef429e6eae868e12605e2c379f2a1"
+    ".governance/self-audit-install-lf-correction.json": "15e329dd63e82fa14e66d64d4977aef6c13ef429e6eae868e12605e2c379f2a1",
+    ".governance/self-audit-main-byte-verification.json": "a2e68f0106f52b8d78f94f7e8b0baf6d19291592a901f155598f8a1eec974d25",
+    ".governance/self-audit-committed-bytes-check.json": "f67f9552290392ed410b23ca18a522bd24f75f44358b57e19762dda0973dbbb2",
+    ".governance/self-audit-insight-repair.json": "7d9220af7eaa617bcf6722f7fbb2be6d95711b8caa62a231c24a93edeea05455"
   },
   "preliminary_ci_failure": {
     "run_id": 39416739483,
