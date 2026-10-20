@@ -1,5 +1,6 @@
 """Necessary native-process recovery checks; no scheduled task or paid calls."""
 import json
+import shutil
 from pathlib import Path
 import subprocess
 import sys
@@ -23,6 +24,10 @@ class GitRecoveryTests(unittest.TestCase):
     wait_for = fixture.GitWatchTests.wait_for
     start_worker = fixture.GitWatchTests.start_worker
     stop_worker = fixture.GitWatchTests.stop_worker
+    state = fixture.GitWatchTests.state
+    start_session = fixture.GitWatchTests.start_session
+    finish_session = fixture.GitWatchTests.finish_session
+    close_sessions = fixture.GitWatchTests.close_sessions
 
     def enable_recovery_fixture(self):
         # Exercise project-session recovery intent without host startup tasks.
@@ -32,40 +37,99 @@ class GitRecoveryTests(unittest.TestCase):
         self.write(".governance/upg.json", json.dumps(binding))
 
     def owned_worker_host(self):
-        self.write(".governance/owned-host.py", "import json,sys,time\nfrom pathlib import Path\n"
-                   "sys.path.insert(0,sys.argv[1])\nimport git_watch\n"
-                   "p=Path.cwd()/'.governance'\noriginal=git_watch._spawn_worker\nchildren=[]\n"
-                   "def owned(*args):\n child=original(*args)\n children.append(child)\n return child\n"
-                   "git_watch._spawn_worker=owned\ngit_watch._set_start_intent(Path.cwd())\nview=git_watch._launch(Path.cwd())\n"
-                   "assert len(children)==1 and view['watcher']['running']\n"
-                   "(p/'owned-worker-ready').write_text(json.dumps(view))\n"
-                   "deadline=time.monotonic()+45\n"
-                   "while not (p/'kill-owned-worker').exists() and time.monotonic()<deadline:\n time.sleep(.05)\n"
-                   "assert (p/'kill-owned-worker').exists(), 'test did not request its owned crash'\n"
-                   "children[0].kill()\nchildren[0].wait(timeout=10)\n"
-                   "assert children[0].returncode is not None\n"
-                   "(p/'owned-worker-exited').write_text(str(children[0].returncode))\n")
-        host = subprocess.Popen([sys.executable, str(self.root / ".governance/owned-host.py"), str(fixture.CLI.parent)],
-                                cwd=self.root, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        self.addCleanup(self.stop_worker)
-        def finish_host():
-            if host.poll() is None:
-                self.write(".governance/kill-owned-worker", "end owned fixture\n")
-            output, error = host.communicate(timeout=15)
-            self.assertEqual(host.returncode, 0, error.decode("utf-8", "replace") + output.decode("utf-8", "replace"))
-        self.addCleanup(finish_host)
-        self.wait_for(lambda: (self.root / ".governance/owned-worker-ready").exists(), timeout=15)
-        view = json.loads((self.root / ".governance/owned-worker-ready").read_text())["watcher"]
+        # Copy the delivered runtime only inside this disposable fixture. The
+        # sole injected hook retains _spawn_worker's actual Popen in its real
+        # supervisor, so every supported Python can inject an exact-child crash.
+        runtime = self.root / ".governance/recovery-runtime"
+        shutil.copytree(fixture.CLI.parent.parent, runtime,
+                        ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
+        copied_watch = runtime / "scripts/git_watch.py"
+        hook = """
+if __name__ == "__main__" and "--supervise" in sys.argv:
+    _recovery_original_spawn = _spawn_worker
+    _recovery_fault_claimed = False
+    def _recovery_owned_spawn(*args):
+        global _recovery_fault_claimed
+        child = _recovery_original_spawn(*args)
+        if not _recovery_fault_claimed:
+            _recovery_fault_claimed = True
+            def crash_exact_child():
+                p = Path.cwd() / ".governance"
+                deadline = time.monotonic() + 45
+                while not (p / "kill-owned-worker").exists() and time.monotonic() < deadline:
+                    time.sleep(.05)
+                if not (p / "kill-owned-worker").exists():
+                    return
+                child.kill()
+                child.wait(timeout=10)
+                assert child.returncode is not None
+                (p / "owned-worker-exited").write_text(str(child.returncode))
+            threading.Thread(target=crash_exact_child, daemon=True).start()
+        return child
+    _spawn_worker = _recovery_owned_spawn
+
+"""
+        source = copied_watch.read_text(encoding="utf-8")
+        marker = 'if __name__ == "__main__":'
+        self.assertEqual(source.count(marker), 1)
+        copied_watch.write_bytes(source.replace(marker, hook + marker).encode("utf-8"))
+        self.write(".governance/owned-host.py", """import json,sys,threading,time
+from pathlib import Path
+sys.path.insert(0,sys.argv[1])
+import git_watch
+root=Path.cwd()
+p=root/'.governance'
+ended=threading.Event()
+def recover_requests():
+    sequence=1
+    while not ended.is_set():
+        request=p/('recover-request-'+str(sequence))
+        if not request.exists():
+            ended.wait(.03)
+            continue
+        response=p/('recover-response-'+str(sequence)+'.json')
+        value=git_watch.recover(root)
+        candidate=response.with_suffix('.tmp')
+        candidate.write_text(json.dumps(value))
+        candidate.replace(response)
+        sequence+=1
+thread=threading.Thread(target=recover_requests,daemon=True)
+thread.start()
+try:
+    result=git_watch.session(root,sys.argv[2:])
+    assert result['host_returncode']==0,result
+finally:
+    ended.set()
+    thread.join(timeout=2)
+""")
+        # Existing public-session fixture passes the canonical CLI directory as
+        # argv[1]; this wrapper substitutes only our instrumented copied runtime.
+        owner = self.root / ".governance/recovery-session.py"
+        self.write(".governance/recovery-session.py",
+                   "import runpy,sys\nfrom pathlib import Path\n"
+                   "sys.argv[1]=str(Path.cwd()/'.governance/recovery-runtime/scripts')\n"
+                   "runpy.run_path(str(Path.cwd()/'.governance/owned-host.py'),run_name='__main__')\n")
+        record = self.start_session(owner)
+        self.current_session = record
+        view = self.state()
         self.worker_pid = view["pid"]
-        return host, view
+        self.recovery_request = 0
+        return record["process"], view
+
+    def recover_inside_session(self):
+        self.recovery_request += 1
+        number = str(self.recovery_request)
+        self.write(".governance/recover-request-" + number, "recover inside the live foreground owner\n")
+        response = self.root / (".governance/recover-response-" + number + ".json")
+        self.wait_for(response.exists, timeout=20)
+        return json.loads(response.read_text())["watcher"]
 
     def crash_owned_worker(self, host):
-        # The separate parent owns a real Popen handle and kills only its exact
-        # child. No process is selected or signalled using metadata's bare PID.
+        # The actual supervisor owns this Popen and kills only its exact child.
+        # Its foreground session remains alive throughout orphan/defer recovery.
         self.write(".governance/kill-owned-worker", "controlled native crash\n")
         self.wait_for(lambda: (self.root / ".governance/owned-worker-exited").exists(), timeout=10)
-        output, error = host.communicate(timeout=5)
-        self.assertEqual(host.returncode, 0, error.decode("utf-8", "replace") + output.decode("utf-8", "replace"))
+        self.assertIsNone(host.poll(), "session owner must remain alive for recovery")
         self.worker_pid = None
 
     def test_native_crash_recovers_original_scope_and_deduplicates(self):
@@ -74,13 +138,13 @@ class GitRecoveryTests(unittest.TestCase):
         host, previous = self.owned_worker_host()
         self.crash_owned_worker(host)
         self.write("source.txt", "source after actual worker crash\n")
-        recovered = self.watch("recover")["watcher"]
+        recovered = self.recover_inside_session()
         self.assertTrue(recovered["running"], recovered)
         self.assertNotEqual(recovered["token"], previous["token"])
         self.assertEqual(recovered["generation"], configured["generation"])
         self.worker_pid = recovered["pid"]
         self.wait_for(lambda: self.count() == 2)
-        again = self.watch("recover")["watcher"]
+        again = self.recover_inside_session()
         self.assertEqual(again["token"], recovered["token"])
         self.assertEqual(again["pid"], recovered["pid"])
         self.assertEqual(self.count(), 2)
@@ -105,7 +169,7 @@ class GitRecoveryTests(unittest.TestCase):
         binding = json.loads((self.root / ".governance/upg.json").read_text())
         self.assertGreater(binding["git_checkpoint"]["watcher"]["lease_until"] - time.time(), 2300)
         self.crash_owned_worker(host)
-        deferred = self.watch("recover")["watcher"]
+        deferred = self.recover_inside_session()
         self.assertIn("deferred", deferred["recovery"])
         self.assertEqual(deferred["token"], previous["token"])
         self.assertEqual((self.root / ".governance/orphan-count").read_text(), "1")
@@ -114,7 +178,7 @@ class GitRecoveryTests(unittest.TestCase):
         self.wait_for(lambda: (self.root / ".governance/orphan-finished").exists())
         deadline = time.monotonic() + 15
         while True:
-            current = self.watch("recover")["watcher"]
+            current = self.recover_inside_session()
             if current.get("token") != previous["token"] and current.get("pid"):
                 break
             if time.monotonic() > deadline:
@@ -191,12 +255,17 @@ class GitRecoveryTests(unittest.TestCase):
         code = ("import sys\nfrom pathlib import Path\nsys.path.insert(0,sys.argv[1])\n"
                 "import project_tool,process_guard,git_watch,io,contextlib\nactual=project_tool._remove_files\nobserved=[]\n"
                 "def unavailable(*args):\n raise OSError(\"injected launch failure\")\n"
-                "git_watch._spawn_supervisor=unavailable\nfailed=git_watch.start(Path.cwd())\n"
-                "assert failed[\"watcher\"][\"supervisor\"][\"status\"]==\"blocked\"\n"
-                "assert not project_tool.status(Path.cwd())[\"ok\"]\n"
-                "sys.argv=[\"project_tool.py\",\"git-watch\",str(Path.cwd()),\"--action\",\"status\"]\n"
-                "with contextlib.redirect_stdout(io.StringIO()):\n assert project_tool.main()==1\n"
-                "git_watch.stop(Path.cwd())\nassert project_tool.status(Path.cwd())[\"ok\"]\n"
+                "import session_lifetime\n"
+                "git_watch._spawn_supervisor=unavailable\n"
+                "with session_lifetime.Session(Path.cwd()) as life:\n"
+                " git_watch._bind_session(Path.cwd(),life.token)\n"
+                " failed=git_watch.start(Path.cwd())\n"
+                " assert failed[\"watcher\"][\"supervisor\"][\"status\"]==\"blocked\"\n"
+                " assert not project_tool.status(Path.cwd())[\"ok\"]\n"
+                " sys.argv=[\"project_tool.py\",\"git-watch\",str(Path.cwd()),\"--action\",\"status\"]\n"
+                " with contextlib.redirect_stdout(io.StringIO()):\n  assert project_tool.main()==1\n"
+                " git_watch.stop(Path.cwd())\n assert project_tool.status(Path.cwd())[\"ok\"]\n"
+                " git_watch._end_session(Path.cwd(),life.token)\n"
                 "def guarded(root,yes):\n"
                 " for name in ['.upg-supervisor.guard','.upg-worker.guard','.upg-validation.guard','.upg-checkpoint.guard']:\n"
                 "  assert process_guard.acquire(root,name) is None, 'remove released a native ownership guard early'\n"

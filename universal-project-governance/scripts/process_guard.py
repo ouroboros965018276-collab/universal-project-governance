@@ -242,6 +242,9 @@ def _spawn_guarded(argv, guards, kwargs):
     options["shell"] = False
     if os.name == "nt":
         options["creationflags"] = subprocess.CREATE_NO_WINDOW
+    import session_lifetime
+    if session_lifetime.active():
+        return session_lifetime.spawn(command, guards=guards, **options)
     with inheritance(guards) as inherited:
         options.update(inherited)
         return subprocess.Popen(command, **options)
@@ -303,6 +306,8 @@ def run(argv, timeout=None, check=False, **kwargs):
 
 
 def _hold_command(arguments):
+    import session_lifetime
+    session_lifetime.join_from_environment()
     if len(arguments) < 4 or arguments[0] != "--hold" or arguments[2] != "--":
         raise ValueError("guard wrapper requires its exact inherited handles and command argv")
     specs = json.loads(arguments[1])
@@ -315,7 +320,8 @@ def _hold_command(arguments):
                 raise ValueError("invalid inherited guard specification")
             guards.append(adopt(item["root"], item["name"], item["handle"]))
         return subprocess.run(arguments[3:], stdin=sys.stdin, stdout=sys.stdout,
-                              stderr=sys.stderr, shell=False).returncode
+                              stderr=sys.stderr, shell=False,
+                              env=session_lifetime.without_session_environment()).returncode
     finally:
         for guard in reversed(guards):
             guard.close()

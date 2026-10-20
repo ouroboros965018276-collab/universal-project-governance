@@ -20,7 +20,7 @@ import process_guard as guards
 
 ROOT = Path(__file__).resolve().parents[1]
 _locks = threading.local()
-CONTROLLED_GUARDS = frozenset({".upg-writer.guard", ".upg-worker.guard", ".upg-validation.guard", ".upg-checkpoint.guard", ".upg-supervisor.guard"})
+CONTROLLED_GUARDS = frozenset({".upg-writer.guard", ".upg-worker.guard", ".upg-validation.guard", ".upg-checkpoint.guard", ".upg-supervisor.guard", ".upg-session.guard"})
 
 def serialized(fn):
     @functools.wraps(fn)
@@ -939,7 +939,7 @@ def remove(project, yes):
             if stopped.get("status") != "stopped":
                 raise ValueError("observer cancellation is pending; wait for its native command before removing state")
         with ExitStack() as ownership:
-            for name in [".upg-supervisor.guard", ".upg-worker.guard", ".upg-validation.guard", ".upg-checkpoint.guard"]:
+            for name in [".upg-session.guard", ".upg-supervisor.guard", ".upg-worker.guard", ".upg-validation.guard", ".upg-checkpoint.guard"]:
                 guard = guards.acquire(project_root(project), name)
                 if guard is None:
                     raise ValueError("native project work remains active; wait before removing its ownership state")
@@ -1028,8 +1028,9 @@ def main():
     git_policy.set_defaults(bootstrap_enabled=None)
     watch = sub.add_parser("git-watch")
     watch.add_argument("project", nargs="?", default=".")
-    watch.add_argument("--action", choices=["configure", "start", "stop", "status", "tick", "recover"], required=True)
+    watch.add_argument("--action", choices=["configure", "start", "stop", "status", "tick", "recover", "session"], required=True)
     watch.add_argument("--input")
+    watch.add_argument("--command", nargs=argparse.REMAINDER)
     export = sub.add_parser("export")
     export.add_argument("project", nargs="?", default=".")
     export.add_argument("--output", required=True)
@@ -1062,7 +1063,13 @@ def main():
                                    args.status_path, args.min_interval_seconds, args.bootstrap_enabled)
         elif args.cmd == "git-watch":
             import git_watch
-            if args.action == "configure":
+            if args.command and args.action != "session":
+                raise ValueError("--command is only accepted for git-watch session")
+            if args.action == "session":
+                if args.input:
+                    raise ValueError("session does not accept --input")
+                result = git_watch.session(args.project, args.command)
+            elif args.action == "configure":
                 if not args.input:
                     raise ValueError("git-watch configure requires --input")
                 result = git_watch.configure(args.project, load_json(args.input))
@@ -1077,9 +1084,9 @@ def main():
         elif args.cmd == "remove":
             result = remove(args.project, args.yes)
         if args.cmd in {"install", "ensure", "git-configure"}:
-            # The ordinary activation entry can restore a configured observer,
-            # without requiring the host to adopt begin/finish. Explicit stop
-            # remains a durable choice until an explicit start.
+            # Entry can recover only a verified foreground session capability.
+            # Missing host lifetime support means finite lifecycle work only;
+            # never detach an observer from this short-lived tool invocation.
             binding = load_json(resolve(args.project, config()["binding_file"]))
             watcher = binding.get("git_checkpoint", {}).get("watcher", {})
             if (binding.get("git_checkpoint", {}).get("enabled")
@@ -1088,6 +1095,10 @@ def main():
                 import git_watch
                 result["watcher"] = git_watch.autostart(args.project)["watcher"]
         print(json.dumps(result, indent=2, sort_keys=True))
+        if args.cmd == "git-watch" and args.action == "session":
+            return result.get("host_returncode") or 0
+        if args.cmd == "git-watch" and args.action == "start" and result.get("watcher", {}).get("status") == "session-required":
+            return 2
         if (result.get("watcher", {}).get("status") in {"blocked", "stale", "cancelled"}
                 or result.get("watcher", {}).get("supervisor", {}).get("status") == "blocked"):
             return 1

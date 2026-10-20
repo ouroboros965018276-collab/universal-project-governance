@@ -7,6 +7,7 @@ from pathlib import Path
 import sys
 import tempfile
 import time
+from types import SimpleNamespace
 import unittest
 from unittest import mock
 
@@ -15,7 +16,7 @@ SOURCE = ROOT / "governance-src/runtime-scripts"
 # Exercise the canonical functions before compilation without contaminating the
 # runtime modules used by other tests in this same discovery process.
 with mock.patch.dict(sys.modules):
-    for name in ("git_watch", "project_tool", "git_checkpoint", "process_guard", "state_tool", "project_facts"):
+    for name in ("git_watch", "project_tool", "git_checkpoint", "process_guard", "state_tool", "project_facts", "session_lifetime"):
         sys.modules.pop(name, None)
     sys.path.insert(0, str(SOURCE))
     try:
@@ -55,9 +56,13 @@ class GitWatchHandshakeTests(unittest.TestCase):
         self.stack.enter_context(mock.patch.object(WATCH.time, "monotonic", self.clock.monotonic))
         self.stack.enter_context(mock.patch.object(WATCH.time, "sleep", self.clock.sleep))
         self.stack.enter_context(mock.patch.object(WATCH.project, "project_root", lambda value: value))
+        self.life = SimpleNamespace(root=self.root, token="session-token", active=True)
+        self.stack.enter_context(mock.patch.object(WATCH.lifetime, "current", return_value=self.life))
+        self.stack.enter_context(mock.patch.object(WATCH.lifetime, "active", return_value=True))
 
     def view(self, supervisor_pid=None, worker_pid=None, worker_status="starting", supervisor_status="starting"):
         return WATCH._view({"desired_running": True, "token": "worker-token", "pid": worker_pid,
+                            "session": {"status": "active", "token": self.life.token},
                             "status": worker_status, "lease_until": time.time() + 120,
                             "supervisor": {"enabled": True, "token": "supervisor-token",
                                            "pid": supervisor_pid, "status": supervisor_status}})
@@ -252,7 +257,8 @@ class GitWatchHandshakeTests(unittest.TestCase):
                          "validators": [{"argv": [sys.executable, "-c", "pass"], "timeout_seconds": 1}]}
         for desired, enabled in [(False, True), (True, False)]:
             with self.subTest(desired=desired, enabled=enabled):
-                watcher = {"desired_running": desired, "configuration": configuration, "supervisor": {"enabled": True}}
+                watcher = {"desired_running": desired, "configuration": configuration, "supervisor": {"enabled": True},
+                           "session": {"status": "active", "token": self.life.token}}
                 with mock.patch.object(WATCH, "_load", return_value=(None, {}, {"enabled": enabled}, watcher)), \
                         mock.patch.object(WATCH, "_set_start_intent", side_effect=ValueError("guarded intent change")) as intent, \
                         mock.patch.object(WATCH, "_launch_supervisor") as launch:
@@ -260,6 +266,18 @@ class GitWatchHandshakeTests(unittest.TestCase):
                         WATCH.start(self.root)
                     intent.assert_called_once_with(self.root)
                     launch.assert_not_called()
+
+    def test_no_session_start_cannot_change_intent_or_launch_a_detached_observer(self):
+        watcher = self.view(21, 22, "idle", "watching")["watcher"]
+        with mock.patch.object(WATCH.lifetime, "active", return_value=False), \
+                mock.patch.object(WATCH, "_load", return_value=(None, {}, {"enabled": True}, watcher)), \
+                mock.patch.object(WATCH, "_set_start_intent") as intent, \
+                mock.patch.object(WATCH, "_launch_supervisor") as launch:
+            result = WATCH.start(self.root)["watcher"]
+            self.assertEqual(result["status"], "session-required")
+            self.assertFalse(result["running"])
+            intent.assert_not_called()
+            launch.assert_not_called()
 
     def test_direct_recover_reports_unconfirmed_startup_as_failure_but_preserves_real_defer(self):
         for state, expected in [(self.view(21, None, "starting", "blocked"), 1),

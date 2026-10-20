@@ -26,18 +26,23 @@ def worker_launch_digest(fn):
     return hashlib.sha256(json.dumps(portable_ast(fn), sort_keys=True,
                                      separators=(",", ":")).encode()).hexdigest()
 
-# This pins own-script argv, detached flags, DEVNULL I/O and shell=False;
+# This pins own-script argv, lifetime containment, ordinary stdio and shell=False;
 # no general process-launch exception is granted.
-OWN_WORKER_LAUNCH_SHA256 = "f27a6b3b4c98d5e5e7196c2565c0d6b3453b8f784de39252cff0935f927583e2"
+OWN_WORKER_LAUNCH_SHA256 = "69019433c57ec60e10fe2eedea4c44a05093777d85392fdd37a2f5dcf90f884b"
 
-OWN_GUARDED_LAUNCH_SHA256 = "5b5675ef5434a823860eb5c95030ecedfb73b76cede230b8f5c62e21ef8060ce"
+OWN_GUARDED_LAUNCH_SHA256 = "858fdf12a8550a3bc97ca99ba79a31b4700a4c56bbff7b67839aaf48055ca453"
 
-OWN_SUPERVISOR_LAUNCH_SHA256 = "f18b40e98ce5eb1d444da5831da8d74a6b29d518e9d53bd3223a5fd8ce5406a9"
+OWN_SUPERVISOR_LAUNCH_SHA256 = "6d9700d22c0b7dc2066b522269ac9e932abf60c1bcd3d5c507c0d4b6f65047ab"
+
+SESSION_MEMBER_LAUNCH_SHA256 = '71325c51e9ca58e11f4aded2eb124142daa312816abb881eae2e6d4d2303e66c'
+SESSION_HOST_LAUNCH_SHA256 = '44b92c247494bd53147046305dc287da7a92e94d06e5d26ae897d537e4ae16e8'
 
 def approved_worker_launch(path, tree, node):
     reviewed = {("git_watch.py", "_spawn_worker"): OWN_WORKER_LAUNCH_SHA256,
                 ("git_watch.py", "_spawn_supervisor"): OWN_SUPERVISOR_LAUNCH_SHA256,
-                ("process_guard.py", "_spawn_guarded"): OWN_GUARDED_LAUNCH_SHA256}
+                ("process_guard.py", "_spawn_guarded"): OWN_GUARDED_LAUNCH_SHA256,
+                ("session_lifetime.py", "spawn"): SESSION_MEMBER_LAUNCH_SHA256,
+                ("session_lifetime.py", "run_host"): SESSION_HOST_LAUNCH_SHA256}
     for fn in tree.body:
         if isinstance(fn, ast.FunctionDef) and node in ast.walk(fn):
             expected = reviewed.get((path.name, fn.name))

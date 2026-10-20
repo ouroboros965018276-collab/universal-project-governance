@@ -15,12 +15,14 @@ from pathlib import Path
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 import uuid
 
 import git_checkpoint as git
 import project_tool as project
 import process_guard as guards
+import session_lifetime as lifetime
 
 
 def validate_configuration(value):
@@ -119,6 +121,7 @@ def configure(root, configuration):
         raise ValueError("cannot configure Git watcher: " + observed.get("reason", "baseline unavailable"))
     desired = _desired(watcher) if configuration["enabled"] else False
     supervisor = copy.deepcopy(watcher.get("supervisor", {"enabled": False}))
+    session_state = copy.deepcopy(watcher.get("session"))
     guard_version = watcher.get("guard_version")
     generation = uuid.uuid4().hex
     token = watcher.get("token") if _live(watcher) and configuration["enabled"] else None
@@ -127,6 +130,8 @@ def configure(root, configuration):
                "workflow_id": "git-watch:" + generation, "baseline": observed,
                "status": "configured" if configuration["enabled"] else "disabled",
                "desired_running": desired, "supervisor": supervisor}
+    if session_state is not None:
+        watcher["session"] = session_state
     if guard_version is not None:
         watcher["guard_version"] = guard_version
     if token:
@@ -155,6 +160,7 @@ def _reserve(root, recovering=False):
     path, binding, policy, watcher = _load(root)
     configuration = validate_configuration(watcher.get("configuration"))
     if (not configuration["enabled"] or not policy.get("enabled") or not _desired(watcher)
+            or not _session_owned(watcher)
             or (recovering and not watcher.get("supervisor", {}).get("enabled"))):
         return _view(watcher), None
     if _legacy_owner(watcher):
@@ -183,15 +189,8 @@ def _start_failed(root, token, reason):
 def _spawn_worker(root, token, guard):
     argv = [sys.executable, str(Path(__file__).resolve()), "--worker", str(root), "--token", token,
             "--guard-handle", str(guard.handle)]
-    options = {"stdin": subprocess.DEVNULL, "stdout": subprocess.DEVNULL,
-               "stderr": subprocess.DEVNULL, "cwd": str(root), "shell": False}
-    if os.name == "nt":
-        options["creationflags"] = subprocess.CREATE_NO_WINDOW | subprocess.CREATE_NEW_PROCESS_GROUP
-    else:
-        options["start_new_session"] = True
-    # The launch command is fixed; caller configuration cannot replace it.
-    with guards.inheritance([guard]) as inherited:
-        return subprocess.Popen(argv, **dict(options, **inherited))
+    return lifetime.spawn(argv, guard=guard, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                          stderr=subprocess.DEVNULL, cwd=str(root), shell=False)
 
 
 def _launch(root, recovering=False, with_child=False):
@@ -244,13 +243,22 @@ def _reserve_supervisor(root):
     supervisor = watcher.setdefault("supervisor", {})
     supervisor.update(token=token, pid=None, guard_version=1, status="starting")
     supervisor.pop("reason", None)
+    # Native supervisor guard proves the previous supervisor released. Revoke
+    # its worker cooperatively; a native validation/checkpoint must release its
+    # original guard before this new supervisor can reserve a replacement.
+    old_worker = watcher.pop("token", None)
+    if old_worker is not None:
+        watcher.pop("validation_id", None)
+        watcher.update(status="stopping", stop_token=old_worker, lease_until=0,
+                       reason="supervisor-owner-replaced; awaiting-native-worker-release")
     _save(path, binding, watcher)
     return _view(watcher), token
 
 
 def _supervised(policy, watcher):
     return bool(policy.get("enabled") and watcher.get("configuration", {}).get("enabled")
-                and watcher.get("supervisor", {}).get("enabled") and _desired(watcher))
+                and watcher.get("supervisor", {}).get("enabled") and _desired(watcher)
+                and _session_owned(watcher))
 
 
 @project.serialized
@@ -286,14 +294,8 @@ def _supervisor_progress(root, token, state, reason=None, release=False):
 def _spawn_supervisor(root, token, guard):
     argv = [sys.executable, str(Path(__file__).resolve()), "--supervise", str(root), "--token", token,
             "--guard-handle", str(guard.handle)]
-    options = {"stdin": subprocess.DEVNULL, "stdout": subprocess.DEVNULL,
-               "stderr": subprocess.DEVNULL, "cwd": str(root), "shell": False}
-    if os.name == "nt":
-        options["creationflags"] = subprocess.CREATE_NO_WINDOW | subprocess.CREATE_NEW_PROCESS_GROUP
-    else:
-        options["start_new_session"] = True
-    with guards.inheritance([guard]) as inherited:
-        return subprocess.Popen(argv, **dict(options, **inherited))
+    return lifetime.spawn(argv, guard=guard, supervisor=True, stdin=subprocess.DEVNULL,
+                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, cwd=str(root), shell=False)
 
 
 def _await_supervisor(root, token=None, previous_token=None):
@@ -307,6 +309,9 @@ def _await_supervisor(root, token=None, previous_token=None):
         view = status(root)
         state = view["watcher"]
         supervisor = state.get("supervisor", {})
+        if state.get("session") and not lifetime.active():
+            state.update(running=False, status="session-ended", reason="project-session-ended")
+            return view
         if token is not None and supervisor.get("token") != token:
             return view
         if not state.get("desired_running"):
@@ -377,8 +382,166 @@ def _launch_supervisor(root):
         return _await_supervisor(root, token, previous_token)
 
 
+def _session_owned(watcher):
+    value = lifetime.current()
+    session_state = watcher.get("session", {})
+    return bool(lifetime.active() and value is not None
+                and session_state.get("status") == "active"
+                and session_state.get("token") == value.token)
+
+
+def _session_required(root):
+    view = _view(_load(project.project_root(root))[3])
+    view["watcher"].update(status="session-required", running=False,
+                          reason="project-session-required; use foreground git-watch session --command")
+    return view
+
+
+@project.serialized
+def _bind_session(root, token):
+    path, binding, policy, watcher = _load(root)
+    configuration = validate_configuration(watcher.get("configuration"))
+    if not policy.get("enabled") or not configuration["enabled"]:
+        raise ValueError("enable scoped Git and its explicit validators before entering a session")
+    acquired = []
+    try:
+        for name in [".upg-supervisor.guard", ".upg-worker.guard", ".upg-validation.guard", ".upg-checkpoint.guard"]:
+            guard = guards.acquire(root, name)
+            if guard is None:
+                raise ValueError("previous native project owner still active; stop and verify release before session entry")
+            acquired.append(guard)
+        watcher["session"] = {"token": token, "pid": os.getpid(), "status": "active", "guard_version": 1}
+        watcher["desired_running"] = True  # This foreground entry is an explicit start.
+        watcher.setdefault("supervisor", {})["enabled"] = True
+        watcher.update(status="configured", pid=None, lease_until=0)
+        for key in ["token", "stop_token", "validation_id", "recovery_blocked"]:
+            watcher.pop(key, None)
+        _save(path, binding, watcher)
+    finally:
+        for guard in reversed(acquired):
+            guard.close()
+
+
+@project.serialized
+def _end_session(root, token):
+    path, binding, policy, watcher = _load(root)
+    if watcher.get("session", {}).get("token") != token:
+        return _view(watcher)
+    watcher["session"].update(status="ended", pid=None)
+    watcher.update(status="session-ended", pid=None, lease_until=0, reason="project-session-ended")
+    for key in ["token", "stop_token", "validation_id"]:
+        watcher.pop(key, None)
+    supervisor = watcher.setdefault("supervisor", {})
+    supervisor.pop("token", None)
+    supervisor.update(status="stopped", pid=None)
+    supervisor.pop("reason", None)
+    _save(path, binding, watcher)
+    return _view(watcher)
+
+
+def _retire_released_session(root):
+    path, binding, policy, watcher = _load(root)
+    session_state = watcher.get("session", {})
+    if session_state.get("status") != "active":
+        return
+    acquired = []
+    try:
+        for name in [".upg-session.guard", ".upg-supervisor.guard", ".upg-worker.guard",
+                     ".upg-validation.guard", ".upg-checkpoint.guard"]:
+            guard = guards.acquire(root, name)
+            if guard is None:
+                return
+            acquired.append(guard)
+        _end_session(root, session_state["token"])
+    finally:
+        for guard in reversed(acquired):
+            guard.close()
+
+
+def session(root, command):
+    """Own observers only for an explicit foreground host that waits for its session.
+
+    A launcher which detaches from its UI is not a project lifetime adapter.
+    There is no background fallback when the host cannot provide this signal.
+    """
+    root = project.project_root(root)
+    if not command:
+        raise ValueError("project session requires --command and a foreground host argv")
+    project.ensure(root)
+    session_guard = guards.acquire(root, ".upg-session.guard")
+    if session_guard is None:
+        raise ValueError("another foreground project session owns this project")
+    with session_guard, lifetime.Session(root) as life:
+        _bind_session(root, life.token)
+        host = None
+        ended = threading.Event()
+        try:
+            host = lifetime.run_host(command, cwd=str(root))
+            def close_when_host_ends():
+                host.wait()
+                ended.set()
+                life.close()
+            monitor = threading.Thread(target=close_when_host_ends, name="upg-host-session", daemon=True)
+            monitor.start()
+            delay, retry_at = 1, 0
+            while not ended.is_set():
+                state = status(root)["watcher"]
+                if not _session_owned(state):
+                    if not ended.is_set():
+                        raise ValueError("project session authority revoked before host exit")
+                    break
+                child = life.supervisor
+                if (_desired(state) and (child is None or child.poll() is not None)
+                        and time.monotonic() >= retry_at):
+                    try:
+                        _launch_supervisor(root)
+                        child = life.supervisor
+                        if child is not None and child.poll() is None:
+                            delay = 1
+                        else:
+                            delay = min(60, delay * 2)
+                    except (OSError, ValueError) as error:
+                        if not life.active:
+                            break
+                        _supervisor_diagnostic(root, state.get("supervisor", {}).get("token"),
+                                               "blocked", str(error)[:256])
+                        delay = min(60, delay * 2)
+                    retry_at = time.monotonic() + delay
+                ended.wait(0.2)
+            returncode = host.poll()
+        finally:
+            life.close()
+            # Native release is required before acknowledging a stopped session.
+            # A journal is retained for interrupted transaction recovery.
+            deadline = time.monotonic() + 5
+            while True:
+                acquired = []
+                try:
+                    for name in [".upg-supervisor.guard", ".upg-worker.guard",
+                                 ".upg-validation.guard", ".upg-checkpoint.guard"]:
+                        guard = guards.acquire(root, name)
+                        if guard is None:
+                            raise ValueError("session native owners have not released")
+                        acquired.append(guard)
+                    result = _end_session(root, life.token)
+                    break
+                except ValueError as error:
+                    if (not (str(error).startswith("project state writer busy;") or
+                             str(error) == "session native owners have not released")
+                            or time.monotonic() >= deadline):
+                        raise
+                    time.sleep(0.05)
+                finally:
+                    for guard in reversed(acquired):
+                        guard.close()
+        result["host_returncode"] = returncode
+        return result
+
+
 def start(root):
     root = project.project_root(root)
+    if not lifetime.active() or Path(lifetime.current().root).resolve() != Path(root).resolve():
+        return _session_required(root)
     path, binding, policy, watcher = _load(root)
     validate_configuration(watcher.get("configuration"))
     # Re-entering an already requested observer changes no intent. Avoid the
@@ -389,12 +552,15 @@ def start(root):
 
 
 def recover(root):
-    """Restore project-session supervision without changing explicit stop intent."""
+    """Recover only within an existing foreground capability; never detach at entry."""
     root = project.project_root(root)
     path = project.resolve(root, project.config()["binding_file"])
     if not path.is_file():
         return {"watcher": {"status": "unconfigured", "running": False, "recovery": "binding-missing"}}
     path, binding, policy, watcher = _load(root)
+    if not lifetime.active():
+        _retire_released_session(root)
+        return _session_required(root)
     if not _supervised(policy, watcher):
         view = _view(watcher)
         view["watcher"]["recovery"] = "disabled-or-explicitly-stopped"
@@ -608,7 +774,7 @@ def _manual_pending(binding, policy, watcher):
 def _prepare(root, token, explicit):
     path, binding, policy, watcher = _load(root)
     configuration = validate_configuration(watcher.get("configuration"))
-    if token is not None and watcher.get("token") != token:
+    if token is not None and (watcher.get("token") != token or not _session_owned(watcher)):
         return {"watcher": {"status": "stopped", "reason": "ownership-revoked"}}, None
     if token is None and _live(watcher):
         # An explicit retry shares the worker token. The validation lease below
@@ -727,12 +893,15 @@ def _prepare(root, token, explicit):
         raise
     return None, {"configuration": configuration, "generation": watcher["generation"],
                   "validation_id": validation_id, "token": token, "candidate": copy.deepcopy(candidate),
-                  "guard": validation_guard}
+                  "guard": validation_guard,
+                  "session_token": lifetime.current().token if not explicit and lifetime.active() else None}
 
 
 def _validation_owned(root, prepared):
     path, binding, policy, watcher = _load(root)
     return (policy.get("enabled") and watcher.get("configuration", {}).get("enabled")
+            and (prepared.get("session_token") is None or
+                 (_session_owned(watcher) and watcher["session"]["token"] == prepared["session_token"]))
             and watcher.get("generation") == prepared["generation"]
             and watcher.get("validation_id") == prepared["validation_id"]
             and (prepared["token"] is None or watcher.get("token") == prepared["token"]))
@@ -768,7 +937,9 @@ def _run_validators(root, validators, prepared):
 def _publish(root, prepared, passed, validations):
     path, binding, policy, watcher = _load(root)
     token = prepared["token"]
-    if ((token is not None and watcher.get("token") != token)
+    if ((prepared.get("session_token") is not None and
+         (not _session_owned(watcher) or watcher.get("session", {}).get("token") != prepared["session_token"]))
+            or (token is not None and watcher.get("token") != token)
             or watcher.get("generation") != prepared["generation"]
             or watcher.get("validation_id") != prepared["validation_id"]):
         return _view(dict(watcher, status="cancelled", reason="watcher-ownership-or-configuration-changed"))
@@ -835,7 +1006,7 @@ def tick(root, token=None):
 def _claim(root, token):
     path, binding, policy, watcher = _load(root)
     if (watcher.get("token") != token or not watcher.get("configuration", {}).get("enabled")
-            or not _desired(watcher) or watcher.get("guard_version") != 1):
+            or not _desired(watcher) or watcher.get("guard_version") != 1 or not _session_owned(watcher)):
         return False
     if watcher.get("pid") not in {None, os.getpid()}:
         return False
@@ -903,6 +1074,7 @@ def worker(root, token, guard_handle=None):
 
 
 def main():
+    lifetime.join_from_environment()
     parser = argparse.ArgumentParser(description=__doc__)
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--worker")

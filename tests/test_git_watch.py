@@ -16,6 +16,63 @@ ROOT = Path(__file__).resolve().parents[1]
 CLI = ROOT / "universal-project-governance/scripts/project_tool.py"
 
 
+class ProcessObservation:
+    """A captured native synchronization reference, never a PID kill target."""
+    def __init__(self, pid):
+        self.pid = pid
+        self.handle = None
+        self.kernel = None
+        self.fd = None
+        self.already_exited = False
+        if os.name == "nt":
+            import ctypes
+            from ctypes import wintypes
+            kernel = ctypes.WinDLL("kernel32", use_last_error=True)
+            kernel.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+            kernel.OpenProcess.restype = wintypes.HANDLE
+            kernel.WaitForSingleObject.argtypes = [wintypes.HANDLE, wintypes.DWORD]
+            kernel.WaitForSingleObject.restype = wintypes.DWORD
+            kernel.CloseHandle.argtypes = [wintypes.HANDLE]
+            kernel.CloseHandle.restype = wintypes.BOOL
+            self.handle = kernel.OpenProcess(0x00100000, False, pid)
+            if not self.handle:
+                code = ctypes.get_last_error()
+                if code != 87:
+                    raise ctypes.WinError(code)
+                self.already_exited = True
+            self.kernel = kernel
+        elif hasattr(os, "pidfd_open"):
+            try:
+                self.fd = os.pidfd_open(pid)
+            except ProcessLookupError:
+                self.already_exited = True
+
+    def exited(self):
+        if self.already_exited:
+            return True
+        if self.handle:
+            return self.kernel.WaitForSingleObject(self.handle, 0) == 0
+        if self.fd is not None:
+            import select
+            return bool(select.select([self.fd], [], [], 0)[0])
+        stat = Path("/proc") / str(self.pid) / "stat"
+        if stat.exists():
+            return stat.read_text().split(")", 1)[1].strip().startswith("Z")
+        try:
+            os.kill(self.pid, 0)
+        except ProcessLookupError:
+            return True
+        return False
+
+    def close(self):
+        if self.handle:
+            self.kernel.CloseHandle(self.handle)
+            self.handle = None
+        if self.fd is not None:
+            os.close(self.fd)
+            self.fd = None
+
+
 @unittest.skipUnless(shutil.which("git"), "real Git executable required")
 class GitWatchTests(unittest.TestCase):
     def setUp(self):
@@ -47,6 +104,8 @@ class GitWatchTests(unittest.TestCase):
                               "validators": [{"argv": [sys.executable, str(self.root / ".governance/validate.py")],
                                               "timeout_seconds": 10}]}
         self.worker_pid = None
+        self.sessions = []
+        self.addCleanup(self.close_sessions)
 
     def cleanup(self):
         if Path(self.temporary.name).resolve() != self.root or self.root.parent != self.parent:
@@ -99,52 +158,99 @@ class GitWatchTests(unittest.TestCase):
             time.sleep(0.15)
         self.fail("native watcher did not establish the expected observed state within the bounded deadline")
 
+    def state(self):
+        deadline = time.monotonic() + 1
+        while True:
+            try:
+                return json.loads((self.root / ".governance/upg.json").read_text(encoding="utf-8"))["git_checkpoint"]["watcher"]
+            except PermissionError:
+                if time.monotonic() >= deadline:
+                    raise
+                time.sleep(.02)
+
+    def start_session(self, owner_script=None):
+        number = len(self.sessions) + 1
+        prefix = ".governance/session-fixture-%s" % number
+        host = self.root / (prefix + "-host.py")
+        ready = self.root / (prefix + "-ready.json")
+        release = self.root / (prefix + "-release")
+        self.write(prefix + "-host.py", "import json,os,sys,time\nfrom pathlib import Path\n"
+                   "ready,release=map(Path,sys.argv[1:])\n"
+                   "candidate=ready.with_suffix('.tmp')\n"
+                   "candidate.write_text(json.dumps({'pid':os.getpid(),'internal_environment':[k for k in os.environ if k.startswith('_UPG_SESSION_')]}))\n"
+                   "candidate.replace(ready)\n"
+                   "deadline=time.monotonic()+180\n"
+                   "while not release.exists() and time.monotonic()<deadline:\n time.sleep(.03)\n"
+                   "assert release.exists(),'fixture must release its actual host'\n")
+        command = [sys.executable, str(host), str(ready), str(release)]
+        if owner_script is None:
+            argv = [sys.executable, str(CLI), "git-watch", str(self.root),
+                    "--action", "session", "--command"] + command
+        else:
+            argv = [sys.executable, str(owner_script), str(CLI.parent)] + command
+        output = self.root / (prefix + "-output.txt")
+        error = self.root / (prefix + "-error.txt")
+        with output.open("wb") as stdout, error.open("wb") as stderr:
+            process = subprocess.Popen(argv, cwd=self.root, stdout=stdout, stderr=stderr)
+        record = {"process": process, "release": release, "ready": ready,
+                  "output": output, "error": error, "observations": [], "host_observation": None, "closed": False}
+        self.sessions.append(record)
+        def started():
+            if process.poll() is not None:
+                self.fail(error.read_text(encoding="utf-8", errors="replace") + output.read_text(encoding="utf-8", errors="replace"))
+            state = self.state()
+            return ready.exists() and state.get("pid") and state.get("supervisor", {}).get("pid") and state.get("supervisor", {}).get("status") == "watching"
+        self.wait_for(started, timeout=30)
+        state = self.state()
+        record["observations"] = [ProcessObservation(state["pid"]), ProcessObservation(state["supervisor"]["pid"])]
+        record["host_observation"] = ProcessObservation(json.loads(ready.read_text())["pid"])
+        self.assertEqual(json.loads(ready.read_text())["internal_environment"], [])
+        return record
+
+    def finish_session(self, record, expected=(0,)):
+        process = record["process"]
+        record["release"].write_text("end the owned project session\n", encoding="utf-8")
+        try:
+            process.wait(timeout=30)
+            self.assertIn(process.returncode, expected, record["error"].read_text(encoding="utf-8", errors="replace"))
+            for observation in record["observations"]:
+                self.wait_for(observation.exited, timeout=10)
+            if record.get("host_observation"):
+                self.wait_for(record["host_observation"].exited, timeout=10)
+        finally:
+            if process.poll() is None:
+                process.kill()
+                process.wait(timeout=10)
+            for observation in record["observations"]:
+                observation.close()
+            record["observations"] = []
+            if record.get("host_observation"):
+                record["host_observation"].close()
+                record["host_observation"] = None
+            record["closed"] = True
+
+    def close_sessions(self):
+        for record in reversed(self.sessions):
+            if not record.get("closed"):
+                self.finish_session(record, expected=(0, -9, 1) if record.get("owner_killed") else (0,))
+        self.worker_pid = None
+
     def start_worker(self):
-        self.addCleanup(self.stop_worker)
-        started = self.watch("start", expected=(0,))["watcher"]
+        record = self.start_session()
+        self.current_session = record
+        started = self.watch("status", expected=(0,))["watcher"]
         self.worker_pid = started.get("pid")
         self.assertTrue(started["running"], started)
         self.assertIsInstance(self.worker_pid, int, started)
         return started
 
     def stop_worker(self):
-        # Observe the exact owned process rather than infer process exit from
-        # a status document. Windows uses a read-only synchronization handle.
-        handle = None
-        kernel = None
-        pid = self.worker_pid
-        if pid is not None and os.name == "nt":
-            import ctypes
-            from ctypes import wintypes
-            kernel = ctypes.WinDLL("kernel32", use_last_error=True)
-            kernel.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
-            kernel.OpenProcess.restype = wintypes.HANDLE
-            kernel.WaitForSingleObject.argtypes = [wintypes.HANDLE, wintypes.DWORD]
-            kernel.WaitForSingleObject.restype = wintypes.DWORD
-            kernel.CloseHandle.argtypes = [wintypes.HANDLE]
-            handle = kernel.OpenProcess(0x00100000, False, pid)
-            if not handle and ctypes.get_last_error() != 87:
-                self.fail("unable to observe owned worker process exit")
-        try:
-            stopped = self.watch("stop", expected=(0,))["watcher"]
-            self.assertFalse(stopped["running"], stopped)
-            if handle:
-                self.assertEqual(kernel.WaitForSingleObject(handle, 5000), 0, "owned native worker must actually exit")
-            elif pid is not None and os.name != "nt":
-                def gone():
-                    stat = Path("/proc") / str(pid) / "stat"
-                    if stat.exists():
-                        return stat.read_text().split(")", 1)[1].strip().startswith("Z")
-                    try:
-                        os.kill(pid, 0)
-                    except ProcessLookupError:
-                        return True
-                    return False
-                self.wait_for(gone, timeout=5)
-            self.worker_pid = None
-        finally:
-            if handle:
-                kernel.CloseHandle(handle)
+        if self.worker_pid is None:
+            return
+        stopped = self.watch("stop", expected=(0,))["watcher"]
+        self.assertFalse(stopped["running"], stopped)
+        self.finish_session(self.current_session)
+        self.worker_pid = None
 
     def test_public_tick_saves_external_editor_change_without_begin_finish_or_ledger(self):
         self.configure()
@@ -399,16 +505,17 @@ class GitWatchTests(unittest.TestCase):
         self.assertEqual(self.count(), 1)
         self.assertEqual(self.validator_count(), 0)
 
-    def test_native_worker_survives_parent_cli_exit_single_instance_stops_and_restarts(self):
+    def test_native_worker_is_bound_to_active_project_session_stops_and_restarts(self):
         self.configure(quiet_seconds=1)
         started = self.start_worker()
         reconfigured = self.configure(quiet_seconds=1)["watcher"]
         self.assertEqual(reconfigured["pid"], started["pid"])
         self.assertEqual(reconfigured["token"], started["token"])
-        again = self.watch("start", expected=(0,))["watcher"]
+        denied = self.watch("start", expected=(2,))
+        self.assertIn(b"session-required", denied.stdout)
+        again = self.state()
         self.assertEqual(again["pid"], started["pid"])
         self.assertEqual(again["token"], started["token"])
-        self.assertTrue(again["idempotent"])
         self.write("source.txt", "native editor change without lifecycle\n")
         self.wait_for(lambda: self.count() == 2)
         self.assertEqual(self.git("show", "HEAD:source.txt"), b"native editor change without lifecycle\n")

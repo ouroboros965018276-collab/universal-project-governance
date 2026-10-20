@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Current candidate: **3.0.0-rc.20.4 — Persistent Git Observer**.
+Current candidate: **3.0.0-rc.20.5 — Foreground Project Sessions**.
 
 ## First modifying activation
 
@@ -36,7 +36,7 @@ RC9 binding v2 records in-place adoption, handoff-or-reconstruct continuity, cap
 
 For tracked non-trivial work, begin and finish through `project_tool.py`. Each observed partial/blocked boundary uses a stable `checkpoint_id`; identical retries add nothing. Reference existing canonical project state with `current_state` (path/SHA), then check `status`; stale references require reconciliation. `latest_change` means latest completed workflow, not current unfinished progress. Reporting on appends bounded history; off keeps active recovery and latest/previous completion without a ledger. Do not copy source bodies, credentials, secrets, customer/private data, or private chain-of-thought into reports.
 
-Explicit scoped Git enablement bootstraps the project root and verified initial commit when needed. The lifecycle executes Git checkpoints; hosts without it use the independent configured Git watcher. Configuration, scope, cooldown and recovery are defined in [docs/git-checkpoints.md](docs/git-checkpoints.md); the canonical tracked-state guidance routes to the helper. Check the actual finish result before claiming a commit or clean handoff.
+Explicit scoped Git enablement bootstraps the project root and verified initial commit when needed. The lifecycle executes Git checkpoints; hosts without it use a configured foreground project-session watcher only when their command waits for the actual session. A session end or owner crash ends its observer subtree; there is no detached start, persistent process, OS startup, or injected host configuration. Unsupported hosts use finite checkpoints/ticks. Configuration, scope, cooldown and recovery are defined in [docs/git-checkpoints.md](docs/git-checkpoints.md); the canonical tracked-state guidance routes to the helper. Check the actual finish result before claiming a commit or clean handoff.
 
 ## Continuity
 
