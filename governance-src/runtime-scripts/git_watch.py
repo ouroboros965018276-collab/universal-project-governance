@@ -87,9 +87,10 @@ def _live(watcher):
 
 def _view(watcher):
     value = copy.deepcopy(watcher)
-    value["running"] = _live(watcher)
+    value["running"] = bool(_live(watcher) and watcher.get("supervisor", {}).get("status")
+                            not in {"starting", "recovering", "blocked", "waiting"})
     value["desired_running"] = _desired(watcher)
-    if (value.get("token") and not value["running"]
+    if (value.get("token") and not _live(watcher)
             and value.get("status") not in {"starting", "stopped", "stopping"}):
         value["status"] = "stale"
         value["reason"] = "worker-heartbeat-expired; start creates a new ownership token"
@@ -258,7 +259,7 @@ def _claim_supervisor(root, token):
     supervisor = watcher.get("supervisor", {})
     if supervisor.get("token") != token or not _supervised(policy, watcher):
         return False
-    supervisor.update(pid=os.getpid(), guard_version=1, status="watching")
+    supervisor.update(pid=os.getpid(), guard_version=1, status="starting")
     _save(path, binding, watcher)
     return True
 
@@ -295,7 +296,7 @@ def _spawn_supervisor(root, token, guard):
         return subprocess.Popen(argv, **dict(options, **inherited))
 
 
-def _await_supervisor(root, token=None):
+def _await_supervisor(root, token=None, previous_token=None):
     # Supervisor startup and its later worker startup are distinct handshakes.
     # Give the worker its own eight-second native handshake plus two seconds
     # for reservation/spawn scheduling, after the supervisor confirms its PID.
@@ -311,16 +312,38 @@ def _await_supervisor(root, token=None):
         if not state.get("desired_running"):
             return view
         confirmed = type(supervisor.get("pid")) is int and supervisor["pid"] > 0
-        if confirmed:
-            if _live(state):
-                return view
-            if worker_deadline is None:
-                worker_deadline = time.monotonic() + 10
+        if confirmed and worker_deadline is None:
+            worker_deadline = time.monotonic() + 10
         if supervisor.get("status") == "waiting":
             state["recovery"] = "deferred; native project command still active"
             return view
         if supervisor.get("status") == "blocked":
             return view
+        if confirmed and _live(state):
+            # A lease can outlive its worker. Only this activation probes native
+            # ownership; the healthy supervisor still blocks in child.wait().
+            fresh = token is not None and state.get("token") != previous_token
+            for name in [".upg-validation.guard", ".upg-checkpoint.guard"]:
+                probe = guards.acquire(root, name)
+                if probe is None:
+                    state["recovery"] = "deferred; native project command still active"
+                    if not fresh:
+                        state["running"] = False
+                    return view
+                probe.close()
+            probe = guards.acquire(root, ".upg-worker.guard")
+            if probe is not None:
+                probe.close()
+            elif supervisor.get("status") == "watching" and (token is None or fresh):
+                # Recovery can publish between the snapshot and native probes.
+                # Recheck its mandatory state barrier before accepting that owner.
+                current = status(root)
+                owned = current["watcher"]
+                current_supervisor = owned.get("supervisor", {})
+                if (owned.get("token") == state.get("token") and owned.get("pid") == state.get("pid")
+                        and current_supervisor.get("token") == supervisor.get("token")
+                        and current_supervisor.get("status") == "watching" and _live(owned)):
+                    return current
         deadline = worker_deadline if worker_deadline is not None else supervisor_deadline
         if time.monotonic() >= deadline:
             # This is a failed caller handshake, not revocation of a legitimate
@@ -345,12 +368,13 @@ def _launch_supervisor(root):
         view, token = _reserve_supervisor(root)
         if token is None:
             return view
+        previous_token = view["watcher"].get("token")
         try:
             _spawn_supervisor(root, token, guard)
         except OSError:
             _supervisor_progress(root, token, "blocked", "native-supervisor-launch-failed", release=True)
             return status(root)
-        return _await_supervisor(root, token)
+        return _await_supervisor(root, token, previous_token)
 
 
 def start(root):
@@ -408,12 +432,19 @@ def supervise(root, token, guard_handle=None):
         if not _claim_supervisor(root, token):
             return 1
         delay = 1
+        needs_recovery = False
         final_state, final_reason = "stopped", None
         try:
             while _supervisor_owned(root, token):
                 began = time.monotonic()
                 launch_error = None
                 try:
+                    if needs_recovery:
+                        # This publication is a safety barrier, not best-effort
+                        # diagnostics: never reserve a replacement while stale
+                        # watching metadata could still describe the old child.
+                        _supervisor_progress(root, token, "recovering", "native-worker-exited")
+                        needs_recovery = False
                     view, child = _launch(root, recovering=True, with_child=True)
                 except (OSError, ValueError, git.CheckpointError) as error:
                     launch_error = str(error)[:256]
@@ -427,6 +458,7 @@ def supervise(root, token, guard_handle=None):
                     child.wait()
                     if not _supervisor_owned(root, token):
                         break
+                    needs_recovery = True
                     if time.monotonic() - began >= 30:
                         delay = 1
                     pause = delay
@@ -802,6 +834,13 @@ def _claim(root, token):
     if watcher.get("pid") not in {None, os.getpid()}:
         return False
     _progress(watcher, "running", "native-worker-confirmed", pid=os.getpid())
+    supervisor = watcher.get("supervisor", {})
+    if (supervisor.get("token") and type(supervisor.get("pid")) is int
+            and supervisor["pid"] > 0):
+        # Publish readiness with the actual guard-owning worker claim. A later
+        # diagnostic write may be busy without losing this atomic handshake.
+        supervisor.update(status="watching")
+        supervisor.pop("reason", None)
     _save(path, binding, watcher)
     return True
 

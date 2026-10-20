@@ -42,6 +42,9 @@ class Guard:
     def __exit__(self, *args):
         return False
 
+    def close(self):
+        pass
+
 
 class GitWatchHandshakeTests(unittest.TestCase):
     def setUp(self):
@@ -54,16 +57,24 @@ class GitWatchHandshakeTests(unittest.TestCase):
         self.stack.enter_context(mock.patch.object(WATCH.project, "project_root", lambda value: value))
 
     def view(self, supervisor_pid=None, worker_pid=None, worker_status="starting", supervisor_status="starting"):
-        return {"watcher": {"desired_running": True, "token": "worker-token", "pid": worker_pid,
+        return WATCH._view({"desired_running": True, "token": "worker-token", "pid": worker_pid,
                             "status": worker_status, "lease_until": time.time() + 120,
                             "supervisor": {"enabled": True, "token": "supervisor-token",
-                                           "pid": supervisor_pid, "status": supervisor_status}}}
+                                           "pid": supervisor_pid, "status": supervisor_status}})
 
-    def launch(self, read, existing=False):
+    def launch(self, read, existing=False, guard_state=None):
         self.stack.enter_context(mock.patch.object(WATCH, "status", side_effect=read))
-        self.stack.enter_context(mock.patch.object(WATCH.guards, "acquire", return_value=None if existing else Guard()))
+        def acquire(root, name):
+            if name == ".upg-supervisor.guard":
+                return None if existing else Guard()
+            if guard_state is not None:
+                return guard_state(name)
+            return None if name == ".upg-worker.guard" else Guard()
+        self.stack.enter_context(mock.patch.object(WATCH.guards, "acquire", side_effect=acquire))
+        reserved = self.view()
+        reserved["watcher"]["token"] = "previous-worker-token"
         self.reserve = self.stack.enter_context(mock.patch.object(
-            WATCH, "_reserve_supervisor", return_value=(self.view(), "supervisor-token")))
+            WATCH, "_reserve_supervisor", return_value=(reserved, "supervisor-token")))
         self.spawn = self.stack.enter_context(mock.patch.object(WATCH, "_spawn_supervisor"))
         return WATCH._launch_supervisor(self.root)
 
@@ -129,6 +140,101 @@ class GitWatchHandshakeTests(unittest.TestCase):
         self.assertFalse(WATCH._live(result["watcher"]))
         self.assertEqual(result["watcher"]["supervisor"]["status"], "blocked")
 
+    def test_new_supervisor_never_accepts_previous_workers_unexpired_lease(self):
+        def read(root):
+            value = self.view(21, 22, "idle", "watching")
+            if self.clock.now < .2:
+                value["watcher"]["token"] = "previous-worker-token"
+            return value
+        result = self.launch(read)
+        self.assertEqual(result["watcher"]["token"], "worker-token")
+        self.assertGreaterEqual(self.clock.now, .2)
+        self.assertTrue(result["watcher"]["running"])
+
+    def test_orphan_native_validation_defers_instead_of_accepting_old_live_lease(self):
+        for busy in [".upg-validation.guard", ".upg-checkpoint.guard"]:
+            with self.subTest(busy=busy):
+                owned = self.view(21, 22, "validating", "watching")
+                owned["watcher"].update(token="previous-worker-token", lease_until=time.time() + 2400)
+                result = self.launch(lambda root: copy.deepcopy(owned), guard_state=lambda name: None if name == busy else Guard())
+                self.assertEqual(result["watcher"]["token"], "previous-worker-token")
+                self.assertIn("deferred; native project command still active", result["watcher"]["recovery"])
+                self.assertFalse(result["watcher"]["running"])
+                self.assertEqual(self.clock.now, 0)
+
+    def test_existing_supervisor_cannot_accept_dead_workers_free_native_guard(self):
+        def read(root):
+            value = self.view(21, 22, "idle", "watching")
+            if self.clock.now < .2:
+                value["watcher"]["token"] = "previous-worker-token"
+            return value
+        def acquire(name):
+            if name == ".upg-worker.guard" and self.clock.now >= .2:
+                return None
+            return Guard()
+        result = self.launch(read, existing=True, guard_state=acquire)
+        self.assertEqual(result["watcher"]["token"], "worker-token")
+        self.assertGreaterEqual(self.clock.now, .2)
+        self.spawn.assert_not_called()
+
+    def test_waiting_supervisor_takes_precedence_over_fresh_live_lease(self):
+        result = self.launch(lambda root: self.view(21, 22, "idle", "waiting"), existing=True)
+        self.assertIn("deferred", result["watcher"]["recovery"])
+        self.assertFalse(result["watcher"]["running"])
+        self.assertEqual(self.clock.now, 0)
+
+    def test_recovering_supervisor_does_not_treat_reservation_guard_as_old_live_worker(self):
+        def read(root):
+            if self.clock.now < .2:
+                return self.view(21, 22, "idle", "recovering")
+            return self.view(21, 23, "running", "watching")
+        result = self.launch(read, existing=True)
+        self.assertEqual(result["watcher"]["pid"], 23)
+        self.assertGreaterEqual(self.clock.now, .2)
+        self.assertTrue(result["watcher"]["running"])
+
+    def test_recovery_barrier_published_during_guard_probe_invalidates_old_snapshot(self):
+        reads = []
+        def read(root):
+            reads.append(self.clock.now)
+            if len(reads) == 1:
+                value = self.view(21, 22, "idle", "watching")
+                value["watcher"]["token"] = "previous-worker-token"
+                return value
+            if len(reads) == 2:
+                return self.view(21, 22, "idle", "recovering")
+            return self.view(21, 23, "running", "watching")
+        result = self.launch(read, existing=True)
+        self.assertEqual(result["watcher"]["pid"], 23)
+        self.assertEqual(result["watcher"]["token"], "worker-token")
+        self.assertGreater(self.clock.now, 0)
+        self.assertTrue(result["watcher"]["running"])
+
+    def test_busy_recovery_publication_prevents_replacement_launch_and_uses_backoff(self):
+        child = mock.Mock()
+        launched = mock.Mock(return_value=(self.view(21, 22, "running", "watching"), child))
+        progress = mock.Mock(side_effect=ValueError("project state writer busy; fixture"))
+        with mock.patch.object(WATCH.guards, "acquire", return_value=Guard()), \
+                mock.patch.object(WATCH, "_claim_supervisor", return_value=True), \
+                mock.patch.object(WATCH, "_supervisor_owned", side_effect=lambda *args: self.clock.now < 2), \
+                mock.patch.object(WATCH, "_launch", launched), \
+                mock.patch.object(WATCH, "_supervisor_progress", progress), \
+                mock.patch.object(WATCH, "_supervisor_diagnostic"):
+            self.assertEqual(WATCH.supervise(self.root, "supervisor-token"), 0)
+        launched.assert_called_once()
+        child.wait.assert_called_once()
+        progress.assert_called_once_with(self.root, "supervisor-token", "recovering", "native-worker-exited")
+        self.assertGreaterEqual(self.clock.now, 2)
+
+    def test_supervision_pending_does_not_fabricate_worker_heartbeat_expiration(self):
+        for supervisor_status in ["starting", "recovering", "waiting", "blocked"]:
+            with self.subTest(supervisor_status=supervisor_status):
+                value = self.view(21, 22, "idle", supervisor_status)["watcher"]
+                self.assertFalse(value["running"])
+                self.assertEqual(value["status"], "idle")
+                self.assertNotIn("worker-heartbeat-expired", value.get("reason", ""))
+                self.assertGreater(value["lease_until"], time.time())
+
     def test_direct_recover_reports_unconfirmed_startup_as_failure_but_preserves_real_defer(self):
         for state, expected in [(self.view(21, None, "starting", "blocked"), 1),
                                 (self.view(21, None, "starting", "waiting"), 0),
@@ -157,6 +263,7 @@ class GitWatchStartingStatusTests(unittest.TestCase):
                                  "validators": [{"argv": [sys.executable, "-c", "pass"], "timeout_seconds": 1}]}
                 for worker_status, supervisor_status, expected_ok in [
                         ("configured", "starting", False), ("starting", "watching", False),
+                        ("running", "recovering", False), ("running", "waiting", False),
                         ("running", "watching", True)]:
                     policy["watcher"] = {"configuration": configuration, "desired_running": True,
                                          "status": worker_status, "token": "owned-worker", "pid": 22,

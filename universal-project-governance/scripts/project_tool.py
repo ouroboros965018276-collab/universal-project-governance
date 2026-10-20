@@ -361,7 +361,7 @@ def status(project):
                          and watcher_state not in {"stopped", "stopping"})
     watcher_pending = bool(git_state.get("enabled") and watcher.get("configuration", {}).get("enabled")
                            and (watcher_stale or watcher.get("recovery_blocked")
-                                or watcher.get("supervisor", {}).get("status") in {"starting", "blocked"}
+                                or watcher.get("supervisor", {}).get("status") in {"starting", "recovering", "waiting", "blocked"}
                                 or watcher_state in {"starting", "blocked", "cancelled", "stale"}))
     return {
         "ok": not state_errors and not pending_outcome and not git_pending and not watcher_pending,
