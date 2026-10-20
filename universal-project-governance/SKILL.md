@@ -4,7 +4,7 @@ description: Govern maintained projects; exclude read-only Q&A and unrelated one
 license: Apache-2.0
 compatibility: Core needs no runtime; optional helpers need Python 3.8+.
 metadata:
-  version: "3.0.0-rc.20.1"
+  version: "3.0.0-rc.20.2"
   maturity: "release-candidate"
 ---
 

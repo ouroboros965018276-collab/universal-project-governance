@@ -1,6 +1,6 @@
 # Contributing
 
-Current candidate: **3.0.0-rc.20.1 — Task Context and Complete Change Discipline**. Change canonical source, regenerate the runtime, and keep engineering, bounded development measurements, independent efficacy evidence, and formal qualification distinct. Qualification thresholds remain unchanged; current evidence and remaining gaps are recorded in [PROJECT_STATE.md](PROJECT_STATE.md).
+Current candidate: **3.0.0-rc.20.2 — Executable Git Checkpoints**. Change canonical source, regenerate the runtime, and keep engineering, bounded development measurements, independent efficacy evidence, and formal qualification distinct. Qualification thresholds remain unchanged; current evidence and remaining gaps are recorded in [PROJECT_STATE.md](PROJECT_STATE.md).
 
 ## Structural contribution rule
 
@@ -17,6 +17,8 @@ Do not hand-edit generated runtime.
 ## Project lifecycle
 
 Project ownership is limited to the paths declared in the canonical binding. New projects manage only `.governance/upg.json` by default; opted-in field testing adds the bounded report ledger. New persistent per-project files require an explicit architecture decision and complexity-budget change.
+
+Git checkpoint configuration and bounded recovery remain in the existing binding; native Git transactions use temporary Git-private paths. Preserve explicit opt-in and the allowlist when changing this integration. The [Git checkpoint contract](docs/git-checkpoints.md) describes lifecycle boundaries, deduplication and failure reporting; it adds neither a scheduler nor automatic remote writes.
 
 ## Qualification changes
 
