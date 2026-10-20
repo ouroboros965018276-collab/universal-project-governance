@@ -378,7 +378,13 @@ def _launch_supervisor(root):
 
 
 def start(root):
-    _set_start_intent(root)
+    root = project.project_root(root)
+    path, binding, policy, watcher = _load(root)
+    validate_configuration(watcher.get("configuration"))
+    # Re-entering an already requested observer changes no intent. Avoid the
+    # writer lock while its native capture or publication legitimately owns it.
+    if not (watcher.get("desired_running") is True and _supervised(policy, watcher)):
+        _set_start_intent(root)
     return _launch_supervisor(root)
 
 

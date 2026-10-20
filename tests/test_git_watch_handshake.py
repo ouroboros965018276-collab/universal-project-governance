@@ -235,6 +235,32 @@ class GitWatchHandshakeTests(unittest.TestCase):
                 self.assertNotIn("worker-heartbeat-expired", value.get("reason", ""))
                 self.assertGreater(value["lease_until"], time.time())
 
+    def test_existing_start_intent_does_not_contend_with_project_writer(self):
+        watcher = self.view(21, 22, "idle", "watching")["watcher"]
+        watcher["configuration"] = {"enabled": True, "poll_seconds": 1, "quiet_seconds": 0,
+                                    "validators": [{"argv": [sys.executable, "-c", "pass"], "timeout_seconds": 1}]}
+        view = {"watcher": watcher}
+        with mock.patch.object(WATCH, "_load", return_value=(None, {}, {"enabled": True}, watcher)), \
+                mock.patch.object(WATCH, "_set_start_intent", side_effect=ValueError("project state writer busy; fixture")) as intent, \
+                mock.patch.object(WATCH, "_launch_supervisor", return_value=view) as launch:
+            self.assertIs(WATCH.start(self.root), view)
+            intent.assert_not_called()
+            launch.assert_called_once_with(self.root)
+
+    def test_start_after_stop_still_serializes_intent_and_disabled_policy_stays_rejected(self):
+        configuration = {"enabled": True, "poll_seconds": 1, "quiet_seconds": 0,
+                         "validators": [{"argv": [sys.executable, "-c", "pass"], "timeout_seconds": 1}]}
+        for desired, enabled in [(False, True), (True, False)]:
+            with self.subTest(desired=desired, enabled=enabled):
+                watcher = {"desired_running": desired, "configuration": configuration, "supervisor": {"enabled": True}}
+                with mock.patch.object(WATCH, "_load", return_value=(None, {}, {"enabled": enabled}, watcher)), \
+                        mock.patch.object(WATCH, "_set_start_intent", side_effect=ValueError("guarded intent change")) as intent, \
+                        mock.patch.object(WATCH, "_launch_supervisor") as launch:
+                    with self.assertRaisesRegex(ValueError, "guarded intent change"):
+                        WATCH.start(self.root)
+                    intent.assert_called_once_with(self.root)
+                    launch.assert_not_called()
+
     def test_direct_recover_reports_unconfirmed_startup_as_failure_but_preserves_real_defer(self):
         for state, expected in [(self.view(21, None, "starting", "blocked"), 1),
                                 (self.view(21, None, "starting", "waiting"), 0),
