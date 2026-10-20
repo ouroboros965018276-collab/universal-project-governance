@@ -297,6 +297,107 @@ class CompletionOutcomeTests(unittest.TestCase):
                     tool.finish_workflow(td, "-")
                 self.assertIsNone(tool.status(td)["active_workflow"])
 
+    def test_multiple_partial_stages_are_ordered_idempotent_and_preserve_history(self):
+        for reporting in (False, True):
+            with self.subTest(reporting=reporting), tempfile.TemporaryDirectory(prefix="completion-test-", dir=ROOT) as td:
+                start = self.begin(td, reporting)
+                legacy = report(start, "partial")
+                self.finish(td, legacy)
+                stage = dict(report(start, "partial"), checkpoint_id="verified-stage-2")
+                stage["change"]["after"] = "new observed stage, still unfinished"
+                self.finish(td, stage)
+                state = tool.status(td)
+                self.assertEqual(state["current_outcome"]["sequence"], 2)
+                self.assertEqual(state["active_workflow"]["change"], start["change"])
+                self.assertIsNone(state["latest_change"])
+                self.assertTrue(self.finish(td, legacy)["idempotent"])
+                self.assertTrue(self.finish(td, stage)["idempotent"])
+                self.assertEqual(tool.status(td), state)
+                conflict = dict(stage, validation=["different evidence under same stage"])
+                with self.assertRaisesRegex(ValueError, "conflicting"):
+                    self.finish(td, conflict)
+                self.finish(td, report(start))
+                self.assertEqual(tool.status(td)["latest_change"]["sequence"], 3)
+                if reporting:
+                    self.assertEqual([x["sequence"] for x in self.ledger(td)["reports"]], [1, 2, 3])
+
+    def test_current_authority_detects_stale_state_and_is_reconciled_without_mirroring(self):
+        import hashlib
+        for reporting in (False, True):
+            with self.subTest(reporting=reporting), tempfile.TemporaryDirectory(prefix="completion-test-", dir=ROOT) as td:
+                start = self.begin(td, reporting)
+                current = Path(td) / "current.json"
+                write(current, {"delivery": "unfinished", "observed": "first"})
+                ref = lambda: dict(path="current.json", sha256=hashlib.sha256(current.read_bytes()).hexdigest())
+                first = dict(report(start, "partial"), checkpoint_id="first", current_state=ref())
+                self.finish(td, first)
+                self.assertTrue(tool.status(td)["ok"])
+                write(current, {"delivery": "unfinished", "observed": "second"})
+                self.assertEqual(tool.status(td)["reason"], "current-state-drift")
+                with self.assertRaisesRegex(ValueError, "current_state changed"):
+                    self.finish(td, dict(first, checkpoint_id="second"))
+                second = dict(report(start, "partial"), checkpoint_id="second", current_state=ref())
+                self.finish(td, second)
+                self.assertTrue(self.finish(td, first)["idempotent"])
+                tool.ensure(td)
+                state = tool.status(td)
+                self.assertTrue(state["ok"])
+                self.assertEqual(state["current_state"], second["current_state"])
+                self.assertEqual(state["current_outcome"]["checkpoint_id"], "second")
+                self.assertNotIn("delivery", state)  # No copied application truth.
+                current.unlink()
+                self.assertFalse(tool.status(td)["ok"])
+
+    def test_current_authority_rejects_unsafe_paths_invalid_json_and_self_reference(self):
+        import hashlib
+        with tempfile.TemporaryDirectory(prefix="completion-test-", dir=ROOT) as td:
+            start = self.begin(td, False)
+            for name, raw in [("invalid.json", b'[]'), ("duplicate.json", b'{"a":1,"a":2}')]:
+                (Path(td) / name).write_bytes(raw)
+                ref = dict(path=name, sha256=hashlib.sha256(raw).hexdigest())
+                with self.assertRaises(ValueError):
+                    self.finish(td, dict(report(start, "partial"), checkpoint_id="invalid", current_state=ref))
+            for name in ("../outside.json", "C:/outside.json", ".governance/upg.json", ".env"):
+                with self.assertRaises(ValueError):
+                    self.finish(td, dict(report(start, "partial"), checkpoint_id="invalid",
+                                         current_state=dict(path=name, sha256="a" * 64)))
+            self.assertNotIn("last_outcome", tool.status(td)["active_workflow"])
+
+    def test_checkpoint_identity_does_not_allow_repeated_completion(self):
+        for reporting in (False, True):
+            with self.subTest(reporting=reporting), tempfile.TemporaryDirectory(prefix="completion-test-", dir=ROOT) as td:
+                start = self.begin(td, reporting)
+                with self.assertRaisesRegex(ValueError, "completion identity remains unique"):
+                    self.finish(td, dict(report(start), checkpoint_id="bypass"))
+
+    def test_reporting_opt_in_after_partial_keeps_monotonic_sequence(self):
+        with tempfile.TemporaryDirectory(prefix="completion-test-", dir=ROOT) as td:
+            start = self.begin(td, False)
+            self.finish(td, dict(report(start, "partial"), checkpoint_id="one"))
+            second = dict(report(start, "partial"), checkpoint_id="two")
+            self.finish(td, second)
+            tool.ensure(td, field_test_reporting=True)
+            self.assertEqual(self.ledger(td)["next_sequence"], 3)
+            self.assertTrue(self.finish(td, second)["idempotent"])
+            self.assertEqual(self.ledger(td)["reports"], [])
+            self.finish(td, report(start))
+            self.assertEqual(tool.status(td)["latest_change"]["sequence"], 3)
+
+    def test_stage_reference_recovers_after_ledger_commit_before_binding_write(self):
+        import hashlib
+        with tempfile.TemporaryDirectory(prefix="completion-test-", dir=ROOT) as td:
+            start = self.begin(td, True)
+            path = write(Path(td) / "current.json", {"actual": "partial"})
+            stage = dict(report(start, "partial"), checkpoint_id="interrupted",
+                         current_state=dict(path=path.name, sha256=hashlib.sha256(path.read_bytes()).hexdigest()))
+            with patch.object(tool, "_reconcile_completion", side_effect=OSError("simulated crash")):
+                with self.assertRaises(OSError):
+                    self.finish(td, stage)
+            self.assertEqual(tool.status(td)["reason"], "checkpoint-unreconciled")
+            self.assertTrue(self.finish(td, stage)["idempotent"])
+            self.assertEqual(len(self.ledger(td)["reports"]), 1)
+            self.assertEqual(tool.status(td)["current_state"], stage["current_state"])
+
     def test_known_outcome_time_requires_observed_source(self):
         for reporting in (False, True):
             with self.subTest(reporting=reporting), tempfile.TemporaryDirectory(prefix="completion-test-", dir=ROOT) as td:

@@ -230,6 +230,93 @@ class SSEActorTests(engineering_fixture.EngineeringCandidateTests):
         self.assertEqual((expected['providers']['deepseek']['reasoning_effort'],expected['providers']['deepseek']['output_cap'],
                           expected['providers']['mimo']['output_cap']),('low',32768,65536))
 
+    def test_hybrid_working_set_configuration_is_explicit_and_preserves_old_profiles(self):
+        expected=api.profile_configuration(api.ENGINEERING_WORKING_SET_CHECKPOINT_SSE_PROFILE)
+        expected['profile_id']=api.ENGINEERING_HYBRID_WORKING_SET_CHECKPOINT_SSE_PROFILE
+        expected['providers']['mimo'].update(thinking='disabled',output_cap=16384)
+        self.assertEqual(api.profile_configuration(expected['profile_id']),expected)
+        self.assertEqual(expected['context_checkpoint'],api.context_checkpoint.WORKING_SET_POLICY)
+        self.assertEqual(expected['admission_limits'],{'max_requests':24,'timeout_seconds':600,'max_tools':32,'max_input_bytes':524288})
+        old={api.ENGINEERING_HYBRID_SSE_PROFILE:'46637727f794a961b18190bcd008f2e7149f323d50d2c9d4dfed2aa9afebef36',
+            api.ENGINEERING_ULTRASPEED_STRICT_SSE_PROFILE:'1cb672988abb0ac11a5af1b54f319b261c90774de8435acc61cd67dfbc5d7f79',
+            api.ENGINEERING_ULTRASPEED_CAPACITY_SSE_PROFILE:'6a3b378982dd17b11e9dc5daa3204f36df8d35087993ffccbe8c0b99f5f029c7',
+            api.ENGINEERING_CHECKPOINT_SSE_PROFILE:'0d204c60bf968839d183954286e871aba0b168ed1b144a6cf1dae219e082af56',
+            api.ENGINEERING_WORKING_SET_CHECKPOINT_SSE_PROFILE:'ecb06a3c5f8ecb5c8799b586e548f252dda71f699b6f07a83c7e44eb213c5ca1'}
+        self.assertEqual({p:sha(canonical(api.profile_configuration(p)))for p in old},old)
+
+    def test_hybrid_working_set_both_provider_wire_and_unchanged_raw(self):
+        profile=api.ENGINEERING_HYBRID_WORKING_SET_CHECKPOINT_SSE_PROFILE
+        for provider,mode in (('deepseek','enabled'),('mimo','disabled')):
+            with self.subTest(provider=provider):
+                self.artifacts=self.base/('hybrid-working-wire-'+provider)
+                self.before,self.after,self.loaded,self.executions=[],[],[],[]
+                (self.workspace/'target.txt').write_bytes(b'old\n')
+                result,payloads=self.run_sse(self.ready()+[self.finish(4)],provider,
+                    model='deepseek-v4-pro' if provider=='deepseek' else 'mimo-v2.6-pro-ultraspeed',
+                    actor_options={'profile_id':profile,'thinking':mode})
+                self.assertEqual(result['status'],'completed',result['quality'])
+                self.assertTrue(result['quality']['hard_pass'])
+                self.assertEqual((result['requests'],result['tool_attempts'],len(self.executions)),(4,5,1))
+                self.assertEqual((result['max_requests'],result['max_tools'],result['timeout_seconds'],result['settlement_max_seconds']),(24,32,600,600))
+                for index,payload in enumerate(payloads,1):
+                    self.assertEqual(payload['thinking'],{'type':mode})
+                    self.assertEqual(payload['max_tokens' if provider=='deepseek' else 'max_completion_tokens'],32768 if provider=='deepseek' else 16384)
+                    if provider=='mimo':
+                        self.assertNotIn('reasoning_effort',payload)
+                        self.assertTrue(all(t['function']['strict']is True for t in payload['tools']))
+                        self.assertTrue(all('reasoning_content'not in m for m in payload['messages']if m['role']=='assistant'))
+                    else:
+                        self.assertEqual(payload['reasoning_effort'],'low')
+                        self.assertTrue(all(m['reasoning_content']=='mock non-private test field'for m in payload['messages']if m['role']=='assistant'))
+                    saved=json.loads((self.artifacts/('requests/%02d.response.json'%index)).read_bytes())
+                    raw=(self.artifacts/('requests/%02d.transport-sse.bin'%index)).read_bytes()
+                    self.assertEqual(saved['body_sha256'],sha(raw))
+                    self.assertEqual(saved['response'],sse.project(raw,body_complete=True)['response'])
+                    self.assertEqual(saved['response']['choices'][0]['message']['reasoning_content'],'mock non-private test field')
+                    self.assertEqual(self.before[index-1]['request_payload_sha256'],sha(canonical(payload)))
+
+    def test_hybrid_working_set_disabled_mode_keeps_current_text_checkpoint(self):
+        self.real_patch=True
+        self.task['initial_files']['target.txt']='x'*32000
+        (self.workspace/'target.txt').write_bytes(self.task['initial_files']['target.txt'].encode())
+        def after_boundary(payload):
+            self.assertEqual(len(payload['messages']),3)
+            facts=json.loads(payload['messages'][-1]['content'][len(api.context_checkpoint.WORKING_SET_PREFIX):])
+            self.assertEqual(facts['working_set']['target.txt']['text'],'x'*32000)
+            self.assertEqual(facts['budgets']['requests_used'],2)
+            return completion(3,[call('patch-after-boundary','repo_patch',{'operations':[{
+                'path':'target.txt','old_sha256':sha(('x'*32000).encode()),'new_text':'fixed\n'}]})])
+        result,payloads=self.run_sse([self.read(1),self.read(2),after_boundary,self.validate_and_status(4),self.finish(5)],
+            'mimo',model='mimo-v2.6-pro-ultraspeed',actor_options={
+                'profile_id':api.ENGINEERING_HYBRID_WORKING_SET_CHECKPOINT_SSE_PROFILE,'thinking':'disabled'})
+        self.assertEqual(result['status'],'completed',result['quality'])
+        self.assertTrue(result['quality']['hard_pass'])
+        self.assertEqual((result['requests'],result['tool_attempts'],result['conversation_index']),(5,6,1))
+        self.assertEqual([m['conversation_index']for m in self.before],[0,0,1,1,1])
+        self.assertTrue(all('reasoning_content'not in m for p in payloads for m in p['messages']if m['role']=='assistant'))
+        receipt=json.loads((self.artifacts/result['context_checkpoint_receipts'][0]['ref']).read_bytes())
+        self.assertEqual(receipt['schema'],api.context_checkpoint.WORKING_SET_SCHEMA)
+        self.assertEqual(receipt['bootstrap_payload_sha256'],sha(canonical(payloads[2])))
+        self.assertEqual(len(self.executions),1) # Existing explicit fake executor only.
+
+    def test_hybrid_working_set_refusal_and_unknown_do_not_execute_or_retry(self):
+        for provider,mode in (('deepseek','enabled'),('mimo','disabled')):
+            for broken in (False,True):
+                with self.subTest(provider=provider,broken=broken):
+                    self.artifacts=self.base/('hybrid-working-stop-'+provider+str(broken))
+                    self.before,self.after,self.loaded,self.executions=[],[],[],[]
+                    response=self.read(1)
+                    if not broken:response['choices'][0]['finish_reason']='content_filter'
+                    result,payloads=self.run_sse([response],provider,broken=broken,
+                        model='deepseek-v4-pro'if provider=='deepseek'else'mimo-v2.6-pro-ultraspeed',
+                        actor_options={'profile_id':api.ENGINEERING_HYBRID_WORKING_SET_CHECKPOINT_SSE_PROFILE,'thinking':mode})
+                    self.assertEqual(result['status'],'unknown-call-blocked'if broken else'provider-refused')
+                    self.assertIs(result['unknown_usage'],broken)
+                    self.assertEqual(result['known_usage']['total_tokens'],15)
+                    self.assertEqual((len(payloads),len(self.before),len(self.after)),(1,1,1))
+                    self.assertEqual((result['tool_events'],self.executions),([],[]))
+                    self.assertFalse(result['quality']['hard_pass'])
+
     def test_working_set_real_broker_two_conversations_reuse_text_without_duplicate_read(self):
         # Scripted policy response, not evidence of real-model token/quality gains.
         self.real_patch = True

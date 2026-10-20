@@ -21,13 +21,15 @@ CONFIGURATION_SHA256 = '0d204c60bf968839d183954286e871aba0b168ed1b144a6cf1dae219
 DUAL_API_ROUTE_PROFILE = 'dual-api-natural-cross-provider-v1'
 DUAL_API_PROFILE_ID = 'thinking-enabled-engineering-ultraspeed-strict-dslow32768-mimo65536-checkpoint-working-set-once-sse-v1'
 DUAL_API_CONFIGURATION_SHA256 = 'ecb06a3c5f8ecb5c8799b586e548f252dda71f699b6f07a83c7e44eb213c5ca1'
+EFFICIENT_DUAL_API_PROFILE_ID = 'thinking-hybrid-engineering-ultraspeed-dslow32768-mimo16384-checkpoint-working-set-once-sse-v1'
+EFFICIENT_DUAL_API_CONFIGURATION_SHA256 = 'c64520777b05f53d1e8b0c01a7714371cbde2046700c0b1d7707a06184243d59'
 DUAL_API_GLOBAL_REQUEST_SLOTS = 720
 DUAL_API_GLOBAL_ROUND_SECONDS = 41250
-MODEL_DELTA_ID = 'rc19-bd4-to-rc20-reviewed-evidence-closure-compact-expression-v1'
+MODEL_DELTA_ID = 'rc19-bd4-to-rc20-reviewed-compact-operations-v1'
 BASELINE_MODEL_SHA256 = '44e7d9fdf648e35d834e3835ea8e06a734a5aed50eb3e701c2f86c2717e17a7d'
 BASELINE_EVIDENCE_CLOSURE_SHA256 = '4d97faefd8df3aa5c9ab13d6efef346afa6c9ffa5e1208f0319eb97da5b279f1'
 FULL_EVIDENCE_CLOSURE_SHA256 = '2d4847a72a0565a5b4607fec745e617ec199bba7451d8274da1eecb3f9823512'
-OPERATIONAL_GUIDANCE_SHA256 = 'b3cf14c5cc71af7a35ecfb771de7fbb404eaaa9e117da90056d155193c86e835'
+OPERATIONAL_GUIDANCE_SHA256 = '45d6df5e0e0f91de53b0906f6769fdd25bccde35822b1f426040e0980e5e094b'
 MODELS = {'deepseek': 'deepseek-v4-pro', 'mimo': 'mimo-v2.6-pro-ultraspeed',
           'openai-native-cli': 'gpt-6-luna'}
 ROUTES = (('single', 'deepseek', None), ('single', 'mimo', None),
@@ -81,10 +83,12 @@ class EngineeringStudy:
                  consumed_source_pins):
         p = copy.deepcopy(preregistration)
         dual_api = type(p) is dict and 'route_profile' in p
+        explicit_profile = type(p) is dict and 'execution_profile_id' in p
         fields = {'schema', 'study_id', 'baseline_model_sha256',
                  'full_model_sha256', 'profile_configuration_sha256', 'condition_bindings',
                  'families', 'source_pins', 'reviewed_model_delta_id'}
-        _require(type(p) is dict and set(p) == fields | ({'route_profile'} if dual_api else set()) and p['schema'] == SCHEMA
+        _require(type(p) is dict and set(p) == fields | ({'route_profile'} if dual_api else set())
+                 | ({'execution_profile_id'} if explicit_profile else set()) and p['schema'] == SCHEMA
                  and p['reviewed_model_delta_id'] == MODEL_DELTA_ID,
                  'exact prospective study preregistration required')
         _require(not dual_api or p['route_profile'] == DUAL_API_ROUTE_PROFILE,
@@ -92,6 +96,11 @@ class EngineeringStudy:
         routes = DUAL_API_ROUTES if dual_api else ROUTES
         profile_id = DUAL_API_PROFILE_ID if dual_api else PROFILE_ID
         configuration_sha256 = DUAL_API_CONFIGURATION_SHA256 if dual_api else CONFIGURATION_SHA256
+        if explicit_profile:
+            _require(dual_api and p['execution_profile_id'] == EFFICIENT_DUAL_API_PROFILE_ID,
+                     'efficient execution requires its explicit dual-API preregistration')
+            profile_id = EFFICIENT_DUAL_API_PROFILE_ID
+            configuration_sha256 = EFFICIENT_DUAL_API_CONFIGURATION_SHA256
         _require(type(p['study_id']) is str and re.fullmatch('[A-Za-z0-9_-]{1,96}', p['study_id']),
                  'explicit study identity required')
         pins = p['source_pins']
@@ -160,6 +169,7 @@ class EngineeringStudy:
                      'each family needs one preregistered permutation of all six conditions')
         self._preregistration, self._models = p, models
         self._routes, self._configuration_sha256 = routes, configuration_sha256
+        self._profile_id = profile_id
 
     @property
     def preregistration_sha256(self):
@@ -293,7 +303,7 @@ class EngineeringStudy:
                     'profile_configuration_sha256': self._configuration_sha256,
                     'study_topology_sha256': self.preregistration_sha256}
         if 'route_profile' in self._preregistration:
-            expected.update(route_profile=DUAL_API_ROUTE_PROFILE, profile_id=DUAL_API_PROFILE_ID,
+            expected.update(route_profile=DUAL_API_ROUTE_PROFILE, profile_id=self._profile_id,
                             configuration_sha256=self._configuration_sha256)
         else:
             _require(type(protocol) is dict and 'route_profile' not in protocol,

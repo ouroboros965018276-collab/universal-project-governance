@@ -4,6 +4,10 @@
 
 RC20 从已合并的 RC19 `bd4a4d5c1c6fb9fca829e410729879d1b01f05b9` 开始。当前发布、验证和安装事实统一见[项目状态](PROJECT_STATE.md)；[RC19 安装验收](audits/rc19-installation.audit.json)是历史基线，不能验证 RC20。候选仍需自身的编译、回归、导航、完整性、打包及安装验收。规则来源比较保留每次注册调用、失败和 unknown 用量围栏；静态检查或更短文档都不证明净收益。Stable 仍须通过原正式资格门禁。
 
+## RC20 本轮工程验收范围
+
+2026-10-20，维护者明确改为复用既有实测、只做必要校准和关键工程验收后发布 RC20；不再以扩大付费对照为本次 RC 合并前提。验收必须覆盖当前源生成一致性、关键状态生命周期回归、整仓回归、仓库门禁、CI、默认分支身份及本地安装。Insight 的状态修复须保留历史、未知项和未完成状态。旧实验结果、失败判据和成本保持不变；本次接受的是有边界的工程升级，独立模型净收益仍未建立，Stable 门槛不变。
+
 ## 历史 RC18 证据
 
 RC18 的产物评分修正、测量范围、失败、费用、模型身份及资格限制保留在[不可变测量审计](audits/rc18-real-evaluation.audit.json)和[项目状态](PROJECT_STATE.md)。原始[配对测量](qualification/pilots/rc18-native/paired.summary.json)、[中止的 v1](qualification/pilots/rc18-native/round-v1.summary.json)及[v2 注册协议](evolution/protocol/rc18-native-development-v2.json)继续保留；发布流程不维护第二份历史结果摘要。产物修复不能证明真实工具执行或跨 Agent 交接，历史结果不替代当前候选验收或正式资格。

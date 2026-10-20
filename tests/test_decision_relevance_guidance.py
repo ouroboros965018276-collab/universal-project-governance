@@ -19,7 +19,7 @@ class DecisionRelevanceGuidanceTests(unittest.TestCase):
         other = [g for g in model["execution_guidance"] if g["id"] != "decision_relevance"]
         self.assertEqual(digest(other), "8e36e60630f7603e5085dc7d8954eaab3096db96a522a5069f328c51bb8c0367")
         self.assertEqual(digest(model["operational_guidance"]),
-            "b3cf14c5cc71af7a35ecfb771de7fbb404eaaa9e117da90056d155193c86e835")
+            "45d6df5e0e0f91de53b0906f6769fdd25bccde35822b1f426040e0980e5e094b")
 
 if __name__ == "__main__":
     unittest.main()

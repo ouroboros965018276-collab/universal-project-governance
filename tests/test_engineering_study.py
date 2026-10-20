@@ -81,6 +81,42 @@ class EngineeringStudyTests(unittest.TestCase):
         panels = topology.private_panel_assignment()
         self.assertEqual(panels,self.build().private_panel_assignment())
 
+    def test_efficient_profile_requires_prospective_opt_in_and_preserves_tasks_and_caps(self):
+        prereg, _ = self.dual_api_registration()
+        old = self.build(prereg, provider_tools.profile_configuration(study.DUAL_API_PROFILE_ID))
+        prereg.update(execution_profile_id=study.EFFICIENT_DUAL_API_PROFILE_ID,
+                      profile_configuration_sha256=study.EFFICIENT_DUAL_API_CONFIGURATION_SHA256)
+        configuration = provider_tools.profile_configuration(study.EFFICIENT_DUAL_API_PROFILE_ID)
+        self.assertEqual(study.digest(configuration), study.EFFICIENT_DUAL_API_CONFIGURATION_SHA256)
+        current = self.build(prereg, configuration)
+        self.assertEqual(current.fixed_registry(), old.fixed_registry())
+        self.assertEqual(current.fixed_order(), old.fixed_order())
+        self.assertEqual(current.condition_models(), old.condition_models())
+        self.assertEqual(current.caps(), old.caps())
+        protocol = {'identity':prereg['study_id'],'counts':current.counts(),'order':current.fixed_order(),
+            'actor_registry':current.fixed_registry(),'ledger_registry_identity':current.registry_identity(),
+            'round_caps':current.caps(),'profile_configuration_sha256':study.EFFICIENT_DUAL_API_CONFIGURATION_SHA256,
+            'configuration_sha256':study.EFFICIENT_DUAL_API_CONFIGURATION_SHA256,
+            'profile_id':study.EFFICIENT_DUAL_API_PROFILE_ID,'route_profile':study.DUAL_API_ROUTE_PROFILE,
+            'study_topology_sha256':current.preregistration_sha256}
+        self.assertEqual(current.validate_protocol(protocol),protocol)
+        protocol['profile_id'] = study.DUAL_API_PROFILE_ID
+        with self.assertRaises(ValueError): current.validate_protocol(protocol)
+
+    def test_efficient_profile_rejects_implicit_unknown_or_legacy_selection(self):
+        prereg, _ = self.dual_api_registration()
+        prereg['profile_configuration_sha256'] = study.EFFICIENT_DUAL_API_CONFIGURATION_SHA256
+        configuration = provider_tools.profile_configuration(study.EFFICIENT_DUAL_API_PROFILE_ID)
+        for kind in ('implicit','unknown','null','legacy','old-configuration'):
+            with self.subTest(kind=kind):
+                p,cfg=copy.deepcopy(prereg),copy.deepcopy(configuration)
+                if kind != 'implicit': p['execution_profile_id'] = study.EFFICIENT_DUAL_API_PROFILE_ID
+                if kind == 'unknown': p['execution_profile_id']='automatic'
+                elif kind == 'null': p['execution_profile_id']=None
+                elif kind == 'legacy': p.pop('route_profile')
+                elif kind == 'old-configuration': cfg=provider_tools.profile_configuration(study.DUAL_API_PROFILE_ID)
+                with self.assertRaises(ValueError): self.build(p,cfg)
+
     def test_dual_api_opt_in_rejects_unknown_route_profile_config_or_route_drift(self):
         prereg, configuration = self.dual_api_registration()
         for kind in ('unknown','null','implicit','old-config','same-provider','native','swapped-route','changed-config'):

@@ -954,7 +954,7 @@ class CompiledRuntimeTests(unittest.TestCase):
             self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
             binding = json.loads((project / ".governance/upg.json").read_text(encoding="utf-8"))
             self.assertNotIn("active_workflow", binding)
-            self.assertEqual(binding["latest_change"]["sequence"], 1)
+            self.assertEqual(binding["latest_change"]["sequence"], 2)  # partial and completion have distinct sequences
             self.assertFalse((project / ".governance/field-reports.json").exists())
 
     def test_reporting_opt_in_validation_failure_does_not_mutate_binding_or_create_ledger(self):

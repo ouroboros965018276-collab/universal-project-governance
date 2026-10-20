@@ -34,7 +34,7 @@ RC9 binding v2 records in-place adoption, handoff-or-reconstruct continuity, cap
 
 ## Completion
 
-For tracked non-trivial work, begin and finish through `project_tool.py`. The `finish` command records one completion path in both reporting modes: reporting on appends exactly one bounded field report; reporting off advances the existing latest/previous checkpoints without creating a ledger. Partial or blocked work remains active for recovery. Do not copy source bodies, credentials, secrets, customer/private data, or private chain-of-thought into reports.
+For tracked non-trivial work, begin and finish through `project_tool.py`. Each observed partial/blocked boundary uses a stable `checkpoint_id`; identical retries add nothing. Reference existing canonical project state with `current_state` (path/SHA), then check `status`; stale references require reconciliation. `latest_change` means latest completed workflow, not current unfinished progress. Reporting on appends bounded history; off keeps active recovery and latest/previous completion without a ledger. Do not copy source bodies, credentials, secrets, customer/private data, or private chain-of-thought into reports.
 
 ## Continuity
 

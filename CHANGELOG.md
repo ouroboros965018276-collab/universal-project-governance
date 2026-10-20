@@ -18,6 +18,8 @@
 
 - On 2026-10-19, shortens the existing default expression without adding policy blocks, keeps independently verified public test counts distinct from recipe-group counts, and shares unchanged-state refusal classification with native trace verification. Fresh identity and task controls preserve all earlier locked negative results; no empirical benefit or deployment is inferred.
 
+- On 2026-10-20, fixes repeated partial/blocked checkpoints with explicit stable stage IDs, monotonic sequences across reporting modes, immutable starts and idempotent recovery. One hash-bound reference routes takeover to existing project current state; drift is reported instead of treating completed history as current progress. Adds meaningful-stage Git cadence and reconciles the existing Insight ledger without rerunning application/model tests. Release acceptance follows the owner's bounded engineering scope; historical empirical failures and Stable gates remain unchanged.
+
 ## 3.0.0-rc.19 — 2026-10-13 — candidate
 
 - Separates RC18 historical tail latency from reproduced preparation costs; retains the original paired outcome.

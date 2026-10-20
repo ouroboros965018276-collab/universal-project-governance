@@ -81,7 +81,10 @@ ENGINEERING_ULTRASPEED_STRICT_SSE_PROFILE = "thinking-enabled-engineering-ultras
 ENGINEERING_ULTRASPEED_CAPACITY_SSE_PROFILE = "thinking-enabled-engineering-ultraspeed-strict-dslow32768-mimo65536-sse-v1"
 ENGINEERING_CHECKPOINT_SSE_PROFILE = "thinking-enabled-engineering-ultraspeed-strict-dslow32768-mimo65536-checkpoint-once-sse-v1"
 ENGINEERING_WORKING_SET_CHECKPOINT_SSE_PROFILE = "thinking-enabled-engineering-ultraspeed-strict-dslow32768-mimo65536-checkpoint-working-set-once-sse-v1"
-ENGINEERING_CHECKPOINT_PROFILES = (ENGINEERING_CHECKPOINT_SSE_PROFILE, ENGINEERING_WORKING_SET_CHECKPOINT_SSE_PROFILE)
+ENGINEERING_HYBRID_WORKING_SET_CHECKPOINT_SSE_PROFILE = "thinking-hybrid-engineering-ultraspeed-dslow32768-mimo16384-checkpoint-working-set-once-sse-v1"
+ENGINEERING_WORKING_SET_CHECKPOINT_PROFILES = (ENGINEERING_WORKING_SET_CHECKPOINT_SSE_PROFILE,
+                                             ENGINEERING_HYBRID_WORKING_SET_CHECKPOINT_SSE_PROFILE)
+ENGINEERING_CHECKPOINT_PROFILES = (ENGINEERING_CHECKPOINT_SSE_PROFILE, *ENGINEERING_WORKING_SET_CHECKPOINT_PROFILES)
 ENGINEERING_PROFILES = (*ENGINEERING_REASONING_PROFILES, ENGINEERING_HYBRID_SSE_PROFILE,
                         ENGINEERING_ULTRASPEED_STRICT_SSE_PROFILE, ENGINEERING_ULTRASPEED_CAPACITY_SSE_PROFILE, *ENGINEERING_CHECKPOINT_PROFILES)
 ENGINEERING_SSE_PROFILES = (ENGINEERING_REASONING_SSE_PROFILE, ENGINEERING_HYBRID_SSE_PROFILE,
@@ -162,7 +165,9 @@ def profile_configuration(profile_id):
             configuration["providers"]["mimo"]["output_cap"] = 65536
     if profile_id in ENGINEERING_CHECKPOINT_PROFILES:
         configuration["context_checkpoint"] = copy.deepcopy(context_checkpoint.WORKING_SET_POLICY
-            if profile_id == ENGINEERING_WORKING_SET_CHECKPOINT_SSE_PROFILE else context_checkpoint.POLICY)
+            if profile_id in ENGINEERING_WORKING_SET_CHECKPOINT_PROFILES else context_checkpoint.POLICY)
+    if profile_id == ENGINEERING_HYBRID_WORKING_SET_CHECKPOINT_SSE_PROFILE:
+        configuration["providers"]["mimo"].update(thinking="disabled", output_cap=16384)
     if profile_id in ENGINEERING_SSE_PROFILES:
         configuration["transport"] = {"transport_profile_id": chat_sse.TRANSPORT_PROFILE,
             "providers": {"deepseek": {"stream": True, "stream_options": {"include_usage": True}},
@@ -1500,7 +1505,7 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
     max_input_bytes = (configuration["admission_limits"]["max_input_bytes"]
                        if profile_id in ENGINEERING_INPUT_PROFILES else MAX_INPUT_BYTES)
     checkpointing = profile_id in ENGINEERING_CHECKPOINT_PROFILES
-    working_set_checkpoint = profile_id == ENGINEERING_WORKING_SET_CHECKPOINT_SSE_PROFILE
+    working_set_checkpoint = profile_id in ENGINEERING_WORKING_SET_CHECKPOINT_PROFILES
     checkpoint_policy = configuration["context_checkpoint"] if checkpointing else None
     checkpoint_options = {"include_working_set": True} if working_set_checkpoint else {}
     if resume_checkpoint is not None and (profile_id != ENGINEERING_CHECKPOINT_SSE_PROFILE or registered_timing is None or timeout_seconds != 600
@@ -2090,6 +2095,10 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
                 status = "tool-contract-failed"
                 break
             assistant = {name: _redact(message[name], key) for name in ("role", "content", "reasoning_content", "tool_calls") if name in message}
+            if profile_id == ENGINEERING_HYBRID_WORKING_SET_CHECKPOINT_SSE_PROFILE and provider == "mimo":
+                # Disabled-mode history is explicit in this new profile only;
+                # the unedited response and usage remain in their RAW artifacts.
+                assistant.pop("reasoning_content", None)
             messages.append(assistant)
             if not calls:
                 if (reasoning_continuation_policy == REASONING_CONTINUATION_POLICY
