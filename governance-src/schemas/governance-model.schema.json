@@ -179,6 +179,48 @@
           "enum": [
             "observe-before-assume"
           ]
+        },
+        "git_checkpoint": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "enabled",
+            "min_interval_seconds",
+            "allowed_paths",
+            "status_paths"
+          ],
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false
+            },
+            "min_interval_seconds": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 86400,
+              "default": 300
+            },
+            "allowed_paths": {
+              "type": "array",
+              "maxItems": 1024,
+              "default": [],
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1024
+              }
+            },
+            "status_paths": {
+              "type": "array",
+              "maxItems": 1024,
+              "default": [],
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1024
+              }
+            }
+          }
         }
       }
     },

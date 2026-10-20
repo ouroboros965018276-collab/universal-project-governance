@@ -1,6 +1,6 @@
 # 通用项目治理 UPG
 
-当前候选：**3.0.0-rc.20.1 — Task Context and Complete Change Discipline**。版本以[生成清单](universal-project-governance/VERSION.md)为准，发布、安装和验证状态见[项目状态](PROJECT_STATE.md)。
+当前候选：**3.0.0-rc.20.2 — Executable Git Checkpoints**。版本以[生成清单](universal-project-governance/VERSION.md)为准，发布、安装和验证状态见[项目状态](PROJECT_STATE.md)。
 
 UPG 帮助不同 Agent 和工程师持续维护同一个项目：依据当前事实定位任务，在正确层次完成关联改动，处理受影响的重复实现、过时内容和技术债，留下可验证、可继续接手的状态。软件、数据、研究、内容、设计和混合项目使用同一治理内核；具体工具能力须由宿主实际验收。
 
@@ -17,6 +17,8 @@ python upg.py status --project /path/to/project
 
 给 Agent 一个具体任务即可，例如“重命名这个接口，更新受影响调用方与测试，并安全清理旧路径”。普通小改动保留轻量路径；跨模块或高风险工作按影响范围补足验证与交接。新项目绑定默认不收集临时实测报告；需要时显式使用 `--field-test-reporting`。
 
+需要自动保存 Git 阶段时，显式配置允许提交的范围。启用后，已有工作流的 `begin` 记录基线，`finish` 自动识别有效改动、按阶段提交并去重；普通未完成阶段默认间隔 300 秒，完成或显式交接/风险边界时收束待提交改动。无变化、声明的状态文件和开始前已有改动不会触发自动提交。配置、失败恢复与能力边界见 [Git 检查点](docs/git-checkpoints.md)。
+
 ## 按任务定位
 
 | 要做什么 | 从哪里进入 |
@@ -24,6 +26,7 @@ python upg.py status --project /path/to/project
 | 修改某个功能、契约或工具 | [模块索引与边界](MODULE_MAP.md) |
 | 维护治理规则或编译后的 Skill | [规范源](governance-src/model/governance-model.json)、[维护约定](AGENTS.md) |
 | 恢复中断任务或核对过期交接 | [项目事实恢复](docs/project-fact-recovery.md) |
+| 配置按阶段自动提交、去重或恢复 | [Git 检查点](docs/git-checkpoints.md) |
 | 了解当前变更、验证和未完成事项 | [项目状态](PROJECT_STATE.md) |
 | 离线学习与有界优化 | [离线演化](docs/offline-evolution.md) |
 | 评估有效性、发布或审计 | [资格协议入口](qualification/README.md)、[发布门槛](PUBLISHING.md) |

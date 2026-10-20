@@ -20,10 +20,9 @@ class EngineeringStudyTests(unittest.TestCase):
     def setUp(self):
         self.current_candidate = json.loads((ROOT / 'governance-src/model/governance-model.json').read_bytes())
         self.baseline_delta = json.loads((ROOT / 'tests/fixtures/engineering-study-rc19-model-delta.json').read_bytes())
-        # This study remains bound to frozen RC20, not the installed candidate.
-        # Reconstruct only its version and verify the complete historical model.
-        self.full = copy.deepcopy(self.current_candidate)
-        self.full['version'] = '3.0.0-rc.20'
+        # Historical study inputs must survive later runtime semantics/version
+        # changes. This immutable fixture retains the existing complete digest.
+        self.full = json.loads((ROOT / 'tests/fixtures/engineering-study-frozen-rc20-model.json').read_bytes())
         self.assertEqual(study.digest(self.full), self.baseline_delta['full_model_sha256'])
         self.baseline = copy.deepcopy(self.full)
         for field in self.baseline_delta['full_only_fields']:

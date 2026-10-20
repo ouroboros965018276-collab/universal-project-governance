@@ -6,7 +6,7 @@ import argparse
 from datetime import datetime, timezone
 import json
 import re
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import sys
 import hashlib
 import functools
@@ -112,7 +112,33 @@ def expected_binding(project_origin="existing", field_test_reporting=None):
         "continuity_mode": cfg["continuity_mode"],
         "capability_handshake": cfg["capability_handshake"],
         "project_origin": project_origin,
+        "git_checkpoint": json.loads(json.dumps(cfg.get("git_checkpoint", {}))),
     }
+
+def _validate_git_policy(policy):
+    if not isinstance(policy, dict):
+        return ["git_checkpoint must be an object"]
+    errors = []
+    if type(policy.get("enabled")) is not bool:
+        errors.append("git_checkpoint.enabled must be boolean")
+    seconds = policy.get("min_interval_seconds")
+    if type(seconds) is not int or not 0 <= seconds <= 86400:
+        errors.append("git_checkpoint.min_interval_seconds must be an integer from 0 to 86400")
+    for key in ("allowed_paths", "status_paths"):
+        paths = policy.get(key)
+        if not isinstance(paths, list) or len(paths) > 1024:
+            errors.append("git_checkpoint.%s must be a bounded path list" % key)
+            continue
+        for value in paths:
+            if (not isinstance(value, str) or not value or len(value) > 1024
+                    or "\x00" in value or "\\" in value or re.match(r"^[A-Za-z]:", value)
+                    or value.startswith("/") or ".." in PurePosixPath(value).parts
+                    or ".git" in PurePosixPath(value).parts):
+                errors.append("git_checkpoint.%s requires project-relative literal paths" % key)
+                break
+    if policy.get("enabled") and not policy.get("allowed_paths"):
+        errors.append("enabled Git checkpoints require an explicit allowed path scope")
+    return errors
 
 def _upgradeable_binding(value):
     cfg = config()
@@ -153,6 +179,8 @@ def validate_binding(value):
             errors.append("%s drift detected" % key)
     if value.get("project_origin") not in {"new", "existing"}:
         errors.append("project_origin drift detected")
+    if "git_checkpoint" in value:
+        errors += _validate_git_policy(value["git_checkpoint"])
     return errors
 def ledger_default(epoch=0, next_sequence=1):
     return {"schema_version": 1, "runtime_version": index()["version"], "epoch": epoch, "next_sequence": next_sequence, "reports": []}
@@ -188,7 +216,7 @@ def ensure(project, field_test_reporting=None):
 
     binding = expected_binding(origin, reporting)
     if isinstance(current, dict):
-        for key in ["active_workflow", "latest_change", "previous_change", "export_receipt", "current_state", "current_state_sequence"]:
+        for key in ["active_workflow", "latest_change", "previous_change", "export_receipt", "current_state", "current_state_sequence", "git_checkpoint"]:
             if key in current:
                 binding[key] = current[key]
     if not reporting:
@@ -270,8 +298,12 @@ def status(project):
             _verify_current_state(project, current_state)
         except (OSError, ValueError) as exc:
             state_errors.append(str(exc))
+    git_state = binding.get("git_checkpoint", {})
+    git_pending = bool(git_state.get("journal")) or (
+        git_state.get("enabled") and git_state.get("result", {}).get("status") == "blocked")
     return {
-        "ok": not state_errors and not pending_outcome,
+        "ok": not state_errors and not pending_outcome and not git_pending,
+        **({"reason": "git-checkpoint-pending", "errors": ["Git checkpoint requires reconciliation; retry its original finish input"]} if git_pending else {}),
         **({"reason": "checkpoint-unreconciled", "errors": ["ledger commit newer than binding checkpoint; retry the original report/finish input"]} if pending_outcome else {}),
         **({"reason": "current-state-drift", "errors": state_errors} if state_errors else {}),
         "runtime_version": index()["version"],
@@ -287,11 +319,55 @@ def status(project):
         "latest_change": binding.get("latest_change"),
         "previous_change": binding.get("previous_change"),
         "current_state": current_state,
+        "git_checkpoint": git_state,
         "current_outcome": binding.get("active_workflow", {}).get("last_outcome") or binding.get("latest_change"),
         "state_roles": {"current": current_state.get("path") if isinstance(current_state, dict) else "active_workflow.last_outcome (if present)",
                         "latest_change": "latest completed workflow; historical while another workflow is active",
                         "field_reports": "append-only historical observations, not live project state"},
     }
+
+@serialized
+def configure_git(project, enabled, allowed_paths=None, status_paths=None, min_interval_seconds=None):
+    ensure(project)
+    path = resolve(project, config()["binding_file"])
+    binding = load_json(path)
+    policy = binding["git_checkpoint"]
+    if policy.get("journal"):
+        raise ValueError("reconcile the pending Git transaction before changing its policy")
+    if enabled and (policy.get("pending_paths") or policy.get("deferred_events")):
+        if ((allowed_paths is not None and allowed_paths != policy.get("allowed_paths"))
+                or (status_paths is not None and status_paths != policy.get("status_paths"))):
+            raise ValueError("reconcile pending Git paths before changing their scope")
+    policy["enabled"] = enabled
+    if not enabled:
+        # Explicitly disabling future automation abandons only its pending
+        # scheduling, never files or Git contents. Live transactions were
+        # rejected above and must retain their recovery evidence.
+        uncommitted = list(policy.pop("pending_paths", []))
+        policy.pop("pending_workflow_id", None)
+        policy.pop("deferred_events", None)
+    else:
+        uncommitted = []
+    for key, value in [("allowed_paths", allowed_paths), ("status_paths", status_paths),
+                       ("min_interval_seconds", min_interval_seconds)]:
+        if value is not None:
+            policy[key] = value
+    errors = _validate_git_policy(policy)
+    if errors:
+        raise ValueError("; ".join(errors))
+    active = binding.get("active_workflow")
+    if enabled:
+        from git_checkpoint import capture
+        observed = capture(project_root(project), policy)
+        if not observed.get("ok"):
+            raise ValueError("cannot enable Git checkpoints: " + observed.get("reason", "Git baseline unavailable"))
+        if active and policy.get("start", {}).get("workflow_id") != active["workflow_id"]:
+            policy["start"] = {"workflow_id": active["workflow_id"], "snapshot": observed}
+    policy["result"] = {"status": "configured" if enabled else "disabled"}
+    if uncommitted:
+        policy["result"]["uncommitted_paths"] = uncommitted
+    write_json_atomic(path, binding)
+    return {"git_checkpoint": policy}
 
 def _verify_current_state(project, ref):
     """Bind one existing project authority without copying its application schema."""
@@ -489,7 +565,7 @@ def _reconcile_completion(project, entry):
                 "event_id", "epoch", "workflow_id", "sequence", "recorded_at", "status", "change", "validation",
                 "changed_files", "cleanup", "integrity", "handoff", "feedback",
             ]}
-            for optional in ["checkpoint_id", "current_state"]:
+            for optional in ["checkpoint_id", "current_state", "git_boundary"]:
                 if optional in entry:
                     active["last_outcome"][optional] = entry[optional]
             if "current_state" in entry and entry["sequence"] >= binding.get("current_state_sequence", 0):
@@ -523,7 +599,7 @@ def begin_workflow(project, input_path):
     payload = load_json(input_path)
     if not isinstance(payload, dict) or not isinstance(payload.get("workflow_id"), str) or not payload["workflow_id"]:
         raise ValueError("workflow_id required")
-    if {"observed_at", "last_outcome", "outcome_receipts", "start_change"}.intersection(payload):
+    if {"observed_at", "last_outcome", "outcome_receipts", "start_change", "git_start"}.intersection(payload):
         raise ValueError("workflow observation and recovery fields are tool-owned")
     # Validate the same change contract used at completion; no separate history database.
     change_schema = load_json(ROOT / "schemas/field-report.schema.json")["properties"]["change"]
@@ -533,6 +609,10 @@ def begin_workflow(project, input_path):
     ensure(project)
     binding_path = resolve(project, config()["binding_file"])
     binding = load_json(binding_path)
+    git_state = binding.get("git_checkpoint", {})
+    if (git_state.get("enabled") and (git_state.get("journal") or git_state.get("pending_paths"))
+            and git_state.get("start", {}).get("workflow_id") != payload["workflow_id"]):
+        raise ValueError("pending Git checkpoint belongs to the previous workflow; reconcile it before starting another")
     active = binding.get("active_workflow")
     if active and active.get("workflow_id") != payload["workflow_id"]:
         raise ValueError("another workflow is unfinished; reconstruct it before replacing its identity")
@@ -555,6 +635,12 @@ def begin_workflow(project, input_path):
         raise ValueError("known occurrence time requires its observed source")
     payload["observed_at"] = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
     binding["active_workflow"] = payload
+    if binding.get("git_checkpoint", {}).get("enabled"):
+        from git_checkpoint import capture
+        binding["git_checkpoint"]["start"] = {
+            "workflow_id": payload["workflow_id"],
+            "snapshot": capture(project_root(project), binding["git_checkpoint"]),
+        }
     write_json_atomic(binding_path, binding)
     return {"active_workflow": payload}
 
@@ -627,6 +713,29 @@ def _record_report_payload(project, payload, require_active=False):
 @serialized
 def finish_workflow(project, input_path):
     payload = _read_report(input_path)
+    result = _finish_workflow_payload(project, payload)
+    binding_path = resolve(project, config()["binding_file"])
+    binding = load_json(binding_path)
+    if not binding.get("git_checkpoint", {}).get("enabled"):
+        return result
+    event_id = result.get("event_id")
+    if not event_id:
+        active = binding.get("active_workflow", {})
+        receipt = active.get("outcome_receipts", {}).get(_receipt_key(payload), {})
+        event_id = receipt.get("event_id")
+        if not event_id:
+            for entry in [binding.get("latest_change", {}), binding.get("previous_change", {})]:
+                if isinstance(entry, dict) and _same_report_identity(entry, payload, entry.get("epoch", 0)):
+                    event_id = entry.get("event_id")
+                    break
+    if not event_id:
+        raise ValueError("finished outcome lacks its durable Git stage identity")
+    from git_checkpoint import run_checkpoint
+    git_result = run_checkpoint(project_root(project), binding, payload, event_id,
+                                lambda value: write_json_atomic(binding_path, value))
+    return dict(result, git_checkpoint=git_result)
+
+def _finish_workflow_payload(project, payload):
     ensured = ensure(project)
     cfg = config()
     binding_path = resolve(project, cfg["binding_file"])
@@ -755,6 +864,8 @@ def remove(project, yes):
             raise ValueError("refusing to remove drifted/unowned binding: " + "; ".join(errors))
         else:
             managed = binding.get("managed_files", [])
+        if binding.get("git_checkpoint", {}).get("journal"):
+            raise ValueError("reconcile the pending Git transaction before removing its recovery state")
         if binding.get("field_test_reporting") is True:
             state = status(project)
             if not state.get("ok"):
@@ -802,6 +913,14 @@ def main():
     finish = sub.add_parser("finish")
     finish.add_argument("project", nargs="?", default=".")
     finish.add_argument("--input", required=True)
+    git_policy = sub.add_parser("git-configure")
+    git_policy.add_argument("project", nargs="?", default=".")
+    mode = git_policy.add_mutually_exclusive_group(required=True)
+    mode.add_argument("--enable", action="store_true")
+    mode.add_argument("--disable", action="store_true")
+    git_policy.add_argument("--allow-path", action="append")
+    git_policy.add_argument("--status-path", action="append")
+    git_policy.add_argument("--min-interval-seconds", type=int)
     export = sub.add_parser("export")
     export.add_argument("project", nargs="?", default=".")
     export.add_argument("--output", required=True)
@@ -829,6 +948,9 @@ def main():
             result = begin_workflow(args.project, args.input)
         elif args.cmd == "finish":
             result = finish_workflow(args.project, args.input)
+        elif args.cmd == "git-configure":
+            result = configure_git(args.project, args.enable, args.allow_path,
+                                   args.status_path, args.min_interval_seconds)
         elif args.cmd == "export":
             result = export_reports(args.project, args.output)
         elif args.cmd == "purge-reports":
@@ -836,6 +958,8 @@ def main():
         elif args.cmd == "remove":
             result = remove(args.project, args.yes)
         print(json.dumps(result, indent=2, sort_keys=True))
+        if result.get("git_checkpoint", {}).get("status") == "blocked":
+            return 1
         return 0
     except (OSError, ValueError, json.JSONDecodeError) as exc:
         print("error: %s" % exc, file=sys.stderr)

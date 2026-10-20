@@ -26,6 +26,11 @@
     "change"
   ],
   "properties": {
+    "git_boundary": {
+      "type": "string",
+      "enum": ["verified", "handoff", "risk"],
+      "description": "Actual stage boundary for opt-in automatic Git checkpoints. Updating the handoff document alone does not bypass coalescing. Completion flushes automatically."
+    },
     "checkpoint_id": {
       "type": "string", "minLength": 1, "maxLength": 100,
       "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",

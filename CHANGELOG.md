@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.0.0-rc.20.2 — 2026-10-20 — candidate correction
+
+- Connects opt-in Git checkpoints to the existing workflow begin/finish lifecycle: explicit allowed paths, pre-existing dirty-path exclusion, meaningful-change detection, partial-stage cooldown, completion or explicit handoff/risk flush and duplicate/status-noise suppression.
+- Keeps bounded configuration, checkpoint receipts and recovery state in `upg.json`; native Git-private transactions preserve the user's index and expose unavailable Git, conflicts, hook failures or uncertain recovery instead of claiming a commit. No timer or automatic push is added.
+- Reuses prior empirical evidence and limits this feature's calibration to deterministic Git/lifecycle checks and required release/install verification. Current results and unresolved goals remain in `PROJECT_STATE.md`; no new model-benefit or Stable claim follows.
+
 ## 3.0.0-rc.20.1 — 2026-10-20 — candidate correction
 
 - Audits and corrects the report-ledger/binding interruption gap without an active workflow, and prevents delimiter collisions between workflow/checkpoint event identities while preserving exact retries and historical records.

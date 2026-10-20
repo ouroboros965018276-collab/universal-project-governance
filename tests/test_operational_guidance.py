@@ -142,6 +142,24 @@ class OperationalGuidanceTests(unittest.TestCase):
                          {"none", "change-note", "engineering", "audit"})
         self.assertFalse(STATE.validate_node(self.model, schema))
 
+    def test_git_checkpoint_default_schema_is_typed_closed_and_bounded(self):
+        schema = json.loads((SOURCE / "schemas/governance-model.schema.json").read_text(encoding="utf-8"))
+        checkpoint = schema["properties"]["project_binding"]["properties"]["git_checkpoint"]
+        defaults = self.model["project_binding"]["git_checkpoint"]
+        self.assertEqual({key: value["default"] for key, value in checkpoint["properties"].items()}, defaults)
+        self.assertFalse(STATE.validate_node(defaults, checkpoint))
+        for key, value in (("enabled", 1), ("min_interval_seconds", True),
+                           ("min_interval_seconds", 0.5), ("min_interval_seconds", -1),
+                           ("min_interval_seconds", 86401), ("allowed_paths", "src"),
+                           ("allowed_paths", [1]), ("status_paths", [""]),
+                           ("status_paths", ["a"] * 1025), ("allowed_paths", ["a" * 1025])):
+            with self.subTest(key=key, value_type=type(value).__name__):
+                invalid = dict(defaults, **{key: value})
+                self.assertTrue(STATE.validate_node(invalid, checkpoint))
+        self.assertTrue(STATE.validate_node(dict(defaults, unexpected=True), checkpoint))
+        for missing in defaults:
+            self.assertTrue(STATE.validate_node({key: value for key, value in defaults.items() if key != missing}, checkpoint))
+
     def test_source_export_does_not_mutate_or_replace_core_definitions(self):
         original = copy.deepcopy(self.model)
         for key in ("policies", "hot_path", "default_rules", "risk_model", "structural_integration", "project_binding"):
@@ -194,7 +212,7 @@ class OperationalGuidanceTests(unittest.TestCase):
                          {k: v for k, v in unknown.items() if k != "warnings"})
         self.assertTrue(unknown["warnings"])
 
-    def test_temporary_source_compilation_is_deterministic_and_keeps_eighteen_delivery_paths(self):
+    def test_temporary_source_compilation_is_deterministic_and_keeps_nineteen_delivery_paths(self):
         with tempfile.TemporaryDirectory(prefix="upg-operational-") as directory:
             repo = Path(directory)
             shutil.copytree(SOURCE, repo / "governance-src", ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
@@ -210,7 +228,9 @@ class OperationalGuidanceTests(unittest.TestCase):
                         for p in (ROOT / "universal-project-governance").rglob("*")
                         if p.is_file() and "__pycache__" not in p.parts}
             self.assertEqual(set(generated), expected)
-            self.assertEqual(len(generated), 18)
+            self.assertIn("scripts/git_checkpoint.py", generated)
+            self.assertEqual(generated["scripts/git_checkpoint.py"], (SOURCE / "runtime-scripts/git_checkpoint.py").read_bytes())
+            self.assertEqual(len(generated), 19)
 
 
 if __name__ == "__main__":
