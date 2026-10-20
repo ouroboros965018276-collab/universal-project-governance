@@ -26,7 +26,8 @@ def module(name, path):
 
 COMPILER = module("operational_compiler", ROOT / "compiler/compile_governance.py")
 STATE = module("operational_state", SOURCE / "runtime-scripts/state_tool.py")
-with patch.dict(sys.modules, state_tool=STATE):
+GUARD = module("operational_guard", SOURCE / "runtime-scripts/process_guard.py")
+with patch.dict(sys.modules, state_tool=STATE, process_guard=GUARD):
     PROJECT = module("operational_project", SOURCE / "runtime-scripts/project_tool.py")
 with patch.dict(sys.modules, project_tool=PROJECT):
     PLANNER = module("operational_planner", SOURCE / "runtime-scripts/plan_governance.py")
@@ -212,7 +213,7 @@ class OperationalGuidanceTests(unittest.TestCase):
                          {k: v for k, v in unknown.items() if k != "warnings"})
         self.assertTrue(unknown["warnings"])
 
-    def test_temporary_source_compilation_is_deterministic_and_keeps_twenty_delivery_paths(self):
+    def test_temporary_source_compilation_is_deterministic_and_keeps_twenty_one_delivery_paths(self):
         with tempfile.TemporaryDirectory(prefix="upg-operational-") as directory:
             repo = Path(directory)
             shutil.copytree(SOURCE, repo / "governance-src", ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
@@ -230,8 +231,9 @@ class OperationalGuidanceTests(unittest.TestCase):
             self.assertEqual(set(generated), expected)
             self.assertIn("scripts/git_checkpoint.py", generated)
             self.assertIn("scripts/git_watch.py", generated)
+            self.assertIn("scripts/process_guard.py", generated)
             self.assertEqual(generated["scripts/git_checkpoint.py"], (SOURCE / "runtime-scripts/git_checkpoint.py").read_bytes())
-            self.assertEqual(len(generated), 20)
+            self.assertEqual(len(generated), 21)
 
 
 if __name__ == "__main__":

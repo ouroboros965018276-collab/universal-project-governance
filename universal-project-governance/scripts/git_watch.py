@@ -20,6 +20,7 @@ import uuid
 
 import git_checkpoint as git
 import project_tool as project
+import process_guard as guards
 
 
 def validate_configuration(value):
@@ -66,15 +67,30 @@ def _save(path, binding, watcher):
     project.write_json_atomic(path, binding)
 
 
+def _desired(watcher):
+    if "desired_running" in watcher:
+        return watcher["desired_running"]
+    return bool(watcher.get("configuration", {}).get("enabled")
+                and watcher.get("status") not in {"stopped", "stopping", "disabled"})
+
+
+def _legacy_owner(watcher):
+    return watcher.get("guard_version") != 1 and bool(
+        watcher.get("token") or watcher.get("pid") or watcher.get("status") == "stopping")
+
+
 def _live(watcher):
-    return bool(watcher.get("token") and watcher.get("lease_until", 0) > time.time()
-                and watcher.get("status") not in {"stopped", "stopping"})
+    return bool(watcher.get("token") and type(watcher.get("pid")) is int and watcher["pid"] > 0
+                and watcher.get("lease_until", 0) > time.time()
+                and watcher.get("status") not in {"starting", "stopped", "stopping"})
 
 
 def _view(watcher):
     value = copy.deepcopy(watcher)
     value["running"] = _live(watcher)
-    if value.get("token") and not value["running"] and value.get("status") != "stopping":
+    value["desired_running"] = _desired(watcher)
+    if (value.get("token") and not value["running"]
+            and value.get("status") not in {"starting", "stopped", "stopping"}):
         value["status"] = "stale"
         value["reason"] = "worker-heartbeat-expired; start creates a new ownership token"
     value.setdefault("status", "unconfigured")
@@ -100,12 +116,18 @@ def configure(root, configuration):
     observed = git.capture(project.project_root(root), policy) if configuration["enabled"] else None
     if configuration["enabled"] and not observed.get("ok"):
         raise ValueError("cannot configure Git watcher: " + observed.get("reason", "baseline unavailable"))
+    desired = _desired(watcher) if configuration["enabled"] else False
+    supervisor = copy.deepcopy(watcher.get("supervisor", {"enabled": False}))
+    guard_version = watcher.get("guard_version")
     generation = uuid.uuid4().hex
     token = watcher.get("token") if _live(watcher) and configuration["enabled"] else None
     pid = watcher.get("pid") if token else None
     watcher = {"configuration": configuration, "generation": generation,
                "workflow_id": "git-watch:" + generation, "baseline": observed,
-               "status": "configured" if configuration["enabled"] else "disabled"}
+               "status": "configured" if configuration["enabled"] else "disabled",
+               "desired_running": desired, "supervisor": supervisor}
+    if guard_version is not None:
+        watcher["guard_version"] = guard_version
     if token:
         watcher.update(token=token, pid=pid, heartbeat=time.time(), lease_until=time.time() + 15)
     _save(path, binding, watcher)
@@ -113,18 +135,36 @@ def configure(root, configuration):
 
 
 @project.serialized
-def _reserve(root):
+def _set_start_intent(root):
     path, binding, policy, watcher = _load(root)
     configuration = validate_configuration(watcher.get("configuration"))
     if not configuration["enabled"] or not policy.get("enabled"):
         raise ValueError("Git watcher is disabled")
-    if _live(watcher):
+    if watcher.get("desired_running") is True and watcher.get("supervisor", {}).get("enabled"):
+        return _view(watcher)
+    watcher["desired_running"] = True
+    watcher.setdefault("supervisor", {})["enabled"] = True
+    _save(path, binding, watcher)
+    return _view(watcher)
+
+
+@project.serialized
+def _reserve(root, recovering=False):
+    # The caller exclusively owns the worker guard, including across spawn.
+    path, binding, policy, watcher = _load(root)
+    configuration = validate_configuration(watcher.get("configuration"))
+    if (not configuration["enabled"] or not policy.get("enabled") or not _desired(watcher)
+            or (recovering and not watcher.get("supervisor", {}).get("enabled"))):
         return _view(watcher), None
-    if watcher.get("validation_id") and watcher.get("lease_until", 0) > time.time():
-        raise ValueError("Git watcher validation is already running")
+    if _legacy_owner(watcher):
+        watcher.update(recovery_blocked=True, reason="legacy-worker-without-native-guard; stop and verify its exit before migration")
+        _save(path, binding, watcher)
+        return _view(watcher), None
     token = uuid.uuid4().hex
-    watcher.update(status="starting", token=token, pid=None, heartbeat=time.time(), lease_until=time.time() + 15)
-    watcher.pop("stop_token", None)
+    watcher.update(status="starting", token=token, pid=None, guard_version=1, desired_running=True,
+                   heartbeat=time.time(), lease_until=time.time() + 15)
+    for key in ["stop_token", "validation_id", "recovery_blocked"]:
+        watcher.pop(key, None)
     _save(path, binding, watcher)
     return _view(watcher), token
 
@@ -139,8 +179,9 @@ def _start_failed(root, token, reason):
     return _view(watcher)
 
 
-def _spawn_worker(root, token):
-    argv = [sys.executable, str(Path(__file__).resolve()), "--worker", str(root), "--token", token]
+def _spawn_worker(root, token, guard):
+    argv = [sys.executable, str(Path(__file__).resolve()), "--worker", str(root), "--token", token,
+            "--guard-handle", str(guard.handle)]
     options = {"stdin": subprocess.DEVNULL, "stdout": subprocess.DEVNULL,
                "stderr": subprocess.DEVNULL, "cwd": str(root), "shell": False}
     if os.name == "nt":
@@ -148,34 +189,255 @@ def _spawn_worker(root, token):
     else:
         options["start_new_session"] = True
     # The launch command is fixed; caller configuration cannot replace it.
-    return subprocess.Popen(argv, **options)
+    with guards.inheritance([guard]) as inherited:
+        return subprocess.Popen(argv, **dict(options, **inherited))
+
+
+def _launch(root, recovering=False, with_child=False):
+    child = None
+
+    def result(view):
+        return (view, child) if with_child else view
+
+    root = project.project_root(root)
+    guard = guards.acquire(root, ".upg-worker.guard")
+    if guard is None:
+        view = status(root)
+        view["watcher"].update(idempotent=True, recovery="deferred; native worker or validator still owns guard")
+        return result(view)
+    with guard:
+        # Explicit ticks and standalone Git transactions may outlive their host.
+        for name in [".upg-validation.guard", ".upg-checkpoint.guard"]:
+            probe = guards.acquire(root, name)
+            if probe is None:
+                view = status(root)
+                view["watcher"].update(recovery="deferred; native project command still active")
+                return result(view)
+            probe.close()
+        view, token = _reserve(root, recovering=recovering)
+        if token is None:
+            return result(view)
+        try:
+            child = _spawn_worker(root, token, guard)
+        except OSError:
+            return result(_start_failed(root, token, "native-worker-launch-failed"))
+        deadline = time.monotonic() + 8
+        while time.monotonic() < deadline:
+            view = status(root)
+            state = view["watcher"]
+            if state.get("token") != token:
+                return result(view)
+            if state.get("pid") and state.get("heartbeat", 0) and state.get("status") != "starting":
+                return result(view)
+            time.sleep(0.05)
+        return result(_start_failed(root, token, "native-worker-startup-not-confirmed"))
+
+
+@project.serialized
+def _reserve_supervisor(root):
+    # Production callers hold the native supervisor guard across reservation.
+    path, binding, policy, watcher = _load(root)
+    if not _supervised(policy, watcher):
+        return _view(watcher), None
+    token = uuid.uuid4().hex
+    supervisor = watcher.setdefault("supervisor", {})
+    supervisor.update(token=token, pid=None, guard_version=1, status="starting")
+    supervisor.pop("reason", None)
+    _save(path, binding, watcher)
+    return _view(watcher), token
+
+
+def _supervised(policy, watcher):
+    return bool(policy.get("enabled") and watcher.get("configuration", {}).get("enabled")
+                and watcher.get("supervisor", {}).get("enabled") and _desired(watcher))
+
+
+@project.serialized
+def _claim_supervisor(root, token):
+    path, binding, policy, watcher = _load(root)
+    supervisor = watcher.get("supervisor", {})
+    if supervisor.get("token") != token or not _supervised(policy, watcher):
+        return False
+    supervisor.update(pid=os.getpid(), guard_version=1, status="watching")
+    _save(path, binding, watcher)
+    return True
+
+
+@project.serialized
+def _supervisor_progress(root, token, state, reason=None, release=False):
+    path, binding, policy, watcher = _load(root)
+    supervisor = watcher.get("supervisor", {})
+    if supervisor.get("token") != token:
+        return
+    if not release and supervisor.get("status") == state and supervisor.get("reason") == reason:
+        return
+    supervisor["status"] = state
+    if reason:
+        supervisor["reason"] = reason
+    else:
+        supervisor.pop("reason", None)
+    if state == "stopped" or release:
+        supervisor.pop("token", None)
+        supervisor["pid"] = None
+    _save(path, binding, watcher)
+
+
+def _spawn_supervisor(root, token, guard):
+    argv = [sys.executable, str(Path(__file__).resolve()), "--supervise", str(root), "--token", token,
+            "--guard-handle", str(guard.handle)]
+    options = {"stdin": subprocess.DEVNULL, "stdout": subprocess.DEVNULL,
+               "stderr": subprocess.DEVNULL, "cwd": str(root), "shell": False}
+    if os.name == "nt":
+        options["creationflags"] = subprocess.CREATE_NO_WINDOW | subprocess.CREATE_NEW_PROCESS_GROUP
+    else:
+        options["start_new_session"] = True
+    with guards.inheritance([guard]) as inherited:
+        return subprocess.Popen(argv, **dict(options, **inherited))
+
+
+def _launch_supervisor(root):
+    root = project.project_root(root)
+    guard = guards.acquire(root, ".upg-supervisor.guard")
+    if guard is None:
+        view = status(root)
+        view["watcher"]["idempotent"] = True
+        return view
+    with guard:
+        previous_token = status(root)["watcher"].get("token")
+        view, token = _reserve_supervisor(root)
+        if token is None:
+            return view
+        try:
+            _spawn_supervisor(root, token, guard)
+        except OSError:
+            _supervisor_progress(root, token, "blocked", "native-supervisor-launch-failed", release=True)
+            return status(root)
+        deadline = time.monotonic() + 8
+        while time.monotonic() < deadline:
+            view = status(root)
+            state = view["watcher"]
+            supervisor = state.get("supervisor", {})
+            if supervisor.get("token") != token:
+                return view
+            if (supervisor.get("pid") and state.get("running")
+                    and type(state.get("pid")) is int and state["pid"] > 0
+                    and state.get("status") != "starting" and state.get("token") != previous_token):
+                return view
+            if supervisor.get("status") in {"waiting", "blocked"}:
+                state["recovery"] = "deferred; native project command still active"
+                return view
+            time.sleep(0.05)
+        return view
 
 
 def start(root):
+    _set_start_intent(root)
+    return _launch_supervisor(root)
+
+
+def recover(root):
+    """Restore project-session supervision without changing explicit stop intent."""
     root = project.project_root(root)
-    view, token = _reserve(root)
-    if token is None:
-        view["watcher"]["idempotent"] = True
+    path = project.resolve(root, project.config()["binding_file"])
+    if not path.is_file():
+        return {"watcher": {"status": "unconfigured", "running": False, "recovery": "binding-missing"}}
+    path, binding, policy, watcher = _load(root)
+    if not _supervised(policy, watcher):
+        view = _view(watcher)
+        view["watcher"]["recovery"] = "disabled-or-explicitly-stopped"
         return view
     try:
-        _spawn_worker(root, token)
-    except OSError:
-        return _start_failed(root, token, "native-worker-launch-failed")
-    deadline = time.monotonic() + 8
-    while time.monotonic() < deadline:
-        view = status(root)
-        state = view["watcher"]
-        if state.get("token") != token:
+        return _launch_supervisor(root)
+    except ValueError as error:
+        if str(error).startswith("project state writer busy;"):
+            view = status(root)
+            view["watcher"]["recovery"] = "deferred; project writer owns the state"
             return view
-        if state.get("pid") and state.get("heartbeat", 0) and state.get("status") != "starting":
-            return view
-        time.sleep(0.05)
-    return _start_failed(root, token, "native-worker-startup-not-confirmed")
+        raise
+
+
+def autostart(root):
+    """Project entry hook only; never registers operating-system startup work."""
+    return recover(root)
+
+
+def _supervisor_owned(root, token):
+    path, binding, policy, watcher = _load(root)
+    return _supervised(policy, watcher) and watcher.get("supervisor", {}).get("token") == token
+
+
+def _supervisor_diagnostic(root, token, state, reason=None, release=False):
+    try:
+        _supervisor_progress(root, token, state, reason, release=release)
+    except (OSError, ValueError):
+        # A busy writer must not turn a diagnostic into loss of supervision.
+        # No successful state is claimed if persistence was unavailable.
+        pass
+
+
+def supervise(root, token, guard_handle=None):
+    guard = (guards.adopt(root, ".upg-supervisor.guard", guard_handle) if guard_handle is not None
+             else guards.acquire(root, ".upg-supervisor.guard"))
+    if guard is None:
+        return 1
+    root = project.project_root(root)
+    with guard:
+        if not _claim_supervisor(root, token):
+            return 1
+        delay = 1
+        final_state, final_reason = "stopped", None
+        try:
+            while _supervisor_owned(root, token):
+                began = time.monotonic()
+                launch_error = None
+                try:
+                    view, child = _launch(root, recovering=True, with_child=True)
+                except (OSError, ValueError, git.CheckpointError) as error:
+                    launch_error = str(error)[:256]
+                    _supervisor_diagnostic(root, token, "blocked", launch_error)
+                    child = None
+                    view = {"watcher": {}}
+                if child is not None:
+                    _supervisor_diagnostic(root, token, "watching")
+                    # No polling, Git scan or heartbeat writes while our child
+                    # is healthy. Cooperative stop makes this wait return.
+                    child.wait()
+                    if not _supervisor_owned(root, token):
+                        break
+                    if time.monotonic() - began >= 30:
+                        delay = 1
+                    pause = delay
+                    delay = min(60, delay * 2)
+                else:
+                    if view["watcher"].get("recovery_blocked"):
+                        final_state, final_reason = "blocked", "legacy-worker-without-native-guard"
+                        break
+                    if "deferred; native" in view["watcher"].get("recovery", ""):
+                        # A pre-existing guarded worker is not ours to wait on
+                        # or signal. Only guard release permits replacement.
+                        _supervisor_diagnostic(root, token, "waiting", "native-project-owner-still-active")
+                        pause = 5
+                    else:
+                        _supervisor_diagnostic(root, token, "blocked", launch_error or "native-worker-launch-not-confirmed")
+                        pause = delay
+                        delay = min(60, delay * 2)
+                until = time.monotonic() + pause
+                while time.monotonic() < until and _supervisor_owned(root, token):
+                    time.sleep(min(1, max(0, until - time.monotonic())))
+        finally:
+            _supervisor_diagnostic(root, token, final_state, final_reason, release=True)
+    return 0
 
 
 @project.serialized
 def _request_stop(root):
     path, binding, policy, watcher = _load(root)
+    watcher["desired_running"] = False
+    supervisor = watcher.get("supervisor", {})
+    if not supervisor.get("token"):
+        supervisor.update(status="stopped", pid=None)
+        supervisor.pop("reason", None)
+    watcher.pop("recovery_blocked", None)
     token = watcher.pop("token", None)
     watcher.pop("validation_id", None)
     watcher.update(status="stopping" if token else "stopped", stop_token=token,
@@ -186,16 +448,54 @@ def _request_stop(root):
     return _view(watcher), token
 
 
+
+@project.serialized
+def _ack_released_stop(root):
+    path, binding, policy, watcher = _load(root)
+    if _desired(watcher) or _legacy_owner(watcher):
+        return
+    acquired = []
+    try:
+        for name in [".upg-supervisor.guard", ".upg-worker.guard", ".upg-validation.guard", ".upg-checkpoint.guard"]:
+            guard = guards.acquire(root, name)
+            if guard is None:
+                return
+            acquired.append(guard)
+        watcher.update(status="stopped", pid=None, lease_until=0)
+        watcher.pop("token", None)
+        supervisor = watcher.get("supervisor", {})
+        supervisor.pop("token", None)
+        supervisor.update(pid=None, status="stopped")
+        _save(path, binding, watcher)
+    finally:
+        for guard in reversed(acquired):
+            guard.close()
+
+
 def stop(root):
     root = project.project_root(root)
-    view, token = _request_stop(root)
-    if token is None:
-        return view
+    request_deadline = time.monotonic() + 10
+    while True:
+        try:
+            view, token = _request_stop(root)
+            break
+        except ValueError as error:
+            if (not str(error).startswith("project state writer busy;")
+                    or time.monotonic() + 2.1 >= request_deadline):
+                raise
+            time.sleep(0.05)
     deadline = time.monotonic() + 5
     while time.monotonic() < deadline:
         view = status(root)
-        if view["watcher"].get("status") != "stopping":
+        if (view["watcher"].get("status") != "stopping"
+                and not view["watcher"].get("supervisor", {}).get("token")):
             return view
+        if view["watcher"].get("guard_version") == 1:
+            try:
+                _ack_released_stop(root)
+            except ValueError as error:
+                if not str(error).startswith("project state writer busy;"):
+                    raise
         time.sleep(0.05)
     # Cooperative cancellation may wait for an already-running validator. No
     # naked PID is used as authority to kill or signal a foreign process.
@@ -255,9 +555,17 @@ def _prepare(root, token, explicit):
         token = watcher["token"]
     if not policy.get("enabled") or not configuration["enabled"]:
         return _view(dict(watcher, status="disabled")), None
-    if watcher.get("validation_id") and watcher.get("lease_until", 0) > time.time():
-        return _view(dict(watcher, status="busy")), None
-    watcher.pop("validation_id", None)
+    if _legacy_owner(watcher):
+        watcher.update(recovery_blocked=True)
+        _progress(watcher, "blocked", "legacy-worker-without-native-guard; verify exit before migration")
+        _save(path, binding, watcher)
+        return _view(watcher), None
+    if watcher.get("validation_id"):
+        probe = guards.acquire(root, ".upg-validation.guard")
+        if probe is None:
+            return _view(dict(watcher, status="busy")), None
+        probe.close()
+        watcher.pop("validation_id", None)
 
     def finish(state, reason, **extra):
         _progress(watcher, state, reason, **extra)
@@ -343,14 +651,22 @@ def _prepare(root, token, explicit):
     if (not explicit and previous.get("fingerprint") == fingerprint
             and time.time() < previous.get("retry_after", 0)):
         return finish("blocked", "unchanged-failed-candidate; bounded retry backoff")
+    validation_guard = guards.acquire(root, ".upg-validation.guard")
+    if validation_guard is None:
+        return finish("blocked", "native-validator-still-active; recovery deferred")
     validation_id = uuid.uuid4().hex
     lease = sum(v["timeout_seconds"] for v in configuration["validators"]) + 15
     _progress(watcher, "validating", "running-explicit-project-validators", validation_id=validation_id,
               lease_until=time.time() + lease)
     watcher["baseline"] = baseline
-    _save(path, binding, watcher)
+    try:
+        _save(path, binding, watcher)
+    except BaseException:
+        validation_guard.close()
+        raise
     return None, {"configuration": configuration, "generation": watcher["generation"],
-                  "validation_id": validation_id, "token": token, "candidate": copy.deepcopy(candidate)}
+                  "validation_id": validation_id, "token": token, "candidate": copy.deepcopy(candidate),
+                  "guard": validation_guard}
 
 
 def _validation_owned(root, prepared):
@@ -369,7 +685,7 @@ def _run_validators(root, validators, prepared):
         # A bounded read prevents verbose output from consuming process memory.
         with tempfile.TemporaryFile(dir=str(project.project_root(root) / ".governance")) as output:
             try:
-                process = subprocess.run(validator["argv"], cwd=str(root), stdin=subprocess.DEVNULL,
+                process = guards.run(validator["argv"], cwd=str(root), stdin=subprocess.DEVNULL,
                                          stdout=output, stderr=subprocess.STDOUT, shell=False,
                                          timeout=validator["timeout_seconds"], check=False)
                 returncode, timed_out = process.returncode, False
@@ -449,14 +765,16 @@ def tick(root, token=None):
     view, prepared = _prepare(root, token, explicit=token is None)
     if prepared is None:
         return view
-    passed, validations = _run_validators(root, prepared["configuration"]["validators"], prepared)
-    return _publish(root, prepared, passed, validations)
+    with prepared["guard"], guards.holding(prepared["guard"]):
+        passed, validations = _run_validators(root, prepared["configuration"]["validators"], prepared)
+        return _publish(root, prepared, passed, validations)
 
 
 @project.serialized
 def _claim(root, token):
     path, binding, policy, watcher = _load(root)
-    if watcher.get("token") != token or not watcher.get("configuration", {}).get("enabled"):
+    if (watcher.get("token") != token or not watcher.get("configuration", {}).get("enabled")
+            or not _desired(watcher) or watcher.get("guard_version") != 1):
         return False
     if watcher.get("pid") not in {None, os.getpid()}:
         return False
@@ -481,42 +799,61 @@ def _ack_stop(root, token):
         _save(path, binding, watcher)
 
 
-def worker(root, token):
-    if not _claim(root, token):
+def worker(root, token, guard_handle=None):
+    guard = (guards.adopt(root, ".upg-worker.guard", guard_handle) if guard_handle is not None
+             else guards.acquire(root, ".upg-worker.guard"))
+    if guard is None:
         return 1
-    try:
-        while True:
-            state = status(root)["watcher"]
-            if state.get("token") != token or not state.get("configuration", {}).get("enabled"):
-                break
-            try:
-                tick(root, token=token)
-            except (OSError, ValueError, git.CheckpointError) as error:
-                writer_busy = isinstance(error, ValueError) and str(error).startswith("project state writer busy;")
-                if not writer_busy:
-                    try:
-                        _worker_error(root, token, error)
-                    except (OSError, ValueError):
-                        # A failed diagnostic write cannot terminate observation.
-                        # Its old heartbeat still expires rather than claim health.
-                        pass
-            time.sleep(state["configuration"]["poll_seconds"])
-    finally:
+    with guard, guards.holding(guard):
+        if not _claim(root, token):
+            return 1
         try:
-            _ack_stop(root, token)
-        except (OSError, ValueError):
-            # Cancellation already revoked ownership. A busy writer may delay
-            # acknowledgement; it must not turn cooperative exit into a crash.
-            pass
-    return 0
+            while True:
+                state = status(root)["watcher"]
+                if state.get("token") != token or not state.get("configuration", {}).get("enabled"):
+                    break
+                try:
+                    tick(root, token=token)
+                except (OSError, ValueError, git.CheckpointError) as error:
+                    writer_busy = isinstance(error, ValueError) and str(error).startswith("project state writer busy;")
+                    if not writer_busy:
+                        try:
+                            _worker_error(root, token, error)
+                        except (OSError, ValueError):
+                            # A failed diagnostic write cannot terminate observation.
+                            # Its old heartbeat still expires rather than claim health.
+                            pass
+                time.sleep(state["configuration"]["poll_seconds"])
+        finally:
+            try:
+                _ack_stop(root, token)
+            except (OSError, ValueError):
+                # Cancellation already revoked ownership. A busy writer may delay
+                # acknowledgement; it must not turn cooperative exit into a crash.
+                pass
+        return 0
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--worker", required=True)
-    parser.add_argument("--token", required=True)
+    mode = parser.add_mutually_exclusive_group(required=True)
+    mode.add_argument("--worker")
+    mode.add_argument("--recover")
+    mode.add_argument("--supervise")
+    parser.add_argument("--token")
+    parser.add_argument("--guard-handle", type=int)
     args = parser.parse_args()
-    return worker(project.project_root(args.worker), args.token)
+    if args.recover:
+        if args.token or args.guard_handle is not None:
+            parser.error("recovery does not accept worker authority")
+        value = recover(project.project_root(args.recover))
+        print(json.dumps(value, sort_keys=True))
+        return 1 if value.get("watcher", {}).get("recovery_blocked") else 0
+    if not args.token:
+        parser.error("worker requires --token")
+    if args.supervise:
+        return supervise(project.project_root(args.supervise), args.token, args.guard_handle)
+    return worker(project.project_root(args.worker), args.token, args.guard_handle)
 
 
 if __name__ == "__main__":

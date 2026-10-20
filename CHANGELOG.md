@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.0.0-rc.20.4 — 2026-10-20 — candidate recovery
+
+- Adds project-session supervision triggered by project entry or explicit observer start, using the existing binding. The supervisor blocks while its worker is healthy and recovers crashes with bounded backoff; no OS startup entry or scheduled task is registered.
+- Protects recovery with OS-held process/validation/writer/checkpoint guards and durable index-lock ownership; uncertain legacy locks remain blocked. Explicit stop, source validation, meaningful stages, cooldown and dedup remain enforced.
+- Limits calibration to affected native Git/process/task checks and release CI; no additional paid model study or status commit loop. Current evidence and unfulfilled goals remain in PROJECT_STATE.md and the Git audit.
+
 ## 3.0.0-rc.20.3 — 2026-10-20 — candidate evolution
 
 - Initializes an explicitly authorized project Git root and supports native zero-parent first commits, including missing index, scoped initial adoption, parent-repository isolation and unchanged user identity/configuration.

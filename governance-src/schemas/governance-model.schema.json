@@ -230,7 +230,8 @@
               "type": "object",
               "additionalProperties": false,
               "required": [
-                "configuration"
+                "configuration",
+                "supervisor"
               ],
               "default": {
                 "configuration": {
@@ -238,6 +239,9 @@
                   "poll_seconds": 5,
                   "quiet_seconds": 15,
                   "validators": []
+                },
+                "supervisor": {
+                  "enabled": false
                 }
               },
               "properties": {
@@ -293,6 +297,21 @@
                         }
                       }
                     }
+                  }
+                },
+                "supervisor": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "enabled"
+                  ],
+                  "properties": {
+                    "enabled": {
+                      "type": "boolean"
+                    }
+                  },
+                  "default": {
+                    "enabled": false
                   }
                 }
               }

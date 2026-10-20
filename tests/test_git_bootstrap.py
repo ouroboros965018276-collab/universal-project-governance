@@ -12,6 +12,7 @@ from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.dont_write_bytecode = True
+sys.path.insert(0, str(ROOT / "governance-src/runtime-scripts"))
 SPEC = importlib.util.spec_from_file_location("git_bootstrap_runtime", ROOT / "governance-src/runtime-scripts/git_checkpoint.py")
 git_checkpoint = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(git_checkpoint)

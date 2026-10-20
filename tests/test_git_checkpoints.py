@@ -9,6 +9,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -446,17 +447,23 @@ class GitCheckpointTests(unittest.TestCase):
         self.write("source.txt", "verified stage\n")
         changed = {"seen": False, "returncode": None, "stderr": b""}
 
-        def save_and_stage_unrelated(binding):
-            self.save(binding)
-            if binding["git_checkpoint"].get("journal", {}).get("status") == "prepared" and not changed["seen"]:
+        original_private_admin = git_checkpoint._private_admin
+
+        def stage_while_native_lock_is_owned(root, directory, artifact, journal):
+            # Complete intent is now persisted before lock acquisition. Exercise
+            # concurrent staging inside the actual owned native-lock interval.
+            self.assertTrue((directory / "index.lock").samefile(artifact / "owned-index-lock"))
+            if not changed["seen"]:
                 changed["seen"] = True
                 self.write("unrelated.txt", "concurrent staged user edit\n")
                 process = subprocess.run([shutil.which("git"), "add", "--", "unrelated.txt"],
                                          cwd=self.root, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 changed["returncode"], changed["stderr"] = process.returncode, process.stderr
+            return original_private_admin(root, directory, artifact, journal)
 
-        result = self.checkpoint(save=save_and_stage_unrelated)
-        self.assertTrue(changed["seen"], "fixture must attempt real staging after preparation")
+        with patch.object(git_checkpoint, "_private_admin", side_effect=stage_while_native_lock_is_owned):
+            result = self.checkpoint()
+        self.assertTrue(changed["seen"], "fixture must attempt real staging while its owned native lock exists")
         self.assertNotEqual(changed["returncode"], 0)
         self.assertIn(b"index.lock", changed["stderr"])
         self.assertEqual(result["status"], "committed", result)
