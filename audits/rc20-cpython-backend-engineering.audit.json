@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "record_type": "fixed-human-backend-engineering-snapshot",
+  "observed_at_utc": "2026-10-14T22:01:43.140767+00:00",
+  "candidate": "3.0.0-rc.20",
+  "baseline_revision": "bd4a4d5c1c6fb9fca829e410729879d1b01f05b9",
+  "source_sha256": {
+    "evolution/isolated_python.py": "2fc136ffa4bb1ca0a99615c12278df36452257d093d8ec2aa9035a3dd4bf1c8d",
+    "evolution/provider_tools.py": "c8417dca9b26de0c67c301b5a47afbd334a1ebe28712724ba1bea5a5e14359a7",
+    "evolution/tool_broker.py": "1949260bdaf063b3d6aaf781bf178fe8d06c4aa5da0bde74ce05bfae548ca35b",
+    "evolution/tool_campaign.py": "0477c179c4f0ddc384756db8abe6c9b2b4f86e3fa8448d1ee6de50d2e80441e5",
+    "evolution/semantic_contract.py": "cf6a6c207c47f003e7877b2a7f93c7e192415ffa229e80693276d1fb23298286",
+    "tools/validate_navigation.py": "ce8cc0e107284ae10abde3e52f54f22529fc838059e91cf05c8a94c829aeb947",
+    "tests/test_isolated_python.py": "bcbc44a293085d972f19aaaf58e982cc0185098a1b4b44b2f42c601784e8ce2f",
+    "tests/test_provider_tools.py": "e24c637a8e0fece529b0739582f07cf2ca7ba1894fba3520b47f0357a3d7cf4c"
+  },
+  "implementation": {
+    "backend": "docker-cpython-finite-v1",
+    "suite": "registered-real-cpython-contracts-v1",
+    "mode": "Explicit Flash-profile opt-in only; legacy default request/prompt/tool bytes retained. Research backend not in18-file Skill delivery.",
+    "host_quality_gate": "Original complete VM contracts/required-call result dependencies and exact-type _same retained. Container executes finite admitted probes; expected values remain host-only.",
+    "failure_policy": "Typed unknown execution/any execution infrastructure failure stop collection independently of known or unknown API usage. No fallback, retry or implicit regrade after lost state.",
+    "evidence": "Safe original inspect streams bind command receipt hashes and parsed resource observations. Sensitive inspect outputs are not written and fail unknown."
+  },
+  "engineering": {
+    "status": "PASS",
+    "local_python": "3.12.10",
+    "required_gates_passed": 9,
+    "tests_discovered": 810,
+    "tests_passed": 808,
+    "tests_skipped": 2,
+    "reported_unittest_seconds": 200.939,
+    "process_full_suite_seconds": 202.20486729999902,
+    "sources_before_after_unchanged": true,
+    "result_sha256": "a73ed6bf69d657ee81aa0846c2ba3c57ed31d926df108d4a99015891f534e936",
+    "unittest_log_sha256": "36daa5ecb67c05166f734c5d9a01425a17a3ad12435ea3108762b21add4a4e96",
+    "exact_source_CI_at_this_snapshot": "NOT_RUN"
+  },
+  "fixed_human_real_regression": {
+    "status": "THREE_FIXED_CANONICAL_REGRESSIONS_OBSERVED",
+    "harness_sha256": "bf1b9272a6ddaa8ab12713576a3ca87591df833eb3c945a1f43304436b9b085a",
+    "result_sha256": "62a9825b6ddac44ac261d9a98aa9c818eef253c8918b1375f30784a8003c664c",
+    "artifact_map_sha256": "11956479e8fc72f83fe8031c3ab087501ad19650732e8e7c684e791e947452eb",
+    "owner_process_sha256": "0d32610feecc96f024759067cc4a8213d6ed85dbc559283ef0a73638841b25b7",
+    "process_wall_seconds": 38.273485,
+    "whole_harness_window_seconds": 37.75,
+    "source_copies_exact": true,
+    "sources_before_after_unchanged": true,
+    "model_API_calls": 0,
+    "normal": {
+      "probes": 6,
+      "host_same_pass": true,
+      "protected_bytes_unchanged": true,
+      "owned_container_removed": true,
+      "owned_scratch_removed": true,
+      "case_window_seconds": 11.234000000000378,
+      "validation_window_seconds": 9.796999999998661
+    },
+    "negatives": [
+      {
+        "case": "oversize",
+        "status": "FIXED_INFRA_BOUNDARY_OBSERVED",
+        "boundary_reached": true,
+        "unknown_retained": false,
+        "owned_cleanup_confirmed": true,
+        "outer_execute_window_seconds": 2.5939999999973224,
+        "quality_pass": false
+      },
+      {
+        "case": "spin",
+        "status": "FIXED_INFRA_BOUNDARY_OBSERVED",
+        "boundary_reached": true,
+        "unknown_retained": true,
+        "owned_cleanup_confirmed": true,
+        "outer_execute_window_seconds": 22.781000000002678,
+        "quality_pass": false
+      }
+    ],
+    "independent_raw_review_at_this_snapshot": "PENDING"
+  },
+  "prior_failure_preserved": {
+    "prototype_v2_smoke_result_sha256": "0cee227c8a5ece9d3a99603837f385e771b2f3a9c05dfd800f9155cf8e5c56c9",
+    "status": "FAILED_OR_INCOMPLETE",
+    "reason": "Returned timeout observation was not persisted after the active deadline. Original result unchanged; this record concerns the new canonical implementation, not regrading that run."
+  },
+  "review": {
+    "final_pure_delta_receipt_sha256": "fb270c2f2d3b37605d7ecd1e51ec2d4b1969544f0b69974cf6b5aecec4e65a1d",
+    "scope": "22 backend tests, independent malformed status/receipt-I/O challenges and24 default payload golden comparisons; pure observations, no API/Docker."
+  },
+  "limits": [
+    "Only three fixed human regression cases; no model-driven task efficacy, full-application or general isolation/security qualification.",
+    "Docker/kernel/OS filesystem operations are not proven risk-free or hard-preemptible; measured windows and unknown states retained.",
+    "No token/time net-benefit claim. New24-role development protocol remains UNBOUND at this snapshot.",
+    "All old paid trials and failed human smoke immutable; no replay, regrading or pooling.",
+    "Default branch and installed Skill remain RC19. Formal UNASSESSED/locked NOT RUN; RC20 release and installation require separate evidence."
+  ]
+}

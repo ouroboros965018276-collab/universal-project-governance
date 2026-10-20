@@ -1,0 +1,125 @@
+{
+  "schema_version": 1,
+  "observed_at_utc": "2026-10-15T08:23:19.284296+00:00",
+  "study_id": "upg-rc20-paired-real-python-development-v5",
+  "status": "CLOSED_INCOMPLETE_UNKNOWN_CALL_GLOBAL_STOP",
+  "scope": "Three-arm paired DEVELOPMENT of finite CPython and planned-stage handoff interoperability, not efficacy. Source finishes a registered partial stage; this does not test sudden interruption, quota exhaustion or forced-kill recovery. Two families only, no seven-direct-family coverage, independent efficacy, Stable, bootstrap or universal net-benefit claim. Prior intent beyond disk remains unknown.",
+  "identity": {
+    "protocol_sha256": "ddb72e445a37f49a21aa4a5c03164c2ac2a3ed57207c0082dd7daf1d37a7a6a9",
+    "preflight_sha256": "699dbd17b03e5304ca2f658ff767bfb86e9ea96487bb700d0f1c28c465ac86d2",
+    "collector_sha256": "47f38b227064201615ec4fe7efa9ef74bb35bb05d4e26149080f15d09564c308",
+    "independent_auditor_sha256": "467baba6a3d50ac03b742b33627313b5eb57318b3c77fcdbdb4a80ff7d27cc1f",
+    "candidate_model_sha256": "f364e5417506aec1dab0ae75cff223b8527ea856ab48ef3486e60e0e065b09fb",
+    "candidate_source_sha256": "51bdd1a9c1ae823341a35e4061dfa04a847502575ca28ba041e92feb3d70fb50",
+    "qualification": "sha256:4cf36631a0c7f87b7dfd4baec5d55fa4af0b893e2efe81fe3ed34085954d7108",
+    "registration_commit": "daaf981f6f38ff887d0db6b1d4b5aed2aeebdd1d"
+  },
+  "production_terminal": {
+    "planned_roles": 24,
+    "returned_roles": 2,
+    "not_invoked_roles": 22,
+    "known_requests": 5,
+    "unknown_requests": 1,
+    "known_reported_tokens": 37867,
+    "pending": 1,
+    "strict_pass_returned_roles": 1,
+    "native_finish_returned_roles": 1,
+    "replay_resume_reprepare": false
+  },
+  "independent_raw": {
+    "status": "RAW_INTEGRITY_PASS",
+    "actual_entry_executions": 1,
+    "raw_files": 141,
+    "source_files_including_public_preflight": 132,
+    "raw_and_source_before_after_exact": true,
+    "root_copies_raw": 141,
+    "root_copies_sources": 131
+  },
+  "manual_initial_review": {
+    "metadata_blindness_only": true,
+    "invoked_packets": 2,
+    "SUPPORTED": 0,
+    "UNKNOWN": 2,
+    "VETO": 0,
+    "not_invoked_NOT_ASSESSED": 22,
+    "initials_locked_before_per_arm_cost_unblind": true,
+    "no_rescoring": true,
+    "scope": "A supports README and finite document validation claims but leaves project_tool unavailability and full terminal acceptance unverified; B has no observed contract/files/current validation/report. These are stage-local limitations, not evidence of task failure or success for uninvoked roles. Review tokens/time remain unknown."
+  },
+  "cost": {
+    "known_reported_tokens": 37867,
+    "unknown_request_tokens": null,
+    "complete_round_cost": null,
+    "known_fee_component_estimates": {
+      "deepseek": {
+        "USD": "0"
+      },
+      "mimo": {
+        "CNY": "0.038688",
+        "USD": "0.00541632"
+      }
+    },
+    "original_pending_estimates": {
+      "deepseek": {
+        "USD": "0.0154323"
+      },
+      "mimo": {
+        "CNY": "0",
+        "USD": "0"
+      }
+    },
+    "scope": "Conservative peak/all-input-miss estimates, not invoices. MiMo currencies are alternatives; pending exposure is not zero and can overlap known components.",
+    "runtime": {
+      "attributed_seconds": 30.72243829999934,
+      "launch_seconds": 0.12250950000452576,
+      "missing_roles": 22,
+      "publication_tail_seconds": null,
+      "round_seconds": 30.75315369999589,
+      "shared_seconds": 0.03071539999655215
+    },
+    "offline_research_and_manual_review_cost": null
+  },
+  "descriptive_full_vs_controls_percent": null,
+  "diagnosis": {
+    "provider": "deepseek",
+    "requested_model": "deepseek-flash",
+    "http_status": 503,
+    "provider_error_code": "service_unavailable_error",
+    "provider_error_type": "service_unavailable_error",
+    "receipt_error_type": "ResponseUnknown",
+    "transport_phase": "response-envelope",
+    "response_received_locally": true,
+    "reported_usage_present": false,
+    "root_cause_observation": "Official endpoint returned a service-busy error envelope without usage on the first receiving request. Remote execution and final billing remain unknown. This is not an observed insufficient-balance error. No retry was authorized or consumed.",
+    "availability_followup": "A separate official GET /models returned HTTP200 and listed deepseek-flash and deepseek-v4-pro; MiMo GET also200. Inference dispatches0. Catalog presence does not prove capacity, billing or future model success.",
+    "next_protocol": "Any Pro experiment uses a new explicit fixed profile across all arms, new protocol/task identities and source binding. No mid-trial failover, unknown replay or change to this result."
+  },
+  "evidence_refs": {
+    "audits/rc20-paired-real-python-development-v5.preflight.json": "699dbd17b03e5304ca2f658ff767bfb86e9ea96487bb700d0f1c28c465ac86d2",
+    "eval-workspaces/rc20-paired-real-python-development-v5.owner-terminal.json": "0bcdda388b65c36b50bfcadc2a1338cec7a043efe3e1ebdb45c94c004b0f6de5",
+    "eval-workspaces/rc20-paired-real-python-development-v5.terminal-preservation/result.json": "ea7c3812943aa75ebacb2a247d3e5715c1431336f8403fe9c4b86251934232cf",
+    "eval-workspaces/rc20-v5-terminal-independent-audit-20261015-0239-7ca7aeeb/first-audit-result.json": "1d543b62268361efeae1dc929f39c6d1ca04e44b0fba56ac8e249740d7f85075",
+    "eval-workspaces/rc20-v5-terminal-independent-audit-20261015-0239-7ca7aeeb/safe-summary.json": "98b41e8e3ca4a141b27633ed49dc1ba3c91b63768e87e85398973dfdbac82e60",
+    "eval-workspaces/rc20-v5-terminal-independent-audit-20261015-0239-7ca7aeeb/unknown-mechanical.json": "184971970a2519c4f547624f8af1ddbd42bc9a811416b97ad0f90d7f931fa3bb",
+    "eval-workspaces/rc20-v5-manual-assigned/root-initial-lock.json": "bd74621dbf81d17b9653cd3b5c78fbf2fd2fb3c26c881f50e73413901601c046",
+    "eval-workspaces/rc20-v5-manual-assigned/assignment-receipt.json": "efa031547ba8dd7cdcdc94d0b4b77b280f221effda8a09264db91eadfb7ee757",
+    "eval-workspaces/rc20-v5-manual-review-A-20261015-0cefd85b/initial-lock.json": "0beee43e996ccc16ab0c1a31be1f7081ac46fae84a5749edddc1fef6ea2e55db",
+    "eval-workspaces/rc20-v5-manual-initial-locks/B-20261015-rc20v5-50d3c26d/initial-lock.json": "2bfe72edb2eb7bae2b127150e423fb40d5911f57cb862737c44c84e96c48225d",
+    "eval-workspaces/rc20-v5-public-precall-independent-vkb52bqb/review.json": "1c8c531ff4f6e515e2e71d431cd8f2f1b681ed8aea03ae402a3dd61bfaaba51e",
+    "eval-workspaces/rc20-v5-final-source-adoption/registration-ci.json": "82f178e1e7409f5b9690a3a0590ea53911c6867d669e4db438d6fdc3156f1d26",
+    "eval-workspaces/rc20-v5-after503-model-discovery-20261015T0245/deepseek-models.json": "52fb4145f910a095051bebd0a03beccebee9d9595956d1e0a4d2428400b170d0",
+    "eval-workspaces/rc20-v5-after503-model-discovery-20261015T0245/mimo-models.json": "b20700277e2998a53e8c7af5c4e3b0f3766a1d0073ec2a8f83406e7475abe459"
+  },
+  "current_release_gate": "BLOCKED_INCOMPLETE_AND_PENDING_VERIFIED_QUALITY_CONSTRAINED_NET_BENEFIT",
+  "formal_qualification": "UNASSESSED",
+  "locked_holdout": "NOT_RUN",
+  "independent_efficacy": "NOT_ESTABLISHED",
+  "break_even": null,
+  "default_branch_and_installed_skill": "3.0.0-rc.19",
+  "limits": [
+    "This partial two-role chain cannot compare RC19, attention and full or establish token/time gains. Missing roles/costs are not imputed as zero.",
+    "Parsed/redacted API artifacts and local receipt hashes are not original HTTP wire bytes, provider internal computation or invoices.",
+    "Planned stage handoff in two exposed finite task families is not independent efficacy, abrupt quota/crash recovery, arbitrary applications, general isolation, all-Agent effectiveness or Stable.",
+    "All prior closed results and first failures remain immutable; no pooling or rescoring."
+  ]
+}

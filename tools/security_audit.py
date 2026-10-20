@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Conservative static security audit for the repository and distributed runtime helpers."""
 from __future__ import annotations
-import argparse,ast,re,sys
+import argparse,ast,os,re,sys
 from pathlib import Path
 NETWORK_IMPORTS={"socket","urllib","http","ftplib","smtplib","requests","httpx","aiohttp"}; DANGEROUS_CALLS={"eval","exec","compile","os.system","subprocess.Popen","pickle.loads","marshal.loads"}
 SECRET_PATTERNS={"private-key":re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----"),"github-pat":re.compile(r"\b(?:ghp|github_pat)_[A-Za-z0-9_]{20,}\b"),"aws-access-key":re.compile(r"\bAKIA[0-9A-Z]{16}\b"),"bearer-token":re.compile(r"\bBearer\s+[A-Za-z0-9._~+/=-]{24,}\b",re.I)}
@@ -32,7 +32,20 @@ def audit_runtime_scripts(skill_root:Path,errors:list,warnings:list)->None:
         if "followlinks=True" in path.read_text(encoding="utf-8",errors="replace"): errors.append(f"{path}: follows directory symlinks")
 def secret_scan(root:Path,errors:list)->None:
     ignored={".git",".venv","dist","build","__pycache__","eval-workspaces"}
-    for path in sorted(root.rglob("*")):
+    paths=[]; pending=[root] if root.is_dir() else []
+    while pending:
+        directory=pending.pop()
+        entries=os.scandir(directory)
+        directories=[]
+        with entries:
+            for entry in entries:
+                path=directory/entry.name
+                paths.append(path)
+                if entry.name in ignored: continue
+                is_dir=entry.is_dir(follow_symlinks=False)
+                if is_dir: directories.append(path)
+        pending.extend(reversed(directories))
+    for path in sorted(paths):
         if not path.is_file() or path.is_symlink() or any(part in ignored for part in path.relative_to(root).parts): continue
         if path.suffix.lower() not in TEXT_SUFFIXES and path.name not in {"LICENSE",".gitignore"}: continue
         if path.stat().st_size>1_000_000: continue

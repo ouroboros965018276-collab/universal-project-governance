@@ -1,5 +1,65 @@
 # Offline evolution evidence contract
 
+## Prospective real-engineering topology
+
+`evolution.engineering_study.EngineeringStudy` is the maintained, pure-value
+contract for the six-condition engineering topology. It does not collect calls,
+load private fixtures, authorize dispatch, or replace independent evaluation.
+The old `context_campaign.collect` and all frozen study sources keep their
+original contracts.
+
+One `real-engineering-six-condition-preregistration-v1` object contains:
+
+- `study_id`, `reviewed_model_delta_id`, exact baseline/full model digests and the reviewed profile digest;
+- `condition_bindings`, keyed by `rc19`, `attention`, `full` and the three
+  canonical `context_campaign.ABLATIONS` keys. Each binds `model_sha256`,
+  `source_sha256`, `runtime_sha256` and `skill_sha256`;
+- four `families` in route order: DeepSeek single, MiMo single, DeepSeek to
+  MiMo natural handoff, MiMo to native CLI natural handoff. Each contains an
+  opaque `family`, `kind`, providers and a complete six-condition `arm_order`;
+- the complete `source_pins` map, including `evolution/engineering_study.py`
+  and `evolution/context_campaign.py`.
+
+Construct the contract with already authenticated `baseline_model`, `full_model`,
+`configuration` and `consumed_source_pins` buffers. RC19/attention share the same
+model and asset bindings; attention appends only `ATTENTION_INSTRUCTION`.
+`condition_models()` derives each ablation with `trusted_arm_models`. The fixed
+RC19 baseline is Git `bd4a4d5c1c6fb9fca829e410729879d1b01f05b9`, canonical model
+SHA `44e7d9fd...`. Delta `rc19-bd4-to-rc20-reviewed-evidence-closure-and-guidance-v1`
+admits only the reviewed version/guidance additions (including the exact pinned
+`operational_guidance`) and the fixed `EVIDENCE_AFFECTED.closure` upgrade that
+requires negative, exceptional and combined boundary checks at affected high-risk
+boundaries. Every other model/core-policy field is compared exactly: all policy
+IDs, hot-path IDs, severity, triggers, requires, conflicts, report and safety
+obligations remain intact. Future core changes require a separately reviewed
+delta version; the optimizer cannot supply one. Asset digests do not prove that a
+compiler rendered those models: retain the existing compiler/runtime checks.
+
+The derived plan has 24 workflows, 36 roles (30 API, 6 native CLI), 720 API request
+slots, 1152 tool slots and six private panels of six roles. The unchanged envelope
+is 600 work seconds, 24 API requests, 32 tools and profile `0d204c60...`; accounting
+settlement/cleanup and publication allowances give a 41250-second conservative
+outer envelope. These are reservations, not usage, prices or performance claims.
+
+For a new candidate source, use these existing responsibility seams:
+
+| Consumer | Contract projection |
+| --- | --- |
+| `study_contract` / source admission | `fixed_order()`, `fixed_registry()`, `counts()`, `registry_identity()`, `caps()`; `validate_protocol()` checks the complete bound identity and order. |
+| `field_adapter.registry_bindings` | `fixture_bindings()` supplies the family/stage map from preregistration, without loading task bodies. |
+| `fixture_interface` | Call `validate_family_stage()` instead of maintaining another opaque-family allowlist. Preserve every other field, path, backend, receiver and scope check. |
+| `managed_contract` | Only an explicitly selected new topology branch uses `validate_registry()`. Keep the old strict default; retain configuration, deadlines, settlement, accounting and safety predicates. Compare its derived reservation counts to `caps()`; retain existing separate API/native accounting and pricing. |
+| Owner-only manual preparation | `private_panel_assignment()` derives all panels and the 36-role lock denominator before any unblinding. |
+
+Authenticate the new module and preregistration through the existing source-map
+loader and include both identities in prospective bindings. A hash comparison
+inside this pure module is not proof that a caller consumed the actual files.
+No frozen source is updated by this contract. Existing collector, owner, reader,
+manual and analysis sources still have old arm/count literals; they must be
+adapted and independently checked in a new candidate before a complete runner is
+ready. Preserve accepted-source handoff gates and every planned-role failure or
+UNINVOKED outcome. Fresh IDs alone do not establish unseen private projects.
+
 `upg-evolution.json` is the registered objective and constraint surface. Search
 operators do not edit it. The optimizer searches canonical model prose and legal
 presentation parameters; its control parameters stay outside the runtime.

@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "change": "Prune already-excluded directory names before enumeration in repository secret scanning.",
+  "scope": "Repository engineering overhead only; not a change to installed Skill rules or proof of model token/time benefit.",
+  "source": {
+    "original_sha256": "fb41c868f3de47c880484e26850fbce01a70853c652b12dee0f3b20734d80b55",
+    "candidate_sha256": "afc17863c09b7cf56d5f33c63acac43e6bfb33d6987149277767001186b21122",
+    "adopted_sha256": "a7434a3e81aed0718fce50c8fde245e187a2ad84c6fb9ab62f890694a4fa86d9",
+    "test_sha256": "e909c4fd909875923175383cce0b350c4de340b0d2cfa3ed4e25405c442e8abd",
+    "preserved": "Ignored names, eligible-file filtering, global native Path ordering, suffixes, names, size bound, decoding, secret patterns and finding body remain unchanged.",
+    "failure_behavior": "Unreadable eligible directories and unclassifiable entries now propagate OSError, as iteration/read failures do. They must not be reported as a clean scan. This deliberately tightens the old version-dependent rglob suppression behavior."
+  },
+  "review": {
+    "independent_source_report": "eval-workspaces/rc20-secret-scan-independent-source-review-v1-a03c71e9/first-source-review.json",
+    "independent_source_report_sha256": "b402ecc93b35d17e4a222ee52bc3331eb3b8b89db2fbbda22f66e54b7f27eac5",
+    "findings": "Two silent OSError branches identified by four pure in-memory probes; both catches removed before final focused validation.",
+    "root_static_check": "Other top-level function ASTs unchanged; final difference is pruning, os import and explicit error propagation."
+  },
+  "validation": {
+    "first_root_test_entry": {"run": 7, "passed": 5, "failed": 1, "skipped": 1, "exit_code": 1},
+    "first_failure": "The new test expected POSIX uppercase ordering on Windows. Detection set was correct; expected order now uses native Path sorting. Original failed result retained, not relabelled.",
+    "final_focused_entry": {"run": 9, "passed": 8, "failed": 0, "skipped": 1, "seconds": 0.173, "exit_code": 0},
+    "skip": "This host cannot create symbolic links. No symlink regression pass is claimed here.",
+    "actual_repository_security_scan": {"exit_code": 0, "entry_wall_seconds": 4.8582581000000005},
+    "qualification_freeze": "sha256:f78112d7a757424c557731c36ea4249844a1ef03a8c458ff940e234c307e5664",
+    "results_ref": "eval-workspaces/rc20-security-pruning-engineering-v1/final-checks.json",
+    "results_sha256": "42f69908ba62dea582929c6eacb13a905767bb4b878395c84b744038acc59c94",
+    "first_result_sha256": "3f87514d9c9c1f5ecad69d696327a1fc4b708063ecdc89728d53a76287448db1"
+  },
+  "limits": "The 4.86s scan is one observed final-source local entry, not a matched speedup estimate. An earlier synthetic timing used an intermediate source and is not attributed to this final source. Cross-platform CI remains required for the new commit. No complete suite was rerun locally because focused affected behavior passed; CI supplies the matrix.",
+  "model_calls": 0,
+  "net_benefit": "NOT_ESTABLISHED",
+  "main_merge_or_local_install_authorized_by_this_audit": false
+}

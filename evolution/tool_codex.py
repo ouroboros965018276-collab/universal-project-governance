@@ -26,7 +26,7 @@ VERSION = "1"
 _BROKER = Path(__file__).with_name("tool_broker.py")
 _TRANSPORT_PROFILE = Path(__file__).with_name("cli_transport.py")
 _CONFIG_KEYS = {"binary", "code_mode_host_binary", "git_binary", "model", "effort", "artifact_root", "timeout_seconds",
-                "cli_version", "max_tool_calls"}
+                "cli_version", "max_tool_calls", "broker_profile_id"}
 _BINDING_KEYS = {"campaign_id", "sample_id", "protocol_sha256", "source_sha256",
                  "runtime_sha256", "candidate_sha256"}
 _DISABLED = ("shell_tool", "unified_exec", "apps", "plugins", "remote_plugin", "hooks",
@@ -47,6 +47,39 @@ class ToolCallError(RuntimeError):
 
 class ToolCallPending(ToolCallError):
     """Uncertain dispatch is fenced, never automatically replayed."""
+
+
+
+class _PreparationStageError(RuntimeError):
+    """Safe owner-only observation; never converts a preparation error to dispatch."""
+    def __init__(self, observation, original):
+        super().__init__(observation['reason'])
+        self.observation = observation
+        self.original = original
+
+
+def _preparation_error(error, reason):
+    # Unknown exception strings/args may contain credentials. Never format them.
+    known = {'OSError', 'PermissionError', 'FileNotFoundError', 'FileExistsError',
+             'TimeoutError', 'ValueError', 'TypeError', 'RuntimeError', 'AssertionError',
+             'UnicodeError', 'UnicodeDecodeError', 'UnicodeEncodeError', 'RecursionError',
+             'KeyboardInterrupt', 'SystemExit', 'TimeoutExpired'}
+    name = type(error).__name__
+    result = {'class': name if name in known else 'Exception', 'message_code': reason,
+              'message': 'untrusted exception text withheld'}
+    for key in ('errno', 'winerror'):
+        value = getattr(error, key, None)
+        if type(value) is int:
+            result[key] = value
+    return result
+
+
+def _preparation_write(path, raw):
+    # Fresh paths only. Never replace or clean partial evidence after a failure.
+    with Path(path).open('xb') as stream:
+        stream.write(raw)
+        stream.flush()
+        os.fsync(stream.fileno())
 
 
 def _atomic(path, value):
@@ -109,10 +142,31 @@ def _final_text(events):
     return messages[-1] if messages else ""
 
 
-def _audit(path):
+def _audit(path, *, strict_project=False):
     if not path.exists():
         return []
-    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line]
+    parse = _project_cli_json if strict_project else json.loads
+    return [parse(line) for line in path.read_text(encoding="utf-8").splitlines() if line]
+
+
+def _select_prior_call_context(context, directory, requested_key, observation=None):
+    """Attribute checked prior evidence without creating a new charge record."""
+    if observation is None:
+        prior = {'kind': 'observed-prior-cli-call-v1', 'call_key': directory.name,
+            'receipt_ref': 'calls/' + directory.name + '/receipt.json',
+            'receipt_sha256': None, 'harness_request_id': None, 'reported_usage': None,
+            'matches_requested_cache_key': directory.name == requested_key,
+            'accounting_role': 'reference-to-existing-turn', 'count_as_new_charge': False}
+        observation = {'status': 'cached-project-evidence-unknown', 'harness_request_id': None,
+            'usage': None, 'cache_check_model_invoked': False, 'cache_check_replayed': False,
+            'requested_call_key': requested_key, 'requested_dispatch_state': 'not_started',
+            'original_completed_receipt_sha256': None, 'original_completed_result_sha256': None,
+            'observed_prior_call': prior}
+    context.update(active=True, directory=directory, observation=observation)
+    context['pending'].usage = observation['usage']
+    context['pending'].provider_receipt = observation
+    context['pending'].observed_prior_call = observation['observed_prior_call']
+    return observation
 
 
 def _trace_failures(events, broker_events, max_calls):
@@ -149,10 +203,122 @@ def _trace_failures(events, broker_events, max_calls):
     return failures
 
 
-def _quality(broker, broker_events, events, final_text, max_calls):
-    validation = broker.validate()
+def _project_cli_json(raw):
+    """Reuse strict parsing, with a wire bound allowing escaped registered files."""
+    from .project_executor import strict_json
+    from .tool_broker import MAX_TOTAL_BYTES, _bounded
+    if not isinstance(raw, (str, bytes)) or len(raw.encode('utf-8') if isinstance(raw, str) else raw) > 8 * MAX_TOTAL_BYTES:
+        raise ValueError('CLI project event exceeds wire bound')
+    return _bounded(strict_json(raw))
+
+
+def _project_cli_events(raw):
+    result = []
+    for line in raw.splitlines():
+        if not line.strip():
+            continue
+        value = _project_cli_json(line)
+        if type(value) is not dict:
+            raise ValueError('CLI project event is not an object')
+        result.append(value)
+    return result
+
+
+def _project_cli_trace_failures(events, journal, task):
+    """Strict CLI-native MCP evidence, not a fabricated API response chain.
+
+    This explicit prospective profile admits only the locally registered JSON
+    event envelope. Unknown/absent result shapes fail; real CLI compatibility
+    still requires a separate registered first observation.
+    """
+    from .engineering_broker import (validate_execution_result, recoverable_project_test_failure,
+                                     recoverable_project_patch_refusal)
+    initial_state = sha(canonical({name: sha(text.encode('utf-8'))
+                                  for name, text in task['initial_files'].items()}))
+
+    def known_patch_refusal(index):
+        row = journal[index]
+        before = journal[index - 1].get('state_sha256') if index else initial_state
+        return recoverable_project_patch_refusal(row.get('tool'), row.get('arguments', {}),
+            row.get('result'), row, task, before, row.get('state_sha256'))
+
+    observed, failures, seen_ids = [], [], set()
+    native_ordinal = 0
+    for event in events:
+        if event.get('type') != 'item.completed' or event.get('item', {}).get('type') != 'mcp_tool_call':
+            continue
+        native_ordinal += 1
+        item = event['item']
+        arguments = item.get('arguments')
+        if type(arguments) is str:
+            try:
+                arguments = _project_cli_json(arguments)
+            except (ValueError, RecursionError):
+                arguments = None
+        result = item.get('result')
+        identifier = item.get('id')
+        if (set(item) != {'id', 'type', 'server', 'tool', 'arguments', 'result', 'error', 'status'}
+                or type(identifier) is not str or not identifier or identifier in seen_ids
+                or type(item.get('status')) is not str or item['status'] not in {'completed', 'failed'}
+                or item.get('server') != 'upg_repo' or item.get('tool') not in TOOLS
+                or type(arguments) is not dict or item.get('error') is not None
+                or type(result) is not dict or set(result) != {'content', 'structured_content'}
+                or result.get('structured_content') is not None
+                or type(result.get('content')) is not list or len(result['content']) != 1
+                or type(result['content'][0]) is not dict
+                or set(result['content'][0]) != {'type', 'text'}
+                or result['content'][0]['type'] != 'text'
+                or type(result['content'][0]['text']) is not str):
+            failures.append('scope-invalid:cli-project-mcp-result-unconfirmed')
+            continue
+        seen_ids.add(identifier)
+        try:
+            value = _project_cli_json(result['content'][0]['text'])
+            if type(value) is not dict:
+                raise ValueError('MCP result is not an object')
+        except (ValueError, RecursionError):
+            failures.append('scope-invalid:cli-project-mcp-result-unconfirmed')
+            continue
+        if item['status'] == 'failed':
+            row = journal[native_ordinal - 1] if native_ordinal <= len(journal) else None
+            if (type(row) is not dict or row.get('tool') != item['tool']
+                    or row.get('arguments_sha256') != sha(canonical(arguments))
+                    or row.get('result_sha256') != sha(canonical(value))
+                    or not ((item['tool'] == 'repo_validate' and arguments == {}
+                             and recoverable_project_test_failure(value, task, row.get('state_sha256')))
+                            or known_patch_refusal(native_ordinal - 1))):
+                failures.append('scope-invalid:cli-project-mcp-result-unconfirmed')
+                continue
+        observed.append((item['tool'], sha(canonical(arguments)), sha(canonical(value))))
+    expected = [(row.get('tool'), row.get('arguments_sha256'), row.get('result_sha256')) for row in journal]
+    if observed != expected:
+        failures.append('scope-invalid:cli-project-ordered-results-journal-mismatch')
+    for index, row in enumerate(journal):
+        result = row.get('result', {})
+        project_validation = row.get('tool') == 'repo_validate' and row.get('arguments') == {}
+        if project_validation:
+            checked = validate_execution_result(result, task, row.get('state_sha256'))
+            if (checked is None or checked['status'] != 'EXECUTED' or checked['unknown'] is not False
+                    or result.get('write_state') is not None):
+                failures.append('scope-invalid:cli-project-execution-unknown-or-unconfirmed')
+        if result.get('ok') is not True:
+            if not ((project_validation and recoverable_project_test_failure(result, task, row.get('state_sha256')))
+                    or known_patch_refusal(index)):
+                failures.append('scope-invalid:cli-project-tool-refused')
+                failures.extend(value for value in result.get('failures', []) if type(value) is str)
+        elif result.get('write_state') is not None or result.get('failures'):
+            failures.append('scope-invalid:cli-project-inconsistent-success')
+            failures.extend(value for value in result.get('failures', []) if type(value) is str)
+    return failures
+
+
+def _quality(broker, broker_events, events, final_text, max_calls, *, supplied_validation=None,
+             extra_failures=(), strict_cli_results=False):
+    validation = broker.validate() if supplied_validation is None else supplied_validation
     failures = (list(validation["failures"]) + _trace_failures(events, broker_events, max_calls)
-                + broker.read_evidence_failures(broker_events))
+                + broker.read_evidence_failures(broker_events) + list(extra_failures))
+    if strict_cli_results:
+        failures.extend(_project_cli_trace_failures(events, broker_events, broker.task))
     current = sha(canonical(broker.snapshot()))
     success = {row["tool"] for row in broker_events if row.get("result", {}).get("ok") is True}
     required = set(broker.task.get("required_tools", ["repo_read", "repo_patch", "repo_validate", "repo_status"]))
@@ -178,8 +344,9 @@ def _quality(broker, broker_events, events, final_text, max_calls):
     scope_ok = not any(item.startswith(("scope-invalid:", "protected-file-changed:", "nonbroker-", "unregistered-cli-"))
                        for item in failures)
     return {"task_success": int(not failures), "hard_pass": not failures, "scope_ok": scope_ok,
-            "required_tools_ok": tools_ok, "checks_passed": validation["checks_passed"],
-            "checks_total": validation["checks_total"], "failures": failures}
+            "required_tools_ok": tools_ok, "checks_passed": validation.get("checks_passed", 0),
+            "checks_total": validation.get("checks_total", len(broker.task.get('engineering_contract', {}).get('checks', []))),
+            "failures": failures}
 
 
 class ToolCodex:
@@ -190,6 +357,9 @@ class ToolCodex:
         for key in ("binary", "code_mode_host_binary", "git_binary", "model", "effort", "artifact_root", "timeout_seconds"):
             if key not in config:
                 raise ValueError("tool configuration requires " + key)
+        profile = config.get("broker_profile_id")
+        if profile is not None and (type(profile) is not str or profile != "stdlib-python-project-v1"):
+            raise ValueError("unknown explicit broker profile")
         self.config = dict(config)
         # Both experiment conditions use this fixed child-only transport. Keep
         # endpoint selection and authentication with the installed OpenAI CLI;
@@ -228,7 +398,7 @@ class ToolCodex:
                     or (self.package_manifest.parent / manifest["entrypoint"]).resolve() != self.binary.resolve()):
                 raise ValueError("installed package manifest does not identify registered CLI")
             manifest_hash = sha(raw_manifest)
-        return {"adapter": "codex-exec-required-bounded-mcp-v2", "config_sha256": sha(canonical(self.config)),
+        identity = {"adapter": "codex-exec-required-bounded-mcp-v2", "config_sha256": sha(canonical(self.config)),
                 "model_provider": self.config["model_provider"],
                 "model_provider_profile": copy.deepcopy(self.config["model_provider_profile"]),
                 "model_provider_profile_sha256": sha(canonical(self.config["model_provider_profile"])),
@@ -249,6 +419,28 @@ class ToolCodex:
                 "tool_transport": "installed-code-mode-v8-required-mcp",
                 "preapproved_broker_tools": list(TOOLS),
                 "code_mode_configuration_enabled": False}
+        if self.config.get("broker_profile_id") is not None:
+            from . import engineering_broker as engineering
+            from . import project_executor
+            from . import isolated_python
+            from tools import validate_navigation
+            identity.update(adapter="codex-exec-required-stdlib-project-mcp-v1",
+                broker_profile_id=engineering.PROFILE_ID,
+                execution_backend=engineering.BACKEND_ID,
+                engineering_broker_source_sha256=sha(Path(engineering.__file__).read_bytes()),
+                project_executor_source_sha256=sha(Path(project_executor.__file__).read_bytes()),
+                isolated_executor_source_sha256=sha(Path(isolated_python.__file__).read_bytes()),
+                navigation_source_sha256=sha(Path(validate_navigation.__file__).read_bytes()),
+                project_runner_sha256=sha(project_executor.CHECKER.encode('utf-8')),
+                tool_schema_sha256=sha(canonical(engineering.tool_definitions())),
+                final_schema_sha256=sha(canonical(FINAL_SCHEMA)),
+                artifact_root=str(self.artifacts),
+                tool_scope="registered-stdlib-project-fixed-container-recipes",
+                application_isolation_scope="fixed-project-recipe-container-only",
+                provider_request_cap_attested=False, controlled_cutpoint_supported=False,
+                final_report_protocol="cli-json-output-schema-v1",
+                preparation_evidence_schema="project-git-init-preparation-v1")
+        return identity
 
     def binding(self):
         if (sha(canonical(self.config)) != self._frozen["config_sha256"]
@@ -256,10 +448,47 @@ class ToolCodex:
                 or sha(_BROKER.read_bytes()) != self._frozen["broker_source_sha256"]
                 or sha(_TRANSPORT_PROFILE.read_bytes()) != self._frozen["transport_profile_source_sha256"]):
             raise ValueError("tool capability changed after registration")
+        if self.config.get("broker_profile_id") is not None and self._identity() != self._frozen:
+            raise ValueError("project tool capability changed after registration")
         return copy.deepcopy(self._frozen)
 
-    def _unknown(self, directory, receipt):
-        _atomic(directory / "receipt.json", receipt)
+    def _task_validate(self, task):
+        if self.config.get("broker_profile_id") is None:
+            return validate_task(task)
+        from .engineering_broker import validate_task as validate_project
+        return validate_project(task)
+
+    def public_instruction(self):
+        if self.config.get("broker_profile_id") is None:
+            raise ValueError("public project instruction requires an explicit project profile")
+        from .engineering_broker import cli_public_instruction
+        return cli_public_instruction()
+
+    def _read_broker(self, directory, task, journal):
+        if self.config.get("broker_profile_id") is None:
+            return RepoBroker(directory / "workspace", task, self.git,
+                              max_calls=self.config.get("max_tool_calls", 32))
+        from .engineering_broker import read_broker_receipts
+        return read_broker_receipts(directory / "workspace", task, self.git,
+            events=journal, execution_artifacts=directory / "execution",
+            max_calls=self.config.get("max_tool_calls", 32))
+
+    def _project_quality(self, broker, journal, events, final_text):
+        from .engineering_broker import current_validation_from_receipts, BACKEND_ID
+        validation, failures, execution_unknown, not_run = current_validation_from_receipts(broker)
+        quality = _quality(broker, journal, events, final_text,
+            self.config.get("max_tool_calls", 32), supplied_validation=validation,
+            extra_failures=failures, strict_cli_results=True)
+        quality.update(validation=None if not_run else validation,
+            evidence_adapter="codex-exec-required-stdlib-project-mcp-v1",
+            evidence_broker_profile_id=self.config["broker_profile_id"],
+            evidence_execution_backend=BACKEND_ID, execution_state_unknown=execution_unknown)
+        if not_run:
+            quality['final_execution_not_run_reason'] = 'required-current-project-validation-missing'
+        return quality
+
+    def _unknown(self, directory, receipt, *, cache_observation=False):
+        _atomic(directory / ("cache-unknown-observation.json" if cache_observation else "receipt.json"), receipt)
         fence = self.artifacts / "UNKNOWN_CALL.json"
         if not fence.exists():
             with fence.open("xb") as stream:
@@ -269,13 +498,106 @@ class ToolCodex:
                 stream.flush()
                 os.fsync(stream.fileno())
 
-    def _remember_unknown(self, directory, receipt):
+    def _remember_unknown(self, directory, receipt, *, cache_observation=False):
         try:
-            self._unknown(directory, receipt)
+            if cache_observation:
+                self._unknown(directory, receipt, cache_observation=True)
+            else:
+                self._unknown(directory, receipt)
         except OSError as error:
             # The incomplete or noncompleted call directory also fences future
             # dispatches. Never discard observed usage because evidence I/O failed.
             receipt["fence_persistence_error"] = type(error).__name__ + ": " + str(error)[:240]
+
+    def _initialize_project_git(self, directory, workspace, pending):
+        """One fixed Git init, with private evidence committed before any model call."""
+        from .tool_broker import clean_git_environment
+        expected = [str(self.git), '--no-optional-locks', '-c', 'core.fsmonitor=false',
+                    '-c', 'core.hooksPath=/dev/null', '-c', 'core.autocrlf=false',
+                    'init', '--template=', '--quiet']
+        target = directory / 'preparation' / 'git-init'
+        started = time.perf_counter()
+        observation = {'schema_version': 1, 'kind': 'project-git-init-preparation-v1',
+            'stage': 'git-intent-persistence', 'reason': 'preparation-evidence-persistence-failed',
+            'outcome': 'not_started', 'harness_request_id': pending['harness_request_id'],
+            'model_dispatch_state': 'not_started', 'model_invoked': False,
+            'planned_argv': expected, 'observed_argv': None, 'cwd': str(workspace),
+            'environment_key_names': sorted(clean_git_environment()),
+            'source_binding': {'capability_sha256': sha(canonical(pending['capability'])),
+                'adapter_source_sha256': pending['capability']['adapter_source_sha256'],
+                'broker_source_sha256': pending['capability']['broker_source_sha256'],
+                'git_binary_sha256': pending['capability']['git_sha256'],
+                'python_binary_sha256': pending['capability']['host']['python_binary_sha256']},
+            'started_unix_seconds': time.time(), 'git_wall_seconds': None,
+            'returncode': None, 'stdout': None, 'stderr': None, 'sensitive_output': None}
+        original, failure_reason = None, 'git-init-spawn-failed'
+        try:
+            target.mkdir(parents=True)
+            intent_raw = canonical(observation) + b'\n'
+            _preparation_write(target / 'intent.json', intent_raw)
+            observation['intent_sha256'] = sha(intent_raw)
+            observation['stage'], observation['reason'] = 'git-invocation', 'git-init-spawn-failed'
+            invoked = time.perf_counter()
+            stdout, stderr = None, None
+            try:
+                initialized = git_command(self.git, workspace, 'init', '--template=', '--quiet')
+                observation['observed_argv'] = initialized.args if initialized.args == expected else None
+                stdout = initialized.stdout if type(initialized.stdout) is bytes else None
+                stderr = initialized.stderr if type(initialized.stderr) is bytes else None
+                if type(initialized.returncode) is int:
+                    observation['returncode'] = initialized.returncode
+                if (initialized.args != expected or type(initialized.returncode) is not int
+                        or type(initialized.stdout) is not bytes or type(initialized.stderr) is not bytes):
+                    observation['reason'] = 'git-init-result-invalid'
+                    raise ValueError('fixed Git result schema mismatch')
+                observation.update(outcome='completed', returncode=initialized.returncode)
+                stdout, stderr = initialized.stdout, initialized.stderr
+                observation['reason'] = 'git-init-completed' if initialized.returncode == 0 else 'git-init-nonzero'
+                if initialized.returncode:
+                    original = ValueError('fixed Git initialization failed')
+            except subprocess.TimeoutExpired as error:
+                original = error
+                observation.update(outcome='timeout', reason='git-init-timeout')
+                observation['observed_argv'] = error.cmd if error.cmd == expected else None
+                stdout = error.stdout if type(error.stdout) is bytes else None
+                stderr = error.stderr if type(error.stderr) is bytes else None
+            except BaseException as error:
+                original = error
+                observation['outcome'] = 'spawn-or-observation-error'
+            observation['git_wall_seconds'] = time.perf_counter() - invoked
+            failure_reason = observation['reason']
+            from .isolated_python import SECRET
+            observation['sensitive_output'] = any(SECRET.search(raw) is not None for raw in (stdout, stderr) if raw is not None)
+            for name, raw in (('stdout', stdout), ('stderr', stderr)):
+                if raw is not None:
+                    observation[name] = {'ref': name + '.raw', 'sha256': sha(raw), 'bytes': len(raw)}
+                    observation['stage'] = 'git-' + name + '-persistence'
+                    observation['reason'] = 'preparation-evidence-persistence-failed'
+                    _preparation_write(target / (name + '.raw'), raw)
+            observation['reason'] = failure_reason
+            if observation['sensitive_output']:
+                observation['reason'] = 'git-init-sensitive-output'
+                original = original or ValueError('private Git output rejected')
+            if original is not None:
+                observation['error'] = _preparation_error(original, observation['reason'])
+            observation['stage'] = 'git-result-persistence'
+            result_raw = canonical(dict(observation, stage='git-completed',
+                                       preparation_wall_seconds=time.perf_counter() - started)) + b'\n'
+            _preparation_write(target / 'result.json', result_raw)
+            if original is not None:
+                observation['stage'] = 'git-completed'
+                raise _PreparationStageError(observation, original) from original
+            return {'kind': observation['kind'], 'receipt_ref': 'preparation/git-init/result.json',
+                    'receipt_sha256': sha(result_raw), 'intent_sha256': observation['intent_sha256']}
+        except _PreparationStageError:
+            raise
+        except BaseException as error:
+            # The first cause/observed process state survives a later persistence failure.
+            observation['reason'] = 'preparation-evidence-persistence-failed'
+            observation['persistence_error'] = _preparation_error(error, observation['reason'])
+            if original is not None:
+                observation['original_error'] = _preparation_error(original, failure_reason)
+            raise _PreparationStageError(observation, original or error) from error
 
     def _arguments(self, directory, spec_file):
         command = [str(self.binary), "--ask-for-approval", "never", "exec", "--cd", str(directory / "workspace"),
@@ -307,7 +629,7 @@ class ToolCodex:
 
     def run(self, task, *, prompt, bindings):
         run_started = time.perf_counter()
-        validate_task(task)
+        self._task_validate(task)
         capability = self.binding()
         if (not isinstance(bindings, dict) or bindings.get("capability") != capability
                 or any(not isinstance(bindings.get(key), str) or not bindings[key] for key in _BINDING_KEYS)):
@@ -315,6 +637,18 @@ class ToolCodex:
         if not isinstance(prompt, str) or not prompt.strip():
             raise ValueError("owner-compiled prompt is required")
         self.artifacts.mkdir(parents=True, exist_ok=True)
+        project_profile = self.config.get('broker_profile_id') is not None
+        # Project dispatch is released only after a fully confirmed return.
+        # The existing fsynced lock remains the fallback for every uncertain
+        # cache check, including failures while constructing an observation.
+        release_lock = not project_profile
+        cache_context = None
+        if project_profile:
+            observation = {'status': 'cached-project-evidence-unknown', 'harness_request_id': None,
+                'usage': None, 'cache_check_model_invoked': False, 'cache_check_replayed': False,
+                'original_completed_receipt_sha256': None, 'original_completed_result_sha256': None}
+            cache_context = {'active': False, 'directory': None, 'observation': observation,
+                'pending': ToolCallPending('cached project evidence unknown; no replay', provider_receipt=observation)}
         lock = self.artifacts / ".tool-dispatch.lock"
         try:
             descriptor = os.open(str(lock), os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
@@ -324,14 +658,32 @@ class ToolCodex:
         try:
             os.write(descriptor, canonical({"pid": os.getpid(), "sample_id": bindings["sample_id"]}))
             os.fsync(descriptor)
-            result = self._run_locked(task, prompt, bindings, capability, run_started)
+            if project_profile:
+                result = self._run_locked(task, prompt, bindings, capability, run_started, cache_context=cache_context)
+            else:
+                result = self._run_locked(task, prompt, bindings, capability, run_started)
+            release_lock = True
         except BaseException as error:
             call_error = error
+            if cache_context is not None and cache_context['active']:
+                # Known usage and the pending exception already exist before
+                # any cache hash, grade or evidence persistence can fail.
+                observation = cache_context['observation']
+                pending = cache_context['pending']
+                call_error = pending
+                pending.retain_dispatch_lock = True
+                try:
+                    observation['error_type'] = type(error).__name__
+                    self._remember_unknown(cache_context['directory'], observation, cache_observation=True)
+                except BaseException as persistence_error:
+                    observation['fence_persistence_error'] = type(persistence_error).__name__
+                raise pending from error
             raise
         finally:
             try:
                 os.close(descriptor)
-                lock.unlink()
+                if release_lock and not getattr(call_error, 'retain_dispatch_lock', False):
+                    lock.unlink()
             except OSError as error:
                 # Retained lock stops subsequent dispatch. Do not mask known
                 # charges/results with a cleanup exception after the real turn.
@@ -342,7 +694,7 @@ class ToolCodex:
                     call_error.provider_receipt["dispatch_lock_cleanup_error"] = cleanup
         return result
 
-    def _run_locked(self, task, prompt, bindings, capability, run_started):
+    def _run_locked(self, task, prompt, bindings, capability, run_started, *, cache_context=None):
         if (self.artifacts / "UNKNOWN_CALL.json").exists():
             raise ToolCallPending("unknown tool call needs independent reconciliation")
         frozen = self.artifacts / "CAPABILITY.json"
@@ -353,43 +705,105 @@ class ToolCodex:
             _atomic(frozen, capability)
         calls = self.artifacts / "calls"
         calls.mkdir(exist_ok=True)
+        key = (sha(canonical({"task": task, "prompt": prompt, "bindings": bindings, "capability": capability}))
+               if cache_context is not None else None)
+        loaded_cache = None
         for previous in calls.iterdir():
             if previous.is_dir():
+                if cache_context is not None:
+                    # Do not carry an already checked sibling's accounting
+                    # context into another call's still-unread evidence.
+                    cache_context['active'] = False
+                    cache_context['pending'].usage = None
                 try:
-                    previous_receipt = json.loads((previous / "receipt.json").read_text(encoding="utf-8"))
+                    if (previous / 'cache-unknown-observation.json').exists():
+                        raise ValueError('cached project evidence has an unresolved unknown observation')
+                    if cache_context is not None:
+                        # One exact binary read; keep its identity for both
+                        # successful reuse and an unknown observation.
+                        observation = _select_prior_call_context(cache_context, previous, key)
+                        with (previous / 'receipt.json').open('rb') as stream:
+                            previous_receipt_raw = stream.read()
+                        previous_receipt = json.loads(previous_receipt_raw.decode('utf-8'))
+                        prior = observation['observed_prior_call']
+                        prior['reported_usage'] = previous_receipt.get('usage')
+                        prior['harness_request_id'] = previous_receipt.get('harness_request_id')
+                        # Existing cache reuse exposes that same turn's usage.
+                        # A different requested key has no new provider turn.
+                        if prior['matches_requested_cache_key']:
+                            cache_context['pending'].usage = prior['reported_usage']
+                            observation['usage'] = prior['reported_usage']
+                        observation['harness_request_id'] = prior['harness_request_id']
+                        observation['original_completed_result_sha256'] = previous_receipt.get('result_sha256')
+                        prior['receipt_sha256'] = sha(previous_receipt_raw)
+                        observation['original_completed_receipt_sha256'] = prior['receipt_sha256']
+                    else:
+                        previous_receipt = json.loads((previous / "receipt.json").read_text(encoding="utf-8"))
                     previous_result = json.loads((previous / "result.json").read_text(encoding="utf-8"))
                     if (previous_receipt.get("status") != "completed"
                             or sha(canonical(previous_result)) != previous_receipt.get("result_sha256")):
                         raise ValueError("noncompleted or corrupt result")
+                    if cache_context is not None and previous.name == key:
+                        loaded_cache = (previous_receipt, previous_result,
+                                        observation['original_completed_receipt_sha256'], observation)
+                    if cache_context is not None:
+                        cache_context['active'] = False
+                        cache_context['pending'].usage = None
                 except (OSError, ValueError) as error:
                     raise ToolCallPending("incomplete/noncompleted tool dispatch needs reconciliation") from error
-        key = sha(canonical({"task": task, "prompt": prompt, "bindings": bindings, "capability": capability}))
+        if cache_context is None:
+            key = sha(canonical({"task": task, "prompt": prompt, "bindings": bindings, "capability": capability}))
         directory = calls / key
         if directory.exists():
-            receipt = json.loads((directory / "receipt.json").read_text(encoding="utf-8"))
-            result = json.loads((directory / "result.json").read_text(encoding="utf-8"))
+            if cache_context is not None:
+                if loaded_cache is None:
+                    raise ValueError('cached call identity was not confirmed')
+                receipt, result, receipt_sha256, observation = loaded_cache
+                _select_prior_call_context(cache_context, directory, key, observation)
+            else:
+                receipt = json.loads((directory / "receipt.json").read_text(encoding="utf-8"))
+                result = json.loads((directory / "result.json").read_text(encoding="utf-8"))
             for name, expected in receipt["artifact_sha256"].items():
                 if sha((directory / name).read_bytes()) != expected:
                     raise ToolCallPending("tool receipt artifact hash mismatch; no replay")
             if sha(canonical(result)) != receipt["result_sha256"]:
                 raise ToolCallPending("tool result hash mismatch; no replay")
             try:
-                saved_repo = RepoBroker(directory / "workspace", task, self.git,
-                                        max_calls=self.config.get("max_tool_calls", 32))
+                saved_repo = self._read_broker(directory, task, result["tool_events"])
                 if sha(canonical(saved_repo.snapshot())) != result["final_files_sha256"]:
                     raise ValueError("repository changed after measured call")
-            except (OSError, ValueError) as error:
+                if self.config.get("broker_profile_id") is not None:
+                    journal = _audit(directory / 'broker.jsonl', strict_project=True)
+                    events = _project_cli_events((directory / 'stdout.raw').read_bytes())
+                    final_text = _final_text(events)
+                    if canonical(journal) != canonical(result['tool_events']) or final_text != result['final_response_text']:
+                        raise ValueError('cached CLI journal or terminal report differs')
+                    quality = self._project_quality(saved_repo, journal, events, final_text)
+                    if receipt['cli_exit_code']:
+                        quality['task_success'], quality['hard_pass'] = 0, False
+                        quality['failures'].append('nonzero-cli-exit')
+                    if quality['execution_state_unknown'] or canonical(quality) != canonical(result['quality']):
+                        raise ValueError('cached project execution or quality evidence differs')
+            except (OSError, ValueError, TypeError, KeyError, UnicodeError, AttributeError, RecursionError) as error:
+                if self.config.get('broker_profile_id') is not None:
+                    raise
                 raise ToolCallPending("cached repository evidence changed; no replay") from error
             result["receipt"] = dict(receipt, artifact_directory=str(directory),
-                                     receipt_sha256=sha((directory / "receipt.json").read_bytes()),
+                                     receipt_sha256=(receipt_sha256 if cache_context is not None else
+                                                     sha((directory / "receipt.json").read_bytes())),
                                      replayed_from_local_receipt=True,
                                      local_reuse_wall_seconds=time.perf_counter() - run_started)
             return result
+        if cache_context is not None:
+            # Previous turns are references, never fees for a fresh dispatch.
+            cache_context['active'] = False
+            cache_context['pending'].usage = None
         directory.mkdir()
         identifier = str(uuid.uuid4())
         pending = {"harness_request_id": identifier, "bindings": bindings, "task_sha256": sha(canonical(task)),
                    "prompt_sha256": sha(prompt.encode("utf-8")), "capability": capability,
                    "dispatch_state": "not_started", "model_invoked": False}
+        preparation_stage, preparation_reason = 'workspace-preparation', 'preparation-step-failed'
         try:
             _atomic(directory / "pending.json", pending)
             # Keep prep results explicit: these files are outside agent scope.
@@ -399,21 +813,32 @@ class ToolCodex:
                 path = workspace.joinpath(*name.split("/"))
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_bytes(text.encode("utf-8"))
-            initialized = git_command(self.git, workspace, "init", "--template=", "--quiet")
-            if initialized.returncode:
-                raise ValueError("fixed Git initialization failed")
+            if self.config.get('broker_profile_id') is not None:
+                preparation_stage, preparation_reason = 'git-source-binding', 'preparation-observation-construction-failed'
+                pending['preparation_evidence'] = self._initialize_project_git(directory, workspace, pending)
+            else:
+                initialized = git_command(self.git, workspace, "init", "--template=", "--quiet")
+                if initialized.returncode:
+                    raise ValueError("fixed Git initialization failed")
             spec = {"workspace": str(workspace), "task": task, "git_binary": str(self.git),
                     "audit_file": str(directory / "broker.jsonl"), "max_tool_calls": self.config.get("max_tool_calls", 32),
                     "deadline": time.time() + self.config["timeout_seconds"]}
+            if self.config.get("broker_profile_id") is not None:
+                spec.update(broker_profile_id=self.config["broker_profile_id"],
+                            execution_artifacts=str(directory / "execution"))
+            preparation_stage, preparation_reason = 'broker-evidence-persistence', 'preparation-evidence-persistence-failed'
             _atomic(directory / "broker.spec.json", spec)
             _atomic(directory / "output.schema.json", FINAL_SCHEMA)
             (directory / "prompt.txt").write_bytes(prompt.encode("utf-8"))
             command = self._arguments(directory, directory / "broker.spec.json")
             _atomic(directory / "command.json", command)
             # One full binary/config verification immediately before dispatch.
+            preparation_stage, preparation_reason = 'capability-verification', 'capability-verification-failed'
             if self._identity() != capability:
+                preparation_reason = 'capability-drift'
                 raise ValueError("capability changed during preparation")
             prepare_seconds = time.perf_counter() - run_started
+            preparation_stage, preparation_reason = 'dispatch-intent-persistence', 'preparation-evidence-persistence-failed'
             pending.update(dispatch_state="dispatching", model_invoked=None)
             _atomic(directory / "pending.json", pending)
         except Exception as error:
@@ -421,9 +846,20 @@ class ToolCodex:
                     "measurement": "model-dispatch-not-started", "cost_usd": None}
             receipt = dict(pending, status="preparation-failed", dispatch_state="not_started", model_invoked=False,
                            usage=zero, artifact_directory=str(directory), error_type=type(error).__name__)
+            if self.config.get('broker_profile_id') is not None:
+                if isinstance(error, _PreparationStageError):
+                    receipt['preparation_observation'] = error.observation
+                    preparation_stage, preparation_reason = error.observation['stage'], error.observation['reason']
+                    original = error.original
+                else:
+                    original = error
+                receipt.update(preparation_stage=preparation_stage, preparation_reason=preparation_reason,
+                               safe_error=_preparation_error(original, preparation_reason))
             try:
                 _atomic(directory / "preparation-failure.json", receipt)
-            except OSError as persistence_error:
+            except Exception as persistence_error:
+                if self.config.get('broker_profile_id') is None and not isinstance(persistence_error, OSError):
+                    raise
                 receipt["preparation_receipt_error"] = type(persistence_error).__name__
             raise ToolCallPending("tool preparation failed before model dispatch", usage=zero, provider_receipt=receipt) from error
         started = time.perf_counter()
@@ -468,10 +904,21 @@ class ToolCodex:
             self._remember_unknown(directory, receipt)
             raise ToolCallError(receipt["status"], usage=usage, provider_receipt=receipt)
         try:
-            broker_events = _audit(directory / "broker.jsonl")
-            broker = RepoBroker(workspace, task, self.git, max_calls=self.config.get("max_tool_calls", 32))
+            if self.config.get("broker_profile_id") is not None:
+                events = _project_cli_events(stdout)
+            broker_events = _audit(directory / "broker.jsonl", strict_project=self.config.get("broker_profile_id") is not None)
+            broker = self._read_broker(directory, task, broker_events)
             final_text = _final_text(events)
-            quality = _quality(broker, broker_events, events, final_text, self.config.get("max_tool_calls", 32))
+            if self.config.get("broker_profile_id") is None:
+                quality = _quality(broker, broker_events, events, final_text, self.config.get("max_tool_calls", 32))
+            else:
+                quality = self._project_quality(broker, broker_events, events, final_text)
+                if quality['execution_state_unknown']:
+                    receipt = dict(pending, status="project-execution-receipt-unknown", usage=usage,
+                        wall_seconds=time.perf_counter() - run_started, cli_thread_id=threads[0],
+                        provider_request_id=None, model_observed=None, quality=quality)
+                    self._remember_unknown(directory, receipt)
+                    raise ToolCallError(receipt["status"], usage=usage, provider_receipt=receipt)
             if exit_code:
                 quality["task_success"], quality["hard_pass"] = 0, False
                 quality["failures"].append("nonzero-cli-exit")
@@ -487,6 +934,8 @@ class ToolCodex:
             _atomic(directory / "result.json", result)
             names = ("stdout.raw", "stderr.raw", "broker.jsonl", "broker.spec.json", "output.schema.json",
                      "prompt.txt", "command.json", "pending.json", "final-files.json")
+            if self.config.get('broker_profile_id') is not None:
+                names += tuple('preparation/git-init/' + name for name in ('intent.json', 'stdout.raw', 'stderr.raw', 'result.json'))
             # A completed no-tool task is known failed evidence, with an empty broker journal.
             if not (directory / "broker.jsonl").exists():
                 (directory / "broker.jsonl").write_bytes(b"")
@@ -496,8 +945,11 @@ class ToolCodex:
                            argv=command, artifact_sha256={name: sha((directory / name).read_bytes()) for name in names},
                            result_sha256=sha(canonical(result)), isolation_attested=False,
                            dispatch_state="completed", model_invoked=True,
-                           application_execution="excluded-static-contracts-only")
+                           application_execution=("registered-stdlib-project-fixed-container-recipes"
+                               if self.config.get("broker_profile_id") is not None else "excluded-static-contracts-only"))
             _atomic(directory / "receipt.json", receipt)
+        except ToolCallError:
+            raise
         except BaseException as error:
             receipt = dict(pending, status="post-dispatch-evidence-unconfirmed", usage=usage,
                            wall_seconds=elapsed, cli_thread_id=threads[0], provider_request_id=None,

@@ -1,0 +1,74 @@
+{
+  "schema_version": "1.0.0",
+  "document_kind": "rc20-bounded-engineering-release-acceptance",
+  "observed_at": "2026-10-20T10:44:53.795401+00:00",
+  "status": "AWAITING_FINAL_CI",
+  "version": "3.0.0-rc.20",
+  "owner_scope": "2026-10-20: reuse prior trials, self-audit and only critical engineering verification; merge and install RC20 once this scope passes. No new large paid study required.",
+  "baseline": "bd4a4d5c1c6fb9fca829e410729879d1b01f05b9",
+  "changes": [
+    "Stable partial/blocked checkpoint identity, exact retries, immutable starts, unique completion and monotonic sequence in both reporting modes",
+    "Existing canonical project JSON referenced by path/SHA; status reports stale bytes and ledger/binding crash gap; historical completed records clearly labeled",
+    "Meaningful-stage Git checkpoints under existing project/user policy; no automatic timer, hook or tool-call commit",
+    "Compiler-owned four guidance groups and selective acknowledged upstream rules; explicit opt-in efficient API profile; original profiles and budgets preserved"
+  ],
+  "qualification_freeze_sha256": "77c81a161d279852782e85b889d4738ac8e5991c1c75457c26376a1d9ad96a76",
+  "runtime_files": 18,
+  "skill_utf8_bytes": 6580,
+  "checks": {
+    "lifecycle_regressions": 25,
+    "engineering_gates_passed": 9,
+    "final_full_regression": "Local normal-import run: 1325 tests, 2 obsolete assertions imported before correction, 0 errors, 3 skips; all three affected final test methods separately passed. Fresh CI at a6f3090 confirms 1325 tests pass on Linux 3.11 (2 skips). Final additional fail-closed sequence guard has 25 targeted passes; new final CI required.",
+    "ci": "pending new commit"
+  },
+  "rc19_current_lifecycle_control": {
+    "receipt_sha256": "31b276f972e38e21d51bee5bd3b89c4c2af7ebd27579a49547b0b10bd49f809e",
+    "observations": [
+      {
+        "arm": "rc19",
+        "detects_external_state_drift": false,
+        "second_partial_accepted": false,
+        "second_error": "conflicting retry for workflow report identity",
+        "reports": 1,
+        "active_start_exact": true,
+        "latest_completed": null,
+        "still_partial": true
+      },
+      {
+        "arm": "rc20",
+        "detects_external_state_drift": true,
+        "second_partial_accepted": true,
+        "second_error": null,
+        "reports": 2,
+        "active_start_exact": true,
+        "latest_completed": null,
+        "still_partial": true
+      }
+    ],
+    "scope": "exposed deterministic regression; zero model calls; not empirical token/time benefit"
+  },
+  "insight_reconciliation": {
+    "receipt_sha256": "eb9e0408f3d1c54fa7b5033032f051caeafe30aaacf8dd1947fedcca769ea3d6",
+    "reports_before": 3,
+    "reports_after": 4,
+    "old_reports_preserved": true,
+    "immutable_start_preserved": true,
+    "latest_completed_preserved": true,
+    "current_state_reference": true,
+    "status_pass": true,
+    "application_source_modified": false,
+    "application_tests_rerun": 0,
+    "whole_delivery": "partial/unaccepted; unchanged"
+  },
+  "preliminary_check_failures": [
+    "First full run used isolated Python without repository import path; three import errors; a negative legacy sequence masking bug and obsolete sequence assertion were found. Bug fixed; assertions now require distinct partial/completion sequences. Original logs retained.",
+    "A wrong test assertion was briefly edited, immediately corrected; final targeted tests passed. Current CI must validate final test files."
+  ],
+  "new_paid_model_calls": 0,
+  "previous_experiments": "Original results, failures, unknown usage and costs remain in rc20-primary22-insufficient-balance.audit.json; no replay or retrospective promotion.",
+  "empirical_joint_token_time_benefit": "NOT_ESTABLISHED",
+  "formal_qualification": "UNASSESSED",
+  "locked_trials": "NOT_RUN",
+  "stable": false,
+  "merge_and_install": "pending; separately observed after engineering acceptance"
+}

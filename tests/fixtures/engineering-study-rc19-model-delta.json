@@ -1,0 +1,14 @@
+{
+  "schema": "rc19-baseline-model-reconstruction-delta-v1",
+  "baseline_commit": "bd4a4d5c1c6fb9fca829e410729879d1b01f05b9",
+  "baseline_git_blob": "e3857f94a8b0e3a3c253a39f7751a7bd5a9c41da",
+  "baseline_source_sha256": "2527d07c4ce63f487ec1521c5f1119fa3ac3b9485ac1cf099604ae76336c6714",
+  "baseline_model_sha256": "44e7d9fdf648e35d834e3835ea8e06a734a5aed50eb3e701c2f86c2717e17a7d",
+  "baseline_version": "3.0.0-rc.19",
+  "full_model_sha256": "1134b46cb5ba6825b44e747e75dfbfbdd4ea878f0466d5675a60774dae99f399",
+  "full_only_fields": [
+    "execution_guidance",
+    "operational_guidance"
+  ],
+  "baseline_evidence_affected_closure": "Validate the actual claims made by the change using the smallest sufficient checks; report any unverified surface explicitly."
+}

@@ -1,0 +1,106 @@
+#!/usr/bin/env python3
+"""Validate the compiled installable Universal Project Governance runtime."""
+from __future__ import annotations
+import argparse, ast, json, re, sys
+from pathlib import Path
+
+NAME_RE=re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+PLAIN_LITERAL_RE=re.compile(
+    r"[+-]?(?:[0-9][0-9_]*(?:\.[0-9_]*)?(?:[eE][+-]?[0-9_]+)?"
+    r"|\.[0-9_]+(?:[eE][+-]?[0-9_]+)?|0x[0-9a-f_]+|0o[0-7_]+|0b[01_]+"
+    r"|[0-9_]+(?::[0-9_]+)+(?:\.[0-9_]*)?)"
+    r"|[0-9]{4}-[0-9]{1,2}-[0-9]{1,2}(?:[t ][0-9:.+z -]+)?",re.I)
+
+def frontmatter_string(value):
+    """Read our generated scalar subset, not arbitrary YAML.
+
+    Strings use JSON double quotes or single-line plain text. Reject mapping,
+    comment, reserved-start and implicit typed-literal forms; do not interpret
+    YAML quoting/escapes. Other YAML forms must use JSON double quotes here.
+    """
+    if value.startswith('"'):
+        decoded=json.loads(value)
+        if not isinstance(decoded,str): raise ValueError("expected JSON-quoted string")
+    else:
+        if (not value or value[0] in "',[]{}&*!|>@`%#"
+                or value.casefold() in {"~","null","true","false","yes","no","on","off","y","n",
+                                       ".nan",".inf","+.inf","-.inf"}
+                or PLAIN_LITERAL_RE.fullmatch(value)
+                or re.search(r"^[-?:](?:\s|$)|:(?:\s|$)|(?:^|\s)#|[\x00-\x1f\x7f]",value)):
+            raise ValueError("ambiguous plain string; use JSON double quotes")
+        decoded=value
+    decoded.encode("utf-8")  # Reject escaped lone surrogates as invalid YAML text.
+    return decoded
+
+def frontmatter(text):
+    if not text.startswith("---\n"): return {},["missing frontmatter"]
+    end=text.find("\n---\n",4)
+    if end<0: return {},["unclosed frontmatter"]
+    data={}; current=None; errors=[]
+    for raw in text[4:end].splitlines():
+        if not raw.strip(): continue
+        if raw.startswith("  "):
+            if current!="metadata" or ":" not in raw.strip():
+                errors.append("unsupported nested frontmatter: "+raw); continue
+            k,v=raw.strip().split(":",1); k=k.strip()
+            try: data.setdefault("metadata",{})[k]=frontmatter_string(v.strip())
+            except (ValueError,UnicodeError) as exc: errors.append("invalid frontmatter string metadata.%s: %s" % (k,exc))
+        else:
+            if ":" not in raw: errors.append("invalid frontmatter: "+raw); continue
+            k,v=raw.split(":",1); k=k.strip(); v=v.strip()
+            current=k if k=="metadata" else None
+            if k=="metadata":
+                if v: errors.append("unsupported metadata value; expected nested string map")
+                data[k]={}
+            else:
+                try: data[k]=frontmatter_string(v)
+                except (ValueError,UnicodeError) as exc: errors.append("invalid frontmatter string %s: %s" % (k,exc))
+    return data,errors
+
+def main():
+    ap=argparse.ArgumentParser(); ap.add_argument("root",nargs="?",default="."); args=ap.parse_args()
+    root=Path(args.root).resolve(); errors=[]; warnings=[]
+    skill=root/"SKILL.md"
+    if not skill.is_file():
+        print("error: SKILL.md missing",file=sys.stderr); return 1
+    text=skill.read_text(encoding="utf-8")
+    data,fm=frontmatter(text); errors+=fm
+    name=data.get("name",""); version=data.get("metadata",{}).get("version","")
+    if not NAME_RE.fullmatch(name or ""): errors.append("invalid skill name")
+    if name!=root.name: errors.append("frontmatter name must match directory")
+    if data.get("license")=="Apache-2.0" and not (root/"LICENSE").is_file(): errors.append("LICENSE missing")
+    lines=len(text.splitlines())
+    if lines>120: errors.append("runtime SKILL.md complexity budget exceeded: %d > 120" % lines)
+    if (root/"references").exists(): errors.append("compiled runtime must not contain references/")
+    if (root/"assets").exists(): errors.append("compiled runtime must not contain assets/")
+    md_count=len([p for p in root.rglob("*.md") if p.is_file()])
+    if md_count>4: errors.append("runtime Markdown budget exceeded: %d > 4" % md_count)
+    for req in ["policy-index.json","integrity/manifest.json","schemas/task-context.schema.json","schemas/governance-plan.schema.json","schemas/field-report.schema.json","scripts/plan_governance.py","scripts/project_tool.py","scripts/state_tool.py","scripts/validate_integrity.py"]:
+        if not (root/req).is_file(): errors.append("missing compiled runtime file: "+req)
+    try:
+        index=json.loads((root/"policy-index.json").read_text(encoding="utf-8"))
+        if index.get("version")!=version: errors.append("policy-index version mismatch")
+        if index.get("architecture")!="compiled-governance": errors.append("policy-index architecture mismatch")
+        binding=index.get("project_binding",{})
+        if binding.get("binding_file")!=".governance/upg.json": errors.append("policy-index binding path mismatch")
+        if binding.get("field_report_file")!=".governance/field-reports.json": errors.append("policy-index field-report path mismatch")
+        if binding.get("managed_files_max")!=2: errors.append("policy-index managed project file budget mismatch")
+    except Exception as exc: errors.append("invalid policy-index.json: %s" % exc)
+    for p in (root/"schemas").glob("*.json"):
+        try: json.loads(p.read_text(encoding="utf-8"))
+        except Exception as exc: errors.append("invalid schema %s: %s" % (p.name,exc))
+    for p in (root/"scripts").glob("*.py"):
+        try: ast.parse(p.read_text(encoding="utf-8"),filename=str(p))
+        except SyntaxError as exc: errors.append("Python syntax error in %s: %s" % (p.name,exc))
+    for p in root.rglob("*"):
+        if p.is_file() and "__pycache__" not in p.parts and p.suffix in {".pyc",".pyo"}: errors.append("generated artifact bundled: %s" % p.relative_to(root))
+    for d in sorted(x for x in root.rglob("__pycache__") if x.is_dir()):
+        warnings.append("local bytecode residue present (excluded by packaging and by Git, so it neither ships nor commits): %s" % d.relative_to(root))
+    for w in warnings: print("warning: "+w)
+    for e in errors: print("error: "+e,file=sys.stderr)
+    if errors: return 1
+    print("Skill bundle check passed: %s %s (%d SKILL.md lines, %d Markdown files)." % (name,version,lines,md_count))
+    return 0
+
+if __name__=="__main__":
+    raise SystemExit(main())

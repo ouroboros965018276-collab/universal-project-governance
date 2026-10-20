@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "study_id": "rc20-fixed-backend-controls-v5",
+  "status": "CLOSED_FIXED_PUBLIC_CONTROLS_VERIFIED_WITH_RESOURCE_LIMITATIONS",
+  "scope": "Fixed engineering calibration of three task families. No model calls, UPG effectiveness, independent holdout or provider comparison.",
+  "protocol_sha256": "9e47519b34884d055cd71afc8a15946c73309e879ba5fe245b627cf698f6a0a0",
+  "actual_root": "D:/UPG Experimental Projects/rc20-fixture-v5-35ac541d",
+  "owner": {
+    "session_closed": true,
+    "exit_code": 0,
+    "wall_seconds": 116.297,
+    "receipt_sha256": "10c2653f375c4004a6d42237d657ce7765e039de2f227b9fa850fbf9e0dac2cc",
+    "terminal_sha256": "54fd7b6f6d665a4777ad3caeec6e7fab3fd7ebd90bdfe70f2f1f76321f3371c4"
+  },
+  "first_independent_audit": {
+    "report_sha256": "6b6ae586792102632c8a160d993868e28dc4a36a410e6be5eb1ef1af75e1ade8",
+    "report_status": "RAW_CHECKS_PASS_PENDING_EXTERNAL_ENTRY_EXIT",
+    "external_entry_exit_code": 0,
+    "external_entry_receipt_sha256": "f477617de71fb0592dc43eff9541809f1926398bcf1e5673f931fb3fac06acbe",
+    "seal_sha256": "a9ea6fba0c56e322a22c49dbd3caaab7a90ca245887aa4da4e9a1fb1871b7569",
+    "source_and_raw_before_after_exact": true,
+    "failure_tail_absent": true,
+    "pure_rejections": 3,
+    "references_passed": 3,
+    "reference_test_ids_loaded_and_executed": 40,
+    "known_negative_check_failures": 26,
+    "pure_receipt_reader_calls": 29
+  },
+  "negative_control_limitations": {
+    "resource_bound_rows": ["b02", "b03", "b11", "b12", "b21", "b22"],
+    "resource_bound_state": "NOT_ESTABLISHED_RESOURCE_BOUND",
+    "observed_flags": "truncated=true, timeout=false",
+    "interpretation": "The six unchanged/constant-output negatives cannot establish the intended semantic rejection. Other CHECK_FAIL outcomes do not by themselves identify a unique causal defect. Do not report 26 semantic kills.",
+    "reference_resource_flags": false
+  },
+  "preservation": {
+    "availability": "Local ignored evidence archive; not bundled with the installed Skill or uploaded as raw provider/project material.",
+    "directory": "eval-workspaces/rc20-backend-v5-byte-preservation-r3-6506a708d92f49eb8c92ada4dce06aa4",
+    "zip_sha256": "cc4e2ed242803cff60a6a5aaa5fe9abc3ce49e2622c62473d8d26970eea9a1f6",
+    "zip_entries": 1702,
+    "manifest_sha256": "051417ffabb6df0c890239e7389dafede478478473444455479e8160cb0e7d9a",
+    "independent_byte_check": "eval-workspaces/rc20-p5-independent-byte-check-v1/first-byte-check.receipt.json",
+    "independent_byte_check_sha256": "7c9c9032bb20248d53a2709696afd574934db5d211f2dbece2e45b15392a90a8",
+    "all_entries_streamed_and_originals_unchanged": true,
+    "binary_handling": "Two existing executables are path/hash only; no binary payload.",
+    "preparation_failures_retained": "First Windows lstat/fstat permission-bit comparison failed before ZIP creation. Second preparation mistook a tool chunk ID for a file-hash prefix, also before ZIP creation. Both closed failures remain byte-bound in the successful manifest."
+  },
+  "previous_failure": "rc20-fixed-backend-controls-v4.audit.json retains its first actual failure. V5 only adapts the new Windows audit-event command representation, with fresh identity and controls.",
+  "model_calls": 0,
+  "net_benefit": "NOT_ESTABLISHED",
+  "formal_qualification": "UNASSESSED",
+  "replay_resume_or_semantic_reaudit": false
+}

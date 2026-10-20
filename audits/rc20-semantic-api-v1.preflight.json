@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "observed_at_utc": "2026-10-14T15:13:28.170463+00:00",
+  "registered_protocol_sha256": "2ca4923df07d178f3b122aed6e4419f6dba7b56c2e62a58ab38167c43cbfce31",
+  "public_registration_sha256": "58eb8df1608b7d3224358b14343a14b0e0c68bf03076b77639751b31b1de0289",
+  "candidate_revision": "d396f6988f05b15aef0b6cdd299ca107acbd5214",
+  "source_file_sha256": {
+    "eval-workspaces/rc20-semantic-api-v1.py": "16f35ee8dcfd326e4c97dcba11c8a8c261808fdb3b558aafbcd6cf2672f2aa05",
+    "eval-workspaces/rc20-semantic-api-v1-seal.py": "8bd1dd2dcc9f46bcfe8b1b3690c10b07ba351541a08cd36f8ea7528a57976401",
+    "eval-workspaces/rc20-semantic-api-v1-tests.py": "4c8f80373e6a2549c91f2f675c281432d977fe2526f2baa8720f4e83279be408",
+    "eval-workspaces/rc20-semantic-api-independent-audit.py": "01e19f0c85475bdee68beac826ff4c8de7da7e4a46c7a6a07e828acd6c6dd87a",
+    "eval-workspaces/rc20-semantic-api-independent-audit-tests.py": "9cc77bda912eb8aa35db9f56615f6075f2d28933dc2d21675f96f66497cd44c0"
+  },
+  "root_driver_tests": {
+    "passed": 70,
+    "seconds": 98.235,
+    "log_sha256": "3f5b68033a096dbfe36c58a95c6596972de33a1ff503f5bd28ff2704c607d253"
+  },
+  "root_auditor_tests": {
+    "passed": 72,
+    "seconds": 11.654,
+    "log_sha256": "22d5b8afe39a98a6eceab53ee1d74b4f3d85cfa2350e7a5d590b7962718d9a61"
+  },
+  "independent_statistics_review": {
+    "driver_tests_passed": 17,
+    "auditor_tests_passed": 15,
+    "cross_implementation_synthetic_scenarios": 6,
+    "cross_assertions_passed": 52,
+    "unresolved_blocking_findings": 0
+  },
+  "candidate_ci": {
+    "run_id": 38583604708,
+    "jobs_passed": 11,
+    "url": "https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/38583604708"
+  },
+  "code_review_scope": "Only behavioral semantics share the exact reviewed VM; receipt/state/tool replay, ledger and statistical accounting are independent. Pure tests and CI do not establish model effectiveness.",
+  "release_factual_review": {
+    "required": true,
+    "canonical_requirement": "registered protocol scope.release_review_required",
+    "status": "NOT_RUN",
+    "tokens": null,
+    "elapsed_seconds": null
+  },
+  "new_study_model_calls_at_receipt": 0,
+  "formal_qualification": "UNASSESSED",
+  "net_benefit": "NOT_ESTABLISHED",
+  "default_main_and_local_skill": "RC19"
+}

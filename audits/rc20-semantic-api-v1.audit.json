@@ -1,0 +1,322 @@
+{
+  "schema_version": 1,
+  "study_id": "upg-rc20-semantic-api-native-finish-v1",
+  "protocol_sha256": "2ca4923df07d178f3b122aed6e4419f6dba7b56c2e62a58ab38167c43cbfce31",
+  "candidate_revision": "d396f6988f05b15aef0b6cdd299ca107acbd5214",
+  "preregistration": {
+    "path": "audits/rc20-semantic-api-v1.preregistration.json",
+    "bytes": 162459,
+    "sha256": "58eb8df1608b7d3224358b14343a14b0e0c68bf03076b77639751b31b1de0289"
+  },
+  "preflight": {
+    "path": "audits/rc20-semantic-api-v1.preflight.json",
+    "bytes": 2318,
+    "sha256": "79427becb8fd8041148a60025f42247c6874e2788e0f548bf2a24f7f69b730ef"
+  },
+  "private_audit": {
+    "path": "eval-workspaces/rc20-semantic-api-independent-audit.result.terminal-2ca4923d-v1.json",
+    "bytes": 604142,
+    "sha256": "b8f44e185192939efbe8c72ef8abba6404535d7b62d3f44c26a9f51ad282177c"
+  },
+  "auditor_sha256": "01e19f0c85475bdee68beac826ff4c8de7da7e4a46c7a6a07e828acd6c6dd87a",
+  "assertions": 12500,
+  "findings": [],
+  "preservation": {
+    "raw": {
+      "files": 1862,
+      "before_map_sha256": "b1297ba94a11f3feb863a63554dede2214ddacada989beb5ccec3b3e847ee46a",
+      "after_map_sha256": "b1297ba94a11f3feb863a63554dede2214ddacada989beb5ccec3b3e847ee46a",
+      "unchanged": true
+    },
+    "external_sources_and_inputs": {
+      "files": 177,
+      "before_map_sha256": "d524de41b65f07212b7bd667e48736ff9db895d0e38a1b33facc37bf8a7d6075",
+      "after_map_sha256": "d524de41b65f07212b7bd667e48736ff9db895d0e38a1b33facc37bf8a7d6075",
+      "unchanged": true
+    }
+  },
+  "financial": {
+    "all_local_response_components_including_unbound_estimate": {
+      "deepseek": {
+        "USD": "0.4434732"
+      },
+      "mimo": {
+        "CNY": "3.913848",
+        "USD": "0.567507960"
+      }
+    },
+    "all_raw_known_input_output_components_estimate": {
+      "deepseek": {
+        "USD": "0.4434732"
+      },
+      "mimo": {
+        "CNY": "3.913848",
+        "USD": "0.567507960"
+      }
+    },
+    "all_raw_reported_total_tokens_subtotal": 2656915,
+    "committed_estimate": {
+      "deepseek": {
+        "USD": "0.4434732"
+      },
+      "mimo": {
+        "CNY": "3.913848",
+        "USD": "0.567507960"
+      }
+    },
+    "dispatched_http_requests": 303,
+    "elapsed_seconds": 900.9380000000001,
+    "ledger_accounted_reported_tokens": 2656915,
+    "ledger_status": "unknown-call-global-stop",
+    "monetary_limit": "peak/all-input-miss estimates; unknown reservation may overlap reported estimates; MiMo currency alternatives are not summed; no invoice claim",
+    "pending_reservations": 1,
+    "raw_incomplete_usage_requests": 1,
+    "request_slots": 303,
+    "retained_unknown_reservation_estimate": {
+      "deepseek": {
+        "USD": "0.0184428"
+      },
+      "mimo": {
+        "CNY": "0",
+        "USD": "0"
+      }
+    },
+    "unbound_local_response_requests": 0,
+    "unsettled_complete_reported_tokens": 0
+  },
+  "quality": {
+    "observed_actors": 38,
+    "registered_maximum": 180,
+    "strict_pass": 18,
+    "by_provider_arm": [
+      {
+        "provider": "deepseek",
+        "arm": "rc19",
+        "observed": 4,
+        "strict_pass": 2,
+        "status_counts": {
+          "tool-contract-failed": 1,
+          "completed": 2,
+          "request-budget-exhausted": 1
+        }
+      },
+      {
+        "provider": "deepseek",
+        "arm": "attention",
+        "observed": 4,
+        "strict_pass": 1,
+        "status_counts": {
+          "tool-contract-failed": 2,
+          "completed": 1,
+          "unknown-call-blocked": 1
+        }
+      },
+      {
+        "provider": "deepseek",
+        "arm": "full_rc20",
+        "observed": 3,
+        "strict_pass": 1,
+        "status_counts": {
+          "request-budget-exhausted": 2,
+          "completed": 1
+        }
+      },
+      {
+        "provider": "deepseek",
+        "arm": "minus_decision_relevance",
+        "observed": 3,
+        "strict_pass": 1,
+        "status_counts": {
+          "tool-contract-failed": 1,
+          "completed": 1,
+          "request-budget-exhausted": 1
+        }
+      },
+      {
+        "provider": "deepseek",
+        "arm": "minus_complete_change",
+        "observed": 3,
+        "strict_pass": 2,
+        "status_counts": {
+          "tool-contract-failed": 1,
+          "completed": 2
+        }
+      },
+      {
+        "provider": "deepseek",
+        "arm": "minus_evidence_fidelity",
+        "observed": 3,
+        "strict_pass": 1,
+        "status_counts": {
+          "request-budget-exhausted": 2,
+          "completed": 1
+        }
+      },
+      {
+        "provider": "mimo",
+        "arm": "rc19",
+        "observed": 3,
+        "strict_pass": 1,
+        "status_counts": {
+          "completed": 1,
+          "request-budget-exhausted": 2
+        }
+      },
+      {
+        "provider": "mimo",
+        "arm": "attention",
+        "observed": 3,
+        "strict_pass": 2,
+        "status_counts": {
+          "request-budget-exhausted": 1,
+          "completed": 2
+        }
+      },
+      {
+        "provider": "mimo",
+        "arm": "full_rc20",
+        "observed": 3,
+        "strict_pass": 2,
+        "status_counts": {
+          "tool-contract-failed": 1,
+          "completed": 2
+        }
+      },
+      {
+        "provider": "mimo",
+        "arm": "minus_decision_relevance",
+        "observed": 3,
+        "strict_pass": 1,
+        "status_counts": {
+          "request-budget-exhausted": 2,
+          "completed": 1
+        }
+      },
+      {
+        "provider": "mimo",
+        "arm": "minus_complete_change",
+        "observed": 3,
+        "strict_pass": 1,
+        "status_counts": {
+          "tool-contract-failed": 2,
+          "completed": 1
+        }
+      },
+      {
+        "provider": "mimo",
+        "arm": "minus_evidence_fidelity",
+        "observed": 3,
+        "strict_pass": 3,
+        "status_counts": {
+          "completed": 3
+        }
+      }
+    ],
+    "severe_event_actors": 1,
+    "severe_event_scope": "One unknown-usage/unverifiable-state actor; no inference of observed harmful writes from this accounting flag.",
+    "matched_or_population_inference_allowed": false
+  },
+  "handoffs": {
+    "registered_chains": 6,
+    "reached_chains": 0,
+    "interpretation": "All six retained as not reached; no cross-provider handoff success evidence."
+  },
+  "gates": {
+    "study_status": "unknown-call-global-stop",
+    "audit_integrity": "PASS",
+    "cost": "BLOCKED",
+    "net_benefit": "FAIL",
+    "efficacy": "BLOCKED",
+    "overall_release": "UNASSESSED",
+    "formal_qualification": "UNASSESSED"
+  },
+  "independent_summary_factual_review": {
+    "status": "COMPLETE_WITH_CLAIM_RESTRICTION",
+    "actors_covered": 38,
+    "actual_native_summaries_reviewed": 18,
+    "summaries_without_new_factual_veto_in_review_scope": 17,
+    "summaries_with_unsupported_causal_attribution_restricted_to_unknown": 1,
+    "actors_without_native_summary": 20,
+    "artifact_static_completion_stamp_warnings": 3,
+    "explicit_fabricated_application_execution_deployment_timing_or_historical_success_observed": 0,
+    "zero_observed_is_not_zero_risk": true,
+    "unresolved_bounded_followups": 0,
+    "scope": "All actual summaries including failed arms; only public facts and chronological tool receipts. This review only vetoes/restricts and cannot rescue mechanical failure or grant release.",
+    "blinding": "Limited metadata blinding; contents can identify themselves. Not double blind.",
+    "private_result": {
+      "path": "eval-workspaces/rc20-semantic-api-v1.manual-review.private.json",
+      "bytes": 62265,
+      "sha256": "e1027223ae0d5a50eea5e9c239d6533aa435c62e947cb15284aec7fdc008f0ce"
+    },
+    "packets": {
+      "path": "eval-workspaces/rc20-semantic-api-v1-manual-packets/packets.json",
+      "bytes": 188137,
+      "sha256": "ef0ab764f0d7bf4f5e00eab0b23037dedaa8b4d08190763032f1fa8a3263702a"
+    },
+    "coverage": {
+      "path": "eval-workspaces/rc20-semantic-api-v1-manual-packets/coverage.json",
+      "bytes": 35337,
+      "sha256": "1e2ec5a901b6a1d1f6c5ceb76af0ab38090f8c37487e2ae71b5fa9b88aebbcbb"
+    },
+    "followup": {
+      "path": "eval-workspaces/rc20-semantic-manual-followup-v1.json",
+      "bytes": 1191,
+      "sha256": "d167311645c335fbeefbeb227eb26ba86c0136d0cd427dc648f92bd5da49bfef"
+    },
+    "extractor": {
+      "path": "eval-workspaces/rc20-semantic-manual-report-packets.py",
+      "bytes": 18615,
+      "sha256": "a53f8b8c5dc0fc61aa27a9528f74a9456c0a05980e5151d9d7dce2675da9734a"
+    },
+    "extractor_synthetic_tests": {
+      "passed": 13,
+      "independent_review": "PASS after three earlier synthetic blocking defects were repaired before actual extraction"
+    },
+    "review_elapsed_seconds": 403,
+    "review_model_tokens": null,
+    "review_charge": null,
+    "mechanical_gate_overridden": false
+  },
+  "shared_semantic_kernel": {
+    "fully_independent_grader_claim": false,
+    "path": "evolution/semantic_contract.py",
+    "sha256": "cf6a6c207c47f003e7877b2a7f93c7e192415ffa229e80693276d1fb23298286",
+    "shared_operations": [
+      "validate_contract",
+      "validate_behavior"
+    ]
+  },
+  "transport_diagnosis": {
+    "provider": "deepseek",
+    "request_index_within_actor": 3,
+    "response_artifact_present": false,
+    "receipt_error_type": "ResponseUnknown",
+    "receipt_elapsed_seconds": 21.10816799999975,
+    "cause": "UNDETERMINED: frozen adapter retained only the outer exception class; no balance, quota, network or server cause can be established.",
+    "recovery": "Terminal run closed; no replay, append, same-task replacement or unknown-as-zero reconciliation."
+  },
+  "development_followup": [
+    "Repeated generic ValueError validation feedback left models without a public error category; diagnostic improvement requires a new freeze.",
+    "Observed full-arm Python failures include missing None/string conversion and rejecting None contrary to the visible contract; they remain failures.",
+    "Guessed unregistered README/HANDOFF paths caused blocked no-write reads. Any future path manifest must be identical across arms.",
+    "Manual report extraction helper failed synthetic integrity/leakage review; repair and independent re-review precede actual extraction.",
+    "Historical build_prompt text requests JSON-only final output while the native adapter requires repo_finish alone. Preserve this scaffold conflict; fix only through an explicit new profile, with legacy default bytes unchanged. It does not explain every observed failure.",
+    "Historical handoff fixtures require unrelated full reads. A future minimal affected-read contract must retain protected-byte checks; old tasks remain unchanged and are never regraded."
+  ],
+  "unknown_is_not_zero": true,
+  "replay_or_append_allowed": false,
+  "evidence_limits": [
+    "parsed/redacted JSON plus body hash is not original HTTP wire bytes",
+    "terminal bytes cannot prove removed historical pending reservations were persisted before dispatch",
+    "API IDs/model strings do not attest provider-internal routing, attempts or hidden retries",
+    "all-input-miss estimates and unknown reservations may overlap; no invoice or hard hidden-template billing cap",
+    "two tokenizers differ; no absolute cross-provider token causal comparison",
+    "seven known-family clusters with two fresh instances are a bounded prospective suite, not population noninferiority",
+    "Python behavior semantics share the exact reviewed hash-pinned VM; receipts/replay/scope/ledger/statistics remain independently implemented",
+    "finite supported-language probes and dependency origins are not whole-Python equivalence or a general no-bypass proof",
+    "completed-request-pending-history-not-retained-cannot-attest-pre-dispatch-persistence",
+    "original-http-body-bytes-not-retained-only-parsed-redacted-json-and-original-body-hash"
+  ],
+  "development_and_review_model_usage": null,
+  "release": "Draft PR24 only; main and global installed Skill remain RC19. No net benefit or Stable claim."
+}

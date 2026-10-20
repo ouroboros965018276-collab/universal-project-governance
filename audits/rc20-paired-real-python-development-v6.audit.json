@@ -1,0 +1,243 @@
+{
+  "schema_version": 1,
+  "observed_at_utc": "2026-10-15T09:55:33.344843+00:00",
+  "study_id": "upg-rc20-paired-real-python-development-v6",
+  "status": "CLOSED_COMPLETED_QUALITY_AND_NET_BENEFIT_NOT_PASSED",
+  "scope": "Three-arm exposed-family DEVELOPMENT of finite CPython and planned-stage handoff, not independent efficacy, whole-application testing, abrupt interruption recovery or Stable.",
+  "identity": {
+    "protocol_sha256": "fbdfa05b7a1b22315f98d8fc9da5db5f04978334a263027d7051bdbe5ab08385",
+    "preflight_sha256": "6653557ab5ed493f1a9d816c1e5b5c4fe81daf85158d212608ccadf081c48050",
+    "collector_sha256": "02e2825c1afd52add290eba670ddcfd3f3b22ee2f556dc814ce87641e2372bf0",
+    "independent_auditor_sha256": "f5036101347618736ce1033d08854b008ccd3b71d23e7facbb68f160e6f5a925",
+    "manual_helper_sha256": "15b38ea826ef70b04f438acb6a54704cf6ea9bf27d7fbc1f0a86bfcea6a3ace8",
+    "manual_rubric_sha256": "eef087422399be37488dd006bbd0d73ac5edcd632a2dffa69ab1b1ebc9cff0d7",
+    "candidate_model_sha256": "f364e5417506aec1dab0ae75cff223b8527ea856ab48ef3486e60e0e065b09fb",
+    "candidate_source_sha256": "51bdd1a9c1ae823341a35e4061dfa04a847502575ca28ba041e92feb3d70fb50",
+    "qualification": "sha256:4cf36631a0c7f87b7dfd4baec5d55fa4af0b893e2efe81fe3ed34085954d7108",
+    "registration_commit": "6132be88e8dcc2b4fa1419b33bd4132d2295fd8a",
+    "profile_id": "thinking-disabled-deepseek-pro-mimo-flash-8192-v1",
+    "profile_configuration_sha256": "db21a61c86bb3398f9b9568cdb290482407115dfc1ac0be3c21b8fb62ac8ced6",
+    "requested_models": {
+      "deepseek": "deepseek-v4-pro",
+      "mimo": "mimo-v2.6-flash"
+    },
+    "reported_model_request_counts": {
+      "mimo-v2.6-flash": 75,
+      "deepseek-v4-pro": 52
+    },
+    "reported_model_boundary": "Observed response model labels, not attestation of underlying weights/revision or provider-internal attempt coverage."
+  },
+  "production_terminal": {
+    "planned_roles": 24,
+    "returned_roles": 24,
+    "not_invoked_roles": 0,
+    "known_requests": 127,
+    "unknown_requests": 0,
+    "known_reported_tokens": 1370476,
+    "pending_this_round": 0,
+    "strict_pass_roles": 21,
+    "native_finish_roles": 21,
+    "replay_resume_reprepare": false
+  },
+  "independent_raw": {
+    "status": "RAW_INTEGRITY_PASS",
+    "actual_entry_executions": 1,
+    "raw_files": 3441,
+    "source_files": 146,
+    "raw_and_source_before_after_exact": true,
+    "root_copies_before_after_exact": true,
+    "pre_actual_preparation_failure_retained": "First wrapper incorrectly compared a 122-source protocol subset to the 146-source preservation superset. Corrected outside-trial wrapper retained both attempts; actual auditor had not started and later ran exactly once."
+  },
+  "manual_initial_review": {
+    "metadata_blindness_only": true,
+    "invoked_packets": 24,
+    "SUPPORTED": 19,
+    "UNKNOWN": 0,
+    "VETO": 5,
+    "initials_locked_before_per_arm_cost_unblind": true,
+    "independent_assigned_reviewers": 3,
+    "packets_per_reviewer": 8,
+    "no_rescoring": true,
+    "scope": "Stage-local factual review only. Raw integrity and strict mechanical acceptance are separate; SUPPORTED never rescues their failures.",
+    "review_tokens": null,
+    "review_wall_seconds": null
+  },
+  "per_arm_descriptive": {
+    "attention": {
+      "attributed_runtime_seconds": 320.7284123000136,
+      "independent_strict_passes": 7,
+      "manual_initial_counts": {
+        "SUPPORTED": 7,
+        "UNKNOWN": 0,
+        "VETO": 1
+      },
+      "native_finish": 7,
+      "observed_roles": 8,
+      "reported_tokens": 496380,
+      "requests": 45,
+      "strict_and_fact_supported": 7
+    },
+    "full": {
+      "attributed_runtime_seconds": 366.49288099998375,
+      "independent_strict_passes": 6,
+      "manual_initial_counts": {
+        "SUPPORTED": 5,
+        "UNKNOWN": 0,
+        "VETO": 3
+      },
+      "native_finish": 6,
+      "observed_roles": 8,
+      "reported_tokens": 415466,
+      "requests": 40,
+      "strict_and_fact_supported": 5
+    },
+    "rc19": {
+      "attributed_runtime_seconds": 472.1639118000021,
+      "independent_strict_passes": 8,
+      "manual_initial_counts": {
+        "SUPPORTED": 7,
+        "UNKNOWN": 0,
+        "VETO": 1
+      },
+      "native_finish": 8,
+      "observed_roles": 8,
+      "reported_tokens": 458630,
+      "requests": 42,
+      "strict_and_fact_supported": 7
+    }
+  },
+  "full_vs_controls_percent": {
+    "attention": {
+      "attributed_runtime": 14.268916299551737,
+      "reported_tokens": -16.300817921753495
+    },
+    "rc19": {
+      "attributed_runtime": -22.3801582796057,
+      "reported_tokens": -9.411508187427774
+    }
+  },
+  "cost": {
+    "known_reported_tokens": 1370476,
+    "known_fee_component_estimates": {
+      "deepseek": {
+        "USD": "0.84146172"
+      },
+      "mimo": {
+        "CNY": "0.787541",
+        "USD": "0.11025574"
+      }
+    },
+    "pending_this_round": 0,
+    "scope": "Conservative peak/all-input-miss estimates, not invoices. MiMo currencies are alternatives; pending exposure is not zero and can overlap known components.",
+    "runtime": {
+      "attributed_seconds": 1159.3852050999994,
+      "launch_seconds": 0.14102279998769518,
+      "missing_roles": 0,
+      "publication_tail_seconds": null,
+      "round_seconds": 1159.5853175000084,
+      "shared_seconds": 0.2001124000089476
+    },
+    "offline_research_and_manual_review_cost": null,
+    "complete_cost_including_unknown_research_and_publication_tail": null
+  },
+  "diagnosis": {
+    "complete_group_quality": "Full has 6/8 strict passes and 5/8 strict-plus-factual support; controls each have 7/8 strict-plus-factual support. Quality noninferiority is not established.",
+    "rejected_schema": {
+      "actor_id": "document-mimo-to-deepseek-full-receiver",
+      "first_operation_extra_key": "path_placeholder",
+      "first_tool": "repo_patch",
+      "observed_outcome": "tool-contract-failed; HANDOFF and subsequent README offered patches not executed. This is a model output error; previous failure remains.",
+      "registered_schema_allows_extra_properties": false,
+      "request_index": 3
+    },
+    "finite_language_failures": "Attention and full MiMo document receivers exhausted 12 requests; current VM validation still failed. Full retains an unregistered call, while attention rejects zero contrary to the public closed interval. Their completion-shaped document claims are not successful validation.",
+    "other_factual_vetoes": "Full source omitted required numeric/negative/unknown facts while claiming preservation. RC19 receiver added an integer-only restriction unsupported by the public numeric rule and its own code. All five VETO results remain.",
+    "parts_by_arm": {
+      "attention": {
+        "all_read_bytes": 214635,
+        "bounded_post_observed_seconds": 261.2120345000003,
+        "finite_cpython_reported_seconds": 15.125999999960186,
+        "read_events": 12,
+        "read_file_observations": 63,
+        "repo_validate_calls": 12,
+        "unrelated_notes_read_bytes": 119214,
+        "unrelated_read_bytes": 425,
+        "vm_failed_validations": 4
+      },
+      "full": {
+        "all_read_bytes": 174791,
+        "bounded_post_observed_seconds": 313.51141560006363,
+        "finite_cpython_reported_seconds": 10.344000000011874,
+        "read_events": 11,
+        "read_file_observations": 62,
+        "repo_validate_calls": 9,
+        "unrelated_notes_read_bytes": 79476,
+        "unrelated_read_bytes": 340,
+        "vm_failed_validations": 3
+      },
+      "rc19": {
+        "all_read_bytes": 195138,
+        "bounded_post_observed_seconds": 398.16807479997806,
+        "finite_cpython_reported_seconds": 25.154999999984284,
+        "read_events": 12,
+        "read_file_observations": 68,
+        "repo_validate_calls": 10,
+        "unrelated_notes_read_bytes": 99345,
+        "unrelated_read_bytes": 510,
+        "vm_failed_validations": 2
+      }
+    },
+    "timing_boundary": "Bounded-post intervals include transport/provider wait and overlap role clocks; finite execution metadata and receipt read bytes are observations, not causal token/time effects. Early rejection reduced one full role to three requests, so lower aggregate cost is not a completed-task saving.",
+    "analysis_projection_correction": {
+      "path": "eval-workspaces/rc20-v6-post-lock-diagnosis-v1.json",
+      "reason": "v1 post-lock read-volume projection assumed files list rather than actual dict and emitted unsupported zeros. These v1 read-volume values are invalid; preserved, never used for published inference. This v2 checks every read receipt text hash and counts mapping values. No actual trial or quality grade rerun.",
+      "sha256": "0fd708ae900377599119b019b87596b0c96b79fe7443a05afafa01fa387cf451"
+    }
+  },
+  "connect_retry_observation": {
+    "authorized_connect_retries": 0,
+    "boundary": "A known pre-HTTP failure is retained with null usage; an unused permit is not an attempted retry or HTTP delivery.",
+    "consumed_connect_retries": 0,
+    "maximum_per_actor": 1,
+    "policy": "confirmed-pre-http-connect-once-v1"
+  },
+  "prior_unknown_fence": "V5 pending unknown request and original exposure remain frozen; this round pending0 does not clear them. No insufficient-balance error was observed in this round.",
+  "evidence_refs": {
+    "audits/rc20-paired-real-python-development-v6.preflight.json": "6653557ab5ed493f1a9d816c1e5b5c4fe81daf85158d212608ccadf081c48050",
+    "eval-workspaces/rc20-v6-descriptive-joined-v1.json": "fa197c4d101bd854e9f59e5fa2eca3f35f2baef539448e71a33ea42fe5e7a4ba",
+    "eval-workspaces/rc20-paired-real-python-development-v6.independent-actual-audit-20261015T0935Z-ee76af37/actual-audit.first-result.json": "963d7010b1bf59d19300be22da23c81f0a429cff5431ddf3dc038ec46ce92543",
+    "eval-workspaces/rc20-v6-manual-assigned/root-initial-lock.json": "92c90bbeb41a4e835087ff736fbc7d24a07bb3fc7e98b7cc3238b8bc3b8f57fa",
+    "eval-workspaces/rc20-v6-post-lock-diagnosis-v2.json": "237a11cfbdadb0a8e942cea8b777567a7f01a82a05d5ba624914761d9d1cc9b4",
+    "eval-workspaces/rc20-paired-real-python-development-v6.owner-terminal.json": "7df1f48e8fdc235a686138a5889686c046fbbac3676473adac894bf5f040a2b8",
+    "eval-workspaces/rc20-paired-real-python-development-v6.terminal-preservation/result.json": "9238cd63db85a925050472f5864eabc21e408b48940ce04543b00877e931726b",
+    "eval-workspaces/rc20-paired-real-python-development-v6.independent-actual-audit-20261015T0935Z-ee76af37/summary.json": "1be2337dbee86f92a962323226e6a20227c1a6452ef221aa25629ea1a089d687",
+    "eval-workspaces/rc20-paired-real-python-development-v6.independent-actual-audit-20261015T0935Z-ee76af37/artifact-hashes.json": "65208e7bfbebfad68a7d44716334102798aeb7c96ff6bcf01b5f86e0e949a653",
+    "eval-workspaces/rc20-paired-real-python-development-v6-manual/coverage.json": "dbb964cec8a4f3d16f1875a4ed7f07713de744dd308a43a88d4915229eaa57d9",
+    "eval-workspaces/rc20-v6-manual-assigned/assignment-receipt.json": "be0e0b09e71b4d4fc4cd00928f0e2aa5f82d0b900ab98cfd3ad76fbadc7234d4",
+    "eval-workspaces/rc20-v6-blind-A-20261015T094021Z-12dcc066/initial-lock.json": "3f29521db6b7d71e4cf7c2af10183272e8f8ec375ef0c2e84613bbb9b2b60283",
+    "eval-workspaces/rc20-v6-blind-A-20261015T094021Z-12dcc066/coverage-receipt.json": "52ba9bb31f994d13ab6d6bc83eb3d3337d1f9ab4cd28b0e684a7243fb4c4c164",
+    "eval-workspaces/rc20-v6-blind-B-20261015T094140Z-6cc0ccbd/initial-lock.json": "9612f50f5a21a8e52651c677e9746d77ec8984e08d5f0f8b96400cd50ae8ba3a",
+    "eval-workspaces/rc20-v6-blind-B-20261015T094140Z-6cc0ccbd/coverage.json": "28a34e532c194e5f604670cdc53b902450c2de153d7c4b3399e2983092f82d98",
+    "eval-workspaces/rc20-v6-blind-C-20261015T094157Z-93d30e50/initial-lock.json": "0c4c83d5395e939cd502e8ed4c302829b11272264bec8adc753ce1301fa756fd",
+    "eval-workspaces/rc20-v6-blind-C-20261015T094157Z-93d30e50/coverage-receipt.json": "6b99a76e85171b2d9110bbf09ffe3b42153d5d9050bdd6d54f4b19dbfdc4a2b4",
+    "eval-workspaces/rc20-v6-final-source-adoption/registration-ci.json": "54e5f20fba6a8800a42b9dcbecc86254642fc1b421fbbfbec3185d8865ccbc29",
+    "eval-workspaces/rc20-v6-public-precall-independent-yq__kt9f/review.json": "c5c74f8d6434c1d0a8e70671f98e66a2cf056a79aaa7f448ef95514c98d10bce"
+  },
+  "current_release_gate": "BLOCKED_FACTUAL_VETO_QUALITY_AND_PENDING_INDEPENDENT_NET_BENEFIT",
+  "formal_qualification": "UNASSESSED",
+  "locked_holdout": "NOT_RUN",
+  "independent_efficacy": "NOT_ESTABLISHED",
+  "break_even": null,
+  "default_branch_and_installed_skill": "3.0.0-rc.19",
+  "limits": [
+    "Descriptive exposed-family DEVELOPMENT only; not independent efficacy, abrupt interruption recovery or Stable.",
+    "Serious factual VETO cannot be compensated by lower measured token/time. No rescoring or replay.",
+    "Stage-local manual support, strict mechanical pass and raw integrity are separate observations.",
+    "Role-attributed runtime excludes separately reported shared/launch and unknown publication tail. Offline research and manual review cost unknown, not zero.",
+    "Reported API usage does not attest provider internal computation/invoices. MiMo currencies are alternatives, not additive.",
+    "Raw parsed API envelopes and receipt hashes do not establish original HTTP wire bytes, invoices or internal provider work.",
+    "Same exposed two-family development variants, no independent task-distribution validation, source ablations or abrupt cutpoint recovery proof.",
+    "Historical first failures and unknowns remain immutable. No pooling, replay, rescore or threshold change.",
+    "Zero unknown requests observed here does not establish zero risk or clear any earlier unknown charge."
+  ]
+}

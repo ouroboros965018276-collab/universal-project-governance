@@ -1,0 +1,139 @@
+{
+  "schema_version": 1,
+  "kind": "rc20-source19-public-capability-and-environment",
+  "observed_utc": "2026-10-18 08:49:14 UTC",
+  "source_commit": "73d0ec4db4752ded303beb21da031aa1d5005c38",
+  "runtime_changed": false,
+  "scope": {
+    "development_only": true,
+    "exposed_family": "unicode_columns",
+    "conditions": [
+      "full"
+    ],
+    "baseline": false,
+    "attention_control": false,
+    "planned_workflows": 2,
+    "planned_roles": 2,
+    "requirements_per_role": 9,
+    "profile_id": "thinking-hybrid-engineering-pro-16384-sse-v1",
+    "configuration_sha256": "46637727f794a961b18190bcd008f2e7149f323d50d2c9d4dfed2aa9afebef36"
+  },
+  "first_environment_interruption": {
+    "cohort": "rc20-primary19-contract-capability-v1",
+    "owner_exit_code": 1,
+    "owner_wall_seconds_before_publication": 280.91152940000757,
+    "known_requests": 5,
+    "pending": 0,
+    "reported_tokens": 120577,
+    "recorded_roles": 1,
+    "completed_roles": 0,
+    "cause_observed": "Pinned-image Docker inspect returned HTTP500/exit1 before container create; producer blocked unknown execution and independent RAW prefix stopped. MiMo was not dispatched.",
+    "quality": "INCOMPLETE_NOT_ASSESSED",
+    "closed_sha256": "8a8af5ecf9c5b9f56548b240eda126d5a56befa6b7bfcc3beacaceb9eccfddff",
+    "terminal_sha256": "1807daf9dd3639999a635c2e09374bb7be8a6567f22b685a80c5c041c353e110",
+    "execution_result_sha256": "2d0a9b44b1f1f5604b493de86808f38bf13d75086d26f25d0c7609e911e4d931",
+    "replay_or_regrade": false
+  },
+  "environment_recovery": {
+    "D_free_before_bytes": 25104384,
+    "compressed_files": 376,
+    "all_file_hashes_before_after_identical": true,
+    "no_file_delete_or_move": true,
+    "no_host_configuration_change": true,
+    "observed_free_delta_bytes": 481824768,
+    "compression_receipt_sha256": "69889f1f3fc802072023ef079d1c234db3316af54c75a28df8f31747ac00fa40",
+    "docker_recovery": "Official desktop restart returned0; server29.8.1/API1.56/linux-amd64 and pinned image reconfirmed; isolated nonroot readonly/no-network Python probe returned0 and its exact container scope was absent.",
+    "causal_limit": "Disk pressure and stopped engine were observed. Recovery followed compression and restart; their causal contributions were not isolated.",
+    "future_large_trial_storage": "New three-arm actual roots will be registered uniformly under a dedicated C-drive experiment directory before any launch."
+  },
+  "new_recovery_cohort": {
+    "cohort": "rc20-primary19-contract-capability-v2",
+    "same_source_runtime_task_budget_and_rubric": true,
+    "owner_exit_code": 0,
+    "owned_job_active_after": 0,
+    "owned_process_handle_closed": true,
+    "owner_wall_seconds_before_publication": 330.7085182999872,
+    "known_requests": 19,
+    "pending": 0,
+    "reported_tokens": 322947,
+    "recorded_complete_raw_roles": 2,
+    "registration_sha256": "be6c3de67aef7bd4e87b41e5d6daf9fbbda1e3bff704804fd90e89a4a933eb92",
+    "closed_sha256": "1abd7a92258dbd041155df9b0f1b46dd53a1cc7331775cd95bb3649902739c63",
+    "terminal_sha256": "4a93799d8ee7c487b133038cdbc552ab0ff0d2b4b9a2879f26496e9ea8a2de92",
+    "accounting_sha256": "e51cd28f8e03629b169c98a244683f1cc6093baf5d4a9071d30a9f5c5f892fa5",
+    "first_final_ledger_sha256": "d1bf688f93149982add2f2da703f1f69b13efd563e569ab072a0d8e6e23ca379",
+    "extract_sha256": "8e4048b973f3cb6292d2da80355e819d23ec5b94e1c29cab956622df6edfad8c",
+    "first_decision_sha256": [
+      "44162f05282010a43ea2acd3f594bea3d890d04e70e7ba395ab90ff0f8fd4580",
+      "194d41d2f2888a466c233ccb92e55336d29fd3e8353b4c954a5188fe6342a3ed"
+    ],
+    "both_initials_locked_before_unblind": true,
+    "initial_lock_sha256": "f6169f4b6aaa0e4d1f5842ffd1c25f05c9068c8aa5c2ba0aa72f25ac9746492c",
+    "unblind_sha256": "2558a95520d54113bb71ddabd440cdb83b21a81a8dc21b8c208da503ec9c0fa1",
+    "roles": [
+      {
+        "provider": "deepseek",
+        "model": "deepseek-v4-pro",
+        "thinking": "enabled",
+        "reasoning_effort": "high",
+        "requests": 6,
+        "tool_events": 7,
+        "schema_rejections": 0,
+        "status": "completed",
+        "reported_tokens": 134258,
+        "reported_reasoning_tokens": 22044,
+        "actor_wall_seconds": 226.1030272999924,
+        "workflow_wall_seconds": 231.53255740000168,
+        "mechanical_pass": true,
+        "first_semantic": "PASS",
+        "supported_requirements": 9,
+        "raw_proof_sha256": "485268476747c65e7bb23b3ff409c10b4fcd2c4d6791a53b7cbec6ea2eff11f0"
+      },
+      {
+        "provider": "mimo",
+        "model": "mimo-v2.6-pro",
+        "thinking": "disabled",
+        "reasoning_effort": null,
+        "requests": 13,
+        "tool_events": 16,
+        "schema_rejections": 2,
+        "status": "tool-contract-failed",
+        "reported_tokens": 188689,
+        "reported_reasoning_tokens": 0,
+        "actor_wall_seconds": 92.48683390000951,
+        "workflow_wall_seconds": 98.03167740000936,
+        "mechanical_pass": false,
+        "first_semantic": "VETO",
+        "reason": "Claimed verification before its first execution; failed current tests were not disclosed. Display-width padding and compact JSON integration also remained defective.",
+        "raw_proof_sha256": "428d5e5880594c545687d037f12f638bbb9ff52ce71a1eb7e8d7a21436d6f872"
+      }
+    ]
+  },
+  "schema_diagnosis": {
+    "safe_receipt_sha256": "cbe87b82af62c7fc396eed96a6cff94d7fabf3f077c82a834053ad1f8a4e9500",
+    "input_files_hashed_unchanged": 42,
+    "rejections_at_requests": [
+      5,
+      13
+    ],
+    "cause": "Both valid JSON patch batches omitted path and old_sha256 from two operations. The provided old_text/new_text fields are permitted, typed correctly and not extras.",
+    "first_feedback": "Accurate missing_required pointers plus full inputSchema; supported indirectly by original integrity/hash reconstruction and static source, not direct persisted outbound payload inspection.",
+    "correction_at_request": 7,
+    "same_error_recurred_at": 13,
+    "old_reader_or_validation_replayed": false
+  },
+  "interpretation": {
+    "readiness": "FAIL",
+    "full54_authorization": "UNBOUND",
+    "promotion_allowed": false,
+    "net_benefit": "NOT_ESTABLISHED",
+    "governance_causal_effect": "NOT_ASSESSED",
+    "formal_qualification": "UNASSESSED",
+    "stable_claim": false,
+    "scope_known_research_requests": 24,
+    "scope_known_research_reported_tokens": 443524,
+    "total_research_money_and_break_even": null,
+    "original_primary14_pending157": "UNKNOWN_PRESERVED",
+    "latency_comparison_limit": "Configuration selection on an exposed task, with stochastic provider behavior and failed quality; not a matched governance effect or net gain. Final publication and unobserved totals are not zero."
+  }
+}

@@ -1,0 +1,200 @@
+{
+  "schema_version": 1,
+  "observed_at_utc": "2026-10-15T01:21:42.587269+00:00",
+  "study_id": "upg-rc20-paired-real-python-development-v4",
+  "status": "COMPLETED_DEVELOPMENT_NOT_QUALIFIED",
+  "scope": "Three-arm paired DEVELOPMENT of finite CPython and planned-stage handoff interoperability, not efficacy. Source finishes a registered partial stage; this does not test sudden interruption, quota exhaustion or forced-kill recovery. Two families only, no seven-direct-family coverage, independent efficacy, Stable, bootstrap or universal net-benefit claim. Prior intent beyond disk remains unknown.",
+  "identity": {
+    "protocol_sha256": "0f02c1bfaaa3f2d25d4fdbbb58b24668cf2ab35dadfdcf269927a5c7d8cc4365",
+    "collector_sha256": "96fd124c2ab71d7690e8ccff2dde0e9bd1f49b996c76155a557a361d7f9afd89",
+    "independent_auditor_sha256": "81d26fc49aa8b8fbc431a0e859b9a740623f9b7758b6e8b48a89d06396c9af54",
+    "public_preflight": "audits/rc20-paired-real-python-development-v4.preflight.json",
+    "public_preflight_sha256": "801b1011c51861e47127d2699521a32c0e697d2bdb5992d0d56170c98b7f229d",
+    "registered_commit": "a0a4e69e17371065cfeb72440cb3fe25554fe116",
+    "functional_commit": "ac8da96b4c82ada397467e433e109b823d1ed328",
+    "canonical_source_sha256": "badb891e6f1bf4d6a9a998b300be44971dcb3b151bb6d344f175df14b0244044",
+    "runtime18_map_sha256": "56c7ff112f75394bf8b6f89c04b5735d8b5421a17ecb2b93e26c989b74df664e",
+    "baseline_revision": "bd4a4d5c1c6fb9fca829e410729879d1b01f05b9",
+    "seed": 90146,
+    "namespace": "upg_r20d4",
+    "schedule_seed": 20261017
+  },
+  "profile": {
+    "output_cap": 8192,
+    "profile_id": "thinking-disabled-flash-8192-v1",
+    "response_json_mode": false,
+    "terminal_report": "native-tool",
+    "thinking": "disabled"
+  },
+  "providers": {
+    "deepseek": "deepseek-flash",
+    "mimo": "mimo-v2.6-flash"
+  },
+  "caps": {
+    "actors": 24,
+    "deepseek_USD": "4",
+    "known_reported_tokens_soft": 3000000,
+    "mimo_CNY": "12",
+    "mimo_USD": "2",
+    "ordinary_failure_stop_limit": null,
+    "request_slots": 288,
+    "round_seconds_soft": 7200
+  },
+  "actor_caps": {
+    "input_utf8_bytes": 131072,
+    "output": 8192,
+    "requests": 12,
+    "seconds": 180,
+    "tools": 32
+  },
+  "production_terminal": {
+    "returned_roles": 24,
+    "mechanical_strict_passes": 21,
+    "native_finish_attempts": 22,
+    "reserved_request_attempts": 140,
+    "known_reported_tokens": 1613204,
+    "pending": 0,
+    "missing_roles": 0,
+    "process_wall_seconds": 993.160821599995,
+    "insufficient_funds_response_observed": false
+  },
+  "independent_raw": {
+    "status": "RAW_INTEGRITY_PASS",
+    "executions": 1,
+    "native_mechanical_passes": 21,
+    "known_reported_tokens": 1613204,
+    "pending": 0,
+    "execution_infrastructure_or_state_unknown_roles": 0,
+    "raw_files_preserved": 3478,
+    "source_files_preserved": 128,
+    "original_prepared_files_unchanged": 41,
+    "raw_map_sha256": "1ec44e92468ddf01b6594934f1982eb2ec5d1e5ae4b2da9e27482e0d3fcf34dc",
+    "source_map_sha256": "1472db75d86e5d22bf45ff744e712a36d99f1b1ec32f60ee040f00457849bb5f",
+    "source_and_copies_before_after_equal": true,
+    "connect_retry_authorized": 0,
+    "connect_retry_consumed": 0,
+    "retry_effectiveness": "NOT_TESTED_BY_ACTUAL_FAILURE"
+  },
+  "manual_initial_review": {
+    "roles": 24,
+    "counts": {
+      "SUPPORTED_BOUNDED": 16,
+      "UNKNOWN": 3,
+      "VETO": 5
+    },
+    "lock_before_root_cost_unblinding": true,
+    "grade_override_allowed": false,
+    "review_tokens": null,
+    "elapsed_windows_seconds": {
+      "B": 378.187,
+      "C": 533.954181
+    },
+    "elapsed_scope": "Overlapping elapsed windows, not active CPU and not added. Tokens/research costs unmeasured, not zero.",
+    "preparation_deviations": [
+      "Initial A emitted a truncated whole-list preview before any verdict; it stopped. Fresh-context C used only the immutable first12 slice.",
+      "B initially previewed packet0 partial HANDOFF before its assigned last12. It disclosed this; two same-namespace roles retained UNKNOWN, including full/source. These are review-preparation limits, not proven model defects.",
+      "C first assigned-packet display truncated; it subsequently paged necessary material at3800 characters, not UTF8bytes, so some Chinese pages could exceed5KB. No cross-slice/identity/cost access was reported."
+    ],
+    "blindness": "Metadata-only, not double blind. Content may identify source. Original verdicts remain unchanged."
+  },
+  "per_arm": {
+    "attention": {
+      "attributed_runtime_seconds": 367.2075901000062,
+      "independent_strict_passes": 7,
+      "manual_initial_counts": {
+        "SUPPORTED_BOUNDED": 5,
+        "UNKNOWN": 1,
+        "VETO": 2
+      },
+      "native_finish": 8,
+      "observed_roles": 8,
+      "reported_tokens": 519849,
+      "requests": 45
+    },
+    "full": {
+      "attributed_runtime_seconds": 256.3526927999992,
+      "independent_strict_passes": 7,
+      "manual_initial_counts": {
+        "SUPPORTED_BOUNDED": 6,
+        "UNKNOWN": 1,
+        "VETO": 1
+      },
+      "native_finish": 7,
+      "observed_roles": 8,
+      "reported_tokens": 553706,
+      "requests": 45
+    },
+    "rc19": {
+      "attributed_runtime_seconds": 368.9575804999913,
+      "independent_strict_passes": 7,
+      "manual_initial_counts": {
+        "SUPPORTED_BOUNDED": 5,
+        "UNKNOWN": 1,
+        "VETO": 2
+      },
+      "native_finish": 7,
+      "observed_roles": 8,
+      "reported_tokens": 539649,
+      "requests": 50
+    }
+  },
+  "descriptive_full_vs_controls_percent": {
+    "attention": {
+      "attributed_runtime": -30.188618179111305,
+      "reported_tokens": 6.5128527707084105
+    },
+    "rc19": {
+      "attributed_runtime": -30.519738216896386,
+      "reported_tokens": 2.6048412949899014
+    }
+  },
+  "runtime_cost_boundary": {
+    "attributed_seconds": 992.5178633999967,
+    "launch_seconds": 0.12139790000219364,
+    "missing_roles": 0,
+    "publication_tail_seconds": null,
+    "round_seconds": 992.6736917999951,
+    "shared_seconds": 0.1558283999984269
+  },
+  "known_fee_estimates": {
+    "deepseek": {
+      "USD": "0.2448537"
+    },
+    "mimo": {
+      "CNY": "0.880476",
+      "USD": "0.12326664"
+    }
+  },
+  "fee_scope": "Profile-pinned estimates, not invoices. MiMo CNY and USD are alternatives; currencies are not added/converted.",
+  "diagnosis": {
+    "common_mechanical_failures": "All three document-deepseek-to-mimo receiver roles failed. Their observed final code contains isinstance calls rejected by the finite VM with unregistered-call; CPython probes were NOT_RUN_VM_FAILED. The public language profile lists len,str,int,bool,abs and omits isinstance/type, so rejection follows the declared profile. Supported-language limits, recovery feedback and genuine task behavior errors must be distinguished; no old failure is rescored.",
+    "genuine_full_contract_and_factual_failure": "Full receiver changed the public None->False requirement into ValueError and documented that changed rule as contract-compliant, while HANDOFF claimed completion despite failed validation. Its report was missing at the request cap. This is not cured by changing VM support.",
+    "other_manual_vetoes": "RC19 source implementation description and receiver stale README; attention source fact omission and receiver premature completion artifacts. These are initial stage-local factual judgments, not safety-risk estimates.",
+    "cost_result": "Full observed attributed role runtime fell30.52% versusRC19 and30.19% versusattention, but tokens rose2.60% and6.51%. Allarms7/8mechanical; full has oneVETO and one reviewer-limitedUNKNOWN. No quality-constrained net benefit established.",
+    "causal_limit": "Same profile/budgets within this one-seed development comparison. Historical enabled-profile tasks differ; these observations do not isolate a thinking-mode effect or remote capacity cause."
+  },
+  "evidence_refs": {
+    "eval-workspaces/rc20-v4-descriptive-joined-v1.json": "6a680a65e95ac16ba170787c431f1a88516e35d93000c033c205d36368656dc3",
+    "eval-workspaces/rc20-v4-actual-independent-alu3063z/independent.result.v1.json": "3da28a125ce4cff2fed5787a35f19030b4316a20b4adacecf5686a3942e5cdc0",
+    "eval-workspaces/rc20-v4-actual-independent-alu3063z/preservation.result.json": "3d1eff85935c98569d689d44cb479937d68d901af2d3588b2d129a6659728748",
+    "eval-workspaces/rc20-paired-real-python-development-v4.owner-terminal.json": "c6d1d5cee10bf12d45f10c3c7b55cb496bc34b72eb9f0eea18abead27e0cf2ac",
+    "eval-workspaces/rc20-paired-real-python-development-v4.terminal-preservation/result.json": "1e088062fe4094032f5af3179833e5698b5fe7a1aedaf43ae6cb5f472cfd034b",
+    "eval-workspaces/rc20-paired-real-python-development-v4-manual-review-20261015/root-initial-lock.json": "703fcdd8095baea0b14f8ed89974926822ee1d3c2039a4a25db5151a4dec5f0e",
+    "eval-workspaces/rc20-devv4-manual-b-sealed-20261015T010952Z-9ba0d0ff1d55/initial-review.json": "6994291d227156642ef3156b9711e727ed0e8fb6aa04a1d8103bd45fee271af5",
+    "eval-workspaces/rc20-v4-independent-blind-review-c-20261015T011438Z-d37ee6fd7220/result.json": "dbbedd635fcfda710d30c384c0b858c38441a3bd6c14d3e155f8e7d81e0d6a4a",
+    "eval-workspaces/rc20-paired-real-python-development-v4-manual-review-20261015/review-slices/preparation-record.json": "b7e0c355162ad025a6e19a03fa9b5d02b4a1499e870c34851660dc588a5c37ee"
+  },
+  "current_release_gate": "BLOCKED_PENDING_VERIFIED_QUALITY_CONSTRAINED_NET_BENEFIT",
+  "formal_qualification": "UNASSESSED",
+  "locked_holdout": "NOT_RUN",
+  "independent_efficacy": "NOT_ESTABLISHED",
+  "break_even": null,
+  "default_branch_and_installed_skill": "3.0.0-rc.19",
+  "limits": [
+    "Two exposed generator families and planned-stage two-provider handoff, not arbitrary real applications, sudden quota/crash recovery, allhosts/allmodels or Stable.",
+    "Raw audit verifies retained parsed/redacted JSON and hashes, not original HTTP wire bytes or provider invoices; local Docker receipts are not a general isolation proof.",
+    "No source ablation or postselection independent benefit validation completed by this trial.",
+    "Priorv2 negative andv3 RAWFAIL evidence stays sealed; no replay, regrade, pooling or rescoring of any closed trial.",
+    "Current task contracts, acceptance thresholds and errors are retained. Next candidate requires new identities and fresh preregistered tasks."
+  ]
+}

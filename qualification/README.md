@@ -1,6 +1,6 @@
 # Qualification Plane
 
-Current candidate: **3.0.0-rc.19 — Project Fact Recovery and Measured Execution Cost**. Version authority is [VERSION.md](../universal-project-governance/VERSION.md); current release state is [PROJECT_STATE.md](../PROJECT_STATE.md). RC19 is merged and its local installation is [verified](../audits/rc19-installation.audit.json), while independent joint token/time benefit remains unverified and formal qualification remains UNASSESSED. This documentation correction does not change qualification thresholds, protocol or frozen experiment identities.
+Current candidate: **3.0.0-rc.20 — Task Context and Complete Change Discipline**. Version authority is [VERSION.md](../universal-project-governance/VERSION.md); current release and validation state is [PROJECT_STATE.md](../PROJECT_STATE.md). RC19 installation is a [historical verified baseline](../audits/rc19-installation.audit.json), not RC20 acceptance. Independent joint token/time benefit remains unverified and formal qualification remains UNASSESSED. RC20 uses its own regenerated freeze; prior experiment identities and results remain bound to their original revisions.
 
 Purpose: establish whether the frozen current Skill causally improves maintained-project outcomes enough to justify its behavioral and operational cost.
 

@@ -1,0 +1,61 @@
+{
+  "schema": "rc20-public-tool-contract-control-v3",
+  "candidate": "3.0.0-rc.20",
+  "recorded_at_utc": "2026-10-16T03:11:13.677736+00:00",
+  "result": "FOUR_FIRST_CONTROL_RAW_PASS",
+  "scope": "Four reused public synthetic tool-contract regressions; real Git, Docker, broker, API7 writers and original readers; fake HTTPS and fake key only. No real provider, model, quality or net-benefit evidence.",
+  "prior_closed_failure": {
+    "round": "public control v2",
+    "first_reader_report_sha256": "bd9a844d973d79c95ff9d6045ed94ce2e0b02312cc760609ec4fd344fcdf3670",
+    "cause": "Execution writer emits compact UTF-8 JSON with no final LF; reader required LF for three cleanup-byte-map leaves. Original failure retained; no replay or regrade.",
+    "original_primary_cause": "NOT_LOCALIZED; new public control trace does not create a missing original primary trace."
+  },
+  "source": {
+    "runtime_source_manifest_sha256": "4bee922298bd3491113b01db84a4f80e88bd1526c5b93d6e9a686d2f49f2d914",
+    "project_reader_sha256": "de4e4ac2e17c5f4ac70ad6b083fe19fefef503e9fa9304e0659d480643095787",
+    "control_contract_sha256": "8fda31f6db276f1a11d0430d57587cfc64f14dab62c01dc2df50ff0fc887c79c",
+    "source_closure_sha256": "db47a971bd0d37df464ead53723a83f36dd9e7244f4fa3a74d7bd5598d888ba6",
+    "shared_reader_revision": "qualification/pilots/rc20-primary-v4/source-revision.json"
+  },
+  "format_fix": "Only the three registered src/trusted/runner cleanup-byte-map paths require actual compact JSON without LF, including the registered native/calls/<64-lower-hex>/ path. Other file formats, strict JSON parsing, hashes and namespace checks remain enforced.",
+  "process": {
+    "session_id": 6298,
+    "observed_exit_code": 0,
+    "round_final_sha256": "0f83cddbf517487ef8b72502d4ff03acb93eb5f1abaff5c6f7211746ed039b69",
+    "root_exit_sha256": "0cd96d3affda10e0087f143c188c0f285d8b266c88dafdd11a5952d0550090f1",
+    "inclusive_wall_seconds": 32.43741260000388,
+    "remaining_case_policy": "Stop on first failure; no replay or re-audit."
+  },
+  "cases": [
+    {
+      "case": "normal_read_patch_validate_finish",
+      "first_reader_report_sha256": "9991963cc43ee722a4df5fdb0451c28f3e129febe2192a14c4c86ea62801906c"
+    },
+    {
+      "case": "known_validation_failure_then_noop_patch",
+      "first_reader_report_sha256": "59c15d2013d020ffcb4cda60a0f926f1a2533bb4e51a3f1e9d4311c5507d843d"
+    },
+    {
+      "case": "known_validation_success_then_noop_patch",
+      "first_reader_report_sha256": "cce8230da71eab99f02ef34c8b50fc042160ccd5579364825da316975a0a8433"
+    },
+    {
+      "case": "schema_rejection_correction_then_success",
+      "first_reader_report_sha256": "29d22866d7bd3ed0caec10351fcf5ef7da80d930fa269ed343806c6bea4b6f81"
+    }
+  ],
+  "archive": {
+    "ZIP_sha256": "e5898523e7104f97ef14006511027510d9691c45abb5179ba6a30b84ce3c951c",
+    "manifest_sha256": "87b8270b720b98de127a31fb128048c61f335283634de93f8d498f48eb0bf55b",
+    "entries": 1377,
+    "independent_receipt_sha256": "83d6610fcf94d9b954cf11f38e2e4a3fe629875db1be734215f1e84fc687abc9",
+    "independent_seal_sha256": "f356292472e96e7c145329b1688e42ed4d717a0a303faba54d0b79b9d3c15144",
+    "independent_result": "BYTE_ONLY_ALL_REQUIRED_MATCH; complete streams, source pins, stable metadata/content/namespace; atime observed separately; no business regrade."
+  },
+  "model_calls": 0,
+  "real_credentials_loaded": 0,
+  "quality_and_net_benefit": "NOT_ASSESSED",
+  "formal_qualification": "UNASSESSED",
+  "locked_holdout": "NOT_RUN",
+  "merge_or_install_authorized_by_this_result": false
+}

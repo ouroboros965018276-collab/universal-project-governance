@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Current candidate: **3.0.0-rc.19 — Project Fact Recovery and Measured Execution Cost**.
+Current candidate: **3.0.0-rc.20 — Task Context and Complete Change Discipline**.
 
 ## First modifying activation
 
@@ -34,7 +34,7 @@ RC9 binding v2 records in-place adoption, handoff-or-reconstruct continuity, cap
 
 ## Completion
 
-For tracked non-trivial work, begin and finish through `project_tool.py`. The `finish` command records one completion path in both reporting modes: reporting on appends exactly one bounded field report; reporting off advances the existing latest/previous checkpoints without creating a ledger. Partial or blocked work remains active for recovery. Do not copy source bodies, credentials, secrets, customer/private data, or private chain-of-thought into reports.
+For tracked non-trivial work, begin and finish through `project_tool.py`. Each observed partial/blocked boundary uses a stable `checkpoint_id`; identical retries add nothing. Reference existing canonical project state with `current_state` (path/SHA), then check `status`; stale references require reconciliation. `latest_change` means latest completed workflow, not current unfinished progress. Reporting on appends bounded history; off keeps active recovery and latest/previous completion without a ledger. Do not copy source bodies, credentials, secrets, customer/private data, or private chain-of-thought into reports.
 
 ## Continuity
 
@@ -53,3 +53,7 @@ Do not edit a frozen surface after a real result round begins.
 Exposed regression fixtures cannot become an independent holdout again. Keep RC18's bounded native-CLI artifact tasks separate from real tool execution, cross-Agent handoff, and formal qualification evidence. Requested model names, reported completed-turn usage, and provider-internal attempt coverage must retain their observed limits.
 
 Evidence overrides desired release outcomes.
+
+## Task context and maintained content
+
+Apply the canonical execution_guidance from governance-src/model/governance-model.json through the generated Skill and planner. MODULE_MAP.md is this repository's source/contract/consumer/test routing entry. Keep governance semantics in that canonical source; this file does not define another writing, change or reading policy.

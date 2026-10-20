@@ -1,0 +1,99 @@
+{
+  "schema": "rc20-primary-first-workflow-failure-v1",
+  "candidate": "3.0.0-rc.20",
+  "recorded_at_utc": "2026-10-16T01:30:39.739578+00:00",
+  "status": "CLOSED_FAILURE_FIRST_AUDIT_ADMISSION_REJECTED",
+  "study_class": "EXPOSED_DEVELOPMENT_ATTEMPT_NOT_COMPLETED_PRIMARY",
+  "published_source_commit": "21451fa6f31f76ec88f8db533d2b26f7305019c6",
+  "engineering_CI": {
+    "run": 38832016499,
+    "jobs_succeeded": 11,
+    "scope": "Engineering snapshot; not evidence of efficacy"
+  },
+  "registered": {
+    "planned_blocks": 18,
+    "planned_workflows": 54,
+    "planned_actors": 66,
+    "protocol_sha256": "edd59be8ffecba0a0ce3fa0f5cb9119b7748aac086f1dd8aa53084d0b38f3c30",
+    "execution_plan_sha256": "f59ab06d7a60ad0edde6af67dda3ce9ed24ce1b9712813a56f9f8559c1446493",
+    "analysis_standard_sha256": "50b5d41812424c1c0cb2bb950473546bd15cf0fc12ca9dace0f410da0767caec"
+  },
+  "actual": {
+    "process_exit_code": 1,
+    "root_exit_receipt_sha256": "1a0ac2d14ab5efce75aa8b5a686a7112e33721f4b4196b9d227a158bccdcf673",
+    "terminal_sha256": "5d146ca6b7c420bc03265414ae9bab918e191ef0365fd3a5f4322672fb29b228",
+    "owner_exit_sha256": "80d5a897d19065632d40ca8bf3b203084c1d0e363cfa2a12ebb7e5fbea3a2d60",
+    "owner_closed_sha256": "3bb52a041bad7fb80e7c60fa2f3ba77a01c9891d24a3c0a9c02d45e56523eee4",
+    "completed_actor_records": 0,
+    "completed_workflow_records": 0,
+    "unfinished_actor": "w001-source",
+    "stopped_phase": "raw-verification",
+    "first_exception_class": "ValueError",
+    "source_final_exact": true,
+    "job_active_after": 0,
+    "job_query_confirmed": true,
+    "owned_parent_and_child_observed_exited": true,
+    "parent_and_child_exit_codes": [
+      1,
+      1
+    ],
+    "Docker_or_remote_cleanup": "Not proven by Windows Job metadata"
+  },
+  "first_audit_admission": {
+    "process_exit_code": 1,
+    "receipt_sha256": "515f6f90d5ffbf14ccca63bbd1af1d4741c16be6ea7fb6680e46fd90b8d9b9e9",
+    "first_exception": "independent prior owner exit before reader spawn",
+    "reader_process_started": false,
+    "report_and_seal": "NOT_CREATED",
+    "reaudit_resume_or_override_authorized": false
+  },
+  "producer_prefix_observations_only": {
+    "api_invoked": true,
+    "original_actor_result_sha256": "740bbbb938f94533b944722455b6fa96e7b566f9768de940e665a43afa5c9855",
+    "status": "tool-contract-failed",
+    "requests": 5,
+    "schema_rejections": 1,
+    "tool_attempts": 9,
+    "broker_events": 8,
+    "usage_independent_qualification": "NOT_REACHED",
+    "task_quality": "NOT_ASSESSED",
+    "causal_diagnosis": "ORIGINAL_CAUSE_NOT_LOCALIZED; bounded source and original-prefix inspection only, no reader replay or regrading"
+  },
+  "byte_preservation": {
+    "ZIP_sha256": "e48af90844515d02d4691161e101b2e1c5594f9f7336b46e200fcaf1424cc304",
+    "manifest_sha256": "f6d2abd0b5560e693355ce22b8662db6ffcdf7fe145122de1cc7fb03226687fa",
+    "seal_sha256": "0e94784dcd7fdd376662bf79676c21d065739cecee615e9403787df46b9d5006",
+    "entries": 556,
+    "files": 398,
+    "directories": 158,
+    "core_trees": 8,
+    "independent_byte_check": "BYTE_ONLY_PASS",
+    "independent_receipt_sha256": "387c871ac9232ee2de774d9041aeda7de5e93d3b488c2360ff25467722c74e31",
+    "independent_seal_sha256": "68d4e809a42b90ae01e0c4014cc7165ac3fa2f748f025a410573aba5cd306ca5",
+    "stable_metadata_content_namespace_unchanged": true,
+    "access_time_observation_rows": 683,
+    "first_checker_error": "v1 stopped before ZIP verification on cross-interface ctime mismatch; original failure retained. New v2 checker uses stable identity and records all stat fields separately.",
+    "first_checker_error_receipt_sha256": "6c895123b6dc0a6cc7234ac5f8c17e91300fbf92b486a4326cb62cf445c26a8b"
+  },
+  "cost": {
+    "primary_reported_tokens": null,
+    "primary_inclusive_wall_seconds": null,
+    "known_outer_observation_seconds": 70.04566240000713,
+    "observation_scope": "Incomplete first-prefix whole-round observation only; no cost saving comparison. Paid prefixes remain retained; not zero usage.",
+    "research_and_all_in": "UNKNOWN",
+    "old_unknown_exposure_cleared": false
+  },
+  "release": {
+    "net_benefit": "NOT_ESTABLISHED",
+    "formal_qualification": "UNASSESSED",
+    "locked_holdout": "NOT_RUN",
+    "main_and_local": "RC19 unchanged; RC20 draft, not installed",
+    "Stable": false
+  },
+  "bounded_diagnosis": {
+    "receipt_sha256": "3cf0940b945d6778b9367edf53049b0dc76fc71443fbc1cbb8b902b12ee0e81d",
+    "seal_sha256": "c5ca67bf8233bcda882232363963b73e0f94af37b790c79290dccd5a3ea669a5",
+    "originals_unchanged": true,
+    "scope": "Not a first raw audit, task-quality verdict or independently qualified usage. Known final no-op refusal and schema rejection do not establish the failed reader condition."
+  }
+}

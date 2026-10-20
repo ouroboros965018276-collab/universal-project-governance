@@ -1,0 +1,422 @@
+{
+  "acceptance_cases": [
+    {
+      "negative_cases": [
+        {
+          "edits": {
+            "docs/使用.md": "# 预约台\n\n## 用途\n\n查询预约台的当前队列。\n\n## 使用\n\n运行 `desk queue --limit 862`；结果按提交时间排序。\n\n## 边界\n\n只读取当前队列，不修改已归档记录。\n\n我先检查源码，再完成修改。\n"
+          },
+          "name": "过程说明混入产品文档"
+        },
+        {
+          "edits": {
+            "docs/使用.md": "# 预约台\n\n查询队列。\n"
+          },
+          "name": "中文缩写丢失边界结构"
+        }
+      ],
+      "task_id": "rc20-development-chinese-documentation-1"
+    },
+    {
+      "negative_cases": [
+        {
+          "edits": {
+            "src/window.py": "START = 3\nSTOP = 18\n\ndef in_window(hour):\n    return START <= hour <= STOP\n\ndef label():\n    return '开发2'\n"
+          },
+          "name": "保留错误右端点"
+        },
+        {
+          "edits": {
+            "src/window.py": "def in_window(hour):\n    return False\n"
+          },
+          "name": "缩短实现丢失真实功能"
+        }
+      ],
+      "task_id": "rc20-development-single-feature-navigation-2"
+    },
+    {
+      "negative_cases": [
+        {
+          "edits": {
+            "plugins.json": "{\n  \"ticket_formatter\": \"api:render_ticket\"\n}\n"
+          },
+          "name": "遗漏动态消费者"
+        },
+        {
+          "edits": {
+            "api.py": "PREFIX = '开发3'\n\ndef format_ticket(value):\n    return PREFIX + str(value)\n\n"
+          },
+          "name": "删除公共兼容入口"
+        }
+      ],
+      "task_id": "rc20-development-public-api-consumers-3"
+    },
+    {
+      "negative_cases": [
+        {
+          "edits": {
+            "storage/cache.py": "CACHE_SECONDS = 138\n\ndef main():\n    return CACHE_SECONDS\n"
+          },
+          "name": "沿用过期索引没有修改真实入口"
+        },
+        {
+          "edits": {
+            "MODULE_MAP.md": "# 模块\n\n缓存入口：[旧缓存](legacy/cache.py)。\n"
+          },
+          "name": "修好代码但索引仍过期"
+        }
+      ],
+      "task_id": "rc20-development-stale-map-source-conflict-4"
+    },
+    {
+      "negative_cases": [
+        {
+          "edits": {
+            "src/level.py": "LOW = 7\nHIGH = 78\n\ndef parse_level(value):\n    if not isinstance(value, int) or not LOW <= value <= HIGH:\n        raise ValueError('级别无效')\n    return value\n\ndef default_level():\n    return LOW\n"
+          },
+          "name": "简化删除布尔安全检查"
+        },
+        {
+          "edits": {
+            "src/level.py": "def parse_level(value):\n    return value\n"
+          },
+          "name": "简化删除必要错误行为"
+        }
+      ],
+      "task_id": "rc20-development-simplification-preserves-safety-5"
+    },
+    {
+      "negative_cases": [
+        {
+          "edits": {
+            "docs/结果.md": "# 合成试验结果\n\n计划14次调用，已完成5次，另有1次调用用量未知；未分派8次。已完成调用报告45652 tokens，耗时比的95%区间为[0.91, 1.17]，包含1，证明耗时改善。提供方内部费用未知；本轮未完成，不能据此确认净收益。[原始结果](../evidence/study.json)\n"
+          },
+          "name": "删除未知和否定限定"
+        },
+        {
+          "edits": {
+            "docs/结果.md": "# 合成试验结果\n\n试验完成，收益确认。\n"
+          },
+          "name": "删除数字引用换成空泛短句"
+        }
+      ],
+      "task_id": "rc20-development-evidence-fidelity-6"
+    },
+    {
+      "negative_cases": [
+        {
+          "edits": {
+            "client.py": "from service import asset_record\n\ndef current_asset():\n    return asset_record()['small_image']\n"
+          },
+          "name": "只更新交接仍遗漏消费者"
+        },
+        {
+          "edits": {
+            "HANDOFF.json": "{\n  \"claims\": {\n    \"application_tests\": \"passed\",\n    \"historical_intent\": \"unknown\",\n    \"previous_validation\": \"stale\",\n    \"start_change\": {},\n    \"status\": \"complete\",\n    \"validation_scope\": \"registered-static-contracts\",\n    \"workflow_id\": \"asset-开发7\"\n  },\n  \"source_sha256\": {}\n}\n"
+          },
+          "name": "重写开始事实或捏造验证"
+        }
+      ],
+      "task_id": "rc20-development-interrupted-handoff-recovery-7"
+    }
+  ],
+  "schema_version": 1,
+  "scope": "公开开发与确定性评分回归；不能作为独立任务",
+  "tasks": [
+    {
+      "checks": [
+        {
+          "expected": "# 预约台\n\n## 用途\n\n查询预约台的当前队列。\n\n## 使用\n\n运行 `desk queue --limit 862`；结果按提交时间排序。\n\n## 边界\n\n只读取当前队列，不修改已归档记录。\n",
+          "kind": "text",
+          "path": "docs/使用.md"
+        }
+      ],
+      "family": "chinese-documentation",
+      "id": "rc20-development-chinese-documentation-1",
+      "initial_files": {
+        "config/desk.json": "{\n  \"archive\": \"只读\",\n  \"command\": \"desk queue\",\n  \"limit\": 862,\n  \"order\": \"提交时间\",\n  \"title\": \"预约台\"\n}\n",
+        "docs/background.md": "# 归档背景\n\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n",
+        "docs/使用.md": "# 预约台\n\nThis tool reads the queue.\n\n我会先检查配置，然后更新本文。\n",
+        "src/unrelated.py": "UNRELATED_LABEL = 'rc20-development-chinese-documentation-1'\n",
+        "tests/contract.json": "{\n  \"archive_behavior\": \"只读\",\n  \"document_template\": \"# {title}\\n\\n## 用途\\n\\n查询{title}的当前队列。\\n\\n## 使用\\n\\n运行 `desk queue --limit {limit}`；结果按提交时间排序。\\n\\n## 边界\\n\\n只读取当前队列，不修改已归档记录。\\n\",\n  \"language\": \"中文正文\",\n  \"limit\": 862,\n  \"process_narration\": \"不进入使用文档\",\n  \"required_sections\": [\n    \"用途\",\n    \"使用\",\n    \"边界\"\n  ]\n}\n"
+      },
+      "prompt": "将docs/使用.md整理为中文使用说明，保留用途、使用、边界三个结构。命令和排序来自config/desk.json；保留归档记录只读限制，删除与产品使用无关的操作过程说明。标题和各节的完整要求见tests/contract.json。\n只修改明确授权的目标，保留受保护文件；用真实文件工具读取、修改、验证并检查Git状态。静态契约通过不能证明应用测试执行。",
+      "required_read_paths": [
+        "docs/使用.md",
+        "config/desk.json",
+        "tests/contract.json"
+      ],
+      "required_tools": [
+        "repo_read",
+        "repo_patch",
+        "repo_validate",
+        "repo_status"
+      ],
+      "writable_files": [
+        "docs/使用.md"
+      ]
+    },
+    {
+      "checks": [
+        {
+          "expected": "START = 3\nSTOP = 18\n\ndef in_window(hour):\n    return START <= hour < STOP\n\ndef label():\n    return '开发2'\n",
+          "kind": "python_ast",
+          "path": "src/window.py"
+        }
+      ],
+      "family": "single-feature-navigation",
+      "id": "rc20-development-single-feature-navigation-2",
+      "initial_files": {
+        "MODULE_MAP.md": "# 模块\n\n静默时段：src/window.py；导出历史：src/history.py。\n",
+        "docs/background.md": "# 归档背景\n\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n",
+        "src/history.py": "def archived_count():\n    return 499\n",
+        "src/unrelated.py": "UNRELATED_LABEL = 'rc20-development-single-feature-navigation-2'\n",
+        "src/window.py": "START = 3\nSTOP = 18\n\ndef in_window(hour):\n    return START <= hour <= STOP\n\ndef label():\n    return '开发2'\n",
+        "tests/contract.json": "{\n  \"preserve\": [\n    \"label\",\n    \"src/history.py\"\n  ],\n  \"start\": 3,\n  \"stop\": 18,\n  \"window\": \"START <= hour < STOP\"\n}\n"
+      },
+      "prompt": "只修复静默时段右端点：窗口应包含START并排除STOP，保留label和其他模块行为。先由MODULE_MAP.md定位到相关源码与tests/contract.json，不需要重读整个项目说明。\n只修改明确授权的目标，保留受保护文件；用真实文件工具读取、修改、验证并检查Git状态。静态契约通过不能证明应用测试执行。",
+      "required_read_paths": [
+        "MODULE_MAP.md",
+        "src/window.py",
+        "tests/contract.json"
+      ],
+      "required_tools": [
+        "repo_read",
+        "repo_patch",
+        "repo_validate",
+        "repo_status"
+      ],
+      "writable_files": [
+        "src/window.py"
+      ]
+    },
+    {
+      "checks": [
+        {
+          "expected": "PREFIX = '开发3'\n\ndef format_ticket(value):\n    return PREFIX + str(value)\n\ndef render_ticket(value):\n    return format_ticket(value)\n",
+          "kind": "python_ast",
+          "path": "api.py"
+        },
+        {
+          "expected": "from api import format_ticket\n\ndef display(value):\n    return format_ticket(value)\n",
+          "kind": "python_ast",
+          "path": "cli.py"
+        },
+        {
+          "expected": {
+            "ticket_formatter": "api:format_ticket"
+          },
+          "kind": "json",
+          "path": "plugins.json"
+        },
+        {
+          "expected": "# 接口\n\n使用 `format_ticket(value)`；`render_ticket(value)` 保留为兼容入口，行为相同。\n",
+          "kind": "text",
+          "path": "docs/API.md"
+        }
+      ],
+      "family": "public-api-consumers",
+      "id": "rc20-development-public-api-consumers-3",
+      "initial_files": {
+        "api.py": "PREFIX = '开发3'\n\ndef render_ticket(value):\n    return PREFIX + str(value)\n",
+        "cli.py": "from api import render_ticket\n\ndef display(value):\n    return render_ticket(value)\n",
+        "consumers.json": "{\n  \"dynamic\": [\n    \"plugins.json\"\n  ],\n  \"static\": [\n    \"cli.py\"\n  ]\n}\n",
+        "docs/API.md": "# 接口\n\n使用 `render_ticket(value)`。\n",
+        "docs/background.md": "# 归档背景\n\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n",
+        "plugins.json": "{\n  \"ticket_formatter\": \"api:render_ticket\"\n}\n",
+        "src/unrelated.py": "UNRELATED_LABEL = 'rc20-development-public-api-consumers-3'\n",
+        "tests/contract.json": "{\n  \"api_document\": \"# 接口\\n\\n使用 `format_ticket(value)`；`render_ticket(value)` 保留为兼容入口，行为相同。\\n\",\n  \"compatibility\": \"def render_ticket(value): return format_ticket(value)\",\n  \"compatibility_entry\": \"render_ticket\",\n  \"consumers\": [\n    \"cli.py\",\n    \"plugins.json\"\n  ],\n  \"new_entry\": \"format_ticket\",\n  \"prefix\": \"开发3\"\n}\n"
+      },
+      "prompt": "公开新增format_ticket并保留render_ticket兼容入口，内部CLI和动态插件全部使用新入口；输出前缀与语义保持原样。更新API文档说明两个入口关系。由consumers.json与plugins.json发现消费者，不能仅改提供者。\n只修改明确授权的目标，保留受保护文件；用真实文件工具读取、修改、验证并检查Git状态。静态契约通过不能证明应用测试执行。",
+      "required_read_paths": [
+        "api.py",
+        "cli.py",
+        "plugins.json",
+        "consumers.json",
+        "docs/API.md",
+        "tests/contract.json"
+      ],
+      "required_tools": [
+        "repo_read",
+        "repo_patch",
+        "repo_validate",
+        "repo_status"
+      ],
+      "writable_files": [
+        "api.py",
+        "cli.py",
+        "plugins.json",
+        "docs/API.md"
+      ]
+    },
+    {
+      "checks": [
+        {
+          "expected": "CACHE_SECONDS = 183\n\ndef main():\n    return CACHE_SECONDS\n",
+          "kind": "python_ast",
+          "path": "storage/cache.py"
+        },
+        {
+          "expected": "# 模块\n\n缓存入口：[当前缓存](storage/cache.py)。\n",
+          "kind": "text",
+          "path": "MODULE_MAP.md"
+        }
+      ],
+      "family": "stale-map-source-conflict",
+      "id": "rc20-development-stale-map-source-conflict-4",
+      "initial_files": {
+        "MODULE_MAP.md": "# 模块\n\n缓存入口：[旧缓存](legacy/cache.py)。\n",
+        "docs/background.md": "# 归档背景\n\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n",
+        "legacy/cache.py": "CACHE_SECONDS = 9999\n",
+        "pyproject.toml": "[project.scripts]\ncachectl = \"storage.cache:main\"\n",
+        "src/unrelated.py": "UNRELATED_LABEL = 'rc20-development-stale-map-source-conflict-4'\n",
+        "storage/cache.py": "CACHE_SECONDS = 138\n\ndef main():\n    return CACHE_SECONDS\n",
+        "tests/contract.json": "{\n  \"entry\": \"storage.cache:main\",\n  \"legacy\": \"保留\",\n  \"map_document\": \"# 模块\\n\\n缓存入口：[当前缓存](storage/cache.py)。\\n\",\n  \"seconds\": 183\n}\n"
+      },
+      "prompt": "将实际cachectl入口的缓存秒数改成tests/contract.json规定值，并修正MODULE_MAP.md的入口链接。现有索引可能过期；以pyproject.toml注册入口和当前源码为准，保留legacy/cache.py历史内容。\n只修改明确授权的目标，保留受保护文件；用真实文件工具读取、修改、验证并检查Git状态。静态契约通过不能证明应用测试执行。",
+      "required_read_paths": [
+        "MODULE_MAP.md",
+        "pyproject.toml",
+        "storage/cache.py",
+        "tests/contract.json"
+      ],
+      "required_tools": [
+        "repo_read",
+        "repo_patch",
+        "repo_validate",
+        "repo_status"
+      ],
+      "writable_files": [
+        "storage/cache.py",
+        "MODULE_MAP.md"
+      ]
+    },
+    {
+      "checks": [
+        {
+          "expected": "LOW = 7\nHIGH = 78\n\ndef parse_level(value):\n    if isinstance(value, bool) or not isinstance(value, int) or not LOW <= value <= HIGH:\n        raise ValueError('级别无效')\n    return value\n\ndef default_level():\n    return LOW\n",
+          "kind": "python_ast",
+          "path": "src/level.py"
+        }
+      ],
+      "family": "simplification-preserves-safety",
+      "id": "rc20-development-simplification-preserves-safety-5",
+      "initial_files": {
+        "docs/background.md": "# 归档背景\n\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n",
+        "src/level.py": "LOW = 7\nHIGH = 78\n\ndef parse_level(value):\n    if isinstance(value, bool):\n        raise ValueError('级别无效')\n    if not isinstance(value, int):\n        raise ValueError('级别无效')\n    if value < LOW or value > HIGH:\n        raise ValueError('级别无效')\n    return value\n\ndef default_level():\n    return LOW\n",
+        "src/unrelated.py": "UNRELATED_LABEL = 'rc20-development-simplification-preserves-safety-5'\n",
+        "tests/contract.json": "{\n  \"canonical_predicate\": \"isinstance(value, bool) or not isinstance(value, int) or not LOW <= value <= HIGH\",\n  \"error\": \"ValueError:级别无效\",\n  \"inclusive_range\": [\n    7,\n    78\n  ],\n  \"preserve\": \"default_level\",\n  \"valid_type\": \"int但排除bool\"\n}\n"
+      },
+      "prompt": "合并src/level.py中parse_level的三个拒绝分支为一个条件，保留布尔值拒绝、整数类型检查、闭区间边界和ValueError('级别无效')；保留default_level。简化不能以删除错误处理换取短代码。\n只修改明确授权的目标，保留受保护文件；用真实文件工具读取、修改、验证并检查Git状态。静态契约通过不能证明应用测试执行。",
+      "required_read_paths": [
+        "src/level.py",
+        "tests/contract.json"
+      ],
+      "required_tools": [
+        "repo_read",
+        "repo_patch",
+        "repo_validate",
+        "repo_status"
+      ],
+      "writable_files": [
+        "src/level.py"
+      ]
+    },
+    {
+      "checks": [
+        {
+          "expected": "# 合成试验结果\n\n计划14次调用，已完成5次，另有1次调用用量未知；未分派8次。已完成调用报告45652 tokens，未知用量不计作零。耗时比的95%区间为[0.91, 1.17]，包含1，不能证明耗时改善。提供方内部费用未知；本轮未完成，不能据此确认净收益。[原始结果](../evidence/study.json)\n",
+          "kind": "text",
+          "path": "docs/结果.md"
+        }
+      ],
+      "family": "evidence-fidelity",
+      "id": "rc20-development-evidence-fidelity-6",
+      "initial_files": {
+        "docs/background.md": "# 归档背景\n\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n",
+        "docs/结果.md": "# 合成试验结果\n\n效果非常显著，所有计划任务都成功，费用为零。\n",
+        "evidence/study.json": "{\n  \"completed\": 5,\n  \"planned\": 14,\n  \"provider_internal_cost\": \"unknown\",\n  \"reported_tokens\": 45652,\n  \"status\": \"incomplete\",\n  \"synthetic_fixture\": true,\n  \"unknown_dispatches\": 1,\n  \"wall_ratio_95_interval\": [\n    0.91,\n    1.17\n  ]\n}\n",
+        "src/unrelated.py": "UNRELATED_LABEL = 'rc20-development-evidence-fidelity-6'\n",
+        "tests/contract.json": "{\n  \"document_template\": \"# 合成试验结果\\n\\n计划{planned}次调用，已完成{completed}次，另有1次调用用量未知；未分派{undispatched}次。已完成调用报告{reported_tokens} tokens，未知用量不计作零。耗时比的95%区间为[0.91, 1.17]，包含1，不能证明耗时改善。提供方内部费用未知；本轮未完成，不能据此确认净收益。[原始结果](../evidence/study.json)\\n\",\n  \"preserve_fields\": [\n    \"synthetic_fixture\",\n    \"completed\",\n    \"planned\",\n    \"reported_tokens\",\n    \"unknown_dispatches\",\n    \"wall_ratio_95_interval\",\n    \"provider_internal_cost\",\n    \"status\"\n  ],\n  \"scope\": \"合成未完成试验\",\n  \"source\": \"evidence/study.json\"\n}\n"
+      },
+      "prompt": "将docs/结果.md中的空泛宣传改成简洁事实摘要，保留evidence/study.json全部分母、数字、引用、否定结论和未知限制。明确这是合成试验，不把未完成观察描述为净收益成立，不把未知用量当零。\n只修改明确授权的目标，保留受保护文件；用真实文件工具读取、修改、验证并检查Git状态。静态契约通过不能证明应用测试执行。",
+      "required_read_paths": [
+        "docs/结果.md",
+        "evidence/study.json",
+        "tests/contract.json"
+      ],
+      "required_tools": [
+        "repo_read",
+        "repo_patch",
+        "repo_validate",
+        "repo_status"
+      ],
+      "writable_files": [
+        "docs/结果.md"
+      ]
+    },
+    {
+      "checks": [
+        {
+          "expected": "from service import asset_record\n\ndef current_asset():\n    return asset_record()['preview_image']\n",
+          "kind": "python_ast",
+          "path": "client.py"
+        },
+        {
+          "expected": {
+            "claims": {
+              "application_tests": "not_run",
+              "historical_intent": "unknown",
+              "previous_validation": "stale",
+              "start_change": {
+                "before": "small_image",
+                "planned_after": "preview_image",
+                "reason": "接口字段升级"
+              },
+              "status": "complete",
+              "validation_scope": "registered-static-contracts",
+              "workflow_id": "asset-开发7"
+            },
+            "sources": [
+              "service.py",
+              "client.py",
+              "tests/contract.json",
+              "evidence/previous.json"
+            ]
+          },
+          "kind": "file_hash_manifest",
+          "path": "HANDOFF.json"
+        }
+      ],
+      "family": "interrupted-handoff-recovery",
+      "id": "rc20-development-interrupted-handoff-recovery-7",
+      "initial_files": {
+        "HANDOFF.json": "{\n  \"claims\": {\n    \"application_tests\": \"not_run\",\n    \"historical_intent\": \"unknown\",\n    \"previous_validation\": \"PASS\",\n    \"start_change\": {\n      \"before\": \"small_image\",\n      \"planned_after\": \"preview_image\",\n      \"reason\": \"接口字段升级\"\n    },\n    \"status\": \"partial\",\n    \"validation_scope\": \"registered-static-contracts\",\n    \"workflow_id\": \"asset-开发7\"\n  },\n  \"source_sha256\": {\n    \"service.py\": \"0000000000000000000000000000000000000000000000000000000000000000\"\n  }\n}\n",
+        "client.py": "from service import asset_record\n\ndef current_asset():\n    return asset_record()['small_image']\n",
+        "docs/background.md": "# 归档背景\n\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n这是与当前改动无关的既有背景记录，应按任务需要决定是否读取。\n",
+        "evidence/previous.json": "{\n  \"application_tests\": \"unknown\",\n  \"status\": \"PASS\",\n  \"tested_revision\": \"old-state\"\n}\n",
+        "service.py": "def asset_record():\n    return {'preview_image': 'asset-开发7'}\n",
+        "src/unrelated.py": "UNRELATED_LABEL = 'rc20-development-interrupted-handoff-recovery-7'\n",
+        "tests/contract.json": "{\n  \"claims\": {\n    \"application_tests\": \"not_run\",\n    \"historical_intent\": \"unknown\",\n    \"previous_validation\": \"stale\",\n    \"start_change\": {\n      \"before\": \"small_image\",\n      \"planned_after\": \"preview_image\",\n      \"reason\": \"接口字段升级\"\n    },\n    \"status\": \"complete\",\n    \"validation_scope\": \"registered-static-contracts\",\n    \"workflow_id\": \"asset-开发7\"\n  },\n  \"current_field\": \"preview_image\",\n  \"manifest_sources\": [\n    \"service.py\",\n    \"client.py\",\n    \"tests/contract.json\",\n    \"evidence/previous.json\"\n  ],\n  \"prior_field\": \"small_image\",\n  \"start_change\": {\n    \"before\": \"small_image\",\n    \"planned_after\": \"preview_image\",\n    \"reason\": \"接口字段升级\"\n  }\n}\n"
+      },
+      "prompt": "前一智能体在字段升级中断，继续同一工作流。先核对HANDOFF.json、当前生产者service.py、client.py、tests/contract.json和旧验证记录；完成消费者迁移，保留生产者和原start_change。将既有HANDOFF.json更新为当前source_sha256及契约规定claims，不新建交接。旧PASS属于旧状态，应标过期；历史意图未知，应用测试未运行。\n只修改明确授权的目标，保留受保护文件；用真实文件工具读取、修改、验证并检查Git状态。静态契约通过不能证明应用测试执行。",
+      "required_read_paths": [
+        "HANDOFF.json",
+        "service.py",
+        "client.py",
+        "evidence/previous.json",
+        "tests/contract.json"
+      ],
+      "required_tools": [
+        "repo_read",
+        "repo_patch",
+        "repo_validate",
+        "repo_status"
+      ],
+      "writable_files": [
+        "client.py",
+        "HANDOFF.json"
+      ]
+    }
+  ]
+}

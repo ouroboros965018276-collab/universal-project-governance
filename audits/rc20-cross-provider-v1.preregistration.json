@@ -1,0 +1,518 @@
+{
+  "arms": [
+    "rc19",
+    "attention",
+    "full_rc20"
+  ],
+  "bindings": {
+    "adapter_sha256": "fbb59630b28e6796229940b0733bdef8f90f435e892dad3a2c1c52c009923e9b",
+    "broker_sha256": "ee83a71436bd48e40deb3dc334fe603c4b51e79d7c50d6c9d4c3af5f2b46a62c",
+    "chains_sha256": "b73e9a5afbac398dd65dd6fc5a026def410f5316d6521d1cc2f057e361a5dee6",
+    "condition_sha256": "d9fb5f7264faab8a3374c25781165b35229542c88a3279ea4a2c4cfef0c4c4a1",
+    "discovery_sha256": {
+      "deepseek": "6b9b278c165fc2da6f470882ad6f15216a18c78cc761b21bf4666c9d2454cd29",
+      "mimo": "9bbce7b5449e7e3dec8a65ad044e8c3c654d7b50aa4e55602e0fd955b993c65c"
+    },
+    "driver_sha256": "71ff7a33f7ce4000e64fcbb9d56a6f471a98d4fd3776d98ddb319f3a41365324",
+    "engine_sha256": "23281b8bcb5b3f18de878bd77c82cc7b13c81f07af813282e3ebf95134af2e0d",
+    "handoff_manifest_sha256": "f7f5d8206189b0acc6fc14f18c077c14f1e61dd8358b3f575b53cf2bf4619d1f",
+    "handoff_plans_sha256": "303d0a0a61703c97002e4481ace9d1e070f23cb13e0fa0a26975f5c2ab4d8825",
+    "handoff_ready_sha256": "e59663b019ac967a813f4174cbde5d7cbf5292fe9eaf2e32efe06062128d2497",
+    "openai_protocol_sha256": "a1ab764ddcbf0f161087ba86f559dbd5fa12774ba0732b0573b8f38e4f93542a",
+    "openai_public_protocol_sha256": "a7c54857ef02a2970f1f932b2ee0793392c7c128fe1498c3c142e24b739b1910",
+    "order_sha256": "8e8147e8dcd3103f669e2e370b73214cd429efdf3b6c0125482fe2bd8bde96aa",
+    "task_manifest_sha256": "f12c5bec7d2bc7b2d8213c3d81f0a9243aa5312f95103a9f49ae8e8d6ba8ba76",
+    "task_raw_sha256": "5bca5bd51136adf53c69dd21ae007cb1d51a2e824316b0f9507154c2f80f259c",
+    "vault_module_sha256": "06dbe6ebf4573a0e514849864f118f3c162ae41ec206a7c379edd6f26e93426b"
+  },
+  "handoff_chains": [
+    {
+      "arm": "full_rc20",
+      "chain_id": "mimo-to-deepseek:full_rc20",
+      "instance": "2",
+      "kind": "handoff",
+      "receiver": "deepseek",
+      "source": "mimo"
+    },
+    {
+      "arm": "rc19",
+      "chain_id": "mimo-to-deepseek:rc19",
+      "instance": "2",
+      "kind": "handoff",
+      "receiver": "deepseek",
+      "source": "mimo"
+    },
+    {
+      "arm": "rc19",
+      "chain_id": "deepseek-to-mimo:rc19",
+      "instance": "1",
+      "kind": "handoff",
+      "receiver": "mimo",
+      "source": "deepseek"
+    },
+    {
+      "arm": "attention",
+      "chain_id": "deepseek-to-mimo:attention",
+      "instance": "1",
+      "kind": "handoff",
+      "receiver": "mimo",
+      "source": "deepseek"
+    },
+    {
+      "arm": "attention",
+      "chain_id": "mimo-to-deepseek:attention",
+      "instance": "2",
+      "kind": "handoff",
+      "receiver": "deepseek",
+      "source": "mimo"
+    },
+    {
+      "arm": "full_rc20",
+      "chain_id": "deepseek-to-mimo:full_rc20",
+      "instance": "1",
+      "kind": "handoff",
+      "receiver": "mimo",
+      "source": "deepseek"
+    }
+  ],
+  "handoff_plan_text_sha256": {
+    "attention": "2f3d9ffc1a8b5ed79af2b804f8cd30a870f8cbef16b2433fcc7c017e1a91cef2",
+    "full_rc20": "6af5745d66c798858633031d7d3325ec2b5aeb73308614e4c78ae9020d200f8e",
+    "rc19": "2f3d9ffc1a8b5ed79af2b804f8cd30a870f8cbef16b2433fcc7c017e1a91cef2"
+  },
+  "handoff_seal": {
+    "family": "planned-module-handoff",
+    "generator_sha256": "71ff7a33f7ce4000e64fcbb9d56a6f471a98d4fd3776d98ddb319f3a41365324",
+    "instances": 2,
+    "manifest_sha256": "f7f5d8206189b0acc6fc14f18c077c14f1e61dd8358b3f575b53cf2bf4619d1f",
+    "model_calls_at_generation": 0,
+    "raw_sha256": "4e4c320993974e6949c12bd77ad0f80d8c8524407e54d64ec212f9417f6f4f93",
+    "scope": "new instances of a known public concept; generator/targets exposed to study designer; exploratory only",
+    "seed": 20015
+  },
+  "limits": {
+    "actor_seconds": 180,
+    "handoff_actors": 12,
+    "handoff_chains": 6,
+    "known_reported_tokens_soft_stop": 3000000,
+    "max_actors": 54,
+    "max_http_attempts": 648,
+    "output_per_request": 4096,
+    "regular_actors": 42,
+    "requests_per_actor": 12,
+    "round_seconds_soft_stop": 7200,
+    "serialized_input_utf8_bytes_per_request": 131072,
+    "tools_per_actor": 32
+  },
+  "order": [
+    {
+      "actor_id": "deepseek:rc20-independent-public-api-consumers-3:rc19",
+      "arm": "rc19",
+      "kind": "task",
+      "model": "deepseek-flash",
+      "provider": "deepseek",
+      "task_id": "rc20-independent-public-api-consumers-3"
+    },
+    {
+      "actor_id": "deepseek:rc20-independent-public-api-consumers-3:attention",
+      "arm": "attention",
+      "kind": "task",
+      "model": "deepseek-flash",
+      "provider": "deepseek",
+      "task_id": "rc20-independent-public-api-consumers-3"
+    },
+    {
+      "actor_id": "deepseek:rc20-independent-public-api-consumers-3:full_rc20",
+      "arm": "full_rc20",
+      "kind": "task",
+      "model": "deepseek-flash",
+      "provider": "deepseek",
+      "task_id": "rc20-independent-public-api-consumers-3"
+    },
+    {
+      "actor_id": "deepseek:rc20-independent-evidence-fidelity-6:attention",
+      "arm": "attention",
+      "kind": "task",
+      "model": "deepseek-flash",
+      "provider": "deepseek",
+      "task_id": "rc20-independent-evidence-fidelity-6"
+    },
+    {
+      "actor_id": "deepseek:rc20-independent-evidence-fidelity-6:full_rc20",
+      "arm": "full_rc20",
+      "kind": "task",
+      "model": "deepseek-flash",
+      "provider": "deepseek",
+      "task_id": "rc20-independent-evidence-fidelity-6"
+    },
+    {
+      "actor_id": "deepseek:rc20-independent-evidence-fidelity-6:rc19",
+      "arm": "rc19",
+      "kind": "task",
+      "model": "deepseek-flash",
+      "provider": "deepseek",
+      "task_id": "rc20-independent-evidence-fidelity-6"
+    },
+    {
+      "actor_id": "deepseek:rc20-independent-interrupted-handoff-recovery-7:full_rc20",
+      "arm": "full_rc20",
+      "kind": "task",
+      "model": "deepseek-flash",
+      "provider": "deepseek",
+      "task_id": "rc20-independent-interrupted-handoff-recovery-7"
+    },
+    {
+      "actor_id": "deepseek:rc20-independent-interrupted-handoff-recovery-7:rc19",
+      "arm": "rc19",
+      "kind": "task",
+      "model": "deepseek-flash",
+      "provider": "deepseek",
+      "task_id": "rc20-independent-interrupted-handoff-recovery-7"
+    },
+    {
+      "actor_id": "deepseek:rc20-independent-interrupted-handoff-recovery-7:attention",
+      "arm": "attention",
+      "kind": "task",
+      "model": "deepseek-flash",
+      "provider": "deepseek",
+      "task_id": "rc20-independent-interrupted-handoff-recovery-7"
+    },
+    {
+      "actor_id": "mimo:rc20-independent-chinese-documentation-1:rc19",
+      "arm": "rc19",
+      "kind": "task",
+      "model": "mimo-v2.6-pro",
+      "provider": "mimo",
+      "task_id": "rc20-independent-chinese-documentation-1"
+    },
+    {
+      "actor_id": "mimo:rc20-independent-chinese-documentation-1:attention",
+      "arm": "attention",
+      "kind": "task",
+      "model": "mimo-v2.6-pro",
+      "provider": "mimo",
+      "task_id": "rc20-independent-chinese-documentation-1"
+    },
+    {
+      "actor_id": "mimo:rc20-independent-chinese-documentation-1:full_rc20",
+      "arm": "full_rc20",
+      "kind": "task",
+      "model": "mimo-v2.6-pro",
+      "provider": "mimo",
+      "task_id": "rc20-independent-chinese-documentation-1"
+    },
+    {
+      "actor_id": "mimo:rc20-independent-stale-map-source-conflict-4:attention",
+      "arm": "attention",
+      "kind": "task",
+      "model": "mimo-v2.6-pro",
+      "provider": "mimo",
+      "task_id": "rc20-independent-stale-map-source-conflict-4"
+    },
+    {
+      "actor_id": "mimo:rc20-independent-stale-map-source-conflict-4:full_rc20",
+      "arm": "full_rc20",
+      "kind": "task",
+      "model": "mimo-v2.6-pro",
+      "provider": "mimo",
+      "task_id": "rc20-independent-stale-map-source-conflict-4"
+    },
+    {
+      "actor_id": "mimo:rc20-independent-stale-map-source-conflict-4:rc19",
+      "arm": "rc19",
+      "kind": "task",
+      "model": "mimo-v2.6-pro",
+      "provider": "mimo",
+      "task_id": "rc20-independent-stale-map-source-conflict-4"
+    },
+    {
+      "actor_id": "deepseek:rc20-independent-simplification-preserves-safety-5:full_rc20",
+      "arm": "full_rc20",
+      "kind": "task",
+      "model": "deepseek-flash",
+      "provider": "deepseek",
+      "task_id": "rc20-independent-simplification-preserves-safety-5"
+    },
+    {
+      "actor_id": "deepseek:rc20-independent-simplification-preserves-safety-5:rc19",
+      "arm": "rc19",
+      "kind": "task",
+      "model": "deepseek-flash",
+      "provider": "deepseek",
+      "task_id": "rc20-independent-simplification-preserves-safety-5"
+    },
+    {
+      "actor_id": "deepseek:rc20-independent-simplification-preserves-safety-5:attention",
+      "arm": "attention",
+      "kind": "task",
+      "model": "deepseek-flash",
+      "provider": "deepseek",
+      "task_id": "rc20-independent-simplification-preserves-safety-5"
+    },
+    {
+      "actor_id": "deepseek:rc20-independent-stale-map-source-conflict-4:rc19",
+      "arm": "rc19",
+      "kind": "task",
+      "model": "deepseek-flash",
+      "provider": "deepseek",
+      "task_id": "rc20-independent-stale-map-source-conflict-4"
+    },
+    {
+      "actor_id": "deepseek:rc20-independent-stale-map-source-conflict-4:attention",
+      "arm": "attention",
+      "kind": "task",
+      "model": "deepseek-flash",
+      "provider": "deepseek",
+      "task_id": "rc20-independent-stale-map-source-conflict-4"
+    },
+    {
+      "actor_id": "deepseek:rc20-independent-stale-map-source-conflict-4:full_rc20",
+      "arm": "full_rc20",
+      "kind": "task",
+      "model": "deepseek-flash",
+      "provider": "deepseek",
+      "task_id": "rc20-independent-stale-map-source-conflict-4"
+    },
+    {
+      "actor_id": "mimo:rc20-independent-evidence-fidelity-6:attention",
+      "arm": "attention",
+      "kind": "task",
+      "model": "mimo-v2.6-pro",
+      "provider": "mimo",
+      "task_id": "rc20-independent-evidence-fidelity-6"
+    },
+    {
+      "actor_id": "mimo:rc20-independent-evidence-fidelity-6:full_rc20",
+      "arm": "full_rc20",
+      "kind": "task",
+      "model": "mimo-v2.6-pro",
+      "provider": "mimo",
+      "task_id": "rc20-independent-evidence-fidelity-6"
+    },
+    {
+      "actor_id": "mimo:rc20-independent-evidence-fidelity-6:rc19",
+      "arm": "rc19",
+      "kind": "task",
+      "model": "mimo-v2.6-pro",
+      "provider": "mimo",
+      "task_id": "rc20-independent-evidence-fidelity-6"
+    },
+    {
+      "actor_id": "mimo:rc20-independent-interrupted-handoff-recovery-7:full_rc20",
+      "arm": "full_rc20",
+      "kind": "task",
+      "model": "mimo-v2.6-pro",
+      "provider": "mimo",
+      "task_id": "rc20-independent-interrupted-handoff-recovery-7"
+    },
+    {
+      "actor_id": "mimo:rc20-independent-interrupted-handoff-recovery-7:rc19",
+      "arm": "rc19",
+      "kind": "task",
+      "model": "mimo-v2.6-pro",
+      "provider": "mimo",
+      "task_id": "rc20-independent-interrupted-handoff-recovery-7"
+    },
+    {
+      "actor_id": "mimo:rc20-independent-interrupted-handoff-recovery-7:attention",
+      "arm": "attention",
+      "kind": "task",
+      "model": "mimo-v2.6-pro",
+      "provider": "mimo",
+      "task_id": "rc20-independent-interrupted-handoff-recovery-7"
+    },
+    {
+      "actor_id": "mimo:rc20-independent-single-feature-navigation-2:rc19",
+      "arm": "rc19",
+      "kind": "task",
+      "model": "mimo-v2.6-pro",
+      "provider": "mimo",
+      "task_id": "rc20-independent-single-feature-navigation-2"
+    },
+    {
+      "actor_id": "mimo:rc20-independent-single-feature-navigation-2:attention",
+      "arm": "attention",
+      "kind": "task",
+      "model": "mimo-v2.6-pro",
+      "provider": "mimo",
+      "task_id": "rc20-independent-single-feature-navigation-2"
+    },
+    {
+      "actor_id": "mimo:rc20-independent-single-feature-navigation-2:full_rc20",
+      "arm": "full_rc20",
+      "kind": "task",
+      "model": "mimo-v2.6-pro",
+      "provider": "mimo",
+      "task_id": "rc20-independent-single-feature-navigation-2"
+    },
+    {
+      "actor_id": "mimo:rc20-independent-simplification-preserves-safety-5:attention",
+      "arm": "attention",
+      "kind": "task",
+      "model": "mimo-v2.6-pro",
+      "provider": "mimo",
+      "task_id": "rc20-independent-simplification-preserves-safety-5"
+    },
+    {
+      "actor_id": "mimo:rc20-independent-simplification-preserves-safety-5:full_rc20",
+      "arm": "full_rc20",
+      "kind": "task",
+      "model": "mimo-v2.6-pro",
+      "provider": "mimo",
+      "task_id": "rc20-independent-simplification-preserves-safety-5"
+    },
+    {
+      "actor_id": "mimo:rc20-independent-simplification-preserves-safety-5:rc19",
+      "arm": "rc19",
+      "kind": "task",
+      "model": "mimo-v2.6-pro",
+      "provider": "mimo",
+      "task_id": "rc20-independent-simplification-preserves-safety-5"
+    },
+    {
+      "actor_id": "mimo:rc20-independent-public-api-consumers-3:full_rc20",
+      "arm": "full_rc20",
+      "kind": "task",
+      "model": "mimo-v2.6-pro",
+      "provider": "mimo",
+      "task_id": "rc20-independent-public-api-consumers-3"
+    },
+    {
+      "actor_id": "mimo:rc20-independent-public-api-consumers-3:rc19",
+      "arm": "rc19",
+      "kind": "task",
+      "model": "mimo-v2.6-pro",
+      "provider": "mimo",
+      "task_id": "rc20-independent-public-api-consumers-3"
+    },
+    {
+      "actor_id": "mimo:rc20-independent-public-api-consumers-3:attention",
+      "arm": "attention",
+      "kind": "task",
+      "model": "mimo-v2.6-pro",
+      "provider": "mimo",
+      "task_id": "rc20-independent-public-api-consumers-3"
+    },
+    {
+      "actor_id": "deepseek:rc20-independent-chinese-documentation-1:rc19",
+      "arm": "rc19",
+      "kind": "task",
+      "model": "deepseek-flash",
+      "provider": "deepseek",
+      "task_id": "rc20-independent-chinese-documentation-1"
+    },
+    {
+      "actor_id": "deepseek:rc20-independent-chinese-documentation-1:attention",
+      "arm": "attention",
+      "kind": "task",
+      "model": "deepseek-flash",
+      "provider": "deepseek",
+      "task_id": "rc20-independent-chinese-documentation-1"
+    },
+    {
+      "actor_id": "deepseek:rc20-independent-chinese-documentation-1:full_rc20",
+      "arm": "full_rc20",
+      "kind": "task",
+      "model": "deepseek-flash",
+      "provider": "deepseek",
+      "task_id": "rc20-independent-chinese-documentation-1"
+    },
+    {
+      "actor_id": "deepseek:rc20-independent-single-feature-navigation-2:attention",
+      "arm": "attention",
+      "kind": "task",
+      "model": "deepseek-flash",
+      "provider": "deepseek",
+      "task_id": "rc20-independent-single-feature-navigation-2"
+    },
+    {
+      "actor_id": "deepseek:rc20-independent-single-feature-navigation-2:full_rc20",
+      "arm": "full_rc20",
+      "kind": "task",
+      "model": "deepseek-flash",
+      "provider": "deepseek",
+      "task_id": "rc20-independent-single-feature-navigation-2"
+    },
+    {
+      "actor_id": "deepseek:rc20-independent-single-feature-navigation-2:rc19",
+      "arm": "rc19",
+      "kind": "task",
+      "model": "deepseek-flash",
+      "provider": "deepseek",
+      "task_id": "rc20-independent-single-feature-navigation-2"
+    }
+  ],
+  "price_evidence": {
+    "basis": "peak/all-input-miss upper estimates; no discount, cached-input double counting, FX conversion, or invoice claim",
+    "deepseek": "https://api-docs.deepseek.com/quick_start/pricing/",
+    "exact_page_observation_time": "unknown",
+    "metadata_recorded_at_utc": "2026-10-14T01:27:33Z",
+    "mimo": "https://mimo.mi.com/docs/en-US/price/pay-as-you-go",
+    "mimo_page_update": "2026-10-08",
+    "observed_on_utc": "2026-10-14",
+    "verification": "root supplied verified official-page research; this driver did not fetch"
+  },
+  "prices": {
+    "deepseek": {
+      "USD": {
+        "cap": "5",
+        "input_hit": ".006",
+        "input_miss": ".30",
+        "output": "1.20"
+      }
+    },
+    "mimo": {
+      "CNY": {
+        "cap": "20",
+        "input_hit": ".025",
+        "input_miss": "3.00",
+        "output": "6.00"
+      },
+      "USD": {
+        "cap": "3",
+        "input_hit": ".0036",
+        "input_miss": ".435",
+        "output": ".87"
+      }
+    }
+  },
+  "providers": {
+    "deepseek": "deepseek-flash",
+    "mimo": "mimo-v2.6-pro"
+  },
+  "schema_version": 1,
+  "scope": {
+    "billing": "conservative reported-usage estimate under byte/token upper-estimate assumptions, not a guarantee for provider hidden templates or invoice; MiMo USD/CNY parallel caps, no FX; cached input not double-counted",
+    "causal_scope": "compare arms only within each fixed provider/model/scaffold; do not pool with OpenAI",
+    "discovery": "local HTTP200 zero-inference model listings, not serving/capability/funding proof; user funding statement is authorization only",
+    "handoff": "actual source disk snapshot plus fixed receiver prompt; no conversation history; new actor/journal/current-byte required reads",
+    "handoff_estimand": "exploratory planned-handoff feasibility; design/targets known to implementer and reviewers, not unexposed targets or proof of UPG causal benefit",
+    "identity": "API response IDs and reported usage are not service-internal identity attestation",
+    "quality": "strict quality failures remain failures; efficiency cannot offset quality",
+    "reused_tasks": "same seven target instances as OpenAI six-arm study; cross-scaffold reuse is not independent new tasks",
+    "statistics": "exploratory small sample; no formal qualification or promised net-benefit pass",
+    "stop": "single run; unknown retains reservation and stops whole study; no replay, replacement, append or result-based tuning"
+  },
+  "seed": 20015,
+  "source_preparation_seconds": 12.513973499997519,
+  "study_id": "upg-rc20-cross-provider-v1",
+  "task_families": {
+    "rc20-independent-chinese-documentation-1": "chinese-documentation",
+    "rc20-independent-evidence-fidelity-6": "evidence-fidelity",
+    "rc20-independent-interrupted-handoff-recovery-7": "interrupted-handoff-recovery",
+    "rc20-independent-public-api-consumers-3": "public-api-consumers",
+    "rc20-independent-simplification-preserves-safety-5": "simplification-preserves-safety",
+    "rc20-independent-single-feature-navigation-2": "single-feature-navigation",
+    "rc20-independent-stale-map-source-conflict-4": "stale-map-source-conflict"
+  },
+  "task_ids": [
+    "rc20-independent-chinese-documentation-1",
+    "rc20-independent-evidence-fidelity-6",
+    "rc20-independent-interrupted-handoff-recovery-7",
+    "rc20-independent-public-api-consumers-3",
+    "rc20-independent-simplification-preserves-safety-5",
+    "rc20-independent-single-feature-navigation-2",
+    "rc20-independent-stale-map-source-conflict-4"
+  ],
+  "thinking": "disabled"
+}

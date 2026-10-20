@@ -1,0 +1,53 @@
+{
+  "schema_version": "rc20-provider-index-engineering-audit-v1",
+  "recorded_at": "2026-10-15T15:53:23.775236+00:00",
+  "status": "ENGINEERING_VERIFIED_NOT_MODEL_EFFICACY",
+  "reason": "Official function tool envelopes can contain index metadata; closed v10 contained 30 invalid-engineering-batch records whose final responses had this field. This observation does not establish otherwise valid arguments or successful tasks. No regrade.",
+  "change": "Only explicit engineering batch envelope admits absent index or exact int equal to zero-based position; bool/float/str/wrong ordinals/unknown fields remain refused. Original raw and assistant messages retained; schemas, scope, IDs, credentials, budgets, quality and default profile unchanged.",
+  "source_identity": {
+    "evolution/provider_tools.py": "bba3a34620a8061bcafd2b27d6db57f88ace64541502ecee1132c4ba59f7c8b4",
+    "tests/test_engineering_tool_index.py": "07f32c5340df8efd9b2b1e92d229e0f9f4a006bc9a77b5b1e7bf330f45253b4e"
+  },
+  "primary_source": "https://api-docs.deepseek.com/guides/thinking_mode/",
+  "evidence": {
+    "candidate": {
+      "ref": "eval-workspaces/rc20-provider-index-compat-candidate-20261015-9a289b11/candidate-manifest-v1.json",
+      "sha256": "9e5cd57b3ad0a2f5c9a927f3bca717fdba3bbc7ec638f8a3ff5f12e2b4e2825c"
+    },
+    "adoption": {
+      "ref": "eval-workspaces/rc20-provider-index-adoption-v1/adoption.json",
+      "sha256": "95e6547ed50947c9a8bc590ee1903f33820e5c24e0b00d92dd23e7987308d1ae"
+    },
+    "independent_first_review": {
+      "ref": "eval-workspaces/rc20-provider-index-independent-review-20261015T154317Z-e10ea2bd5c5940019493094472e5a420/first-findings.receipt.json",
+      "sha256": "1e34e55e7755f775d07f811baca00e7fee115ae36f8223c2d927de0e71ccbc60"
+    },
+    "engineering": {
+      "ref": "eval-workspaces/rc20-provider-index-engineering-v1/result.json",
+      "sha256": "23e97c333ae6eb097c23774fc2578a9460e6e20452e5400b08cbe3e08d362e1b"
+    },
+    "closed_original_byte_preservation": {
+      "ref": "eval-workspaces/rc20-v10-preservation-independent-check-71d771844ab146c585aa241e9061d621/preservation.receipt.json",
+      "sha256": "fdd2167f98777b119d5809488d5101229d89a52cd9e5e0d7efce0825c92d88c6"
+    }
+  },
+  "engineering": {
+    "gates_passed": 9,
+    "discovered": 943,
+    "passed": 941,
+    "skipped": 2,
+    "source_files": 226,
+    "source_before_after_exact": true,
+    "wall_seconds": 185.125
+  },
+  "limits": [
+    "Pure and full regression establish engineering compatibility only; actual model task quality and token/time benefit remain unassessed for this source.",
+    "Closed v10 first raw PASS and first extraction failure remain frozen; no resume, re-extraction or cost unblinding.",
+    "Safe-connect policy and manual helper will be bound in a separately reviewed new protocol before paid actual calls."
+  ],
+  "governance_aggregate_sha256": "0049006fc61f4cbc4c028a63e1667044a2856339916fc1c623b5bfd4a7915561",
+  "qualification_id": "sha256:f78112d7a757424c557731c36ea4249844a1ef03a8c458ff940e234c307e5664",
+  "net_benefit": "NOT_ESTABLISHED",
+  "promotion_allowed": false,
+  "default_branch_and_local_install": "RC19"
+}

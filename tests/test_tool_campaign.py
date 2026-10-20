@@ -117,6 +117,50 @@ class CampaignTests(unittest.TestCase):
             self.assertIn(tool, prompt)
         self.assertNotIn("batch", prompt.lower())
 
+    def test_default_and_explicit_json_preserve_historical_prompt_bytes(self):
+        # SHA256 fixtures captured from d396's unmodified build_prompt before
+        # adding the keyword, including CRLF/non-ASCII exact planner strings.
+        fixtures = [
+            (("Skill", {"operation": "modify"}, "task"),
+             "b3eaed4769dedb51e5bf9492212920539846abf3429f36d306cd1be5760e07a0"),
+            (("Skill\r\n中文", '{\r\n  "z": 1, "a": "语义"\r\n}', "task\n保持未知"),
+             "df1c24ca5ab224a22a9f01f65e3c1ac0a1de1967a79e092660719ce8f4ab0371"),
+            (("", {"z": 1, "a": "语义"}, ""),
+             "56138a199bc4d86a5ea7ecbc8be7df0ce756eea0090a16b9db8f42993ed46d56"),
+        ]
+        for arguments, expected in fixtures:
+            with self.subTest(expected=expected):
+                default = tool_campaign.build_prompt(*arguments)
+                explicit = tool_campaign.build_prompt(*arguments, terminal_report="json")
+                self.assertEqual(default, explicit)
+                self.assertEqual(hashlib.sha256(default.encode("utf-8")).hexdigest(), expected)
+                self.assertIn("Finish with only JSON", default)
+                self.assertNotIn("repo_finish", default)
+
+    def test_native_terminal_is_explicit_without_conflicting_json_instruction(self):
+        skill, plan, task = "exact skill\r\n中文", '{\r\n "key": true\r\n}\n', "exact task\n"
+        legacy = tool_campaign.build_prompt(skill, plan, task)
+        native = tool_campaign.build_prompt(skill, plan, task, terminal_report="native-tool")
+        legacy_common, legacy_context = legacy.split("\n\n<governance_skill>", 1)
+        common, context = native.split("\n\n<governance_skill>", 1)
+        self.assertEqual(context, legacy_context)
+        self.assertEqual(common.split("Finish", 1)[0], legacy_common.split("Finish", 1)[0])
+        self.assertIn("repo_finish alone as the sole tool call in that response", common)
+        self.assertIn("Do not submit a free-text terminal report.", common)
+        self.assertNotIn("JSON", common)
+        self.assertNotIn("only JSON", native)
+        for value in ["summary (string)", "validation ('passed' or 'failed')",
+                      "helper_gap ('project_tool unavailable in bounded broker')"]:
+            self.assertIn(value, common)
+        self.assertNotEqual(native, legacy)
+
+    def test_invalid_terminal_mode_fails_closed_and_is_keyword_only(self):
+        for mode in [None, True, 0, [], {}, "", "JSON", "native", "json/native-tool"]:
+            with self.subTest(mode=mode), self.assertRaises(ValueError):
+                tool_campaign.build_prompt("Skill", {}, "task", terminal_report=mode)
+        with self.assertRaises(TypeError):
+            tool_campaign.build_prompt("Skill", {}, "task", "native-tool")
+
     def test_collection_complete_budget_and_completed_resume_no_dispatch(self):
         run = self.collect()
         self.assertEqual(run["status"], "completed")

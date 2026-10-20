@@ -26,6 +26,20 @@
     "change"
   ],
   "properties": {
+    "checkpoint_id": {
+      "type": "string", "minLength": 1, "maxLength": 100,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+      "description": "Stable partial/blocked stage identity. Exact retries are idempotent; new observed stages use a new ID."
+    },
+    "current_state": {
+      "type": "object", "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1, "maxLength": 1024},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      },
+      "description": "Reference to the existing project current-state JSON, not a copy or historical completion record."
+    },
     "schema_version": {
       "const": 1
     },

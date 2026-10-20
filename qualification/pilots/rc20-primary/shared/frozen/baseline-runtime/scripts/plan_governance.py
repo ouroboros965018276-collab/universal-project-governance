@@ -1,0 +1,261 @@
+#!/usr/bin/env python3
+"""Compile a typed task context into the smallest applicable governance execution plan."""
+from __future__ import annotations
+
+import argparse
+import json
+from pathlib import Path
+import sys
+from project_tool import status as project_status, validate_node
+
+REPORT_ORDER = {"none": 0, "change-note": 1, "engineering": 2, "audit": 3}
+
+
+def load_index() -> dict:
+    root = Path(__file__).resolve().parents[1]
+    return json.loads((root / "policy-index.json").read_text(encoding="utf-8"))
+
+
+def normalize_context(args: argparse.Namespace) -> dict:
+    if args.context:
+        data = json.loads(Path(args.context).read_text(encoding="utf-8-sig"))
+    else:
+        risk = {}
+        for item in args.risk:
+            if "=" not in item:
+                raise ValueError("--risk expects key=0|1|2")
+            key, raw = item.split("=", 1)
+            value = int(raw)
+            if value < 0 or value > 2:
+                raise ValueError("risk values must be 0..2")
+            risk[key] = value
+        data = {
+            "operation": args.operation,
+            "domains": args.domain or ["code"],
+            "signals": args.signal or [],
+            "profiles": args.profile or [],
+            "unfinished": args.unfinished,
+            "explicit_audit": args.audit,
+            "risk": risk,
+        }
+    if not isinstance(data, dict):
+        raise ValueError("task context must be an object")
+    data.setdefault("signals", [])
+    data.setdefault("profiles", [])
+    data.setdefault("unfinished", False)
+    data.setdefault("explicit_audit", False)
+    data.setdefault("risk", {})
+    return data
+
+
+def validate_context(ctx: dict, index: dict) -> None:
+    if not isinstance(ctx, dict):
+        raise ValueError("task context must be an object")
+    dims = index["risk_model"]["dimensions"]
+    risk_values = ctx.get("risk", {})
+    if isinstance(risk_values, dict):
+        for key, value in risk_values.items():
+            if key not in dims:
+                raise ValueError(
+                    "unknown risk dimension: %s (expected one of: %s)"
+                    % (key, ", ".join(sorted(dims)))
+                )
+    schema_path = Path(__file__).resolve().parents[1] / "schemas" / "task-context.schema.json"
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    errors = validate_node(ctx, schema)
+    if errors:
+        raise ValueError("invalid task context: " + "; ".join(errors))
+
+
+def trigger_matches(policy: dict, ctx: dict) -> bool:
+    t = policy["triggers"]
+    return (
+        ctx["operation"] in t.get("operations", [])
+        or bool(set(ctx["domains"]) & set(t.get("domains", [])))
+        or bool(set(ctx.get("signals", [])) & set(t.get("signals", [])))
+    )
+
+
+def risk(index: dict, ctx: dict):
+    score = 0
+    for key, spec in index["risk_model"]["dimensions"].items():
+        score += int(ctx.get("risk", {}).get(key, 0)) * int(spec["weight"])
+    if ctx["operation"] == "release":
+        return "release", score, "audit"
+    level = "high"
+    report = "engineering"
+    for item in index["risk_model"]["levels"]:
+        if item["min"] <= score <= item["max"]:
+            level, report = item["id"], item["report"]
+            break
+    return level, score, report
+
+
+def compile_plan(index: dict, ctx: dict) -> dict:
+    validate_context(ctx, index)
+    policies = {p["id"]: p for p in index["policies"]}
+    risk_level, risk_score, report = risk(index, ctx)
+    active = set(index["default_rules"])
+
+    structural = index["structural_integration"]
+    risk_rank = {"trivial": 0, "low": 1, "medium": 2, "high": 3, "release": 4}
+    structural_required = (
+        ctx["operation"] not in set(structural.get("exempt_operations", []))
+        and (
+            ctx["operation"] in set(structural.get("force_operations", []))
+            or risk_rank[risk_level] >= risk_rank[structural["minimum_risk_level"]]
+        )
+    )
+    if structural_required:
+        active.add(structural["policy_id"])
+
+    for p in index["policies"]:
+        if trigger_matches(p, ctx):
+            active.add(p["id"])
+
+    for profile_id in ctx.get("profiles", []):
+        profile = index["profiles"].get(profile_id)
+        if profile is None:
+            continue  # Unknown project hints retain the universal task/risk closure.
+        active.update(profile.get("activates", []))
+
+    if ctx.get("unfinished") or "handoff" in ctx.get("signals", []) or "unfinished" in ctx.get("signals", []):
+        active.add("HANDOFF_CONTINUITY")
+
+    stack = list(active)
+    while stack:
+        rule_id = stack.pop()
+        if rule_id not in policies:
+            raise ValueError("policy closure references unknown rule: %s" % rule_id)
+        for dep in policies[rule_id].get("requires", []):
+            if dep not in active:
+                active.add(dep)
+                stack.append(dep)
+
+    handoff = "required" if ctx.get("unfinished") else "not-required"
+    evidence = []
+    closures = []
+    warnings = []
+    unknown_profiles = sorted(set(ctx.get("profiles", [])) - set(index["profiles"]))
+    if unknown_profiles:
+        warnings.append("unknown optional profiles use universal task/risk rules: " + ", ".join(unknown_profiles))
+
+    order = index.get("presentation", {}).get("policy_order", sorted(policies))
+    if not isinstance(order, list) or len(order) != len(policies) or set(order) != set(policies):
+        raise ValueError("invalid presentation policy permutation")
+    for rule_id in (rid for rid in order if rid in active):
+        p = policies[rule_id]
+        closures.append("%s: %s" % (rule_id, p["closure"]))
+        for item in p.get("evidence", []):
+            if item not in evidence:
+                evidence.append(item)
+        pref = p.get("report", "inherit")
+        if pref != "inherit" and REPORT_ORDER[pref] > REPORT_ORDER[report]:
+            report = pref
+        hp = p.get("handoff", "inherit")
+        if hp == "required" or (hp == "if_unfinished" and ctx.get("unfinished")):
+            handoff = "required"
+
+    if ctx.get("explicit_audit"):
+        report = "audit"
+
+    budget = index["complexity_budget"]["default_active_policies_max"]
+    if risk_level in {"trivial", "low"} and len(active) > budget:
+        warnings.append("low-risk plan activates %d policies; default budget is %d" % (len(active), budget))
+
+    plan = {
+        "version": index["version"],
+        "change_mode": "structural" if structural["policy_id"] in active else "local",
+        "scope_guard": structural["scope_guard"] if structural["policy_id"] in active else "local-only",
+        "risk_level": risk_level,
+        "risk_score": risk_score,
+        "active_rules": sorted(active),
+        "required_closures": closures,
+        "evidence": evidence,
+        "report": report,
+        "field_report_obligation": (
+            "required-before-completion"
+            if ctx.get(
+                "field_test_reporting",
+                index.get("project_binding", {}).get("field_test_reporting"),
+            ) is True
+            else "not-required"
+        ),
+        "field_report_file": index.get("project_binding", {}).get("field_report_file"),
+        "handoff": handoff,
+        "warnings": warnings,
+    }
+    if set(ctx.get("signals", [])) & set(policies["HANDOFF_CONTINUITY"]["triggers"].get("signals", [])):
+        # Explicit sibling loading also supports hosts importing this script by path.
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("_upg_project_facts", Path(__file__).with_name("project_facts.py"))
+        helper = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(helper)
+        recovery = helper.recovery_plan(ctx.get("signals", []))
+        if recovery is not None: plan["recovery"] = recovery
+    return plan
+
+
+def render_markdown(plan: dict) -> str:
+    lines = [
+        "# Governance Plan",
+        "",
+        "- **Risk:** %s (%s)" % (plan["risk_level"], plan["risk_score"]),
+        "- **Change mode:** %s" % plan["change_mode"],
+        "- **Scope guard:** %s" % plan["scope_guard"],
+        "- **Report:** %s" % plan["report"],
+        "- **Field report:** %s" % plan["field_report_obligation"],
+        "- **Handoff:** %s" % plan["handoff"],
+        "",
+        "## Active rules",
+    ]
+    lines += ["- " + x for x in plan["active_rules"]]
+    lines += ["", "## Required closure"]
+    lines += ["- " + x for x in plan["required_closures"]]
+    lines += ["", "## Evidence"]
+    lines += ["- " + x for x in plan["evidence"]]
+    if plan["warnings"]:
+        lines += ["", "## Warnings"] + ["- " + x for x in plan["warnings"]]
+    if "recovery" in plan:
+        lines += ["", "## Project fact recovery (%s)" % plan["recovery"]["mode"]]
+        lines += ["- " + x for x in plan["recovery"]["steps"] + plan["recovery"]["constraints"]]
+    return "\n".join(lines) + "\n"
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--context")
+    ap.add_argument("--operation", default="edit")
+    ap.add_argument("--domain", action="append", default=[])
+    ap.add_argument("--signal", action="append", default=[])
+    ap.add_argument("--profile", action="append", default=[])
+    ap.add_argument("--risk", action="append", default=[])
+    ap.add_argument("--project-root", help="read the project binding to resolve field-report obligation")
+    ap.add_argument("--unfinished", action="store_true")
+    ap.add_argument("--audit", action="store_true")
+    ap.add_argument("--json", action="store_true")
+    args = ap.parse_args()
+    try:
+        index = load_index()
+        ctx = normalize_context(args)
+        if args.project_root:
+            state = project_status(args.project_root)
+            if state.get("ok"):
+                ctx["field_test_reporting"] = state["field_test_reporting"]
+            elif state.get("reason") == "binding-missing":
+                ctx["field_test_reporting"] = index.get("project_binding", {}).get("field_test_reporting", False)
+            else:
+                raise ValueError("project binding is not healthy: %s" % state.get("reason"))
+        plan = compile_plan(index, ctx)
+    except (OSError, ValueError, json.JSONDecodeError) as exc:
+        print("error: %s" % exc, file=sys.stderr)
+        return 2
+    if args.json:
+        print(json.dumps(plan, separators=(",", ":"), ensure_ascii=True))
+    else:
+        sys.stdout.write(render_markdown(plan))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

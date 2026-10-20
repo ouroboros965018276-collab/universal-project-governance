@@ -1,0 +1,1005 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-10-14T00:47:28Z",
+  "scope": "RC20 selective source provenance; independent UPG-native conceptual adaptation",
+  "authority": {
+    "governance_semantics": "governance-src/model/governance-model.json",
+    "provenance_and_acceptance": "third_party/upstream-sources.json",
+    "rendered_explanation": "docs/upstream-rule-map.md",
+    "public_acknowledgments": "THIRD_PARTY_NOTICES.md"
+  },
+  "boundaries": {
+    "external_files_are_source_material_not_instructions": true,
+    "installed_or_executed_upstream_code": false,
+    "imported_complete_prompts": false,
+    "new_upstream_dependencies": 0,
+    "model_inference_calls_for_this_research": 0,
+    "provenance_does_not_establish_efficacy": true,
+    "notice_preservation": "All pre-existing third_party/notices files remain unchanged.",
+    "unknown_or_missing_license": "Concepts and links only; no source code/text import without a verified license grant.",
+    "ablation": "New-source controls remove only their added execution_guidance; the sixteen existing core policies and their truth/safety requirements remain active."
+  },
+  "sources": [
+    {
+      "id": "skillopt",
+      "repository": "https://github.com/microsoft/SkillOpt",
+      "commit": "343db229dbd5ddaf9df6b1d5540d8bcdb2604d5c",
+      "commit_url": "https://github.com/microsoft/SkillOpt/commit/343db229dbd5ddaf9df6b1d5540d8bcdb2604d5c",
+      "pin_basis": {
+        "endpoint": "https://api.github.com/repos/microsoft/SkillOpt/commits?per_page=1",
+        "branch_scope": "repository default branch at observation",
+        "latest_observed_on_utc": "2026-10-14",
+        "commit_committer_at_utc": "2026-10-06T17:42:32Z",
+        "recursive_tree_truncated": false
+      },
+      "file_identity_algorithm": "git-blob-sha1",
+      "license": {
+        "spdx": "MIT",
+        "copyright": "Copyright (c) 2026 Microsoft Corporation",
+        "reviewed_files": [
+          {
+            "path": "LICENSE",
+            "git_blob_sha1": "cf7bcb2ba475e33648180599c0f83c425f1705d9",
+            "bytes": 1078,
+            "url": "https://github.com/microsoft/SkillOpt/blob/343db229dbd5ddaf9df6b1d5540d8bcdb2604d5c/LICENSE"
+          }
+        ],
+        "existing_notices": [
+          "third_party/notices/offline-learning-MIT.txt",
+          "third_party/notices/offline-learning-history.json"
+        ]
+      },
+      "selected_files": [
+        {
+          "path": "docs/guide/skill-document.md",
+          "git_blob_sha1": "1df89d36c9767a15e8593ecdcab1cf9dfbf51534",
+          "bytes": 3424,
+          "url": "https://github.com/microsoft/SkillOpt/blob/343db229dbd5ddaf9df6b1d5540d8bcdb2604d5c/docs/guide/skill-document.md",
+          "sections": [
+            "How It Evolves",
+            "Skill Quality Metrics"
+          ]
+        },
+        {
+          "path": "skillopt/evaluation/gate.py",
+          "git_blob_sha1": "10461a98756ebacbf7d5a8bbdc67657950e2c199",
+          "bytes": 7267,
+          "url": "https://github.com/microsoft/SkillOpt/blob/343db229dbd5ddaf9df6b1d5540d8bcdb2604d5c/skillopt/evaluation/gate.py",
+          "sections": [
+            "select_gate_score",
+            "evaluate_gate"
+          ]
+        },
+        {
+          "path": "skillopt/optimizer/meta_skill.py",
+          "git_blob_sha1": "6e34ff10d90655bb620d3e63b1d2041338616a5c",
+          "bytes": 2959,
+          "url": "https://github.com/microsoft/SkillOpt/blob/343db229dbd5ddaf9df6b1d5540d8bcdb2604d5c/skillopt/optimizer/meta_skill.py",
+          "sections": [
+            "optimizer-side longitudinal memory"
+          ]
+        },
+        {
+          "path": "plugins/codex/skills/skillopt-sleep/SKILL.md",
+          "git_blob_sha1": "ac4a2bccfc0c9fb4fafd8f524b677f680a43b94b",
+          "bytes": 9402,
+          "url": "https://github.com/microsoft/SkillOpt/blob/343db229dbd5ddaf9df6b1d5540d8bcdb2604d5c/plugins/codex/skills/skillopt-sleep/SKILL.md",
+          "sections": [
+            "The cycle",
+            "staging and adoption boundary"
+          ]
+        }
+      ],
+      "adaptation_mode": "independent-concepts-no-source-import",
+      "handling": "Independent UPG-native conceptual adaptation. The retired source/license provenance remains intact; no upstream package or prompt is loaded.",
+      "excluded": [
+        "automatic transcript harvesting, scheduling or adoption",
+        "upstream backends, SDKs, plugins, datasets and checkpoints",
+        "keyword density, skill length or development score as release-quality proof",
+        "rewriting historical identities or treating failed/no-gain search as benefit"
+      ]
+    },
+    {
+      "id": "reverse-skill",
+      "repository": "https://github.com/zhaoxuya520/reverse-skill",
+      "commit": "cab634bd855fc287f6e420c1f36fd1a6b9245960",
+      "commit_url": "https://github.com/zhaoxuya520/reverse-skill/commit/cab634bd855fc287f6e420c1f36fd1a6b9245960",
+      "pin_basis": {
+        "endpoint": "https://api.github.com/repos/zhaoxuya520/reverse-skill/commits?per_page=1",
+        "branch_scope": "repository default branch at observation",
+        "latest_observed_on_utc": "2026-10-14",
+        "commit_committer_at_utc": "2026-09-22T05:18:45Z",
+        "recursive_tree_truncated": false
+      },
+      "file_identity_algorithm": "git-blob-sha1",
+      "license": {
+        "spdx": "MIT",
+        "copyright": "Copyright (c) 2026 zhaoxuya520",
+        "reviewed_files": [
+          {
+            "path": "LICENSE",
+            "git_blob_sha1": "050fb75594e1e739308940327c433069dc2a66f2",
+            "bytes": 1067,
+            "url": "https://github.com/zhaoxuya520/reverse-skill/blob/cab634bd855fc287f6e420c1f36fd1a6b9245960/LICENSE"
+          }
+        ],
+        "existing_notices": [
+          "third_party/notices/project-recovery-MIT.txt",
+          "third_party/notices/project-recovery-design.json"
+        ]
+      },
+      "selected_files": [
+        {
+          "path": "skills/ops/analysis-decision-framework.md",
+          "git_blob_sha1": "9ff90171f46016bb35b44926643eb4c38e20e5c8",
+          "bytes": 5487,
+          "url": "https://github.com/zhaoxuya520/reverse-skill/blob/cab634bd855fc287f6e420c1f36fd1a6b9245960/skills/ops/analysis-decision-framework.md",
+          "sections": [
+            "ADF-R1",
+            "ADF-R2",
+            "ADF-R4*",
+            "ADF-R41",
+            "ADF-R43",
+            "ADF-R44"
+          ]
+        },
+        {
+          "path": "skills/ops/evidence-finding-path.md",
+          "git_blob_sha1": "862ecca0f467040571da98f534519dc48626c0b8",
+          "bytes": 4376,
+          "url": "https://github.com/zhaoxuya520/reverse-skill/blob/cab634bd855fc287f6e420c1f36fd1a6b9245960/skills/ops/evidence-finding-path.md",
+          "sections": [
+            "Evidence",
+            "Finding",
+            "Validated sufficiency"
+          ]
+        },
+        {
+          "path": "skills/reverse-engineering/references/re-agent-workflow.md",
+          "git_blob_sha1": "7a9a31358885b914bd19d3c29765f47a531d0815",
+          "bytes": 16942,
+          "url": "https://github.com/zhaoxuya520/reverse-skill/blob/cab634bd855fc287f6e420c1f36fd1a6b9245960/skills/reverse-engineering/references/re-agent-workflow.md",
+          "sections": [
+            "0.1 Transition handoff",
+            "3.2 Timebox strategy"
+          ]
+        }
+      ],
+      "adaptation_mode": "independent-concepts-no-source-import",
+      "handling": "Independent adaptation into existing UPG fact-recovery/state/planner contracts; no copied case database, scripts or executable dependency.",
+      "excluded": [
+        "security exploitation recipes and reverse-engineering toolchains",
+        "automatic installation, authorization expansion or sample execution",
+        "universal two-evidence/static-plus-dynamic quota",
+        "fixed reverse-engineering stages, timers or compulsory user confirmation",
+        "a second project truth, journal or evidence system"
+      ]
+    },
+    {
+      "id": "caveman",
+      "repository": "https://github.com/JuliusBrussee/caveman",
+      "commit": "d262ab3882952a59312ff3537cd86d894523c5ab",
+      "commit_url": "https://github.com/JuliusBrussee/caveman/commit/d262ab3882952a59312ff3537cd86d894523c5ab",
+      "pin_basis": {
+        "endpoint": "https://api.github.com/repos/JuliusBrussee/caveman/commits?per_page=1",
+        "branch_scope": "repository default branch at observation",
+        "latest_observed_on_utc": "2026-10-14",
+        "commit_committer_at_utc": "2026-10-13T18:08:08Z",
+        "recursive_tree_truncated": false
+      },
+      "file_identity_algorithm": "git-blob-sha1",
+      "license": {
+        "spdx": "Apache-2.0",
+        "copyright": "Copyright 2026 Julius Brussee",
+        "reviewed_files": [
+          {
+            "path": "LICENSE",
+            "git_blob_sha1": "d645695673349e3947e8e5ae42332d0ac3164cd7",
+            "bytes": 11358,
+            "url": "https://github.com/JuliusBrussee/caveman/blob/d262ab3882952a59312ff3537cd86d894523c5ab/LICENSE"
+          },
+          {
+            "path": "LICENSING.md",
+            "git_blob_sha1": "e270852b0db7b031d9d47ee891023eb35ae166bd",
+            "bytes": 3645,
+            "url": "https://github.com/JuliusBrussee/caveman/blob/d262ab3882952a59312ff3537cd86d894523c5ab/LICENSING.md"
+          },
+          {
+            "path": "NOTICE",
+            "git_blob_sha1": "5b6c03199300662964c1c27906d9bdff47349e26",
+            "bytes": 2285,
+            "url": "https://github.com/JuliusBrussee/caveman/blob/d262ab3882952a59312ff3537cd86d894523c5ab/NOTICE"
+          },
+          {
+            "path": "LICENSE-MIT",
+            "git_blob_sha1": "d8c0ee8a752aeb14ee42044c3238e191f7571ac6",
+            "bytes": 1071,
+            "url": "https://github.com/JuliusBrussee/caveman/blob/d262ab3882952a59312ff3537cd86d894523c5ab/LICENSE-MIT"
+          }
+        ],
+        "existing_notices": []
+      },
+      "selected_files": [
+        {
+          "path": "skills/caveman/SKILL.md",
+          "git_blob_sha1": "9a94044529e5ee1576361c891b4a271504518e6f",
+          "bytes": 4678,
+          "url": "https://github.com/JuliusBrussee/caveman/blob/d262ab3882952a59312ff3537cd86d894523c5ab/skills/caveman/SKILL.md",
+          "sections": [
+            "Why",
+            "Answer first",
+            "Payload verbatim",
+            "Pre-send check"
+          ]
+        },
+        {
+          "path": "skills/caveman-compress/SKILL.md",
+          "git_blob_sha1": "9110fa6eda6b674ba97e21efeea6c1300a20e06f",
+          "bytes": 5578,
+          "url": "https://github.com/JuliusBrussee/caveman/blob/d262ab3882952a59312ff3537cd86d894523c5ab/skills/caveman-compress/SKILL.md",
+          "sections": [
+            "Preserve EXACTLY",
+            "Preserve Structure",
+            "Boundaries"
+          ]
+        },
+        {
+          "path": "skills/investigate-first/SKILL.md",
+          "git_blob_sha1": "83b2a9b35bea16e4d03439e44af367282e85c57c",
+          "bytes": 688,
+          "url": "https://github.com/JuliusBrussee/caveman/blob/d262ab3882952a59312ff3537cd86d894523c5ab/skills/investigate-first/SKILL.md",
+          "sections": [
+            "observed symptom and inferred cause",
+            "sufficient evidence"
+          ]
+        },
+        {
+          "path": "skills/verify-and-stop/SKILL.md",
+          "git_blob_sha1": "58a9cd7bbf500bc2905260f908dbcd03f107fa93",
+          "bytes": 704,
+          "url": "https://github.com/JuliusBrussee/caveman/blob/d262ab3882952a59312ff3537cd86d894523c5ab/skills/verify-and-stop/SKILL.md",
+          "sections": [
+            "smallest sufficient proof",
+            "current result reuse",
+            "stop after acceptance"
+          ]
+        },
+        {
+          "path": "skills/safe-refactor/SKILL.md",
+          "git_blob_sha1": "0d492db7d302e87f5bf01738fee6a7543984a787",
+          "bytes": 705,
+          "url": "https://github.com/JuliusBrussee/caveman/blob/d262ab3882952a59312ff3537cd86d894523c5ab/skills/safe-refactor/SKILL.md",
+          "sections": [
+            "behavior-preservation boundary"
+          ]
+        },
+        {
+          "path": "skills/surgical-patch/SKILL.md",
+          "git_blob_sha1": "1c06cb1436efd87f5641270cef3c2a27a71442ed",
+          "bytes": 664,
+          "url": "https://github.com/JuliusBrussee/caveman/blob/d262ab3882952a59312ff3537cd86d894523c5ab/skills/surgical-patch/SKILL.md",
+          "sections": [
+            "narrowest responsible layer"
+          ]
+        }
+      ],
+      "adaptation_mode": "independent-concepts-no-source-import",
+      "handling": "Independent concepts from selected documentation only. Current repository license is Apache-2.0; LICENSE-MIT records older releases/contributions, not an alternative blanket license for this pin. No code, runtime, fonts, assets, trademarks or complete prompt is imported.",
+      "excluded": [
+        "broken grammar, telegraphic ambiguity or lost negation",
+        "fixed sentence length, fixed answer pattern or blanket removal of warranted hedging",
+        "persistent persona, mode hooks or suppression of required progress updates",
+        "short chat diff as an implementation/scope limit",
+        "upstream compressor, provider forwarding, automatic overwrite or session harvesting",
+        "CLI, engines, proxy, browsing runtime, fonts, logos and transitive runtime dependencies"
+      ]
+    },
+    {
+      "id": "ponytail",
+      "repository": "https://github.com/DietrichGebert/ponytail",
+      "commit": "2961b52fc1fe6a5a87c7a959a79512e5c2f3ffe5",
+      "commit_url": "https://github.com/DietrichGebert/ponytail/commit/2961b52fc1fe6a5a87c7a959a79512e5c2f3ffe5",
+      "pin_basis": {
+        "endpoint": "https://api.github.com/repos/DietrichGebert/ponytail/commits?per_page=1",
+        "branch_scope": "repository default branch at observation",
+        "latest_observed_on_utc": "2026-10-14",
+        "commit_committer_at_utc": "2026-10-13T01:46:20Z",
+        "recursive_tree_truncated": false
+      },
+      "file_identity_algorithm": "git-blob-sha1",
+      "license": {
+        "spdx": "MIT",
+        "copyright": "Copyright (c) 2026 DietrichGebert",
+        "reviewed_files": [
+          {
+            "path": "LICENSE",
+            "git_blob_sha1": "715d483338cea4365f0d91a27799cf61226d6bcf",
+            "bytes": 1071,
+            "url": "https://github.com/DietrichGebert/ponytail/blob/2961b52fc1fe6a5a87c7a959a79512e5c2f3ffe5/LICENSE"
+          }
+        ],
+        "existing_notices": []
+      },
+      "selected_files": [
+        {
+          "path": "skills/ponytail/SKILL.md",
+          "git_blob_sha1": "b76922f76ec6f4db532203c55d710b749fa1f6af",
+          "bytes": 3492,
+          "url": "https://github.com/DietrichGebert/ponytail/blob/2961b52fc1fe6a5a87c7a959a79512e5c2f3ffe5/skills/ponytail/SKILL.md",
+          "sections": [
+            "Before you write",
+            "The smallest complete change",
+            "Never cut"
+          ]
+        },
+        {
+          "path": "skills/ponytail-debt/SKILL.md",
+          "git_blob_sha1": "0ae3e9ab3bb37c30c89c5a14441aa330952068c8",
+          "bytes": 1818,
+          "url": "https://github.com/DietrichGebert/ponytail/blob/2961b52fc1fe6a5a87c7a959a79512e5c2f3ffe5/skills/ponytail-debt/SKILL.md",
+          "sections": [
+            "ceiling and upgrade trigger",
+            "Boundaries"
+          ]
+        },
+        {
+          "path": "skills/ponytail-review/SKILL.md",
+          "git_blob_sha1": "a50e3ac6ded6fccc9edae34ce37877bbce11e3fa",
+          "bytes": 5143,
+          "url": "https://github.com/DietrichGebert/ponytail/blob/2961b52fc1fe6a5a87c7a959a79512e5c2f3ffe5/skills/ponytail-review/SKILL.md",
+          "sections": [
+            "Understand first",
+            "Check before you report"
+          ]
+        },
+        {
+          "path": "skills/ponytail-audit/SKILL.md",
+          "git_blob_sha1": "ff9a95480700600fe2664d2d0906a4d750b2da0b",
+          "bytes": 5417,
+          "url": "https://github.com/DietrichGebert/ponytail/blob/2961b52fc1fe6a5a87c7a959a79512e5c2f3ffe5/skills/ponytail-audit/SKILL.md",
+          "sections": [
+            "Map first",
+            "Check before you report"
+          ]
+        }
+      ],
+      "adaptation_mode": "independent-concepts-no-source-import",
+      "handling": "Independent, task-bounded adaptation into existing structural integration, evidence and debt contracts; no new persona, dependency or separate ledger.",
+      "excluded": [
+        "shortest diff or fewest lines as the winning objective",
+        "premature one-line fixes, speculative deletion or assumed dynamic unreachability",
+        "shortcut comment as immunity from review",
+        "repository-wide no-debt/healthy claim from a local scan",
+        "fixed report headings, finding counts, mandatory close or a second debt ledger",
+        "session-persistent mode or pushback on an already authorized complete task"
+      ]
+    },
+    {
+      "id": "academic-humanizer",
+      "repository": "https://github.com/AIScientists-Dev/academic-humanizer",
+      "commit": "94b88b23703bed7df507acae7d6d5876209a0cdf",
+      "commit_url": "https://github.com/AIScientists-Dev/academic-humanizer/commit/94b88b23703bed7df507acae7d6d5876209a0cdf",
+      "pin_basis": {
+        "endpoint": "https://api.github.com/repos/AIScientists-Dev/academic-humanizer/commits?per_page=1",
+        "branch_scope": "repository default branch at observation",
+        "latest_observed_on_utc": "2026-10-14",
+        "commit_committer_at_utc": "2026-07-03T07:58:31Z",
+        "recursive_tree_truncated": false
+      },
+      "file_identity_algorithm": "git-blob-sha1",
+      "license": {
+        "spdx": "MIT",
+        "copyright": "Copyright (c) 2026 AIScientists-Dev",
+        "reviewed_files": [
+          {
+            "path": "LICENSE",
+            "git_blob_sha1": "a4bc177491beda92665d628d86299630ac0abefa",
+            "bytes": 890,
+            "url": "https://github.com/AIScientists-Dev/academic-humanizer/blob/94b88b23703bed7df507acae7d6d5876209a0cdf/LICENSE"
+          }
+        ],
+        "existing_notices": []
+      },
+      "selected_files": [
+        {
+          "path": "SKILL.md",
+          "git_blob_sha1": "afb7d8da3cba41b47365730ceed40fa5a72d8097",
+          "bytes": 16779,
+          "url": "https://github.com/AIScientists-Dev/academic-humanizer/blob/94b88b23703bed7df507acae7d6d5876209a0cdf/SKILL.md",
+          "sections": [
+            "Layer 3: Preserve these",
+            "Layer 4: Claim-evidence discipline",
+            "Layer 5: Voice and venue matching",
+            "Layer 6.5: Claim and feasibility"
+          ]
+        },
+        {
+          "path": "README.md",
+          "git_blob_sha1": "1de4a538786dd3651acc3c21b6a3bfe2634b8514",
+          "bytes": 6205,
+          "url": "https://github.com/AIScientists-Dev/academic-humanizer/blob/94b88b23703bed7df507acae7d6d5876209a0cdf/README.md",
+          "sections": [
+            "Ethics and disclosure",
+            "Make it yours",
+            "Acknowledgments"
+          ]
+        }
+      ],
+      "adaptation_mode": "independent-concepts-no-source-import",
+      "handling": "Independent evidence/calibration/precision concepts only; no copied vocabulary catalog, examples, complete prompt or grant template. Its LICENSE/README acknowledge blader/humanizer and koaeraser/ARMS; that lineage is recorded without asserting a separately verified transitive licensing chain.",
+      "excluded": [
+        "AI-detector evasion, concealment of AI assistance or detector scores as an acceptance goal",
+        "fixed paragraph counts, word limits, punctuation bans or universal academic voice",
+        "invented numbers, citations, effect sizes, confidence or feasibility evidence",
+        "casualization, mechanical synonym replacement or removal of legitimate uncertainty",
+        "institutional/venue/funder templates as universal governance rules",
+        "importing attributed third-party text without a separately checked grant"
+      ]
+    }
+  ],
+  "mappings": [
+    {
+      "id": "UPM-001",
+      "source_refs": [
+        {
+          "source_id": "skillopt",
+          "path": "docs/guide/skill-document.md",
+          "section": "How It Evolves"
+        },
+        {
+          "source_id": "skillopt",
+          "path": "skillopt/evaluation/gate.py",
+          "section": "evaluate_gate"
+        },
+        {
+          "source_id": "skillopt",
+          "path": "skillopt/optimizer/meta_skill.py",
+          "section": "optimizer-side memory"
+        },
+        {
+          "source_id": "skillopt",
+          "path": "plugins/codex/skills/skillopt-sleep/SKILL.md",
+          "section": "staging and adoption"
+        }
+      ],
+      "upg_rule_ids": [
+        "GOVERNANCE_UPGRADE",
+        "RELEASE_AUDIT",
+        "EVIDENCE_AFFECTED"
+      ],
+      "execution_guidance_ids": [],
+      "implementation_refs": [
+        "evolution/reflective.py",
+        "evolution/controller.py",
+        "evolution/promotion.py",
+        "evolution/source_bridge.py"
+      ],
+      "trigger": "Explicitly authorized offline governance evolution or candidate admission; never an ordinary project task by default.",
+      "adapted_capability": "Keep optimizer memory and bounded proposals offline, stage candidates separately, isolate development/selection/final feedback, preserve charged failures and require qualified gain before promotion.",
+      "exclusions": [
+        "automatic adoption or live Skill mutation",
+        "no-gain/failed search presented as benefit",
+        "shortness, keyword density, hashes or development fixtures as empirical qualification"
+      ],
+      "acceptance": {
+        "case_id": "UPM-001",
+        "fixture": "A candidate has development improvement but missing independent final evidence, or no reliable gain, or unknown charged usage.",
+        "pass_if": [
+          "promotion remains blocked and the active source is unchanged",
+          "failed calls, actual costs and original source/protocol identities remain visible",
+          "training/selection/final identities and prior exposure are checked"
+        ],
+        "fail_if": [
+          "any text-length or development-score improvement silently promotes the candidate",
+          "a failed or synthetic run is reported as efficacy"
+        ],
+        "test_references": [
+          "tests/test_evolution_evidence.py",
+          "tests/test_evolution_invalid_proposal.py",
+          "tests/test_evolution_selection_budget.py"
+        ],
+        "status": "acceptance-contract; referenced tests are not a new execution receipt",
+        "evidence_scope": "Deterministic/static contract only; no model efficacy or qualification claim."
+      }
+    },
+    {
+      "id": "UPM-002",
+      "source_refs": [
+        {
+          "source_id": "reverse-skill",
+          "path": "skills/ops/analysis-decision-framework.md",
+          "section": "ADF-R1 / ADF-R4* / ADF-R41 / ADF-R44"
+        },
+        {
+          "source_id": "reverse-skill",
+          "path": "skills/ops/evidence-finding-path.md",
+          "section": "Evidence / Finding / Validated sufficiency"
+        }
+      ],
+      "upg_rule_ids": [
+        "TRUTH_CURRENT",
+        "EVIDENCE_AFFECTED",
+        "HANDOFF_CONTINUITY"
+      ],
+      "execution_guidance_ids": [
+        "task_scoped_reading"
+      ],
+      "implementation_refs": [
+        "governance-src/runtime-scripts/project_facts.py",
+        "governance-src/schemas/handoff.schema.json"
+      ],
+      "trigger": "Interrupted, stale, contradictory or opaque task state, or a material claim that depends on an unverified declaration.",
+      "adapted_capability": "Recover only task-relevant current sources and consumers; retain observed symptoms, hypotheses, static declarations and dynamic checks as different evidence classes. Evidence sufficiency depends on the claim and bound context.",
+      "exclusions": [
+        "hash equality or an evidence path automatically grants validated status",
+        "fixed source-count/static-plus-dynamic quota",
+        "security-specific toolchain or a second fact system"
+      ],
+      "acceptance": {
+        "case_id": "UPM-002",
+        "fixture": "An old PASS record and equal hashes coexist with a dynamic claim missing tested revision/configuration/environment, or a stale consumer registration.",
+        "pass_if": [
+          "static observations remain static and missing context remains unverified",
+          "current consumer/contract facts are recovered within scope",
+          "unknown prior intent is preserved"
+        ],
+        "fail_if": [
+          "declared/static facts are reported as executed behavior",
+          "hash equality alone establishes semantic validity"
+        ],
+        "test_references": [
+          "tests/test_project_recovery.py::test_dynamic_claim_without_context_stays_unverified",
+          "tests/test_project_recovery.py::test_equal_hashes_only_offer_review_not_semantic_truth",
+          "tests/test_fact_recovery_tools.py"
+        ],
+        "status": "acceptance-contract; referenced tests are not a new execution receipt",
+        "evidence_scope": "Deterministic/static contract only; no model efficacy or qualification claim."
+      }
+    },
+    {
+      "id": "UPM-003",
+      "source_refs": [
+        {
+          "source_id": "reverse-skill",
+          "path": "skills/reverse-engineering/references/re-agent-workflow.md",
+          "section": "0.1 Transition handoff / 3.2 Timebox strategy"
+        },
+        {
+          "source_id": "reverse-skill",
+          "path": "skills/ops/analysis-decision-framework.md",
+          "section": "ADF-R2 / ADF-R43"
+        }
+      ],
+      "upg_rule_ids": [
+        "HANDOFF_CONTINUITY",
+        "TRUTH_CURRENT"
+      ],
+      "execution_guidance_ids": [
+        "task_scoped_reading"
+      ],
+      "implementation_refs": [
+        "governance-src/runtime-scripts/project_facts.py",
+        "governance-src/runtime-scripts/state_tool.py",
+        "governance-src/schemas/handoff.schema.json"
+      ],
+      "trigger": "A task crosses a boundary or repeats a method without new evidence; the receiving actor must continue from current state.",
+      "adapted_capability": "Carry unchanged evidence references, record only decisions that alter the next action, validate inherited context and change method after repeated no progress.",
+      "exclusions": [
+        "serializing the complete context at every transition",
+        "fixed reverse-engineering timer, action quota or stage choreography",
+        "deltas applied without their referenced state"
+      ],
+      "acceptance": {
+        "case_id": "UPM-003",
+        "fixture": "A handoff carries unchanged current references and a decision delta; one reference later changes while a method produces no new evidence.",
+        "pass_if": [
+          "valid references may be reused without full duplication",
+          "stale/out-of-scope references are rejected or invalidated",
+          "hypotheses, contradictions and a method-switch decision remain distinguishable"
+        ],
+        "fail_if": [
+          "the receiving actor invents historical intent",
+          "the same failed loop is repeated indefinitely or stale evidence is inherited as current"
+        ],
+        "test_references": [
+          "tests/test_project_recovery.py::test_changed_and_out_of_scope_references_are_not_inherited",
+          "tests/test_project_recovery.py::test_no_progress_switch_and_contradictions_are_preserved"
+        ],
+        "status": "acceptance-contract; referenced tests are not a new execution receipt",
+        "evidence_scope": "Deterministic/static contract only; no model efficacy or qualification claim."
+      }
+    },
+    {
+      "id": "UPM-004",
+      "source_refs": [
+        {
+          "source_id": "caveman",
+          "path": "skills/caveman/SKILL.md",
+          "section": "Answer first / Payload verbatim / Pre-send check"
+        },
+        {
+          "source_id": "caveman",
+          "path": "skills/caveman-compress/SKILL.md",
+          "section": "Preserve EXACTLY / Boundaries"
+        }
+      ],
+      "upg_rule_ids": [
+        "TRUTH_CURRENT",
+        "EVIDENCE_AFFECTED"
+      ],
+      "execution_guidance_ids": [
+        "decision_relevance"
+      ],
+      "implementation_refs": [
+        "governance-src/model/governance-model.json"
+      ],
+      "trigger": "A project response, status update or persisted explanation can remove information-free wording while preserving the user's decision and task evidence.",
+      "adapted_capability": "Lead with the outcome and decision-relevant explanation; remove ceremony and repetition while preserving exact technical payload, negation, conditions, uncertainty and ordering.",
+      "exclusions": [
+        "broken grammar or ambiguous fragments",
+        "fixed sentence limit or answer template",
+        "blanket hedging removal",
+        "code/comment/command rewrites justified only by prose compression",
+        "suppressing host-required updates"
+      ],
+      "acceptance": {
+        "case_id": "UPM-004",
+        "fixture": "A verbose explanation contains a command/path, numeric unit, negation, an exception and evidence uncertainty that affect the next action.",
+        "pass_if": [
+          "redundant language can be removed but every material condition and exact payload survives",
+          "the result is readable in the user's language",
+          "compression yields to clarity when they conflict"
+        ],
+        "fail_if": [
+          "negation, units, command bytes, limits or uncertainty are dropped",
+          "a persona or fixed word count overrides task needs"
+        ],
+        "test_references": [
+          "tests/test_context_discipline_acceptance.py::test_process_narration_and_missing_document_structure_fail",
+          "tests/test_context_discipline_acceptance.py::test_lost_numbers_reference_negation_or_unknown_fails"
+        ],
+        "status": "acceptance-contract; referenced tests are not a new execution receipt",
+        "evidence_scope": "Deterministic/static contract only; no model efficacy or qualification claim."
+      }
+    },
+    {
+      "id": "UPM-005",
+      "source_refs": [
+        {
+          "source_id": "caveman",
+          "path": "skills/verify-and-stop/SKILL.md",
+          "section": "smallest sufficient proof / current result reuse / stop after acceptance"
+        },
+        {
+          "source_id": "caveman",
+          "path": "skills/investigate-first/SKILL.md",
+          "section": "sufficient evidence"
+        },
+        {
+          "source_id": "caveman",
+          "path": "skills/safe-refactor/SKILL.md",
+          "section": "behavior-preservation boundary"
+        }
+      ],
+      "upg_rule_ids": [
+        "EVIDENCE_AFFECTED",
+        "CONTRACT_VALIDATE",
+        "STRUCTURAL_INTEGRATION"
+      ],
+      "execution_guidance_ids": [
+        "task_scoped_reading",
+        "decision_relevance"
+      ],
+      "implementation_refs": [
+        "governance-src/model/governance-model.json",
+        "governance-src/templates/SKILL.template.md"
+      ],
+      "trigger": "The scoped acceptance conditions and relevant behavior boundaries are known; a contemplated read or check needs a concrete decision purpose.",
+      "adapted_capability": "Choose the smallest sufficient proof set, reuse still-current evidence bound to the same state, and stop optional exploration when applicable acceptance is complete.",
+      "exclusions": [
+        "skip mandatory final-state, contract or release gates",
+        "treat earlier matching hashes as complete semantic evidence",
+        "stop before cleanup/truth/handoff obligations are complete",
+        "unbounded rereads or retests with no unresolved decision"
+      ],
+      "acceptance": {
+        "case_id": "UPM-005",
+        "fixture": "Focused checks pass on current final bytes while one mandatory affected-contract gate remains pending; all gates then pass with no new change.",
+        "pass_if": [
+          "the mandatory gate still runs",
+          "after all applicable obligations pass, optional exploration stops",
+          "a later edit or failed check invalidates only relevant reusable evidence"
+        ],
+        "fail_if": [
+          "smallest proof is used to skip an applicable gate",
+          "passing results trigger unrelated polish or broad redundant tests"
+        ],
+        "test_references": [
+          "tests/test_validation_continuity.py",
+          "tests/test_tool_patch_receipts.py"
+        ],
+        "status": "acceptance-contract; referenced tests are not a new execution receipt",
+        "evidence_scope": "Deterministic/static contract only; no model efficacy or qualification claim."
+      }
+    },
+    {
+      "id": "UPM-006",
+      "source_refs": [
+        {
+          "source_id": "ponytail",
+          "path": "skills/ponytail/SKILL.md",
+          "section": "Before you write / The smallest complete change / Never cut"
+        },
+        {
+          "source_id": "caveman",
+          "path": "skills/surgical-patch/SKILL.md",
+          "section": "narrowest responsible layer"
+        },
+        {
+          "source_id": "caveman",
+          "path": "skills/safe-refactor/SKILL.md",
+          "section": "behavior-preservation boundary"
+        }
+      ],
+      "upg_rule_ids": [
+        "STRUCTURAL_INTEGRATION",
+        "CONTRACT_VALIDATE",
+        "CLEANUP_OBSOLETE",
+        "TRUTH_CURRENT"
+      ],
+      "execution_guidance_ids": [
+        "complete_change"
+      ],
+      "implementation_refs": [
+        "governance-src/model/governance-model.json"
+      ],
+      "trigger": "An authorized implementation changes a shared mechanism, caller contract, dependency or structural boundary.",
+      "adapted_capability": "Solve the complete scoped problem at the responsible canonical layer, reuse existing facilities, reach affected callers/tests/config and remove superseded local paths safely. Correctness and completion take precedence over line count.",
+      "exclusions": [
+        "shortest diff/fewest lines as an objective",
+        "a local wrapper used instead of the shared cause",
+        "unrelated architecture redesign",
+        "dropping error handling, security, accessibility or user-requested behavior"
+      ],
+      "acceptance": {
+        "case_id": "UPM-006",
+        "fixture": "A shared defect has two callers; a one-line caller patch hides it while a bounded canonical fix requires both callers and an affected contract check.",
+        "pass_if": [
+          "the responsible shared mechanism and affected consumers are covered",
+          "existing infrastructure is reused and replaced local paths are reviewed",
+          "unrelated behavior and user changes remain preserved"
+        ],
+        "fail_if": [
+          "the smaller diff wins despite an unresolved caller",
+          "a new dependency or abstraction is added without task need"
+        ],
+        "test_references": [
+          "tests/test_compiled_runtime.py::test_medium_risk_edit_defaults_to_structural_mode",
+          "tests/fixtures/governance_plan_cases.json"
+        ],
+        "status": "acceptance-contract; referenced tests are not a new execution receipt",
+        "evidence_scope": "Deterministic/static contract only; no model efficacy or qualification claim."
+      }
+    },
+    {
+      "id": "UPM-007",
+      "source_refs": [
+        {
+          "source_id": "ponytail",
+          "path": "skills/ponytail-debt/SKILL.md",
+          "section": "ceiling and upgrade trigger"
+        },
+        {
+          "source_id": "ponytail",
+          "path": "skills/ponytail/SKILL.md",
+          "section": "shortcut limit / Never cut"
+        }
+      ],
+      "upg_rule_ids": [
+        "DEBT_BOUNDARY",
+        "EVIDENCE_AFFECTED"
+      ],
+      "execution_guidance_ids": [
+        "complete_change"
+      ],
+      "implementation_refs": [
+        "governance-src/model/governance-model.json"
+      ],
+      "trigger": "Safely fixable in-scope debt is found, or an external blocker prevents scoped cleanup.",
+      "adapted_capability": "Fix safely resolvable scoped debt; otherwise retain a bounded exception naming reason, risk, mitigation, known owner and review/removal condition in existing project state.",
+      "exclusions": [
+        "shortcut comment exempts correctness or security review",
+        "a new parallel debt ledger",
+        "no marker found means no project debt",
+        "defer work merely to minimize the diff"
+      ],
+      "acceptance": {
+        "case_id": "UPM-007",
+        "fixture": "An in-scope shortcut has no review trigger, or its documented ceiling is exceeded; a different item is blocked outside current authority.",
+        "pass_if": [
+          "the fixable scoped defect is fixed",
+          "the blocked item has a bounded risk/mitigation/review record",
+          "claims remain limited to inspected scope"
+        ],
+        "fail_if": [
+          "the comment alone excuses a currently unsafe shortcut",
+          "a local scan asserts project-wide debt clearance"
+        ],
+        "test_references": [
+          "tests/fixtures/governance_plan_cases.json"
+        ],
+        "status": "acceptance-contract; referenced tests are not a new execution receipt",
+        "evidence_scope": "Deterministic/static contract only; no model efficacy or qualification claim."
+      }
+    },
+    {
+      "id": "UPM-008",
+      "source_refs": [
+        {
+          "source_id": "ponytail",
+          "path": "skills/ponytail-review/SKILL.md",
+          "section": "Understand first / Check before you report"
+        },
+        {
+          "source_id": "ponytail",
+          "path": "skills/ponytail-audit/SKILL.md",
+          "section": "Map first / Check before you report"
+        },
+        {
+          "source_id": "caveman",
+          "path": "skills/investigate-first/SKILL.md",
+          "section": "observed symptom and inferred cause"
+        }
+      ],
+      "upg_rule_ids": [
+        "EVIDENCE_AFFECTED",
+        "CONTRACT_VALIDATE",
+        "TRUTH_CURRENT"
+      ],
+      "execution_guidance_ids": [
+        "complete_change",
+        "task_scoped_reading"
+      ],
+      "implementation_refs": [
+        "governance-src/model/governance-model.json"
+      ],
+      "trigger": "A scoped review, proposed deletion or compatibility claim depends on real callers, dynamic registrations or expected operating load.",
+      "adapted_capability": "Trace relevant inputs/consumers/contracts, inspect the context needed for a concrete failure case and distinguish observed defects from hypotheses and preference. Prioritize correctness and safety over leanness.",
+      "exclusions": [
+        "diff-only certainty",
+        "unused-code claim based only on ordinary static caller search",
+        "unbounded whole-repository audit",
+        "unsupported load/performance claims or cosmetic findings"
+      ],
+      "acceptance": {
+        "case_id": "UPM-008",
+        "fixture": "A public entry has no ordinary call sites but remains registered dynamically; a proposed lean deletion removes it.",
+        "pass_if": [
+          "dynamic/configuration references are checked where relevant",
+          "the review explains a concrete preserved/broken contract",
+          "uninspected load or behavior remains an explicit gap"
+        ],
+        "fail_if": [
+          "the registration is deleted to simplify the result",
+          "a style preference is reported as a verified bug"
+        ],
+        "test_references": [
+          "tests/test_fact_recovery_tools.py::test_dynamic_consumer_or_protected_contract_deletion_fails",
+          "tests/test_project_recovery.py"
+        ],
+        "status": "acceptance-contract; referenced tests are not a new execution receipt",
+        "evidence_scope": "Deterministic/static contract only; no model efficacy or qualification claim."
+      }
+    },
+    {
+      "id": "UPM-009",
+      "source_refs": [
+        {
+          "source_id": "academic-humanizer",
+          "path": "SKILL.md",
+          "section": "Layer 3: Preserve these / Layer 4: Claim-evidence discipline / Layer 6.5: Claim and feasibility"
+        },
+        {
+          "source_id": "academic-humanizer",
+          "path": "README.md",
+          "section": "Ethics and disclosure"
+        }
+      ],
+      "upg_rule_ids": [
+        "TRUTH_CURRENT",
+        "EVIDENCE_AFFECTED"
+      ],
+      "execution_guidance_ids": [
+        "evidence_fidelity"
+      ],
+      "implementation_refs": [
+        "governance-src/model/governance-model.json"
+      ],
+      "trigger": "An empirical, performance, qualification, compatibility or feasibility claim is written or edited.",
+      "adapted_capability": "Match the claim's verb and scope to supplied evidence, use real evidence pointers, retain warranted uncertainty and mark missing support explicitly.",
+      "exclusions": [
+        "inventing a metric, result, citation, significance test or feasibility support",
+        "turning evidence gaps into stronger prose",
+        "detector evasion or concealment of required disclosure",
+        "inheriting a universal grant-writing template"
+      ],
+      "acceptance": {
+        "case_id": "UPM-009",
+        "fixture": "A draft says a method universally proves faster despite a small artifact-only sample, a timing interval spanning no gain and missing independent qualification.",
+        "pass_if": [
+          "the claim is bounded to the actual tested sample and evidence type",
+          "timing uncertainty and unassessed qualification remain explicit",
+          "no new number/result/reference is invented"
+        ],
+        "fail_if": [
+          "the edit manufactures support or implies general efficacy",
+          "detector score or perceived human authorship is used as a success criterion"
+        ],
+        "test_references": [
+          "tests/test_evolution_evidence.py::test_synthetic_and_cache_observations_are_not_release_evidence",
+          "tests/test_evolution_evidence.py::test_hand_filled_pass_flags_cannot_promote_or_write_source"
+        ],
+        "status": "acceptance-contract; referenced tests are not a new execution receipt",
+        "evidence_scope": "Deterministic/static contract only; no model efficacy or qualification claim."
+      }
+    },
+    {
+      "id": "UPM-010",
+      "source_refs": [
+        {
+          "source_id": "academic-humanizer",
+          "path": "SKILL.md",
+          "section": "Layer 3: Preserve these / Layer 5: Voice and venue matching"
+        },
+        {
+          "source_id": "academic-humanizer",
+          "path": "README.md",
+          "section": "Make it yours"
+        },
+        {
+          "source_id": "caveman",
+          "path": "skills/caveman-compress/SKILL.md",
+          "section": "Preserve EXACTLY / Boundaries"
+        }
+      ],
+      "upg_rule_ids": [
+        "TRUTH_CURRENT",
+        "EVIDENCE_AFFECTED"
+      ],
+      "execution_guidance_ids": [
+        "evidence_fidelity",
+        "decision_relevance"
+      ],
+      "implementation_refs": [
+        "governance-src/model/governance-model.json"
+      ],
+      "trigger": "Requested technical or scholarly editing affects prose surrounding quantitative results, definitions, equations, identifiers or citations.",
+      "adapted_capability": "Preserve exact scientific/technical payload and legitimate qualifications while matching the document's real audience and supplied author/venue conventions. Explicit content corrections require their own evidence and scope.",
+      "exclusions": [
+        "fixed paragraph counts or mandatory punctuation/word bans",
+        "universal academic style outside relevant documents",
+        "mechanical synonym changes to technical referents",
+        "altering results, equations, definitions or citations for fluency"
+      ],
+      "acceptance": {
+        "case_id": "UPM-010",
+        "fixture": "A requested clarity edit contains equations, numeric units, citation keys, a named metric and a justified hedge; improving coherence requires a different paragraph grouping.",
+        "pass_if": [
+          "the payload and evidence strength remain intact",
+          "paragraph grouping and phrasing follow coherence and user constraints",
+          "no fixed shape or academic persona is imposed"
+        ],
+        "fail_if": [
+          "numbers/citations/definitions are changed without an authorized evidence-based correction",
+          "fixed paragraph counts block a coherent permitted edit"
+        ],
+        "test_references": [
+          "tests/test_context_discipline_acceptance.py::test_lost_numbers_reference_negation_or_unknown_fails",
+          "tests/test_context_discipline_acceptance.py::test_protected_contract_cannot_be_removed_to_get_a_pass"
+        ],
+        "status": "acceptance-contract; referenced tests are not a new execution receipt",
+        "evidence_scope": "Deterministic/static contract only; no model efficacy or qualification claim."
+      }
+    }
+  ]
+}

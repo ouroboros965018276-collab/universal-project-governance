@@ -68,6 +68,8 @@ jobs:
         run: python tools/qualification_freeze.py . --check
       - name: Validate current repository contract
         run: python tools/validate_repository.py .
+      - name: Validate task navigation links and anchors
+        run: python tools/validate_navigation.py .
       - name: Validate compiled Skill bundle
         run: python tools/validate_skill_bundle.py universal-project-governance
       - name: Validate runtime integrity
