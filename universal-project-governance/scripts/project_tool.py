@@ -361,11 +361,11 @@ def status(project):
                          and watcher_state not in {"stopped", "stopping"})
     watcher_pending = bool(git_state.get("enabled") and watcher.get("configuration", {}).get("enabled")
                            and (watcher_stale or watcher.get("recovery_blocked")
-                                or watcher.get("supervisor", {}).get("status") == "blocked"
-                                or watcher_state in {"blocked", "cancelled", "stale"}))
+                                or watcher.get("supervisor", {}).get("status") in {"starting", "blocked"}
+                                or watcher_state in {"starting", "blocked", "cancelled", "stale"}))
     return {
         "ok": not state_errors and not pending_outcome and not git_pending and not watcher_pending,
-        **({"reason": "git-watcher-pending", "errors": ["Git observer is blocked or its heartbeat is stale; inspect git-watch status before claiming automatic saving"]} if watcher_pending else {}),
+        **({"reason": "git-watcher-pending", "errors": ["Git observer startup is unconfirmed, blocked, or its heartbeat is stale; inspect git-watch status before claiming automatic saving"]} if watcher_pending else {}),
         **({"reason": "git-checkpoint-pending", "errors": ["Git checkpoint requires reconciliation; retry its original finish input"]} if git_pending else {}),
         **({"reason": "checkpoint-unreconciled", "errors": ["ledger commit newer than binding checkpoint; retry the original report/finish input"]} if pending_outcome else {}),
         **({"reason": "current-state-drift", "errors": state_errors} if state_errors else {}),

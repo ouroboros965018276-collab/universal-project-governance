@@ -5,7 +5,7 @@
     "LICENSE": "50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a",
     "SKILL.md": "a06ced95ddccb34b4cba3a1578c3dfc46d0cb92f0907a64a46d6962f3d2c6d9c",
     "VERSION.md": "1e24e7cb350ad444dd0c64ba2a64f61280785797fb1f3a24aa1909dc31ef8349",
-    "policy-index.json": "b8db0269da0f6ab70811a31d2bf805ac67fc55a53c11034d40bc5980a8a5194b",
+    "policy-index.json": "8307b7f478d4e633b70283f18912ffff8f0ad7d65c5815352f6a21b606d2fc1f",
     "schemas/audit.schema.json": "a5e15c26eff86e3c4e2e174fb121ef22981628307f09cf18d09a589e738ea889",
     "schemas/execution.schema.json": "d2a7cddc9d98c8101294df302259ba18217c27b9e7c8fee43d96c82ff6bde1d7",
     "schemas/feedback.schema.json": "22da61a114a1e89ee641ac25e90e23d6231003351df15918d4265f9900091954",
@@ -14,15 +14,15 @@
     "schemas/handoff.schema.json": "994769e2a35b4d2189c509b8c5fce6ba76e4941fa4cadaa51f8f02f48b338a97",
     "schemas/task-context.schema.json": "acc323f7d86f8dad5d8694e7fcf566dad6987d077877fbe6dbc819029936ad38",
     "scripts/git_checkpoint.py": "ab1b1721607e267c5b39f709cdc8d309d4137cf10eb923231862014742d8ea42",
-    "scripts/git_watch.py": "93fab9e599f3696e230bedb0e0169e0706e0e324f227737e144175bde9daedec",
+    "scripts/git_watch.py": "adbdf3ea25354adb6dfc7958834024b669424ad9f2ea6efaa09179808bc02624",
     "scripts/plan_governance.py": "aad1d34983c813f508d1845b6ad94d8adb4afcdc6352ef6b5692550623729697",
     "scripts/process_guard.py": "1ad3bf19e694c6ca487f3a396b3feaabbc41c9c2b6d1e69d12f76040fcf7fe92",
     "scripts/project_facts.py": "f355e0fa241a1032c94d4959b610b86c2d0ad48b2c62bbfed1ded65bfa4bd9ee",
-    "scripts/project_tool.py": "bb3013f8169aa9d05919d54d23a0692b5d7f9f7b772d54407b0235883f6c58d3",
+    "scripts/project_tool.py": "690c9a89d4c584e2afcc466f6e62670ec9ac92b420a1278418ed9b716d4a24db",
     "scripts/state_tool.py": "193cb9657c32dedb253727e93a13bcb6f39306331fc8a90d1319e337f5b088a0",
     "scripts/validate_integrity.py": "cf09558e67b4488db88c5ce9836e9f1cf1c8bae97d6e1444bb9d2d80409157c0"
   },
   "generated_for_version": "3.0.0-rc.20.4",
   "schema_version": 1,
-  "source_sha256": "510fb6d108de0dc6dd75af2e9586913a8033fd3d9b86b07732603edb3455bfd5"
+  "source_sha256": "39bec678673c98f111fffd58ed211d1e5a327a575ec9126b320d384c00f0cd5e"
 }

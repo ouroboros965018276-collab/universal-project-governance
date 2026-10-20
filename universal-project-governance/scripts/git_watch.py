@@ -295,15 +295,53 @@ def _spawn_supervisor(root, token, guard):
         return subprocess.Popen(argv, **dict(options, **inherited))
 
 
+def _await_supervisor(root, token=None):
+    # Supervisor startup and its later worker startup are distinct handshakes.
+    # Give the worker its own eight-second native handshake plus two seconds
+    # for reservation/spawn scheduling, after the supervisor confirms its PID.
+    # The two phases have a combined maximum of eighteen seconds of waiting.
+    supervisor_deadline = time.monotonic() + 8
+    worker_deadline = None
+    while True:
+        view = status(root)
+        state = view["watcher"]
+        supervisor = state.get("supervisor", {})
+        if token is not None and supervisor.get("token") != token:
+            return view
+        if not state.get("desired_running"):
+            return view
+        confirmed = type(supervisor.get("pid")) is int and supervisor["pid"] > 0
+        if confirmed:
+            if _live(state):
+                return view
+            if worker_deadline is None:
+                worker_deadline = time.monotonic() + 10
+        if supervisor.get("status") == "waiting":
+            state["recovery"] = "deferred; native project command still active"
+            return view
+        if supervisor.get("status") == "blocked":
+            return view
+        deadline = worker_deadline if worker_deadline is not None else supervisor_deadline
+        if time.monotonic() >= deadline:
+            # This is a failed caller handshake, not revocation of a legitimate
+            # owner. Do not persist a diagnostic that could race a late claim.
+            view = copy.deepcopy(view)
+            state = view["watcher"]
+            state["recovery"] = "deferred; native supervised startup not confirmed within bounded handshake"
+            state.setdefault("supervisor", {}).update(
+                status="blocked", reason="native-supervised-startup-not-confirmed")
+            return view
+        time.sleep(min(0.05, max(0, deadline - time.monotonic())))
+
+
 def _launch_supervisor(root):
     root = project.project_root(root)
     guard = guards.acquire(root, ".upg-supervisor.guard")
     if guard is None:
-        view = status(root)
+        view = _await_supervisor(root)
         view["watcher"]["idempotent"] = True
         return view
     with guard:
-        previous_token = status(root)["watcher"].get("token")
         view, token = _reserve_supervisor(root)
         if token is None:
             return view
@@ -312,22 +350,7 @@ def _launch_supervisor(root):
         except OSError:
             _supervisor_progress(root, token, "blocked", "native-supervisor-launch-failed", release=True)
             return status(root)
-        deadline = time.monotonic() + 8
-        while time.monotonic() < deadline:
-            view = status(root)
-            state = view["watcher"]
-            supervisor = state.get("supervisor", {})
-            if supervisor.get("token") != token:
-                return view
-            if (supervisor.get("pid") and state.get("running")
-                    and type(state.get("pid")) is int and state["pid"] > 0
-                    and state.get("status") != "starting" and state.get("token") != previous_token):
-                return view
-            if supervisor.get("status") in {"waiting", "blocked"}:
-                state["recovery"] = "deferred; native project command still active"
-                return view
-            time.sleep(0.05)
-        return view
+        return _await_supervisor(root, token)
 
 
 def start(root):
@@ -848,7 +871,10 @@ def main():
             parser.error("recovery does not accept worker authority")
         value = recover(project.project_root(args.recover))
         print(json.dumps(value, sort_keys=True))
-        return 1 if value.get("watcher", {}).get("recovery_blocked") else 0
+        state = value.get("watcher", {})
+        return 1 if (state.get("recovery_blocked")
+                     or state.get("status") in {"blocked", "stale", "cancelled"}
+                     or state.get("supervisor", {}).get("status") == "blocked") else 0
     if not args.token:
         parser.error("worker requires --token")
     if args.supervise:
