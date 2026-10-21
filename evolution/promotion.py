@@ -59,7 +59,10 @@ def _artifact(reference, base):
     base = Path(base).resolve()
     path = Path(reference["path"])
     path = path if path.is_absolute() else base / path
-    _need(path.resolve().is_relative_to(base), "artifact path escapes its evidence root")
+    try:
+        path.resolve().relative_to(base)
+    except ValueError as error:
+        raise EvidenceError("artifact path escapes its evidence root") from error
     before = path.lstat()
     _need(stat.S_ISREG(before.st_mode) and not getattr(before, "st_file_attributes", 0) & 1024
           and before.st_size <= 16777216, "artifact must be a bounded regular file")

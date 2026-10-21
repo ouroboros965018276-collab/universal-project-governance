@@ -2,7 +2,7 @@
   "schema_version": 1,
   "version": "3.0.0-rc.20.7",
   "status": "SOURCE_REVIEWED_ENGINEERING_ACCEPTANCE_TRACKED_IN_ISSUE",
-  "observed_at": "2026-10-21T21:37:35.514227+00:00",
+  "observed_at": "2026-10-21T21:53:19.972259+00:00",
   "baseline_revision": "dc907ea43beebc76b44c82616ee440c43db03d0e",
   "acceptance_url": "https://github.com/ouroboros965018276-collab/universal-project-governance/issues/33",
   "report": {
@@ -1850,7 +1850,7 @@
   },
   "engineering": {
     "final_gates": {
-      "observed_at": "2026-10-21T21:37:26.706376+00:00",
+      "observed_at": "2026-10-21T21:52:34.807168+00:00",
       "successful": true,
       "gate_commands": 11,
       "passed": 11,
@@ -1865,7 +1865,7 @@
             "--check"
           ],
           "returncode": 0,
-          "seconds": 1.5,
+          "seconds": 1.235000000000582,
           "raw_log": ".governance/rc207-final-gate-00.log",
           "raw_log_sha256": "16a781091d7bdbaccaf714f07c29d4424d1cb20d4f434562e28fadc68396a2c8"
         },
@@ -1875,7 +1875,7 @@
             "."
           ],
           "returncode": 0,
-          "seconds": 0.5929999999934807,
+          "seconds": 0.3899999999994179,
           "raw_log": ".governance/rc207-final-gate-01.log",
           "raw_log_sha256": "a1654f7bbcea3597100a2aba21ad24260d51893875b7ad57ea53c46b378333d4"
         },
@@ -1885,7 +1885,7 @@
             "."
           ],
           "returncode": 0,
-          "seconds": 1.4530000000086147,
+          "seconds": 0.9219999999913853,
           "raw_log": ".governance/rc207-final-gate-02.log",
           "raw_log_sha256": "05f7dfe43892703201286ccb994629adb86f0d346405e7eb86810c5bedc913d2"
         },
@@ -1896,7 +1896,7 @@
             "--check"
           ],
           "returncode": 0,
-          "seconds": 0.7039999999979045,
+          "seconds": 0.5630000000091968,
           "raw_log": ".governance/rc207-final-gate-03.log",
           "raw_log_sha256": "2f875a5f9a7bfdcd7978d55462d453f278bf702ab59a803e55e2db8a4912a34b"
         },
@@ -1906,7 +1906,7 @@
             "."
           ],
           "returncode": 0,
-          "seconds": 6.2960000000020955,
+          "seconds": 5.796999999991385,
           "raw_log": ".governance/rc207-final-gate-04.log",
           "raw_log_sha256": "b72ff9168723a313496989c989b710c573f7eaa291d72abfa9d7ece0d20391e6"
         },
@@ -1916,7 +1916,7 @@
             "universal-project-governance"
           ],
           "returncode": 0,
-          "seconds": 0.7819999999919673,
+          "seconds": 0.6560000000026776,
           "raw_log": ".governance/rc207-final-gate-05.log",
           "raw_log_sha256": "8c194143ac96849550f9cd125757367f88209797ff88238e06b51321d2bd9d4d"
         },
@@ -1926,7 +1926,7 @@
             "universal-project-governance"
           ],
           "returncode": 0,
-          "seconds": 0.5780000000086147,
+          "seconds": 0.45300000000861473,
           "raw_log": ".governance/rc207-final-gate-06.log",
           "raw_log_sha256": "e246fd6e1c3b7cfa08d75826ffd961aa15f5e779a39bdb7f33bfb7c01f91ce21"
         },
@@ -1936,7 +1936,7 @@
             "."
           ],
           "returncode": 0,
-          "seconds": 41.453999999997905,
+          "seconds": 2.375,
           "raw_log": ".governance/rc207-final-gate-07.log",
           "raw_log_sha256": "57c428d631a537f528adff251f18017330838eb9da4329714dcd92ae41a591c2"
         },
@@ -1946,7 +1946,7 @@
             "."
           ],
           "returncode": 0,
-          "seconds": 2.187000000005355,
+          "seconds": 0.6879999999946449,
           "raw_log": ".governance/rc207-final-gate-08.log",
           "raw_log_sha256": "05a98a7f9ac303958b0b8e0a882ae7a46a09c2f938ddbdb8ed34a6abb690e7c1"
         },
@@ -1958,7 +1958,7 @@
             ".governance/rc207-dist-a"
           ],
           "returncode": 0,
-          "seconds": 6.98399999999674,
+          "seconds": 4.717999999993481,
           "raw_log": ".governance/rc207-final-gate-09.log",
           "raw_log_sha256": "6a8765b46f3f77840b2f32a70140e1ab122b786711c32471312c793a772c7185"
         },
@@ -1970,7 +1970,7 @@
             ".governance/rc207-dist-b"
           ],
           "returncode": 0,
-          "seconds": 5.062999999994645,
+          "seconds": 5.0,
           "raw_log": ".governance/rc207-final-gate-10.log",
           "raw_log_sha256": "b87a6b31df46b8fffa30aeab9be47eeba77e901892e3ba9ec04a28988bed873c"
         }
@@ -2133,6 +2133,132 @@
       },
       "diff_check": "git diff --check -- evolution/tool_campaign.py tests/test_tool_campaign.py: exit 0",
       "scope": "No commits or source audit edits; full CI matrix remains root-owned."
+    },
+    "python38_ci_failure": {
+      "source_revision": "79a20ce8043357bdf20f492da7e2eed65e7ddc27",
+      "run_id": 39680367978,
+      "job_id": 119501378399,
+      "tests": 1076,
+      "errors": 2,
+      "skipped": 539,
+      "details": "======================================================================\n2026-10-21T21:47:30.6572989Z ERROR: test_evidence_root_and_optimizer_identity_fail_closed (test_ocr_evolution_regressions.OCREvolutionRegressions)\n2026-10-21T21:47:30.6573528Z ----------------------------------------------------------------------\n2026-10-21T21:47:30.6573869Z Traceback (most recent call last):\n2026-10-21T21:47:30.6582185Z   File \"/home/runner/work/universal-project-governance/universal-project-governance/tests/test_ocr_evolution_regressions.py\", line 93, in test_evidence_root_and_optimizer_identity_fail_closed\n2026-10-21T21:47:30.6582970Z     promotion._artifact(ref,base)\n2026-10-21T21:47:30.6583536Z   File \"/home/runner/work/universal-project-governance/universal-project-governance/evolution/promotion.py\", line 62, in _artifact\n2026-10-21T21:47:30.6584179Z     _need(path.resolve().is_relative_to(base), \"artifact path escapes its evidence root\")\n2026-10-21T21:47:30.6584630Z AttributeError: 'PosixPath' object has no attribute 'is_relative_to'\n2026-10-21T21:47:30.6584882Z \n2026-10-21T21:47:30.6584984Z ======================================================================\n2026-10-21T21:47:30.6585478Z ERROR: test_numeric_checkpoint_validation_and_nested_rng_state (test_ocr_evolution_regressions.OCREvolutionRegressions)\n2026-10-21T21:47:30.6585995Z ----------------------------------------------------------------------\n2026-10-21T21:47:30.6586296Z Traceback (most recent call last):\n2026-10-21T21:47:30.6587038Z   File \"/home/runner/work/universal-project-governance/universal-project-governance/tests/test_ocr_evolution_regressions.py\", line 70, in test_numeric_checkpoint_validation_and_nested_rng_state\n2026-10-21T21:47:30.6587782Z     annealing=ChaoticAnnealing(1,3);annealing.propose([.5]*3)\n2026-10-21T21:47:30.6588404Z   File \"/home/runner/work/universal-project-governance/universal-project-governance/evolution/search/annealing.py\", line 60, in propose\n2026-10-21T21:47:30.6588952Z     self._last_temperature = self.temperature\n2026-10-21T21:47:30.6589522Z   File \"/home/runner/work/universal-project-governance/universal-project-governance/evolution/search/annealing.py\", line 43, in temperature\n2026-10-21T21:47:30.6590169Z     return max(math.ulp(0.0), self.initial_temperature * max(1e-12, self.cooling ** (\n2026-10-21T21:47:30.6590547Z AttributeError: module 'math' has no attribute 'ulp'\n2026-10-21T21:47:30.6590741Z \n2026-10-21T21:47:30.6590868Z ----------------------------------------------------------------------\n2026-10-21T21:47:30.6591162Z Ran 1076 tests in 498.603s\n2026-10-21T21:47:30.6591291Z \n2026-10-21T21:47:30.6591384Z FAILED (errors=2, skipped=539)\n2026-10-21T21:47:30.6897904Z "
+    },
+    "python38_compatibility_repair": {
+      "schema_version": 1,
+      "kind": "ci-python38-api-compatibility-repair",
+      "observed_at_utc": "2026-10-21T21:53:02.053678+00:00",
+      "entry": {
+        "host": "Codex evolution_fixes subagent exec_command PowerShell",
+        "executable": "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "argv": [
+          "-"
+        ],
+        "python_version": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+        "project_path": "D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution"
+      },
+      "ci_failure": {
+        "source_revision": "79a20ce8043357bdf20f492da7e2eed65e7ddc27",
+        "run_id": 39680367978,
+        "job_id": 119501378399,
+        "runtime": "Python3.8",
+        "tests": 1076,
+        "errors": 2,
+        "raw_failure_record": ".governance/rc207-ci-python38-failure.json"
+      },
+      "research": [
+        {
+          "claim": "math.ulp was added in Python3.9; ulp(0.0) is the smallest positive subnormal representable float.",
+          "source": "https://docs.python.org/3/library/math.html#math.ulp"
+        },
+        {
+          "claim": "PurePath.is_relative_to was added in Python3.9; resolved relative_to with ValueError preserves the same containment decision.",
+          "source": "https://docs.python.org/3/library/pathlib.html#pathlib.PurePath.is_relative_to"
+        }
+      ],
+      "changes": [
+        {
+          "path": "evolution/promotion.py",
+          "behavior": "Resolve both paths as before, then relative_to(base); ValueError becomes the existing EvidenceError. Regular-file/size/hash checks unchanged."
+        },
+        {
+          "path": "evolution/search/annealing.py",
+          "behavior": "Reuse exact float.fromhex(0x0.0000000000001p-1022) floor in current and restored schedule; no epsilon widening or schedule change."
+        },
+        {
+          "path": "tests/test_ocr_evolution_regressions.py",
+          "behavior": "Add unskipped containment positive/outside/traversal tests and smallest-subnormal proposal/resume test with math.ulp disabled."
+        }
+      ],
+      "new_api_search": {
+        "paths": [
+          "evolution/promotion.py",
+          "evolution/search/",
+          "evolution/contracts.py",
+          "evolution/source_bridge.py",
+          "tests/test_ocr_evolution_regressions.py"
+        ],
+        "searched": [
+          "math.ulp",
+          "Path.is_relative_to",
+          "str.removeprefix/removesuffix",
+          "math.nextafter/lcm/cbrt",
+          "itertools.pairwise"
+        ],
+        "production_matches_before": {
+          "math.ulp": 2,
+          "Path.is_relative_to": 1
+        },
+        "production_matches_after": 0,
+        "scope_limit": "Task-relevant paths only; does not claim all offline evolution features support Python3.8."
+      },
+      "validation": {
+        "test_selectors": [
+          "test_ocr_evolution_regressions",
+          "test_evolution_search"
+        ],
+        "tests": 32,
+        "unittest_elapsed_seconds": 0.283,
+        "result": "PASS",
+        "raw_log": ".governance/rc207-python38-local-regression.log",
+        "raw_log_sha256": "f75129a7b8c08c512b06316796347416ab401048b1cb84fa50e0302dbcea2794",
+        "started_at_utc": "2026-10-21T21:51:09.296216+00:00",
+        "finished_at_utc": "2026-10-21T21:51:10.569808+00:00",
+        "simulation": "math.ulp raises if called, but proposal and checkpoint restore still pass; portable containment exercised on real files.",
+        "path_simulation_limit": "Real containment positive/outside/traversal checks; actual Python3.8 API availability awaits CI.",
+        "subnormal_hex": "0x0.0000000000001p-1022",
+        "matches_local_math_ulp_zero": true,
+        "diff_check": "git diff --check -- evolution/promotion.py evolution/search/annealing.py tests/test_ocr_evolution_regressions.py: exit0",
+        "tested_source_path_sha256": {
+          "evolution/promotion.py": "dc87d4476b32aaf2cd75c7a405b2203d6ee6745c63ccd62287e34aa9334c8388",
+          "evolution/search/annealing.py": "5f2395b32542b11b6d40c2a3b08b34d8d2f5414c7fa1b1dfeb787ac7c2c04349",
+          "tests/test_ocr_evolution_regressions.py": "e860249d0c96b090dd8adda2e46bfff9af61c064c20ed89822399902b5a9cd9a"
+        }
+      },
+      "new_model_calls": 0,
+      "actual_python38_local_execution": false,
+      "python38_validation": "Pending CI; no interpreter installed or baseline/test skip changed.",
+      "source_path_sha256": {
+        "evolution/promotion.py": "dc87d4476b32aaf2cd75c7a405b2203d6ee6745c63ccd62287e34aa9334c8388",
+        "evolution/search/annealing.py": "5f2395b32542b11b6d40c2a3b08b34d8d2f5414c7fa1b1dfeb787ac7c2c04349",
+        "tests/test_ocr_evolution_regressions.py": "2d357667d1f315f319bdde244ead1f734e98a6f8c706b5b5a4309582453ecc50"
+      },
+      "scope": "No source audit/generated-runtime edits or commits.",
+      "final_regression": {
+        "test_selector": "test_ocr_evolution_regressions",
+        "tests": 16,
+        "unittest_elapsed_seconds": 0.294,
+        "result": "PASS",
+        "raw_log": ".governance/rc207-python38-final-regression.log",
+        "raw_log_sha256": "494d3cf7a0f6a65c95161f037eee611501db0c1ea9e05a57e721b09d70a41697",
+        "started_at_utc": "2026-10-21T21:52:30.462840+00:00",
+        "finished_at_utc": "2026-10-21T21:52:31.822974+00:00",
+        "reason": "After removing implementation introspection, rerun the affected module with functional allowed/outside/traversal checks intact. Production source unchanged since32-test cohort.",
+        "tested_source_path_sha256": {
+          "evolution/promotion.py": "dc87d4476b32aaf2cd75c7a405b2203d6ee6745c63ccd62287e34aa9334c8388",
+          "evolution/search/annealing.py": "5f2395b32542b11b6d40c2a3b08b34d8d2f5414c7fa1b1dfeb787ac7c2c04349",
+          "tests/test_ocr_evolution_regressions.py": "2d357667d1f315f319bdde244ead1f734e98a6f8c706b5b5a4309582453ecc50"
+        }
+      }
     },
     "complete_multiplatform_regression": "Exact source and merged-main GitHub CI required; final observed revisions/jobs/installation acceptance are recorded in acceptance_url, not inferred from interrupted local integration."
   },

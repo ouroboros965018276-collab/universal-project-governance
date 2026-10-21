@@ -73,6 +73,34 @@ class OCREvolutionRegressions(unittest.TestCase):
         for state in (None,[],{}, {'algorithm':'chaotic-annealing-v1'}):
             with self.assertRaises(ValueError):ChaoticAnnealing.from_state(state)
 
+    def test_subnormal_annealing_proposal_and_resume_do_not_require_math_ulp(self):
+        minimum = float.fromhex("0x0.0000000000001p-1022")
+        self.assertGreater(minimum, 0)
+        self.assertEqual(minimum / 2, 0)
+        with patch.object(math, "ulp", side_effect=AssertionError("Python 3.8 has no math.ulp"), create=True):
+            search = ChaoticAnnealing(2, 2, initial_temperature=minimum, cooling=.5, cycle_length=4)
+            for _ in range(9):
+                self.assertEqual(search.temperature, minimum)
+                self.assertTrue(all(math.isfinite(value) and 0 <= value <= 1
+                                    for value in search.propose([.4, .6])))
+            restored = ChaoticAnnealing.from_state(json.loads(json.dumps(search.state())))
+            self.assertEqual(search.state(), restored.state())
+            self.assertEqual(search.propose([.4, .6]), restored.propose([.4, .6]))
+
+    def test_evidence_containment_does_not_require_path_is_relative_to(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp) / 'base'; base.mkdir()
+            inside = base / 'artifact.json'; inside.write_bytes(b'{"kind":"fixture"}')
+            outside = Path(tmp) / 'outside.json'; outside.write_bytes(b'{}')
+            def reference(path):
+                return {'path': str(path), 'sha256': promotion.hashlib.sha256(path.read_bytes()).hexdigest()}
+            value, parent = promotion._artifact(reference(inside), base)
+            self.assertEqual(value, {'kind': 'fixture'})
+            self.assertEqual(parent, base.resolve())
+            for path in (outside, base / '..' / 'outside.json'):
+                with self.subTest(path=path), self.assertRaisesRegex(promotion.EvidenceError, 'escapes'):
+                    promotion._artifact(reference(path), base)
+
     def test_evaluation_cache_binds_retries_and_requires_object_receipts(self):
         candidate={'model':model()};cache={};calls=[]
         def runner(request):

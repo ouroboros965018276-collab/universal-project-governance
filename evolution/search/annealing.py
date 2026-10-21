@@ -5,6 +5,9 @@ import random
 
 from ._numeric import json_state, positive, reflect, tuple_state, vector
 
+# Exact smallest positive binary64 subnormal; available before math.ulp (3.9).
+_MIN_POSITIVE_FLOAT = float.fromhex("0x0.0000000000001p-1022")
+
 
 class ChaoticAnnealing:
     """Deterministic logistic proposals plus a Metropolis acceptance rule.
@@ -40,7 +43,7 @@ class ChaoticAnnealing:
 
     @property
     def temperature(self):
-        return max(math.ulp(0.0), self.initial_temperature * max(1e-12, self.cooling ** (
+        return max(_MIN_POSITIVE_FLOAT, self.initial_temperature * max(1e-12, self.cooling ** (
             self.iteration % self.cycle_length)))
 
     def _next_chaos(self):
@@ -110,7 +113,7 @@ class ChaoticAnnealing:
             if result._last_temperature > result.initial_temperature:
                 raise ValueError("checkpoint temperature exceeds its initial temperature")
             expected_temperature = (result.initial_temperature if result.iteration == 0 else
-                max(math.ulp(0.0), result.initial_temperature * max(1e-12,
+                max(_MIN_POSITIVE_FLOAT, result.initial_temperature * max(1e-12,
                     result.cooling ** ((result.iteration - 1) % result.cycle_length))))
             if result._last_temperature != expected_temperature:
                 raise ValueError("checkpoint temperature differs from its schedule")
