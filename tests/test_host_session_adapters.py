@@ -14,7 +14,7 @@ from unittest import mock
 import test_git_watch as fixture
 
 ROOT = Path(__file__).resolve().parents[1]
-RUNTIME = ROOT / "governance-src/runtime-scripts"
+RUNTIME = ROOT / "universal-project-governance/scripts"
 sys.dont_write_bytecode = True
 sys.path.insert(0, str(RUNTIME))
 SPEC = importlib.util.spec_from_file_location("host_session_adapter_runtime", RUNTIME / "git_watch.py")
@@ -23,6 +23,11 @@ SPEC.loader.exec_module(WATCH)
 
 
 class HostAdapterContractTests(unittest.TestCase):
+    def test_runtime_dependencies_use_generated_bundle(self):
+        self.assertEqual(Path(WATCH.project.__file__).resolve(),
+                         (RUNTIME / "project_tool.py").resolve())
+        self.assertIsInstance(WATCH.project.config(), dict)
+
     def test_invalid_host_options_reject_before_project_mutation_or_launch(self):
         invalid = [
             {},

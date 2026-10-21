@@ -22,11 +22,11 @@
   "stable": false,
   "commit_policy": "One meaningful source/test/docs/audit checkpoint; only necessary corrections if a check fails. Final CI and installation evidence updates the same work order and local completion binding, without a status-only follow-up commit.",
   "document_kind": "project-host-adapters-engineering-calibration",
-  "observed_at": "2026-10-20T23:54:08.810866+00:00",
+  "observed_at": "2026-10-21T00:03:03.553772+00:00",
   "version": "3.0.0-rc.20.6",
   "status": "LOCAL_ENGINEERING_CALIBRATION_VERIFIED",
   "baseline_revision": "46d6450cebcd9b3ce4940f6bb4c454c517cc3cdb",
-  "canonical_current_observation": "Real Codex CLI0.162.0-alpha.20 reached ready twice on the existing worktree and exited normally via /exit, code0. Native observer owners exited and all6 guards released each time; tokens changed on reentry and actual HEAD/count76 stayed unchanged. Manual workflow priority prevented root source publishing. Separate real pipe lifecycle calibration proved stage commits and dedup. No model prompt/turn submitted. Desktop GUI not covered. Exact-head CI/main/installation authority is the work order; no recursive status commits.",
+  "canonical_current_observation": "Real Codex CLI0.162.0-alpha.20 reached ready twice on the existing worktree and exited normally via /exit, code0. Native observer owners exited and all6 guards released each time; tokens changed on reentry and actual HEAD/count76 stayed unchanged. Manual workflow priority prevented root source publishing. Separate real pipe lifecycle calibration proved stage commits and dedup. No model prompt/turn submitted. Desktop GUI not covered. Exact-head CI/main/installation authority is the work order; no recursive status commits. Initial exact-source Linux3.11 CI ran1445 and failed7 RC9 cases due new test import pollution. Only the test import target/dependency regression was corrected; same-process affected40 passed, runtime/package unchanged. Final corrected-source CI is authoritative in the work order.",
   "previous_verified_release": {
     "version": "3.0.0-rc.20.5",
     "revision": "46d6450cebcd9b3ce4940f6bb4c454c517cc3cdb",
@@ -1441,7 +1441,34 @@
         "First6 static gates passed then GBK console printing failed before last4; only last4 continued with UTF-8.",
         "Initial exit observation preceded actual terminal submission of /exit; assertion failed without an acceptance receipt. After real exit0 the observation passed.",
         "Whole-run global config hash assertion rejected an unsupported unchanged claim before audit write. Each session pair is unchanged, inter-session writer/cause unknown."
-      ]
+      ],
+      "initial_ci_failure": {
+        "source_revision": "bb6cf361923c2827a679de6ea0fbee528b934bd4",
+        "run_id": 39518142350,
+        "job_id": 118955154348,
+        "job_url": "https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/39518142350/job/118955154348",
+        "tests_run": 1445,
+        "errors": 7,
+        "skipped": 2,
+        "cause": "New test imported bare project_tool from governance-src; later RC9 tests expected compiled policy-index.json. Discovery import-order pollution, not a production runtime defect.",
+        "raw_path": ".governance/rc206-source-ci-failure-linux311.raw.txt",
+        "raw_sha256": "cefca7b2ce78ec91a6994af4803952de6d7f7e4ed8474a4992984d257385cb3d",
+        "source_runtime_unchanged_by_fix": true
+      },
+      "affected_import_order_retest": {
+        "tests": 40,
+        "passed": true,
+        "errors": 0,
+        "order": [
+          "test_host_session_adapters.HostAdapterContractTests",
+          "test_rc9_evidence_continuity"
+        ],
+        "new_regression": "test_runtime_dependencies_use_generated_bundle",
+        "native_case_repeated": false,
+        "raw_path": ".governance/rc206-import-order-retest.txt",
+        "raw_sha256": "9b86ceb849d3977d7c9283d2ece18ac4fc42371d056ef745a0ed700ddacb7695",
+        "overlap": "Contains prior five adapter unit cases plus new dependency assertion and RC9 cases. Do not sum overlapping evidence."
+      }
     }
   },
   "source_sha256": "0561a46a01c55bd39aec47af02fd4c79833edf0122789b352f2e2e43c3afa4ab",
