@@ -331,13 +331,23 @@ class RC9Tests(unittest.TestCase):
 
     def test_artifact_bytes_and_trial_identity_are_verified(self):
         with tempfile.TemporaryDirectory() as td:
-            path=write(pathlib.Path(td)/'manifest.json', {'trial_id':'t', 'before':{}, 'after':{}, 'execution':{}})
+            artifacts=pathlib.Path(td)/'artifacts'
+            path=artifacts/'t'/'manifest.json'
+            path.parent.mkdir(parents=True)
+            write(path, {'trial_id':'t', 'before':{}, 'after':{}, 'execution':{}})
             row={'trial_id':'t', 'evidence':{'artifact_manifest':str(path), 'artifact_manifest_sha256':'sha256:'+hashlib.sha256(path.read_bytes()).hexdigest()}}
-            self.assertEqual(verify_artifact(row), [])
+            self.assertEqual(verify_artifact(row, artifacts), [])
             path.write_bytes(path.read_bytes()+b' ')
-            self.assertTrue(verify_artifact(row))
+            self.assertIn('retained artifact digest mismatch', verify_artifact(row, artifacts))
             row['evidence']['artifact_manifest_sha256']='sha256:'+hashlib.sha256(path.read_bytes()).hexdigest(); row['trial_id']='other'
-            self.assertTrue(verify_artifact(row))
+            self.assertIn('retained artifact location does not match trial', verify_artifact(row, artifacts))
+            row['trial_id']='t'
+            write(path, {'trial_id':'other', 'before':{}, 'after':{}, 'execution':{}})
+            row['evidence']['artifact_manifest_sha256']='sha256:'+hashlib.sha256(path.read_bytes()).hexdigest()
+            self.assertIn('retained artifact contract mismatch', verify_artifact(row, artifacts))
+            unregistered=write(pathlib.Path(td)/'manifest.json', {'trial_id':'t', 'before':{}, 'after':{}, 'execution':{}})
+            row['evidence'].update(artifact_manifest=str(unregistered), artifact_manifest_sha256='sha256:'+hashlib.sha256(unregistered.read_bytes()).hexdigest())
+            self.assertIn('retained artifact location does not match trial', verify_artifact(row, artifacts))
 
     def test_schema_const_time_and_nonfinite_numbers_fail(self):
         self.assertTrue(validate_node(1, {'const':True}))
@@ -367,11 +377,25 @@ class RC9Tests(unittest.TestCase):
     def test_locked_admission_checks_actual_isolation_even_with_valid_schema(self):
         rows, manifest = self.registered()
         row = copy.deepcopy(rows[0])
-        row['environment'].update(sandboxed=False, workspace_isolation='process', isolation_attestation=None)
+        row['environment'].update(sandboxed=False, workspace_isolation='process')
+        schema = json.loads((ROOT/'qualification/protocol/schemas/trial.schema.json').read_text(encoding='utf-8'))
+        self.assertEqual(validate_node(row, schema), [])
         result = self.admission([row], manifest)
         self.assertEqual(result['state'], 'FAIL')
+        self.assertEqual(result['accepted'], 0)
+        self.assertTrue(any('enforced sandboxing' in item for item in result['errors']))
         self.assertTrue(any('strong workspace isolation' in item for item in result['errors']))
-        self.assertTrue(any('operator isolation attestation' in item for item in result['errors']))
+
+    def test_locked_schema_rejects_missing_attestation_before_admission(self):
+        rows, manifest = self.registered()
+        row = copy.deepcopy(rows[0])
+        row['environment']['isolation_attestation'] = None
+        schema = json.loads((ROOT/'qualification/protocol/schemas/trial.schema.json').read_text(encoding='utf-8'))
+        self.assertTrue(validate_node(row, schema))
+        result = self.admission([row], manifest)
+        self.assertEqual(result['state'], 'FAIL')
+        self.assertEqual(result['accepted'], 0)
+        self.assertTrue(any('isolation_attestation' in item for item in result['errors']))
 
     def test_observed_critical_failure_outside_exposure_still_fails(self):
         row={'kind':'behavioral','arm':'A2','environment':{'qualification_set':'locked'}, 'safety_exposures':[], 'outcome':{'critical_failures':['CF01_UNSAFE_DELETION']}}
@@ -524,12 +548,15 @@ class RC9Tests(unittest.TestCase):
             config = {
                 'agent': {'family': 'codex', 'model_id': 'configured', 'scaffold_version': 'test'},
                 'host_tool': {'name': 'codex', 'version': 'test'},
-                'adapter_runtime_files': [str(helper)],
+                'adapter_runtime_files': [helper.name],
             }
-            adapter = CommandAdapter(config)
+            adapter = CommandAdapter(config, base_dir=td)
             first = adapter.identity()['adapter_runtime_sha256']
             helper.write_text('VALUE = 2\n', encoding='utf-8')
             second = adapter.identity()['adapter_runtime_sha256']
             self.assertNotEqual(first, second)
+            for unsafe in (str(helper), '../adapter-helper.py'):
+                with self.subTest(unsafe=unsafe), self.assertRaisesRegex(ValueError, 'relative and contained'):
+                    CommandAdapter(dict(config, adapter_runtime_files=[unsafe]), base_dir=td).identity()
 
 if __name__=='__main__': unittest.main()

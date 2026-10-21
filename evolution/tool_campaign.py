@@ -326,8 +326,11 @@ def collect(repo, protocol, private_tasks, configs, output, *, expected_capabili
             if run.get("pending"):
                 raise ValueError("campaign pending call requires independent reconciliation; never automatic replay")
             if run.get("status") != "running":
-                run["summary"] = summarize(run)
-                save_run(output, run)
+                # Repair interrupted legacy publication once; a complete terminal
+                # snapshot is immutable, including its measured budget boundary.
+                if not isinstance(run.get("summary"), dict):
+                    run["summary"] = summarize(run)
+                    save_run(output, run)
                 return run
             budget = Budget.from_state(run["budget"])
         else:

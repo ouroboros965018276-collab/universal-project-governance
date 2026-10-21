@@ -2,7 +2,7 @@
   "schema_version": 1,
   "version": "3.0.0-rc.20.7",
   "status": "SOURCE_REVIEWED_ENGINEERING_ACCEPTANCE_TRACKED_IN_ISSUE",
-  "observed_at": "2026-10-21T21:23:22.770504+00:00",
+  "observed_at": "2026-10-21T21:37:35.514227+00:00",
   "baseline_revision": "dc907ea43beebc76b44c82616ee440c43db03d0e",
   "acceptance_url": "https://github.com/ouroboros965018276-collab/universal-project-governance/issues/33",
   "report": {
@@ -1850,7 +1850,7 @@
   },
   "engineering": {
     "final_gates": {
-      "observed_at": "2026-10-21T21:10:19.562814+00:00",
+      "observed_at": "2026-10-21T21:37:26.706376+00:00",
       "successful": true,
       "gate_commands": 11,
       "passed": 11,
@@ -1865,7 +1865,7 @@
             "--check"
           ],
           "returncode": 0,
-          "seconds": 0.375,
+          "seconds": 1.5,
           "raw_log": ".governance/rc207-final-gate-00.log",
           "raw_log_sha256": "16a781091d7bdbaccaf714f07c29d4424d1cb20d4f434562e28fadc68396a2c8"
         },
@@ -1875,7 +1875,7 @@
             "."
           ],
           "returncode": 0,
-          "seconds": 0.125,
+          "seconds": 0.5929999999934807,
           "raw_log": ".governance/rc207-final-gate-01.log",
           "raw_log_sha256": "a1654f7bbcea3597100a2aba21ad24260d51893875b7ad57ea53c46b378333d4"
         },
@@ -1885,7 +1885,7 @@
             "."
           ],
           "returncode": 0,
-          "seconds": 0.2960000000020955,
+          "seconds": 1.4530000000086147,
           "raw_log": ".governance/rc207-final-gate-02.log",
           "raw_log_sha256": "05f7dfe43892703201286ccb994629adb86f0d346405e7eb86810c5bedc913d2"
         },
@@ -1896,7 +1896,7 @@
             "--check"
           ],
           "returncode": 0,
-          "seconds": 0.1879999999946449,
+          "seconds": 0.7039999999979045,
           "raw_log": ".governance/rc207-final-gate-03.log",
           "raw_log_sha256": "2f875a5f9a7bfdcd7978d55462d453f278bf702ab59a803e55e2db8a4912a34b"
         },
@@ -1906,7 +1906,7 @@
             "."
           ],
           "returncode": 0,
-          "seconds": 1.4060000000026776,
+          "seconds": 6.2960000000020955,
           "raw_log": ".governance/rc207-final-gate-04.log",
           "raw_log_sha256": "b72ff9168723a313496989c989b710c573f7eaa291d72abfa9d7ece0d20391e6"
         },
@@ -1916,7 +1916,7 @@
             "universal-project-governance"
           ],
           "returncode": 0,
-          "seconds": 0.17200000000593718,
+          "seconds": 0.7819999999919673,
           "raw_log": ".governance/rc207-final-gate-05.log",
           "raw_log_sha256": "8c194143ac96849550f9cd125757367f88209797ff88238e06b51321d2bd9d4d"
         },
@@ -1926,7 +1926,7 @@
             "universal-project-governance"
           ],
           "returncode": 0,
-          "seconds": 0.1409999999887077,
+          "seconds": 0.5780000000086147,
           "raw_log": ".governance/rc207-final-gate-06.log",
           "raw_log_sha256": "e246fd6e1c3b7cfa08d75826ffd961aa15f5e779a39bdb7f33bfb7c01f91ce21"
         },
@@ -1936,7 +1936,7 @@
             "."
           ],
           "returncode": 0,
-          "seconds": 2.139999999999418,
+          "seconds": 41.453999999997905,
           "raw_log": ".governance/rc207-final-gate-07.log",
           "raw_log_sha256": "57c428d631a537f528adff251f18017330838eb9da4329714dcd92ae41a591c2"
         },
@@ -1946,7 +1946,7 @@
             "."
           ],
           "returncode": 0,
-          "seconds": 0.26600000000325963,
+          "seconds": 2.187000000005355,
           "raw_log": ".governance/rc207-final-gate-08.log",
           "raw_log_sha256": "05a98a7f9ac303958b0b8e0a882ae7a46a09c2f938ddbdb8ed34a6abb690e7c1"
         },
@@ -1958,7 +1958,7 @@
             ".governance/rc207-dist-a"
           ],
           "returncode": 0,
-          "seconds": 1.2810000000026776,
+          "seconds": 6.98399999999674,
           "raw_log": ".governance/rc207-final-gate-09.log",
           "raw_log_sha256": "6a8765b46f3f77840b2f32a70140e1ab122b786711c32471312c793a772c7185"
         },
@@ -1970,7 +1970,7 @@
             ".governance/rc207-dist-b"
           ],
           "returncode": 0,
-          "seconds": 1.3279999999940628,
+          "seconds": 5.062999999994645,
           "raw_log": ".governance/rc207-final-gate-10.log",
           "raw_log_sha256": "b87a6b31df46b8fffa30aeab9be47eeba77e901892e3ba9ec04a28988bed873c"
         }
@@ -1982,7 +1982,7 @@
       "full_suite_completed": false,
       "full_suite_passed": false,
       "observed_at": "2026-10-21T21:21:03.8183499Z",
-      "raw_log": ".governance/rc207-final-regression.log",
+      "raw_log": ".governance/rc207-interrupted-local-regression.log",
       "raw_log_sha256": "af232eb530a67d88473a99e77e0e915f5e560d5cf55263b8cb4cafa94a47273b",
       "known_failure": "Two subtests of one method expected CLI status0 for unhealthy binding; existing CLI contract returns1. Product behavior independently reproduced correctly.",
       "replacement": "Affected component rerun and exact-source full GitHub multi-platform CI required before merge and installation"
@@ -2007,6 +2007,132 @@
         ".governance/rc207-powershell51-mocks.log",
         ".governance/rc207-powershell51-ui.log"
       ]
+    },
+    "initial_github_integration": {
+      "source_revision": "8cd1d3f17656df90f457364653af7bcf4ab143b6",
+      "pr_workflow_run": 39678601216,
+      "url": "https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/39678601216",
+      "observed_failed_jobs": [
+        119494869729,
+        119494869843
+      ],
+      "tests_per_failed_job": 1508,
+      "failures_per_job": 4,
+      "errors_per_job": 1,
+      "diagnosis": "Four fixtures retained pre-correction artifact paths, helper paths, schema assumptions or backend bytes. One production defect recomputed an existing terminal summary after a measured budget overrun.",
+      "correction": "Align fixtures with current contracts and retain negative coverage; preserve validated terminal summary bytes, repairing absent/non-object summaries once without replaying calls.",
+      "acceptance": "This revision is rejected; replacement source and merged-main full workflows must each pass all jobs before installation."
+    },
+    "ci_runtime_contract_repair": {
+      "schema_version": 1,
+      "purpose": "CI fixture repair acceptance for the two assigned whole test modules; no production code change",
+      "entry": {
+        "tool": "exec_command",
+        "permission": "require_escalated",
+        "shell": "PowerShell",
+        "powershell_version": "7.6.5",
+        "python_executable": "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "python_version": "3.12.10",
+        "project_path": "D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution",
+        "temp": "D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution\\.governance\\temp-ci-runtime-whole-4a821c",
+        "tmp": "D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution\\.governance\\temp-ci-runtime-whole-4a821c"
+      },
+      "started_at_utc": "2026-10-21T21:35:16.213241+00:00",
+      "finished_at_utc": "2026-10-21T21:36:03.763516+00:00",
+      "wall_seconds": 47.546000000002095,
+      "modules": [
+        "test_rc9_evidence_continuity",
+        "test_project_executor"
+      ],
+      "tests_run": 65,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "expected_failures": 0,
+      "unexpected_successes": 0,
+      "return_code": 0,
+      "result": "passed",
+      "source_sha256": {
+        "tests/test_rc9_evidence_continuity.py": "8ea5f39c227f4dd07c5101b429ffbffbbca47ab16cb0424fe53dd2b450d80b65",
+        "tests/test_project_executor.py": "2342132f9055fa23a5b88f5d10706efeb29eda9b3207da6edfcddb05bdd85f17",
+        "qualification/analysis/admission.py": "76dae0eac7d455871514d909bd92f374840514b67760ea9b861becbe3360ef58",
+        "qualification/adapters/command_adapter.py": "c95f95358f56da4d695adeeffad5e5751178068ff5591fa298de927c20a9dce7",
+        "evolution/isolated_python.py": "2685d8ba8e27a667d4105a0f0b577fe04212ff31df2582445688454d5621f4dd",
+        "qualification/FREEZE.json": "c7d3949c6c36dec2c29658e3b01ec8419ca5e66a9161d2093e715a9c9d0fb049"
+      },
+      "source_hashes_still_current": true,
+      "log_path": "D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution\\.governance\\rc207-ci-runtime-repair.log",
+      "log_sha256": "8cbdf958cc466403b9178b5603106da158c0bbf07fffb6335d77dc52e8d019c8",
+      "model_calls": 0
+    },
+    "ci_terminal_summary_repair": {
+      "schema_version": 1,
+      "kind": "ci-campaign-terminal-summary-repair",
+      "observed_at_utc": "2026-10-21T21:35:48.440003+00:00",
+      "entry": {
+        "host": "Codex evolution_fixes subagent exec_command PowerShell",
+        "executable": "C:\\Users\\96501\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+        "argv": [
+          "-"
+        ],
+        "python_version": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+        "project_path": "D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution"
+      },
+      "ci_failure": {
+        "source_revision": "8cd1d3f17656df90f457364653af7bcf4ab143b6",
+        "job_id": 119494869729,
+        "test": "test_tool_campaign.CampaignTests.test_terminal_summary_time_crossing_retains_charge_and_blocks_benefit (blocked_transport=False)"
+      },
+      "reproduction": {
+        "raw_log": ".governance/rc207-campaign-before.log",
+        "sha256": "ced4845a9f1daa0a377f1ee9b0d1c529d11120e2f31636a7b6d846d79021ddc5",
+        "result": "FAIL reproduced before repair",
+        "tests": 1
+      },
+      "cause": "Terminal resume recomputed an already-published summary; after a terminal wall-budget rejection the status-dependent joint-family projection changed on readback.",
+      "repair": "After identity/order/pending validation, preserve terminal dict summary and checkpoint bytes. Reconstruct and publish only absent/non-object summary, once.",
+      "safety_preserved": [
+        "identity/order verification precedes terminal handling",
+        "unresolved pending rejects before repair",
+        "charged observations and measured budget retained",
+        "wall-budget overrun remains budget-exhausted with complete/benefit gates failed",
+        "no model redispatch on resume"
+      ],
+      "validations": [
+        {
+          "path": ".governance/rc207-campaign-after.log",
+          "sha256": "b80602ce713da6c668d99d0a872affc20e909e331af05ef64160d1003ea27ee1",
+          "bytes": 8822,
+          "test_selector": "test_tool_campaign.CampaignTests",
+          "tests": 51,
+          "unittest_elapsed_seconds": 47.586,
+          "result": "PASS",
+          "log_opened_at_utc": "2026-10-21T21:33:49.724208+00:00",
+          "log_last_written_at_utc": "2026-10-21T21:34:38.934487+00:00",
+          "timing_source": "observed raw log file creation/last-write UTC metadata; unittest reports test duration separately"
+        },
+        {
+          "path": ".governance/rc207-campaign-regressions.log",
+          "sha256": "76b7af3726777ddcaed78bd2ff6c8686d14fd746f8978e55fe6f7572b77c5470",
+          "bytes": 5060,
+          "test_selector": "test_context_campaign + test_ocr_evolution_regressions",
+          "tests": 27,
+          "unittest_elapsed_seconds": 38.963,
+          "result": "PASS",
+          "log_opened_at_utc": "2026-10-21T21:34:32.497193+00:00",
+          "log_last_written_at_utc": "2026-10-21T21:35:14.346701+00:00",
+          "timing_source": "observed raw log file creation/last-write UTC metadata; unittest reports test duration separately"
+        }
+      ],
+      "tests_passed": 78,
+      "new_model_calls": 0,
+      "model_call_basis": "Both suites use synthetic FakeToolCodex/backend/transport fixtures; no live provider or native model dispatch was enabled.",
+      "source_path_sha256": {
+        "evolution/tool_campaign.py": "c11535b199e6ce39101fc6ddb368077030002574bfb61710424556b165bd36b9",
+        "tests/test_tool_campaign.py": "d33355c3baf3d6f5c9619eb2f096bcd9cc3761ec023bc481c06a9e625d47092f"
+      },
+      "diff_check": "git diff --check -- evolution/tool_campaign.py tests/test_tool_campaign.py: exit 0",
+      "scope": "No commits or source audit edits; full CI matrix remains root-owned."
     },
     "complete_multiplatform_regression": "Exact source and merged-main GitHub CI required; final observed revisions/jobs/installation acceptance are recorded in acceptance_url, not inferred from interrupted local integration."
   },
