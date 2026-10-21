@@ -1,6 +1,6 @@
 # Git 自动接管与阶段保存
 
-RC20.5 支持已有仓库、无 `.git` 项目和尚无首个提交的仓库。未调用 `begin/finish` 的宿主可以在明确前台项目会话内使用观察器；没有可靠会话结束信号时只执行有限检查点／单次观察，不启动独立常驻进程。当前验证与交付事实见 [PROJECT_STATE.md](../PROJECT_STATE.md)，不能从本说明推断已安装或已通过 CI。
+RC20.6 支持已有仓库、无 `.git` 项目和尚无首个提交的仓库。未调用 `begin/finish` 的宿主可以在明确前台项目会话内使用观察器；没有可靠会话结束信号时只执行有限检查点／单次观察，不启动独立常驻进程。当前验证与交付事实见 [PROJECT_STATE.md](../PROJECT_STATE.md)，不能从本说明推断已安装或已通过 CI。
 
 ## 初始化与范围
 
@@ -39,6 +39,22 @@ python scripts/project_tool.py git-watch /path/to/project --action stop
 ```
 
 配置只保存选择。`session --command` 是前台会话入口：命令必须等待实际项目会话结束（示例 `editor --wait` 需替换为宿主真实支持的入口）。仅返回启动成功、随后把 UI 分离的启动器不能作为会话结束信号。前台会话所有者持有唯一生存凭据，宿主不继承观察器管道或受强制终止的容器。宿主退出或会话所有者异常退出时，观察器、监督和其原生校验／Git 包装子树退出；再次明确进入新的前台会话时恢复保留的配置／基线。
+
+### 宿主适配入口
+
+三个入口共享同一原生会话所有者、停止与恢复实现：
+
+| 宿主能力 | 入口 | 结束信号 |
+|---|---|---|
+| 本机官方 Codex CLI | `--action session --host codex-cli --executable /verified/path/to/codex` | 本次前台 CLI 退出 |
+| 等待实际项目关闭的终端／编辑器命令 | `--action session --command editor --wait /path/to/project` | 已核验等待命令退出 |
+| 能持有项目专用子进程管道的 IDE、插件或客户端 | `--action session --host stdin`，子进程 stdin 使用项目专用管道 | 当前项目的全部写端关闭产生 EOF |
+
+Codex 适配器只启动既有可执行文件，固定使用 `--no-daemon --no-alt-screen --cd <project>`，不传提示词、配置覆盖或守护命令；缺少入口时在修改绑定前失败。不自动安装 CLI。真实 CLI 验收与桌面 GUI 验收分别记录，不能互相替代。
+
+运行时只能验证 stdin 是管道，专属归属由调用方保证。管道适配由宿主为每个活跃项目创建并持有；只适用于拥有可靠项目结束回调的集成。关闭项目时关闭管道，重入时重新调用入口；不得用跨项目共享连接、常驻客户端或永不关闭的终端 stdin 代替项目生存信号。输入按有界块丢弃，不解析或记录提示词、心跳或会话内容；只认 EOF，读取异常先收回观察能力再报告失败。EOF 不需轮询宿主进程。此入口提供可执行的通用适配契约，不能自行给未提供信号的宿主增加该能力。
+
+[官方 Codex CLI 文档](https://learn.chatgpt.com/docs/developer-commands?surface=cli)说明 `--no-daemon` 前台能力。[官方会话钩子文档](https://learn.chatgpt.com/docs/hooks)支持项目内 `SessionStart/SessionEnd`，但精确钩子需受信任，切换线程不等于 SessionEnd；[App Server 文档](https://learn.chatgpt.com/docs/app-server)的取消订阅还可能经过 30 分钟卸载宽限。本版不注入这些配置，不把回答结束、取消订阅或进程名推测当作即时项目关闭。桌面端需要可靠项目级入口／结束信号后才能验收。
 
 没有该前台能力时，`start` 返回 `session-required` 且不创建进程；普通 `ensure/install/git-configure/recover` 不会分离启动观察器，不猜测父 PID、进程名或编辑器关闭事件。已接入 `begin/finish` 的宿主继续按原生命周期保存；其他宿主可用有限的 `--action tick`。这不等于已为任意编辑器提供适配器。没有宿主全局配置、开机／登录项、任务、服务或系统权限变更。
 

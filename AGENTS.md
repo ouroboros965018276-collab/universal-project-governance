@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Current candidate: **3.0.0-rc.20.5 — Foreground Project Sessions**.
+Current candidate: **3.0.0-rc.20.6 — Project Host Adapters**.
 
 ## First modifying activation
 

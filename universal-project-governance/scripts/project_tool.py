@@ -1030,6 +1030,8 @@ def main():
     watch.add_argument("project", nargs="?", default=".")
     watch.add_argument("--action", choices=["configure", "start", "stop", "status", "tick", "recover", "session"], required=True)
     watch.add_argument("--input")
+    watch.add_argument("--host", choices=["command", "codex-cli", "stdin"])
+    watch.add_argument("--executable")
     watch.add_argument("--command", nargs=argparse.REMAINDER)
     export = sub.add_parser("export")
     export.add_argument("project", nargs="?", default=".")
@@ -1063,12 +1065,12 @@ def main():
                                    args.status_path, args.min_interval_seconds, args.bootstrap_enabled)
         elif args.cmd == "git-watch":
             import git_watch
-            if args.command and args.action != "session":
-                raise ValueError("--command is only accepted for git-watch session")
+            if args.action != "session" and (args.command is not None or args.host is not None or args.executable is not None):
+                raise ValueError("--host, --executable and --command are only accepted for git-watch session")
             if args.action == "session":
                 if args.input:
                     raise ValueError("session does not accept --input")
-                result = git_watch.session(args.project, args.command)
+                result = git_watch.session(args.project, args.command, host=args.host or "command", executable=args.executable)
             elif args.action == "configure":
                 if not args.input:
                     raise ValueError("git-watch configure requires --input")

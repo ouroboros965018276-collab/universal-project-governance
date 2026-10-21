@@ -20,26 +20,23 @@
   "formal_qualification": "UNASSESSED",
   "locked_trials": "NOT_RUN",
   "stable": false,
-  "commit_policy": "One meaningful source checkpoint, necessary CI-contract correction and one final acceptance observation; no progress/timestamp-only commit loop. New paid model calls remain zero.",
-  "document_kind": "project-session-bound-git-observer-engineering-release",
-  "observed_at": "2026-10-20T20:44:28.030747+00:00",
-  "version": "3.0.0-rc.20.5",
-  "status": "SOURCE_AND_INSTALLATION_VERIFIED",
-  "baseline_revision": "8d7e6db7394e413de2d1a3e60d57d5dcb71de29a",
-  "canonical_current_observation": "RC20.5 source4950 PR/push CI each passed11/11 before the final installed-fixture calibration; runtime22 remains byte-identical with merged main and installation. Initial installed native2 had1PASS/1FAIL; first affected retest also failed its idle-only label. Both failures remain preserved. Only the actual first PASS is inherited; the latest same-case calibration checks unchanged actual HEAD/count/validators and is retested once. Installed integrity21/module7/fresh official enabled1/errors0/exit0 were observed. The first51-test failure records and original installed failure remain unchanged. The calibrated four-file acceptance head requires its own current-head CI on GitHub.",
+  "commit_policy": "One meaningful source/test/docs/audit checkpoint; only necessary corrections if a check fails. Final CI and installation evidence updates the same work order and local completion binding, without a status-only follow-up commit.",
+  "document_kind": "project-host-adapters-engineering-calibration",
+  "observed_at": "2026-10-21T00:03:03.553772+00:00",
+  "version": "3.0.0-rc.20.6",
+  "status": "LOCAL_ENGINEERING_CALIBRATION_VERIFIED",
+  "baseline_revision": "46d6450cebcd9b3ce4940f6bb4c454c517cc3cdb",
+  "canonical_current_observation": "Real Codex CLI0.162.0-alpha.20 reached ready twice on the existing worktree and exited normally via /exit, code0. Native observer owners exited and all6 guards released each time; tokens changed on reentry and actual HEAD/count76 stayed unchanged. Manual workflow priority prevented root source publishing. Separate real pipe lifecycle calibration proved stage commits and dedup. No model prompt/turn submitted. Desktop GUI not covered. Exact-head CI/main/installation authority is the work order; no recursive status commits. Initial exact-source Linux3.11 CI ran1445 and failed7 RC9 cases due new test import pollution. Only the test import target/dependency regression was corrected; same-process affected40 passed, runtime/package unchanged. Final corrected-source CI is authoritative in the work order.",
   "previous_verified_release": {
-    "version": "3.0.0-rc.20.4",
-    "revision": "8d7e6db7394e413de2d1a3e60d57d5dcb71de29a",
-    "audit_path": "audits/rc20-git-checkpoints.audit.json",
-    "audit_url": "https://github.com/ouroboros965018276-collab/universal-project-governance/blob/8d7e6db7394e413de2d1a3e60d57d5dcb71de29a/audits/rc20-git-checkpoints.audit.json",
-    "scope": "Fixed complete RC20.4 history, including original failures, corrections, OS-startup revocation, final CI and installation. This record links that history instead of copying its old checks into current results."
+    "version": "3.0.0-rc.20.5",
+    "revision": "46d6450cebcd9b3ce4940f6bb4c454c517cc3cdb",
+    "audit_url": "https://github.com/ouroboros965018276-collab/universal-project-governance/blob/46d6450cebcd9b3ce4940f6bb4c454c517cc3cdb/audits/rc20-git-checkpoints.audit.json",
+    "final_ci_url": "https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/39494688137",
+    "historical_failures": "Original bytes remain at this immutable audit URL and raw receipts. Inherited history checks below retain original scope."
   },
   "scope": [
-    "Bind observation to an explicit foreground host command that remains alive for its actual project session; use Windows kill-on-close Job and inherited EOF authority, or a private POSIX process group with EOF revocation.",
-    "End of the actual foreground host or abrupt owner exit revokes observation authority and terminates owned observer members; reopening an explicit project session restores observation on demand.",
-    "Recover worker and supervisor crashes during the same active foreground project session with native guard proof and bounded retry; no system startup registration or idle background fallback.",
-    "Preserve meaningful-change selection, native Git protections, scoped stage commits, cooldown, duplicate suppression and finite explicit lifecycle/tick operations.",
-    "Necessary native/local calibration and existing CI only; no additional paid model trials."
+    "Canonical runtime host selectors and existing public project_tool interface, necessary tests/docs/generated delivery.",
+    "No OS startup, global configuration injection, permission change, detached fallback or paid-model trial."
   ],
   "mechanism": {
     "foreground_owner": "git-watch --action session --command <explicit argv>; the command must wait for the real host session lifetime.",
@@ -53,7 +50,12 @@
       "No claim that arbitrary editors are adapted.",
       "No claim that closing the real Codex desktop app was tested.",
       "No boot, logon, service or scheduled-task registration is delivered or authorized."
-    ]
+    ],
+    "host_adapters": {
+      "command": "Existing waiting directargv.",
+      "codex-cli": "Explicit executable; fixed --no-daemon --no-alt-screen --cd project; no prompt/config override.",
+      "stdin": "Actual pipe; bounded4096-byte discard; EOF/readerror revokes existing native lifetime. Dedicated project writer ownership is a caller obligation; content never interpreted or retained."
+    }
   },
   "checks": {
     "first_focused_development_failure": {
@@ -1274,55 +1276,242 @@
         "discovery_stdout": "D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution\\.governance\\rc205-install-discovery-9a5ef76846f948b88f9dafb76e0cc122.stdout.jsonl",
         "discovery_stderr": "D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution\\.governance\\rc205-install-discovery-9a5ef76846f948b88f9dafb76e0cc122.stderr.log"
       }
+    },
+    "host_adapters_rc206": {
+      "scope": "Unique focused23 includes the new6; finite parser3 is separate. Do not add overlapping counts or infer model benefit.",
+      "focused": {
+        "tests": 23,
+        "failures": 0,
+        "errors": 0,
+        "raw_path": ".governance/rc206-focused-tests.raw.txt",
+        "sha256": "d6b7bf9bbb221e0931fd206d4295dc9fe9ee835299f87b07983c5d23ec2c4121"
+      },
+      "parser": [
+        {
+          "options": [
+            "--command"
+          ],
+          "exit_code": 2,
+          "stderr": "error: --host, --executable and --command are only accepted for git-watch session\r\n",
+          "project_created": false
+        },
+        {
+          "options": [
+            "--executable",
+            ""
+          ],
+          "exit_code": 2,
+          "stderr": "error: --host, --executable and --command are only accepted for git-watch session\r\n",
+          "project_created": false
+        },
+        {
+          "options": [
+            "--host",
+            "command"
+          ],
+          "exit_code": 2,
+          "stderr": "error: --host, --executable and --command are only accepted for git-watch session\r\n",
+          "project_created": false
+        }
+      ],
+      "static_gates": {
+        "prior_batch": {
+          "receipt": "tool chunk b7edb9",
+          "gate_exit_codes": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "gate_names": [
+            "compiler",
+            "governance_lint",
+            "qualification",
+            "freeze",
+            "repository",
+            "navigation"
+          ],
+          "outcome": "All first six gates returned0. Outer console printed navigation Unicode with GBK and failed before remaining four began; no code gate failed.",
+          "retained_failure": true
+        },
+        "remaining_four": [
+          {
+            "argv": [
+              "tools/validate_skill_bundle.py",
+              "universal-project-governance"
+            ],
+            "exit_code": 0,
+            "stdout": "warning: local bytecode residue present (excluded by packaging and by Git, so it neither ships nor commits): scripts\\__pycache__\r\nSkill bundle check passed: universal-project-governance 3.0.0-rc.20.6 (52 SKILL.md lines, 3 Markdown files).\r\n",
+            "stderr": ""
+          },
+          {
+            "argv": [
+              "universal-project-governance/scripts/validate_integrity.py",
+              "universal-project-governance"
+            ],
+            "exit_code": 0,
+            "stdout": "Integrity check passed (21 generated runtime files).\r\n",
+            "stderr": ""
+          },
+          {
+            "argv": [
+              "tools/security_audit.py",
+              "."
+            ],
+            "exit_code": 0,
+            "stdout": "Security audit passed: no network imports, shell=True, unapproved dynamic execution, symlink-following, or secret-like token patterns detected in governed surfaces.\r\n",
+            "stderr": ""
+          },
+          {
+            "argv": [
+              "tools/package_release.py",
+              "universal-project-governance",
+              "--output-dir",
+              ".governance/rc206-dist"
+            ],
+            "exit_code": 0,
+            "stdout": "archive: D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution\\.governance\\rc206-dist\\universal-project-governance-v3.0.0-rc.20.6.zip\r\nsha256:  2fb38ebf2c9427dbe1e223a8c1f51f462b9e668e77dc911cc6cc20290a82e82d\r\nchecksum: D:\\Universal Project Governance\\worktrees\\rc17-offline-evolution\\.governance\\rc206-dist\\universal-project-governance-v3.0.0-rc.20.6.zip.sha256\r\n",
+            "stderr": ""
+          }
+        ]
+      },
+      "real_official_cli": {
+        "binary": "C:\\Users\\96501\\.agent-environment\\runtimes\\codex-0.162.0-alpha.20\\bin\\codex.exe",
+        "version": "codex-cli0.162.0-alpha.20",
+        "ready_and_normal_exit_sessions": 2,
+        "model_turns_submitted": 0,
+        "desktop_gui_tested": false,
+        "session_ids": [
+          "01a15bb5-49f4-7e91-b060-20a3afb5501c",
+          "01a15bb7-4833-7470-a6b5-7b1d0b1d32c5"
+        ],
+        "receipts": [
+          {
+            "path": ".governance/rc206-root-codex-live1.json",
+            "sha256": "b4239af2b79f4a1a7e9a2a7e117dfdc5fab792e39065e5e0bd4cd2001ecb3df3"
+          },
+          {
+            "path": ".governance/rc206-root-codex-ended1.json",
+            "sha256": "bacf53fcca0262b5b492d1fd31782bf46d05a61404d55fb7d299cbb5a263aef9"
+          },
+          {
+            "path": ".governance/rc206-root-codex-live2.json",
+            "sha256": "74a22c2846bcb6c489cdd629e25b275fd97243f6caa870a22e0f75a838c757a5"
+          },
+          {
+            "path": ".governance/rc206-root-codex-ended2.json",
+            "sha256": "bb23ab323f1702d5f76a81ba237bd9097266065dfc3361d7735209269fef5e54"
+          }
+        ],
+        "tty_tool_session_ids": [
+          57489,
+          77521
+        ],
+        "head_unchanged": "46d6450cebcd9b3ce4940f6bb4c454c517cc3cdb",
+        "commit_count_unchanged": 76,
+        "six_native_guards_released_after_each": true,
+        "manual_workflow_priority": "Actual CLI probe proved lifetime only. The separate pipe fixture proves effective stage commits.",
+        "global_configuration": {
+          "injection_by_upg": false,
+          "each_live_to_exit_hash_unchanged": true,
+          "whole_calibration_hash_unchanged": false,
+          "writer_or_cause": "UNKNOWN; no prior-byte diff or write trace. Do not rollback concurrent settings.",
+          "hashes": [
+            {
+              "config.toml": "131388cf0033c16b292f1f2ae7691d16737dfd389651dfb7bea40f02d1354941",
+              "hooks.json": null,
+              "AGENTS.md": "ce2954448eb54a3640217854efd60b4b8d94a31a80ed0e17ea78b3f73bdd0483"
+            },
+            {
+              "config.toml": "c786c5c748c6c40264ab53141931ba81604cb65f585d53d1eddff9aa5ce95d3a",
+              "hooks.json": null,
+              "AGENTS.md": "ce2954448eb54a3640217854efd60b4b8d94a31a80ed0e17ea78b3f73bdd0483"
+            }
+          ],
+          "current_trust_map": "Only existing repository trust observed for this project family; no worktree/fixture trust entry added."
+        }
+      },
+      "retained_events": [
+        "Fixture init --template= lacked .git/info; inspected partial state and continued only unexecuted setup tail.",
+        "Initial TERM=dumb compatibility prompt: auto-review rejected y as possible trust approval. Interrupted owner; binary literal established TERM warning. Retried with per-child ANSI TERM only, no trust/permission approval.",
+        "Actual isolated folder-trust prompt was quit. Existing worktree reused repository trust without injecting settings.",
+        "Finite inspection implicit GBK decoding failed before patch began; explicit UTF-8 continued the unexecuted patch.",
+        "First6 static gates passed then GBK console printing failed before last4; only last4 continued with UTF-8.",
+        "Initial exit observation preceded actual terminal submission of /exit; assertion failed without an acceptance receipt. After real exit0 the observation passed.",
+        "Whole-run global config hash assertion rejected an unsupported unchanged claim before audit write. Each session pair is unchanged, inter-session writer/cause unknown."
+      ],
+      "initial_ci_failure": {
+        "source_revision": "bb6cf361923c2827a679de6ea0fbee528b934bd4",
+        "run_id": 39518142350,
+        "job_id": 118955154348,
+        "job_url": "https://github.com/ouroboros965018276-collab/universal-project-governance/actions/runs/39518142350/job/118955154348",
+        "tests_run": 1445,
+        "errors": 7,
+        "skipped": 2,
+        "cause": "New test imported bare project_tool from governance-src; later RC9 tests expected compiled policy-index.json. Discovery import-order pollution, not a production runtime defect.",
+        "raw_path": ".governance/rc206-source-ci-failure-linux311.raw.txt",
+        "raw_sha256": "cefca7b2ce78ec91a6994af4803952de6d7f7e4ed8474a4992984d257385cb3d",
+        "source_runtime_unchanged_by_fix": true
+      },
+      "affected_import_order_retest": {
+        "tests": 40,
+        "passed": true,
+        "errors": 0,
+        "order": [
+          "test_host_session_adapters.HostAdapterContractTests",
+          "test_rc9_evidence_continuity"
+        ],
+        "new_regression": "test_runtime_dependencies_use_generated_bundle",
+        "native_case_repeated": false,
+        "raw_path": ".governance/rc206-import-order-retest.txt",
+        "raw_sha256": "9b86ceb849d3977d7c9283d2ece18ac4fc42371d056ef745a0ed700ddacb7695",
+        "overlap": "Contains prior five adapter unit cases plus new dependency assertion and RC9 cases. Do not sum overlapping evidence."
+      }
     }
   },
-  "source_sha256": {
-    "governance-src/README.md": "86bbdcdfd37d1690d6e7cf9ceeae9da15cc89600ac6b41a11cd22f68157d08a0",
-    "governance-src/model/governance-model.json": "9363d3aa5bf3c003cafcd3d1b85fe1ca00bdc25f426280e14dde08fd038bf006",
-    "governance-src/profiles/automation.json": "b1c2ecd100cd242c51105ab467c784727492b7addab3fa576c66b2234016599b",
-    "governance-src/profiles/content-project.json": "9faf686efcac663dfcb62a0d57949ee80e5e0de772a86c2ba112aee70057209c",
-    "governance-src/profiles/data.json": "b499098720186910e47c5645fd22c6860da39ec7351360445e4b9420c3564483",
-    "governance-src/profiles/design-system.json": "9ebd0ad746767af63e08730b7d27302479535fa81d6b8b99df46792cf90eea17",
-    "governance-src/profiles/docs.json": "a460c26e42ddeebf7775a348a983881db21f181116f603a4c2c8ca9849dc2ba9",
-    "governance-src/profiles/infrastructure.json": "8cf1509b8d7f8ab7a22d2573d152d70f316c79400f3dcc6d3d3949efff521700",
-    "governance-src/profiles/mixed.json": "dc6bc3056918cf453dc98af0f659c2b0d9e296eefb5ccd56005e7b723b359bb4",
-    "governance-src/profiles/ml.json": "22a6e55a8ac58305645b915e00817b7d862e461c1719649af52a8142f8ee3fd9",
-    "governance-src/profiles/operations.json": "10d35affe8badd78d0ca103bc8f7804ccc4dbccd6e09740ae775db747da0c43c",
-    "governance-src/profiles/product.json": "3ad84791889c4986afbc8b90bee983ed1e5565ab1e4142ed5628139b5d4b0559",
-    "governance-src/profiles/research.json": "a4cde51bee88caf72b8661daadccea9ff183286c0d9eb1c4666ac818a0604ee9",
-    "governance-src/profiles/software.json": "02ae6e912fbaac8aecd32651b8ac3e84f87971936093fcb153feecf1304f8b05",
-    "governance-src/runtime-scripts/git_checkpoint.py": "ab1b1721607e267c5b39f709cdc8d309d4137cf10eb923231862014742d8ea42",
-    "governance-src/runtime-scripts/git_watch.py": "e3812079fbe000c2127c619267c94e87ffaefccd9399d638bf0ee637072299a3",
-    "governance-src/runtime-scripts/plan_governance.py": "aad1d34983c813f508d1845b6ad94d8adb4afcdc6352ef6b5692550623729697",
-    "governance-src/runtime-scripts/process_guard.py": "873aaa7ebd732c2413369b1877ebf6172e98a1d05599d3aee468dea03cc76eb5",
-    "governance-src/runtime-scripts/project_facts.py": "f355e0fa241a1032c94d4959b610b86c2d0ad48b2c62bbfed1ded65bfa4bd9ee",
-    "governance-src/runtime-scripts/project_tool.py": "f8769cf3b313bbdc0e0696b815f55e9a1ab6a61ca53004f073d996dcb092ab7a",
-    "governance-src/runtime-scripts/session_lifetime.py": "b758115a98ad9f9b56294d470875d40cb3713e38a283de4e741ae84b492585bf",
-    "governance-src/runtime-scripts/state_tool.py": "193cb9657c32dedb253727e93a13bcb6f39306331fc8a90d1319e337f5b088a0",
-    "governance-src/runtime-scripts/validate_integrity.py": "cf09558e67b4488db88c5ce9836e9f1cf1c8bae97d6e1444bb9d2d80409157c0",
-    "governance-src/schemas/audit.schema.json": "a5e15c26eff86e3c4e2e174fb121ef22981628307f09cf18d09a589e738ea889",
-    "governance-src/schemas/execution.schema.json": "d2a7cddc9d98c8101294df302259ba18217c27b9e7c8fee43d96c82ff6bde1d7",
-    "governance-src/schemas/feedback.schema.json": "22da61a114a1e89ee641ac25e90e23d6231003351df15918d4265f9900091954",
-    "governance-src/schemas/field-report.schema.json": "9c58db8a99af7312bf75f96bad391ae54e968bc1f58cc200864b39b1630cd7ba",
-    "governance-src/schemas/governance-model.schema.json": "c6d4899bcbd86ac364fc024837a6f6c106fed4a5f74f9153c821ba8f0160e4d4",
-    "governance-src/schemas/governance-plan.schema.json": "1e1ef2e692bea3752ece6e292d2e7c3d67abfbe3b58dd93ec75655f2aff9b25e",
-    "governance-src/schemas/handoff.schema.json": "994769e2a35b4d2189c509b8c5fce6ba76e4941fa4cadaa51f8f02f48b338a97",
-    "governance-src/schemas/task-context.schema.json": "acc323f7d86f8dad5d8694e7fcf566dad6987d077877fbe6dbc819029936ad38",
-    "governance-src/templates/SKILL.template.md": "305f4eaefb41fda53b525f62e55cef339e45ce372e2fec1deb53aecbd3ee4de6",
-    "tests/test_decision_relevance_guidance.py": "f6094e8a9694cc023ff663011eb844eb587ad4010a9a4eae681936def1e52fb0",
-    "tests/test_git_recovery.py": "d7f882ac54c5668dd75021f2230dab2af4a0455de6b75c6f015c807d3c3a5134",
-    "tests/test_git_session.py": "f27bd1251a37c78b6ade72561273705c8b0e188cba80f7f4fba3b877caa3cffe",
-    "tests/test_git_supervision.py": "006d624605cc1da5baf4240e1296e6b24166ed4159c2fe183b3efde9e114dd45",
-    "tests/test_git_watch.py": "a26a5a309aa7eedda2a63c30a7be3998b27112b4302472748a450a69cc54cd12",
-    "tests/test_git_watch_handshake.py": "5b0d472e1adefec09fe30a4e154be2b3971991f7093fedab77b90477e0a9486d",
-    "tests/test_git_watch_security.py": "c695525b63641fdd860f6b530d66a6543d49d06a80549da155ac58aab6ada24b",
-    "tests/test_operational_guidance.py": "113e1165ec0353f36551fe1ff31f0d3eda142e6f0267230fdbe90bc63c5d99bf",
-    "tools/security_audit.py": "0f7a33d00775ff9a6fa8f2b7b218d51e7081e39064dfbd5c65ce31de2287848d"
-  },
-  "source_identity_status": "Exact merged keyed-source bytes except the sole preregistered installed-fixture calibration at its recorded after hash. Runtime22 unchanged; the four-file acceptance head requires its own CI. Initial source identity and all failure groups are retained.",
+  "source_sha256": "0561a46a01c55bd39aec47af02fd4c79833edf0122789b352f2e2e43c3afa4ab",
+  "source_identity_status": "Generated identity tested locally; exact immutable Git/CI revisions are recorded in the work order.",
   "manifest_covered_files": 21,
   "delivered_files": 22,
-  "delivery": {
+  "withdrawn_system_startup_history": {
+    "status": "REVOKED_BY_OWNER_AND_NOT_REINTRODUCED",
+    "historical_audit_url": "https://github.com/ouroboros965018276-collab/universal-project-governance/blob/8d7e6db7394e413de2d1a3e60d57d5dcb71de29a/audits/rc20-git-checkpoints.audit.json",
+    "scope": "Historical task registration, failed calibration, correction and verified removal remain in fixed RC20.4 history; none is delivered RC20.5 startup functionality.",
+    "future_system_autostart_registration_authorized": false
+  },
+  "remaining_goals": [
+    "Desktop GUI close/reopen and arbitrary hosts lacking a reliable project-specific end signal remain unverified; use finite lifecycle/ticks. Pipe type is checked; exclusive project ownership is not discoverable automatically.",
+    "Independent cross-agent quality/token/time benefit NOT_ESTABLISHED; formal qualification UNASSESSED; locked trials NOT_RUN; not Stable.",
+    "Insight application remains prior partial/unaccepted; not modified or accepted by this UPG change.",
+    "Unknown legacy locks, unsupported advanced Git, deliberately detached POSIX descendants and power-loss durability retain stated limits."
+  ],
+  "package_sha256": "2fb38ebf2c9427dbe1e223a8c1f51f462b9e668e77dc911cc6cc20290a82e82d",
+  "runtime_file_sha256": {
+    "INTEGRITY.md": "3e2404344195b4795ad4cb07944acac5bb1070a9e40c92c4da792abeb6e3774d",
+    "LICENSE": "50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a",
+    "SKILL.md": "3606576b016b0bf581428c35361c02f78184896287bf73d6be971cd186381e1d",
+    "VERSION.md": "2e9e24c2956facfb0ec74cf4b42323ddc84c3bdc726ec665a5686ca157b61b7a",
+    "policy-index.json": "fcf1603c84a097f4fc004ec691305e57fe9885e49e0f6f696cd5dffc4000bc78",
+    "schemas/audit.schema.json": "a5e15c26eff86e3c4e2e174fb121ef22981628307f09cf18d09a589e738ea889",
+    "schemas/execution.schema.json": "d2a7cddc9d98c8101294df302259ba18217c27b9e7c8fee43d96c82ff6bde1d7",
+    "schemas/feedback.schema.json": "22da61a114a1e89ee641ac25e90e23d6231003351df15918d4265f9900091954",
+    "schemas/field-report.schema.json": "9c58db8a99af7312bf75f96bad391ae54e968bc1f58cc200864b39b1630cd7ba",
+    "schemas/governance-plan.schema.json": "1e1ef2e692bea3752ece6e292d2e7c3d67abfbe3b58dd93ec75655f2aff9b25e",
+    "schemas/handoff.schema.json": "994769e2a35b4d2189c509b8c5fce6ba76e4941fa4cadaa51f8f02f48b338a97",
+    "schemas/task-context.schema.json": "acc323f7d86f8dad5d8694e7fcf566dad6987d077877fbe6dbc819029936ad38",
+    "scripts/git_checkpoint.py": "ab1b1721607e267c5b39f709cdc8d309d4137cf10eb923231862014742d8ea42",
+    "scripts/git_watch.py": "7d3dc4e1f18155916d40613f283b5506ed1558a42b31a9e1cd49927d96cfa2e0",
+    "scripts/plan_governance.py": "aad1d34983c813f508d1845b6ad94d8adb4afcdc6352ef6b5692550623729697",
+    "scripts/process_guard.py": "873aaa7ebd732c2413369b1877ebf6172e98a1d05599d3aee468dea03cc76eb5",
+    "scripts/project_facts.py": "f355e0fa241a1032c94d4959b610b86c2d0ad48b2c62bbfed1ded65bfa4bd9ee",
+    "scripts/project_tool.py": "167b2d256298a546469ddc8015cb174478c0c980631435e31b350db78e4afce4",
+    "scripts/session_lifetime.py": "b758115a98ad9f9b56294d470875d40cb3713e38a283de4e741ae84b492585bf",
+    "scripts/state_tool.py": "193cb9657c32dedb253727e93a13bcb6f39306331fc8a90d1319e337f5b088a0",
+    "scripts/validate_integrity.py": "cf09558e67b4488db88c5ce9836e9f1cf1c8bae97d6e1444bb9d2d80409157c0"
+  },
+  "rc205_delivery_history": {
     "github": {
       "status": "MERGED",
       "source_revision": "4950eff7f6abaec2645c993a2f6de08265f18d15",
@@ -1334,25 +1523,13 @@
     "acceptance_stage": "Source and installed-copy observations recorded once. Exact acceptance-head CI remains authoritative on GitHub and work order; no recursive timestamp/self-hash commit.",
     "project_observer": "Explicit foreground command must wait for the real host session. This acceptance starts no root observer. Without a reliable adapter, only finite lifecycle/tick behavior is available; no system startup or background fallback."
   },
-  "withdrawn_system_startup_history": {
-    "status": "REVOKED_BY_OWNER_AND_NOT_REINTRODUCED",
-    "historical_audit_url": "https://github.com/ouroboros965018276-collab/universal-project-governance/blob/8d7e6db7394e413de2d1a3e60d57d5dcb71de29a/audits/rc20-git-checkpoints.audit.json",
-    "scope": "Historical task registration, failed calibration, correction and verified removal remain in fixed RC20.4 history; none is delivered RC20.5 startup functionality.",
-    "future_system_autostart_registration_authorized": false
-  },
-  "remaining_goals": [
-    "Host lifetime integration requires an explicit foreground command that remains alive until the real project/editor session ends. Arbitrary-editor adaptation and actual Codex desktop close testing are not established.",
-    "Independent cross-agent quality/token/time benefit NOT_ESTABLISHED; formal qualification UNASSESSED; locked trials NOT_RUN; not Stable.",
-    "Insight application remains its prior partial/unaccepted state; it is not modified or accepted by this Git observer change.",
-    "Legacy unknown locks, unsupported advanced Git, deliberately detached descendants and unverified power-loss durability retain bounded limitations."
-  ],
-  "current_acceptance_checks": {
+  "rc205_current_acceptance_checks_history": {
     "authority": "Exact acceptance/current-main GitHub checks, work order and ignored completion binding are final delivery authority. This tracked record captures source CI and installation once, without recursive self-head updates.",
     "checks_url": "https://github.com/ouroboros965018276-collab/universal-project-governance/actions/workflows/validate.yml",
     "work_order": "https://github.com/ouroboros965018276-collab/universal-project-governance/issues/26",
     "avoid_recursive_commit": true
   },
-  "workspace_health": {
+  "rc205_workspace_health_history": {
     "raw_receipt": ".governance/rc205-health.json",
     "observed_started_at_utc": "2026-10-20T19:06:29.1670169Z",
     "observed_finished_at_utc": "2026-10-20T19:06:29.3288568Z",
@@ -1364,32 +1541,7 @@
     "scope": "this_process_this_invocation_only",
     "raw_machine_account_identifiers_kept_local": true
   },
-  "package_sha256": "96207df5182f6e3cac0c10a37866c5b1302d41b5bf9689d63a24396b85be3aed",
-  "runtime_file_sha256": {
-    "INTEGRITY.md": "3e2404344195b4795ad4cb07944acac5bb1070a9e40c92c4da792abeb6e3774d",
-    "LICENSE": "50e6751797c50dedd75ef1b8a0d9e42f5f8472e9fbce91f34718e9f97b0c780a",
-    "policy-index.json": "2081a58b87fd61e715d791f4526fccd03ae2e4042b0663744eb2f388bf59eba5",
-    "SKILL.md": "5d67b0204fe36e74be8844a662feaca71a553a57a4b9f0f014ca5688a10dd7a7",
-    "VERSION.md": "f4e1c966a286123e83da57b492c31c0a438641c2b62f8ee25399dfe03e5a2019",
-    "integrity/manifest.json": "69c391ccb23b926d87efd979cef50e77db4ebd3ed1d2caeb48ba07a329443b31",
-    "schemas/audit.schema.json": "a5e15c26eff86e3c4e2e174fb121ef22981628307f09cf18d09a589e738ea889",
-    "schemas/execution.schema.json": "d2a7cddc9d98c8101294df302259ba18217c27b9e7c8fee43d96c82ff6bde1d7",
-    "schemas/feedback.schema.json": "22da61a114a1e89ee641ac25e90e23d6231003351df15918d4265f9900091954",
-    "schemas/field-report.schema.json": "9c58db8a99af7312bf75f96bad391ae54e968bc1f58cc200864b39b1630cd7ba",
-    "schemas/governance-plan.schema.json": "1e1ef2e692bea3752ece6e292d2e7c3d67abfbe3b58dd93ec75655f2aff9b25e",
-    "schemas/handoff.schema.json": "994769e2a35b4d2189c509b8c5fce6ba76e4941fa4cadaa51f8f02f48b338a97",
-    "schemas/task-context.schema.json": "acc323f7d86f8dad5d8694e7fcf566dad6987d077877fbe6dbc819029936ad38",
-    "scripts/git_checkpoint.py": "ab1b1721607e267c5b39f709cdc8d309d4137cf10eb923231862014742d8ea42",
-    "scripts/git_watch.py": "e3812079fbe000c2127c619267c94e87ffaefccd9399d638bf0ee637072299a3",
-    "scripts/plan_governance.py": "aad1d34983c813f508d1845b6ad94d8adb4afcdc6352ef6b5692550623729697",
-    "scripts/process_guard.py": "873aaa7ebd732c2413369b1877ebf6172e98a1d05599d3aee468dea03cc76eb5",
-    "scripts/project_facts.py": "f355e0fa241a1032c94d4959b610b86c2d0ad48b2c62bbfed1ded65bfa4bd9ee",
-    "scripts/project_tool.py": "f8769cf3b313bbdc0e0696b815f55e9a1ab6a61ca53004f073d996dcb092ab7a",
-    "scripts/session_lifetime.py": "b758115a98ad9f9b56294d470875d40cb3713e38a283de4e741ae84b492585bf",
-    "scripts/state_tool.py": "193cb9657c32dedb253727e93a13bcb6f39306331fc8a90d1319e337f5b088a0",
-    "scripts/validate_integrity.py": "cf09558e67b4488db88c5ce9836e9f1cf1c8bae97d6e1444bb9d2d80409157c0"
-  },
-  "source_checkpoint": {
+  "rc205_source_checkpoint_history": {
     "automatic": false,
     "reason": "Native automatic stage correctly refused test_git_watch.py, which this turn modified before begin snapshot; preserve immutable start and explicit29-file commit rather than override protection.",
     "blocked_checkpoint_id": "source-validated",
@@ -1402,5 +1554,23 @@
     "after_count": 73,
     "after_retry_count": 73,
     "committed_runtime22_equal_verified_package": true
+  },
+  "older_verified_release": {
+    "version": "3.0.0-rc.20.4",
+    "revision": "8d7e6db7394e413de2d1a3e60d57d5dcb71de29a",
+    "audit_path": "audits/rc20-git-checkpoints.audit.json",
+    "audit_url": "https://github.com/ouroboros965018276-collab/universal-project-governance/blob/8d7e6db7394e413de2d1a3e60d57d5dcb71de29a/audits/rc20-git-checkpoints.audit.json",
+    "scope": "Fixed complete RC20.4 history, including original failures, corrections, OS-startup revocation, final CI and installation. This record links that history instead of copying its old checks into current results."
+  },
+  "delivery": {
+    "authority": "https://github.com/ouroboros965018276-collab/universal-project-governance/issues/26",
+    "exact_head_acceptance": "Read exact tested source/main CI and installed22-file verification from the same work order. No pre-CI install success is claimed by this source-stage record.",
+    "no_recursive_status_commits": true
+  },
+  "workspace_health": {
+    "entry_label": "Codex desktop root host-adapter RC20.6 PowerShell direct",
+    "invocation_id": "57e930457ecc4cc18f38eb4092ac7713",
+    "started_at": "2026-10-20T23:32:14.9409384Z",
+    "result": "PASS; unique authorized-worktree write/read/DeleteOnClose absence; existing Git/rg; no repeated installation."
   }
 }

@@ -1,6 +1,6 @@
 # 发布与测试冻结门禁
 
-当前候选：**3.0.0-rc.20.5 — Foreground Project Sessions**。
+当前候选：**3.0.0-rc.20.6 — Project Host Adapters**。
 
 RC20 从已合并的 RC19 `bd4a4d5c1c6fb9fca829e410729879d1b01f05b9` 开始。当前发布、验证和安装事实统一见[项目状态](PROJECT_STATE.md)；[RC19 安装验收](audits/rc19-installation.audit.json)是历史基线，不能验证 RC20。候选仍需自身的编译、回归、导航、完整性、打包及安装验收。规则来源比较保留每次注册调用、失败和 unknown 用量围栏；静态检查或更短文档都不证明净收益。Stable 仍须通过原正式资格门禁。
 
