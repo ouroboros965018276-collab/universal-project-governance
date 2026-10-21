@@ -27,9 +27,11 @@ class InitialContractTests(unittest.TestCase):
         self.assertEqual(project.EXECUTION_BACKEND, "docker-cpython-project-v1")
         self.assertEqual(project.EXECUTION_SUITE, "registered-python-project-checks-v1")
 
-    def test_legacy_entry_bytes_unchanged(self):
+    def test_finite_backend_entry_matches_reviewed_identity(self):
+        # Pin the separately reviewed finite backend, including its explicit
+        # project/artifact boundary and current VM identity, not an older entry.
         self.assertEqual(hashlib.sha256(Path(legacy.__file__).read_bytes()).hexdigest(),
-                         "2fc136ffa4bb1ca0a99615c12278df36452257d093d8ec2aa9035a3dd4bf1c8d")
+                         "2685d8ba8e27a667d4105a0f0b577fe04212ff31df2582445688454d5621f4dd")
 
 
 CID = "a" * 64

@@ -168,7 +168,54 @@ class CampaignTests(unittest.TestCase):
         self.assertEqual(run["budget"]["total_tokens"], 360)
         self.assertEqual(len(run["observations"]), 8)
         self.assertTrue(all(row["usage"]["cached_tokens"] == 5 for row in run["observations"]))
-        self.assertEqual(self.collect(), run)
+        terminal_bytes = self.output.read_bytes()
+        with patch.object(tool_campaign, "summarize", side_effect=AssertionError("terminal summary must be retained")), \
+             patch.object(tool_campaign, "save_run", side_effect=AssertionError("terminal checkpoint must not be rewritten")):
+            self.assertEqual(self.collect(), run)
+        self.assertEqual(self.output.read_bytes(), terminal_bytes)
+        self.assertEqual(len(self.calls), 8)
+
+    def test_terminal_resume_repairs_absent_or_nonobject_summary_once(self):
+        completed = self.collect()
+        absent = object()
+        for value in (absent, None, [], "invalid", 1, False):
+            with self.subTest(summary=value):
+                damaged = copy.deepcopy(completed)
+                if value is absent:
+                    damaged.pop("summary")
+                else:
+                    damaged["summary"] = value
+                self.output.write_bytes(json.dumps(damaged).encode("utf-8"))
+                with patch.object(tool_campaign, "summarize", wraps=tool_campaign.summarize) as summary, \
+                     patch.object(tool_campaign, "save_run", wraps=tool_campaign.save_run) as save:
+                    repaired = self.collect()
+                summary.assert_called_once()
+                save.assert_called_once()
+                self.assertIsInstance(repaired["summary"], dict)
+                self.assertEqual(repaired["budget"], completed["budget"])
+                self.assertEqual(repaired["observations"], completed["observations"])
+                self.assertEqual(json.loads(self.output.read_bytes()), repaired)
+                terminal_bytes = self.output.read_bytes()
+                with patch.object(tool_campaign, "summarize", side_effect=AssertionError("repair must be idempotent")), \
+                     patch.object(tool_campaign, "save_run", side_effect=AssertionError("repair must publish only once")):
+                    self.assertEqual(self.collect(), repaired)
+                self.assertEqual(self.output.read_bytes(), terminal_bytes)
+        self.assertEqual(len(self.calls), 8)
+
+    def test_terminal_summary_repair_still_requires_identity_and_resolved_pending(self):
+        completed = self.collect()
+        for boundary in ("identities", "pending"):
+            with self.subTest(boundary=boundary):
+                damaged = copy.deepcopy(completed)
+                damaged.pop("summary")
+                damaged[boundary] = ({"engine_sha256": "0" * 64} if boundary == "identities" else
+                                     {"kind": "unreconciled-call"})
+                self.output.write_bytes(json.dumps(damaged).encode("utf-8"))
+                before = self.output.read_bytes()
+                with patch.object(tool_campaign, "summarize", side_effect=AssertionError("unverified terminal cannot be repaired")), \
+                     self.assertRaisesRegex(ValueError, "mismatch|pending"):
+                    self.collect()
+                self.assertEqual(self.output.read_bytes(), before)
         self.assertEqual(len(self.calls), 8)
 
     def test_prompt_hash_matches_exact_utf8_adapter_receipt(self):

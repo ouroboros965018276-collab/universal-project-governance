@@ -10,5 +10,44 @@
     "execution_guidance",
     "operational_guidance"
   ],
-  "baseline_evidence_affected_closure": "Validate the actual claims made by the change using the smallest sufficient checks; report any unverified surface explicitly."
+  "baseline_evidence_affected_closure": "Validate the actual claims made by the change using the smallest sufficient checks; report any unverified surface explicitly.",
+  "full_model_test_overrides": {
+    "operational_guidance": [
+      {
+        "id": "tracked_state",
+        "on_field_reporting": true,
+        "policy_ids": [
+          "STRUCTURAL_INTEGRATION",
+          "HANDOFF_CONTINUITY"
+        ],
+        "report_levels": [
+          "engineering",
+          "audit"
+        ],
+        "statement": "Non-trivial/cross-session: stable workflow ID; minimal project_tool begin checkpoint if available. Immutable start facts; update only observed after-state/result/validation revisions and sourced occurrence time; Git committer time dates commits, never work start. Follow the declared current-stage schema; safely retire superseded fields. Keep required facts/unknowns in approved fields/evidence; if they cannot fit, disclose bounded delivery gaps, never drop them or add fields/files merely to mirror policies. Structured state canonical, Markdown rendered; no second history database. Use state_tool validate/render/compact/export as needed; validate refs against project root. When writable, one current handoff for unfinished work or actor/session transitions. One validation source: run ID/scope/denominator/tested state/result/pending retest; no overlapping counts or equating focused passes with full regression. Order by causal parents/revisions and persistent sequence; recorded_at=observation time. Preserve previous change; reconcile stale handoffs with current truth. Git checkpoints follow meaningful verified stages, risk or handoff boundaries under project/user policy; group related edits, inspect the diff, skip unchanged/duplicate status-only commits; never commit per tool call or push without authorization. Tracked non-trivial boundaries: project_tool finish if available, same workflow ID/observed change; unfinished partial/blocked, ID active/history intact. Reporting on: exactly one report append; off: bounded latest/previous, no ledger. Partial/blocked stages use stable checkpoint_id; identical retries add nothing, conflicts fail; completion stays unique. Reference existing current project JSON via current_state (path/SHA); status detects drift. latest_change is completed history, active last_outcome is progress; never mirror the project state. Bound scopes/metadata/evidence; no source bodies/secrets/private reasoning. Export and verify before epoch rotation; never reset sequence. Recheck binding; helper gaps remain verification gaps, never backfill historical success."
+      },
+      {
+        "id": "recovery_tools",
+        "on_field_reporting": false,
+        "policy_ids": [
+          "HANDOFF_CONTINUITY"
+        ],
+        "report_levels": [],
+        "statement": "Reconstruct UPG state and unresolved artifacts as part of the existing HANDOFF_CONTINUITY closure. Optional read-only scripts/state_tool.py recover <root> --scope <file> supports repeated scopes, explicit --handoff and a registered --git-binary. Carry deltas/references into the current handoff."
+      }
+    ],
+    "project_binding": {
+      "adoption_mode": "in-place",
+      "binding_file": ".governance/upg.json",
+      "capability_handshake": "observe-before-assume",
+      "continuity_mode": "handoff-or-reconstruct",
+      "field_report_file": ".governance/field-reports.json",
+      "field_test_reporting": false,
+      "managed_files_max": 2,
+      "max_reports": 200,
+      "schema_version": 2
+    },
+    "version": "3.0.0-rc.20"
+  },
+  "fixture_scope": "Test-only reconstruction of the fixed reviewed study model from current canonical model plus three explicit historical top-level overrides; not a runtime or alternative current model."
 }

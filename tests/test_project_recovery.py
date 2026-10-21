@@ -310,7 +310,7 @@ class ProjectRecoveryTests(unittest.TestCase):
         def run(command, **kwargs):
             commands.append((command, kwargs))
             return subprocess.CompletedProcess(command, 0, replies.pop(0), b"")
-        with patch.object(FACTS.subprocess, "run", side_effect=run), patch.dict(os.environ, {"GIT_CONFIG_COUNT": "1", "GIT_SSH_COMMAND": "unsafe"}):
+        with patch.object(FACTS, "_bounded_git_query", side_effect=run), patch.dict(os.environ, {"GIT_CONFIG_COUNT": "1", "GIT_SSH_COMMAND": "unsafe"}):
             result, gaps = FACTS.git_state(self.root, ["main.py"], sys.executable)
         self.assertTrue(result["available"]); self.assertFalse(gaps)
         self.assertEqual(result["changed_paths"], ["main.py"])
@@ -329,7 +329,7 @@ class ProjectRecoveryTests(unittest.TestCase):
             self.assertEqual(kwargs["timeout"], 5)
 
     def test_git_unknown_and_scope_escape_do_not_claim_clean(self):
-        with patch.object(FACTS.subprocess, "run", side_effect=subprocess.TimeoutExpired("git", 5)):
+        with patch.object(FACTS, "_bounded_git_query", side_effect=subprocess.TimeoutExpired("git", 5)):
             state, gaps = FACTS.git_state(self.root, ["main.py"], sys.executable)
         self.assertFalse(state["available"]); self.assertTrue(gaps)
         with self.assertRaises(ValueError): FACTS.git_state(self.root, ["main.py"], "git")
@@ -500,7 +500,7 @@ class ProjectRecoveryTests(unittest.TestCase):
         for invalid in (attributes.replace(b"main.py", b":(literal)main.py"),
                         attributes + b"main.py\0filter\0unspecified\0", attributes.rsplit(b"main.py\0", 1)[0]):
             replies = [str(self.root).encode() + b"\n", b"a" * 40 + b"\n", b"main\n", invalid]
-            with self.subTest(metadata=invalid), patch.object(FACTS.subprocess, "run", side_effect=[
+            with self.subTest(metadata=invalid), patch.object(FACTS, "_bounded_git_query", side_effect=[
                     subprocess.CompletedProcess([], 0, reply, b"") for reply in replies]) as run:
                 state, gaps = FACTS.git_state(self.root, ["main.py"], sys.executable)
             self.assertFalse(state["available"])

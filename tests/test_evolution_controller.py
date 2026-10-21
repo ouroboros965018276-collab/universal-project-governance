@@ -29,7 +29,7 @@ def measured_runner(request):
     REQUESTS.append(copy.deepcopy(request))
     DISPATCH.append(("runner", request["task"]["id"]))
     return {
-        "status": "completed", "provider_receipt": "synthetic-receipt-for-contract-test",
+        "status": "completed", "provider_receipt": {"id": "synthetic-receipt-for-contract-test"},
         "usage": {"input_tokens": 3, "output_tokens": 4, "total_tokens": 7,
                   "cached_tokens": 0, "reasoning_tokens": 0, "cost_usd": 0.01},
         "outcome": {"loss": int(candidate_id(request["candidate"])[:6], 16) / 1000000,

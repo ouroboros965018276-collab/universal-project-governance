@@ -4,7 +4,7 @@ Universal Project Governance inherits host Agent permissions. Repository provena
 
 ## Runtime integrity
 
-The Skill is compiler-generated and SHA-256 integrity checked. The manifest detects drift; Git/CI/release identity remains the external trust anchor.
+The Skill is compiler-generated and SHA-256 integrity checked. Integrity validation rejects symlink/reparse entries and reports unreadable files as controlled failures. The manifest detects drift; Git/CI/release identity remains the external trust anchor.
 
 ## Project binding safety
 

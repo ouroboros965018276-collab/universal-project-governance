@@ -121,12 +121,16 @@ def _git_head(root):
     return head
 
 
-def validate_resume(value, *, task, provider, model, system_context, configuration, root, require_current_disk=True):
+def validate_resume(value, *, task, provider, model, system_context, configuration, root, require_current_disk=True, trusted_checkpoint_sha256=None):
     """Authenticate a frozen prefix and return a copy of its cumulative seed.
 
     Only a postexecution independent reader may pass require_current_disk=False;
     dispatch/broker admission must check the unchanged physical prefix first.
     """
+    _require(type(trusted_checkpoint_sha256) is str
+        and re.fullmatch('[0-9a-f]{64}', trusted_checkpoint_sha256) is not None
+        and sha(canonical(value)) == trusted_checkpoint_sha256,
+        'resume checkpoint requires an independent caller-owned trust anchor')
     _require(type(value) is dict and set(value) == {'schema','policy_id','actor_id','original_protocol',
         'original_record','verified_prefix','prefix_observed_exit','prefix_reader','snapshot','active_seconds_debit'}
         and value['schema'] == SCHEMA and value['policy_id'] == POLICY_ID, 'resume explicit policy/descriptor')
@@ -135,7 +139,7 @@ def validate_resume(value, *, task, provider, model, system_context, configurati
         'resume engineering checkpoint profile only')
     p = _ref(value['original_protocol']); record = _ref(value['original_record'])
     proof = _ref(value['verified_prefix']); observed = _ref(value['prefix_observed_exit'])
-    _ref(value['snapshot'])
+    snapshot = _ref(value['snapshot'])
     reader = value['prefix_reader']
     _require(type(reader) is dict and set(reader) == {'path','sha256'} and sha(_raw(reader['path'])) == reader['sha256'],
         'resume independent reader source bytes')
@@ -144,7 +148,10 @@ def validate_resume(value, *, task, provider, model, system_context, configurati
         and observed['reader_sha256'] == reader['sha256'] and observed['proof_sha256'] == value['verified_prefix']['sha256']
         and observed['source_before_after_exact'] is True and observed['model_calls'] == observed['project_executions'] == 0,
         'resume actual ROOT-observed independent audit exit')
-    actor = value['actor_id']; budget = p['actor_registry'][actor]
+    actor = value['actor_id']
+    _require(type(actor) is str and re.fullmatch('[A-Za-z0-9_-]{1,96}', actor) is not None,
+        'resume actor id must be one bounded path component')
+    budget = p['actor_registry'][actor]
     original_root = Path(p['run_root']).resolve()
     _require(record['actor_id'] == actor and budget['surface'] == 'API' and budget['provider'] == provider
         and budget['model'] == model and record['provider'] == provider and record['model'] == model,
@@ -153,12 +160,12 @@ def validate_resume(value, *, task, provider, model, system_context, configurati
         relative(record[key])
     artifact_root = original_root / record['artifact_ref']
     _require(Path(value['original_record']['path']).resolve() == original_root/'actor-records'/(actor+'.json'), 'resume original record path')
-    old_task = _json(_raw(original_root/record['task_ref']))
+    task_raw = _raw(original_root/record['task_ref']); old_task = _json(task_raw)
     result_raw = _raw(original_root/record['result_ref']); result = _json(result_raw)
     returned = copy.deepcopy(record['result']); result_file_sha = returned.get('receipt', {}).pop('result_file_sha256', None)
     _require(result_file_sha == sha(result_raw) and canonical(returned) == canonical(result), 'resume original returned/saved result binding')
     _require(sha(result_raw) == record['result_sha256'] and canonical(old_task) == canonical(task)
-        and sha(_raw(original_root/record['task_ref'])) == record['task_sha256']
+        and sha(task_raw) == record['task_sha256']
         and record['system_context'] == system_context and result['input_task_sha256'] == sha(canonical(task))
         and result['system_context_sha256'] == sha(system_context.encode('utf-8'))
         and result['profile_configuration_sha256'] == p['configuration_sha256'] == sha(canonical(configuration)),
@@ -179,7 +186,7 @@ def validate_resume(value, *, task, provider, model, system_context, configurati
         'resume known unfinished once-only boundary')
     events = result['tool_events']; traces = result['api_tool_trace']
     requests = result['requests']; tools = result['tool_attempts']
-    _require(type(requests) is int and 1 <= requests < 24 and type(tools) is int and 1 <= tools < 32
+    _require(type(requests) is int and 1 <= requests < 24 and type(tools) is int and 0 <= tools < 32
         and len(events) == len(traces) == tools and type(result['max_requests']) is int and result['max_requests'] == 24
         and type(result['max_tools']) is int and result['max_tools'] == 32,
         'resume cumulative request/tool counters')
@@ -210,20 +217,19 @@ def validate_resume(value, *, task, provider, model, system_context, configurati
         _files(files)
         _require(event['state_sha256'] == sha(canonical(_state(files))), 'resume independently replayed project state')
         previous = trace['chain_sha256']
-    snapshot = _ref(value['snapshot'])
     _require(snapshot['actor_id'] == actor and snapshot['files'] == files
         and snapshot['state_sha256'] == result['final_state_sha256'] == sha(canonical(_state(files)))
         and result['received_state_sha256'] == sha(canonical(received))
         and proof['events_sha256'] == sha(canonical(events)) and proof['traces_sha256'] == sha(canonical(traces)),
         'resume original received state and independently verified current snapshot')
     git_entry=record['git_entry']; relative(git_entry['ref'])
-    original_git=_json(_raw(original_root/git_entry['ref']))
-    _require(sha(_raw(original_root/git_entry['ref']))==git_entry['sha256']
+    git_raw=_raw(original_root/git_entry['ref']);original_git=_json(git_raw)
+    _require(sha(git_raw)==git_entry['sha256']
         and proof['git_entry']==git_entry and original_git['baseline_commit']==git_entry['baseline_commit'], 'resume original Git receipt lineage')
     publication=_json(_raw(original_root/'actors'/actor/'record-publication.json'))
-    inline_path=original_root/'actors'/actor/'raw-verification.json';inline=_json(_raw(inline_path))
+    inline_path=original_root/'actors'/actor/'raw-verification.json';inline_raw=_raw(inline_path);inline=_json(inline_raw)
     _require(publication['actor_id']==actor and publication['actor_record_sha256']==value['original_record']['sha256']
-        and publication['raw_verification_receipt']['sha256']==sha(_raw(inline_path))
+        and publication['raw_verification_receipt']['sha256']==sha(inline_raw)
         and inline['verified_final_state_sha256']==snapshot['state_sha256']
         and inline['independent_task_pass'] is False, 'resume snapshot bound to original publication and independent prefix')
     receipts = proof['request_receipts']; outcomes = []

@@ -25,7 +25,8 @@
           "type": "array",
           "uniqueItems": true,
           "items": {
-            "type": "string"
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]*$"
           }
         }
       }
@@ -51,18 +52,24 @@
         ],
         "properties": {
           "id": {
-            "type": "string"
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]*$"
           },
           "statement": {
-            "type": "string"
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
           }
-        }
+        },
+        "additionalProperties": false
       }
     },
     "default_rules": {
       "type": "array",
+      "uniqueItems": true,
       "items": {
-        "type": "string"
+        "type": "string",
+        "pattern": "^[A-Z][A-Z0-9_]*$"
       }
     },
     "policies": {
@@ -70,24 +77,202 @@
       "minItems": 1,
       "items": {
         "type": "object",
+        "additionalProperties": false,
         "required": [
-          "id",
           "kind",
           "severity",
+          "closure",
+          "report",
+          "handoff",
+          "id",
           "triggers",
           "requires",
           "conflicts_with",
           "applies_to",
-          "closure",
           "evidence",
-          "report",
-          "handoff",
           "eval_tags"
-        ]
+        ],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "severity": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "closure": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "report": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "handoff": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]*$"
+          },
+          "triggers": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "operations",
+              "domains",
+              "signals"
+            ],
+            "properties": {
+              "operations": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                }
+              },
+              "domains": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                }
+              },
+              "signals": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                }
+              }
+            }
+          },
+          "requires": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Z][A-Z0-9_]*$"
+            }
+          },
+          "conflicts_with": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Z][A-Z0-9_]*$"
+            }
+          },
+          "applies_to": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            }
+          },
+          "evidence": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            }
+          },
+          "eval_tags": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            }
+          }
+        }
       }
     },
     "complexity_budget": {
-      "type": "object"
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "runtime_skill_max_lines",
+        "hot_path_max",
+        "default_active_policies_max",
+        "runtime_markdown_files_max",
+        "canonical_definition_per_rule",
+        "orphan_policies_max",
+        "dependency_cycles_max",
+        "conflicting_blocking_rules_max",
+        "unused_profile_activations_max",
+        "persistent_current_handoffs_max",
+        "persistent_current_execution_reports_max",
+        "managed_project_files_max"
+      ],
+      "properties": {
+        "runtime_skill_max_lines": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "hot_path_max": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "default_active_policies_max": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "runtime_markdown_files_max": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "canonical_definition_per_rule": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "orphan_policies_max": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "dependency_cycles_max": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "conflicting_blocking_rules_max": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unused_profile_activations_max": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "persistent_current_handoffs_max": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "persistent_current_execution_reports_max": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "managed_project_files_max": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
     },
     "structural_integration": {
       "type": "object",
@@ -101,7 +286,8 @@
       ],
       "properties": {
         "policy_id": {
-          "type": "string"
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]*$"
         },
         "minimum_risk_level": {
           "enum": [
@@ -160,10 +346,12 @@
           "type": "boolean"
         },
         "max_reports": {
-          "type": "integer"
+          "type": "integer",
+          "minimum": 1
         },
         "managed_files_max": {
-          "type": "integer"
+          "type": "integer",
+          "minimum": 1
         },
         "adoption_mode": {
           "enum": [
@@ -343,7 +531,8 @@
             "minItems": 1,
             "uniqueItems": true,
             "items": {
-              "type": "string"
+              "type": "string",
+              "pattern": "^[A-Z][A-Z0-9_]*$"
             }
           },
           "on_field_reporting": {
@@ -367,6 +556,128 @@
           }
         }
       }
+    },
+    "architecture": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S"
+    },
+    "principles": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "pattern": "\\S"
+      }
+    },
+    "execution_guidance": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "policy_ids",
+          "statement"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{0,63}$"
+          },
+          "policy_ids": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Z][A-Z0-9_]*$"
+            },
+            "minItems": 1
+          },
+          "statement": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          }
+        }
+      }
+    },
+    "risk_model": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "dimensions",
+        "levels",
+        "release_operation_forces"
+      ],
+      "properties": {
+        "dimensions": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "weight",
+              "max"
+            ],
+            "properties": {
+              "weight": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "max": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        },
+        "levels": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "min",
+              "max",
+              "report"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "\\S"
+              },
+              "min": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "max": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "report": {
+                "enum": [
+                  "none",
+                  "change-note",
+                  "engineering",
+                  "audit"
+                ]
+              }
+            }
+          }
+        },
+        "release_operation_forces": {
+          "enum": [
+            "audit"
+          ]
+        }
+      }
     }
-  }
+  },
+  "additionalProperties": false,
+  "$comment": "Compiler and governance_lint enforce policy ID uniqueness and referential integrity beyond schema validation. Release is an operation-specific risk override whose report is defined by release_operation_forces, outside scored levels."
 }

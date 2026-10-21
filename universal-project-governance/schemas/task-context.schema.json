@@ -46,20 +46,25 @@
           "product",
           "operations"
         ]
-      }
+      },
+      "minItems": 1
     },
     "signals": {
       "type": "array",
       "uniqueItems": true,
       "items": {
-        "type": "string"
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128
       }
     },
     "profiles": {
       "type": "array",
       "uniqueItems": true,
       "items": {
-        "type": "string"
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128
       }
     },
     "unfinished": {
@@ -120,7 +125,8 @@
           "minimum": 0,
           "maximum": 2
         }
-      }
+      },
+      "$comment": "Missing/empty risk dimensions intentionally remain unassessed; the planner warns and emits a provisional score."
     },
     "project_type": {
       "type": "string",

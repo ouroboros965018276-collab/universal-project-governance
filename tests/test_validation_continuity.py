@@ -148,7 +148,7 @@ class ValidationContinuityTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             source = write(root / "execution_status.json", {"tests": {"focused": {"passed": 144, "total": 145}}})
-            for pointer, message in [("/absent", "pointer unavailable"), ("/tests/~2bad", "pointer escape"), ("/tests/focused", "unsupported canonical validation record")]:
+            for pointer, message in [("/absent", "pointer unavailable"), ("/tests/~2bad", "pointer pattern mismatch"), ("/tests/focused", "unsupported canonical validation record")]:
                 with self.subTest(pointer=pointer):
                     path = write(root / "handoff.json", handoff(ref(source, root, pointer=pointer)))
                     self.assertIn(message, "; ".join(state.validate_file(path, "handoff", root)))

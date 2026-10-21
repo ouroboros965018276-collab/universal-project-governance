@@ -1,4 +1,4 @@
-param(
+﻿param(
     [switch]$EnableKeyEntry,
     [switch]$UiPathSelfTest,
     [string]$SelfTestResultPath
@@ -128,7 +128,6 @@ $runButton.Location = [System.Drawing.Point]::new(610, 500)
 $runButton.Size = [System.Drawing.Size]::new(120, 38)
 $runButton.Enabled = $keyEntryEnabled
 $form.Controls.Add($runButton)
-$form.AcceptButton = $runButton
 $form.CancelButton = $cancelButton
 
 $script:timer = [System.Windows.Forms.Timer]::new()
@@ -166,7 +165,8 @@ function Save-SelfTestSummary([object]$Results, [object]$Failure) {
         sanitized_ledger_path = $script:ledgerPath
     }
     $json = $summary | ConvertTo-Json -Depth 10
-    [System.IO.File]::WriteAllText($SelfTestResultPath,$json,(New-Object System.Text.UTF8Encoding($false)))
+    try { [System.IO.File]::WriteAllText($SelfTestResultPath,$json,(New-Object System.Text.UTF8Encoding($false))) }
+    catch { $status.Text = 'Self-test summary write failed'; $status.ForeColor = [System.Drawing.Color]::DarkOrange }
 }
 
 $cancelButton.Add_Click({
@@ -255,8 +255,7 @@ $script:timer.Add_Tick({
         $status.ForeColor = [System.Drawing.Color]::DarkOrange
     }
     Save-SelfTestSummary $results $script:workerError
-    if ($script:closeRequested) { $form.Close() }
-    if ($UiPathSelfTest) { $form.Close() }
+    if ($script:closeRequested -or $UiPathSelfTest) { $form.Close(); return }
 })
 
 $runButton.Add_Click({
@@ -292,8 +291,8 @@ $runButton.Add_Click({
     $status.Text = '本次请求已由你的点击确认。按固定官方 endpoint 串行发送；无重试/回退。可关闭或取消。'
     $status.ForeColor = [System.Drawing.Color]::DarkBlue
     $script:cancelSource = [System.Threading.CancellationTokenSource]::new()
-    if ($UiPathSelfTest) { $script:ledgerPath = Join-Path ([System.IO.Path]::GetTempPath()) ('upg-api-ui-selftest-' + [guid]::NewGuid().ToString('N') + '.json') }
-    else { $script:ledgerPath = Join-Path ([System.IO.Path]::GetTempPath()) ('upg-api-acceptance-usage-' + [DateTime]::UtcNow.ToString('yyyyMMddTHHmmssZ') + '.json') }
+    if ($UiPathSelfTest) { $script:ledgerPath = $SelfTestResultPath + '.ledger.json' }
+    else { $script:ledgerPath = Join-Path ([System.IO.Path]::GetTempPath()) ('upg-api-acceptance-usage-' + [DateTime]::UtcNow.ToString('yyyyMMddTHHmmssZ') + '-' + [guid]::NewGuid().ToString('N') + '.json') }
     $script:workerScript = @'
 param($ModulePath,$DeepKey,$MiMoKey,$LedgerPath,$CancellationToken,$UseMockTransport)
 $ErrorActionPreference = 'Stop'
@@ -307,21 +306,24 @@ Import-Module $ModulePath -Force
 $phase = 'budget-initialization'
 $deepBudget = Get-ApiAcceptanceBudget deepseek -DeepSeekRate peak
 $mimoBudget = Get-ApiAcceptanceBudget mimo
+$deepProvider = Get-ApiAcceptanceProvider deepseek
+$mimoProvider = Get-ApiAcceptanceProvider mimo
 $ledger = [ordered]@{
   schema_version = 1
   started_utc = [DateTime]::UtcNow.ToString('o')
   status = 'running'
   request_policy = 'one request per provider; no retry/fallback; full-context reserve'
   providers = [ordered]@{
-    deepseek = [ordered]@{ provider='deepseek'; provider_name='DeepSeek 官方 API'; model='deepseek-flash'; status='not-started'; request_count=0; maximum_request_count=1; context_tokens_reserved=1000000; output_tokens_reserved=256; worst_case_reserved_cny=$deepBudget.WorstCaseCny; pricing_currency='CNY'; pricing_period='peak'; input_cny_per_million=$deepBudget.InputCnyPerMillion; output_cny_per_million=$deepBudget.OutputCnyPerMillion; input_tokens=$null; output_tokens=$null; estimated_cny=$null; charge_unknown=$false; authentication_and_response=$false; controlled_tool_call=$false; error_code=$null }
-    mimo = [ordered]@{ provider='mimo'; provider_name='Xiaomi MiMo 官方 API'; model='mimo-v2.6-flash'; status='not-started'; request_count=0; maximum_request_count=1; context_tokens_reserved=1000000; output_tokens_reserved=256; worst_case_reserved_cny=$mimoBudget.WorstCaseCny; pricing_currency='CNY'; pricing_period='published-rate'; input_cny_per_million=$mimoBudget.InputCnyPerMillion; output_cny_per_million=$mimoBudget.OutputCnyPerMillion; input_tokens=$null; output_tokens=$null; estimated_cny=$null; charge_unknown=$false; authentication_and_response=$false; controlled_tool_call=$false; error_code=$null }
+    deepseek = [ordered]@{ provider='deepseek'; provider_name=$deepProvider.Name; model=$deepProvider.Model; status='not-started'; request_count=0; maximum_request_count=1; context_tokens_reserved=$deepBudget.ContextTokensReserved; output_tokens_reserved=$deepBudget.OutputTokensReserved; worst_case_reserved_cny=$deepBudget.WorstCaseCny; pricing_currency='CNY'; pricing_period='peak'; input_cny_per_million=$deepBudget.InputCnyPerMillion; output_cny_per_million=$deepBudget.OutputCnyPerMillion; input_tokens=$null; output_tokens=$null; estimated_cny=$null; charge_unknown=$false; authentication_and_response=$false; controlled_tool_call=$false; error_code=$null }
+    mimo = [ordered]@{ provider='mimo'; provider_name=$mimoProvider.Name; model=$mimoProvider.Model; status='not-started'; request_count=0; maximum_request_count=1; context_tokens_reserved=$mimoBudget.ContextTokensReserved; output_tokens_reserved=$mimoBudget.OutputTokensReserved; worst_case_reserved_cny=$mimoBudget.WorstCaseCny; pricing_currency='CNY'; pricing_period='published-rate'; input_cny_per_million=$mimoBudget.InputCnyPerMillion; output_cny_per_million=$mimoBudget.OutputCnyPerMillion; input_tokens=$null; output_tokens=$null; estimated_cny=$null; charge_unknown=$false; authentication_and_response=$false; controlled_tool_call=$false; error_code=$null }
   }
 }
 function Save-UsageLedger([object]$Data,[string]$Path) {
   $temp = $Path + '.pending'
   $json = $Data | ConvertTo-Json -Depth 12
   [System.IO.File]::WriteAllText($temp,$json,(New-Object System.Text.UTF8Encoding($false)))
-    [System.IO.File]::Move($temp,$Path,[System.IO.File]::Exists($Path))
+  if ([System.IO.File]::Exists($Path)) { [System.IO.File]::Replace($temp,$Path,[System.Management.Automation.Language.NullString]::Value) }
+  else { [System.IO.File]::Move($temp,$Path) }
 }
 $phase = 'initial-ledger-write'
 Save-UsageLedger $ledger $LedgerPath
@@ -342,9 +344,9 @@ foreach ($id in @('deepseek','mimo')) {
   if ($CancellationToken.IsCancellationRequested) { break }
   $phase = "$id-ledger-inflight"
   $row = $ledger.providers[$id]
-  $row.status = 'request-in-flight'
-  $row.request_count = 1
-  $row.charge_unknown = $true
+  $row.status = 'pending'
+  $row.request_count = 0
+  $row.charge_unknown = $false
   Save-UsageLedger $ledger $LedgerPath
   $checkpoint = {
     param($next)
@@ -414,6 +416,10 @@ finally { $DeepKey=$null; $MiMoKey=$null; $keys=$null; $mockBody=$null; $mockTra
     catch {
         $script:workerRunning = $false
         $script:workerError = Get-SafeFailureDetails $_ $script:activeUiPhase
+        if ($script:worker) { $script:worker.Dispose(); $script:worker = $null }
+        if ($script:runspace) { $script:runspace.Close(); $script:runspace.Dispose(); $script:runspace = $null }
+        if ($script:cancelSource) { $script:cancelSource.Dispose(); $script:cancelSource = $null }
+        $script:async = $null
         $deepKey = $null; $mimoKey = $null
         $status.Text = "Local submission failed at $($script:workerError.stage); type=$($script:workerError.exception_type); error_id=$($script:workerError.error_id). No request was automatically retried."
         $status.ForeColor = [System.Drawing.Color]::DarkOrange
@@ -431,7 +437,7 @@ if ($UiPathSelfTest) {
         $mimoBox.Text = 'TEST_ONLY_MIMO_KEY'
         $runButton.PerformClick()
         $form.Hide()
-        if ($script:buttonEventCount -ne 1) {
+        if ($script:buttonEventCount -ne 1 -or -not $script:workerRunning) {
             $script:workerError = [ordered]@{ stage='ui-selftest-button-event'; exception_type='System.InvalidOperationException'; error_id='button-event-not-fired' }
             Save-SelfTestSummary $null $script:workerError
             $form.Close()

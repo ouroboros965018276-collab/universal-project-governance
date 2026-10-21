@@ -6,7 +6,6 @@ complete-application validation, nor a proof of Docker/kernel vulnerability abse
 No actual Docker execution is authorized by importing or testing this module.
 """
 from __future__ import annotations
-import ast
 import hashlib
 import importlib
 import json
@@ -24,7 +23,7 @@ import uuid
 DOCKER = r"D:\DockerDesktop\resources\bin\docker.exe"
 IMAGE = "docker.io/library/python@sha256:2ed6491b93cd49272ee6de2b5a38440c3448360322c089fc23e370722d74179d"
 PLATFORM = "linux/amd64"
-VM_SHA256 = "cf6a6c207c47f003e7877b2a7f93c7e192415ffa229e80693276d1fb23298286"
+VM_SHA256 = "e0005b756df89bec136a34e74894bf47b2a52476c0610627b481300229fe7e49"
 OUTPUT_LIMIT = 65536
 PROXY_NAMES = ("HTTP_PROXY", "HTTPS_PROXY", "FTP_PROXY", "ALL_PROXY", "NO_PROXY",
                "http_proxy", "https_proxy", "ftp_proxy", "all_proxy", "no_proxy")
@@ -240,9 +239,10 @@ def _profile(files):
     except (vm._Stop, SyntaxError, ValueError, RecursionError): raise Failure("PROFILE_REJECTED") from None
     return m
 
-def execute_batch(files, invocations, artifacts, remaining_seconds):
+def execute_batch(files, invocations, artifacts, remaining_seconds, *, project_root=None):
     """Return execution evidence, NEVER semantic quality/PASS.
-    Caller supplies an already verified broker snapshot, not workspace paths.
+    Caller supplies an already verified broker snapshot and explicit project_root.
+    Artifacts must remain outside that project, with ordinary unlinked ancestors.
     Original host VM required_calls/route and expected-value gates are mandatory
     in any future integration; this interface cannot establish those by itself.
     """
@@ -256,10 +256,9 @@ def execute_batch(files, invocations, artifacts, remaining_seconds):
     file_budget=_InputBudget(deadline,1048576)
     file_budget.add(2+max(0,len(files)-1)+len(files))
     for p,t in files.items():
-        if (type(p) is not str or not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_.-]{0,127}",p)
+        if (type(p) is not str or not re.fullmatch(r"[A-Za-z0-9_-][A-Za-z0-9_.-]{0,127}",p)
                 or p in {".",".."} or type(t) is not str or len(t)>262144):
             raise ValueError("invalid registered UTF8 file")
-        if p.endswith(".py") and not p[:-3].isidentifier(): raise ValueError("invalid module name")
         budget.check(); raw=t.encode("utf-8"); budget.check(); source_bytes+=len(raw)
         if len(raw)>262144 or source_bytes>1048576: raise ValueError("snapshot byte bound")
         if SECRET.search(raw): raise ValueError("credential-like input rejected")
@@ -279,7 +278,16 @@ def execute_batch(files, invocations, artifacts, remaining_seconds):
     if SECRET.search(invocation_raw): raise ValueError("credential-like invocation rejected")
     target=Path(artifacts)
     if not target.is_absolute() or target.exists() or not target.parent.is_dir(): raise ValueError("new owned absolute artifact path required")
+    for ancestor in (target.parent, *target.parent.parents):
+        info=ancestor.lstat()
+        if stat.S_ISLNK(info.st_mode) or getattr(info,'st_file_attributes',0)&1024:
+            raise ValueError("artifact parent must not be linked")
     parent=target.parent.resolve(strict=True);root=parent/target.name
+    if not isinstance(project_root, (str, os.PathLike)):
+        raise ValueError("execution requires the explicit project root")
+    project=Path(project_root).resolve(strict=True)
+    if root.is_relative_to(project) or project.is_relative_to(root):
+        raise ValueError("execution artifacts must stay outside project source")
     if target.name in {".","..",".git"}: raise ValueError("invalid artifact leaf")
     budget.check(); root.mkdir(); budget.check()
     cleanup_deadline=lambda:total_deadline
@@ -317,8 +325,8 @@ def execute_batch(files, invocations, artifacts, remaining_seconds):
         # Returned observations use the reserved total budget, never extend dispatch.
         sensitive_inspect=False
         for key,raw in (("stdout",stdout),("stderr",stderr)):
-            if SECRET.search(raw):
-                sensitive_inspect=sensitive_inspect or inspect
+            if inspect and SECRET.search(raw):
+                sensitive_inspect=True
             else:
                 write(prefix+"."+key+".raw",raw,total_deadline)
         write(prefix+".receipt.json",canonical({k:v for k,v in r.items() if k not in {"stdout","stderr"}}|
@@ -492,7 +500,7 @@ def _receipt_bytes(path):
     return path.read_bytes()
 
 
-def validate_with_execution(files, contract, artifacts, remaining_seconds):
+def validate_with_execution(files, contract, artifacts, remaining_seconds, *, project_root=None):
     """Full original VM gate, then CPython transport, then original exact oracle.
 
     The external result receipt may contain invocation/return data. Only this
@@ -522,7 +530,8 @@ def validate_with_execution(files, contract, artifacts, remaining_seconds):
     record = None
     try:
         remaining = remaining_seconds - (time.monotonic() - started)
-        record = execute_batch(files, invocations, artifacts, remaining)
+        record = execute_batch(files, invocations, artifacts, remaining,
+            **({"project_root": project_root} if project_root is not None else {}))
         raw = _receipt_bytes(receipt)
         summary.update(receipt_ref=Path(artifacts).name + "/result.json", receipt_sha256=sha(raw))
         # AND the returned observation with the immutable bytes, especially when

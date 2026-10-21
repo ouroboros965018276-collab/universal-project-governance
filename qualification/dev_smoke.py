@@ -30,6 +30,7 @@ def rejects_development_before_inference(analysis):
 def build_manifest(adapter, scenario, round_id):
     candidate = frozen_candidate()
     identity = candidate["identity"]
+    adapter_identity = adapter.identity()
     pair_id = "%s:%s:A2" % (round_id, scenario)
     trial_id = str(uuid.uuid5(uuid.NAMESPACE_URL, pair_id))
     slot = {
@@ -41,10 +42,10 @@ def build_manifest(adapter, scenario, round_id):
         "pair_id": pair_id,
         "repetition": 1,
         "agent": adapter.config["agent"],
-        "adapter_config_sha256": adapter.identity()["adapter_config_sha256"],
-        "adapter_runtime_sha256": adapter.identity()["adapter_runtime_sha256"],
-        "host_tool_name": adapter.identity()["host_tool_name"],
-        "host_tool_version": adapter.identity()["host_tool_version"],
+        "adapter_config_sha256": adapter_identity["adapter_config_sha256"],
+        "adapter_runtime_sha256": adapter_identity["adapter_runtime_sha256"],
+        "host_tool_name": adapter_identity["host_tool_name"],
+        "host_tool_version": adapter_identity["host_tool_version"],
         "isolation_attestation": adapter.config.get("isolation_attestation"),
         "tool_profile": adapter.config.get("tool_profile"),
         "budget_profile": adapter.config.get("budget_profile"),
@@ -103,14 +104,19 @@ def main():
         "--output",
         str(trial_path),
     ]
-    completed = subprocess.run(command, cwd=str(ROOT), text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
+    registration_bytes = manifest_path.read_bytes()
+    try:
+        completed = subprocess.run(command, cwd=str(ROOT), text=True, encoding="utf-8", errors="replace", stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False, timeout=float(adapter.config.get("timeout_seconds",900))+180)
+    except subprocess.TimeoutExpired as exc:
+        raise RuntimeError("development trial exceeded its bounded timeout") from exc
     if completed.returncode:
         raise RuntimeError("development trial failed: " + (completed.stderr[-2000:] or completed.stdout[-2000:]))
 
     trial = json.loads(trial_path.read_text(encoding="utf-8"))
     trial_schema = json.loads((ROOT / "qualification/protocol/schemas/trial.schema.json").read_text(encoding="utf-8"))
     trial_errors = validate_node(trial, trial_schema)
-    artifact_errors = verify_artifact(trial)
+    if not isinstance(trial,dict): trial={}
+    artifact_errors = verify_artifact(trial,output_dir / "artifacts")
     candidate = frozen_candidate()
     protocol = json.loads((ROOT / "qualification/protocol/qualification-v3.json").read_text(encoding="utf-8"))
     thresholds = json.loads((ROOT / "qualification/protocol/thresholds.json").read_text(encoding="utf-8"))
@@ -119,15 +125,17 @@ def main():
     analysis_path.write_text(json.dumps(analysis, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     admission_errors = analysis.get("gates", {}).get("evidence_admission", {}).get("errors", [])
     rejected_dev = rejects_development_before_inference(analysis)
-    deployment = trial.get("outcome", {}).get("deployment", {})
+    outcome = trial.get("outcome") if isinstance(trial.get("outcome"),dict) else {}
+    evidence = trial.get("evidence") if isinstance(trial.get("evidence"),dict) else {}
+    deployment = outcome.get("deployment") if isinstance(outcome.get("deployment"),dict) else {}
     checks = {
-        "registered_before_execution": trial.get("trial_id") == manifest["trials"][0]["trial_id"],
-        "real_agent_process_succeeded": trial.get("evidence", {}).get("exit_code") == 0,
+        "registered_before_execution": trial.get("trial_id") == manifest["trials"][0]["trial_id"] and manifest_path.read_bytes() == registration_bytes,
+        "real_agent_process_succeeded": evidence.get("exit_code") == 0,
         "trial_schema_valid": not trial_errors,
         "artifact_retained_and_verified": not artifact_errors,
         "task_and_governance_checks_passed": (
-            trial.get("outcome", {}).get("task_success") is True
-            and trial.get("outcome", {}).get("governance_defect_free") is True
+            outcome.get("task_success") is True
+            and outcome.get("governance_defect_free") is True
         ),
         "a2_binding_and_single_report_passed": (
             deployment.get("binding_ok") is True

@@ -333,7 +333,7 @@ class ToolAdapterTests(unittest.TestCase):
 
     def test_native_and_tool_profiles_share_one_source_and_return_independent_values(self):
         native = runpy.run_path(str(ROOT / "evolution/experiments/native_paired/transport.py"))
-        self.assertEqual(native["PROFILE"], profile_overrides())
+        self.assertEqual(native["load_profile"](sha(native["PROFILE_SOURCE"].read_bytes())), profile_overrides())
         self.assertEqual(native["PROFILE_SOURCE"], ROOT / "evolution/cli_transport.py")
         changed = profile_configuration()
         changed["model_provider_profile"]["request_max_retries"] = 100
@@ -518,8 +518,7 @@ class ToolAdapterTests(unittest.TestCase):
         self.assertEqual(self.cli_calls, 0)
         self.assertEqual(captured.exception.usage["total_tokens"], 0)
         self.assertFalse(captured.exception.provider_receipt["model_invoked"])
-        pending = next((self.root / "calls-root/calls").glob("*/pending.json"))
-        self.assertFalse(json.loads(pending.read_text(encoding="utf-8"))["model_invoked"])
+        self.assertFalse((self.root / "calls-root/calls").exists())
 
     def test_known_usage_survives_grade_and_unknown_receipt_io_failure(self):
         from evolution import tool_codex

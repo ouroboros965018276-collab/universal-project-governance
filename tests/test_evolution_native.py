@@ -58,6 +58,9 @@ class NativeTests(unittest.TestCase):
         self.config = {"binary": str(self.binary), "model": "synthetic-native-model", "effort": "low",
                        "artifact_root": str(self.root / "artifacts"), "timeout_seconds": 10,
                        "grader": __name__ + ":grade_task"}
+        self.config["execution_inputs_sha256"] = [native_codex.execution_inputs_identity(canonical_source(ROOT), {
+            "compiler": (ROOT / "compiler/compile_governance.py").read_text(encoding="utf-8"),
+            "license": (ROOT / "LICENSE").read_text(encoding="utf-8")})]
         self.service = native_codex.NativeCodex(self.config)
 
     def call(self, key="first"):
@@ -73,6 +76,13 @@ class NativeTests(unittest.TestCase):
                 "cache_key": "synthetic-cache-key", "attempt": 0,
                 "execution_artifact": {"compiler": (ROOT / "compiler/compile_governance.py").read_text(encoding="utf-8"),
                                        "license": (ROOT / "LICENSE").read_text(encoding="utf-8")}}
+
+    def register_inputs(self, requests):
+        self.config["execution_inputs_sha256"] = sorted({native_codex.execution_inputs_identity(
+            row["source"], row["execution_artifact"]) for row in requests})
+        self.service = native_codex.NativeCodex(self.config)
+        for row in requests:
+            row["config"].update(self.service.binding())
 
     def native_only(self, value, commands):
         original = subprocess.run
@@ -274,6 +284,7 @@ class NativeTests(unittest.TestCase):
             for p in (ROOT / "universal-project-governance").rglob("*")
             if p.is_file() and "__pycache__" not in p.parts and p.suffix not in {".pyc", ".pyo"}}
         request["execution_artifact"]["runtime"]["SKILL.md"] = "EXACT-HISTORICAL-SKILL"
+        self.register_inputs([request])
         commands = []
         with patch.object(native_codex.subprocess, "run", side_effect=self.native_only(stream(), commands)):
             self.service.runner(request)
@@ -350,6 +361,7 @@ class NativeTests(unittest.TestCase):
         context = copy.deepcopy(request)
         context["task"]["plan_context"]["explicit_audit"] = not context["task"]["plan_context"].get("explicit_audit", False)
         variants.append(context)
+        self.register_inputs([request, *variants])
         commands = []
         with patch.object(native_codex.subprocess, "run", side_effect=self.native_only(stream(), commands)):
             self.assertFalse(self.service.runner(request)["local_timings"]["cache_hit"])

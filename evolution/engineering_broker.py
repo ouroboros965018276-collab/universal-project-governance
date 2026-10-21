@@ -45,6 +45,8 @@ def validate_task(task):
         raise ValueError('ambiguous project namespace')
     for name in names:
         relative(name)
+        if any(other.casefold().startswith(name.casefold() + '/') for other in names):
+            raise ValueError('project namespace has a file/directory collision')
     if (any(type(text) is not str or len(text.encode('utf-8')) > MAX_FILE_BYTES for text in files.values())
             or sum(len(text.encode('utf-8')) for text in files.values()) > MAX_TOTAL_BYTES):
         raise ValueError('project initial bytes exceed bounds')
@@ -167,6 +169,7 @@ def _replacement_contents(operation, previous):
 
 
 class EngineeringBroker(RepoBroker):
+    _allow_empty_patch_results = True
     _validate_task = staticmethod(validate_task)
 
     def __init__(self, root, task, git_binary, *, audit_file=None, max_calls=32,
@@ -377,7 +380,7 @@ class EngineeringBroker(RepoBroker):
                 if type(text) is not str:
                     raise ValueError('project patch text must be string or null')
                 raw = text.encode('utf-8')
-                if not raw or len(raw) > MAX_FILE_BYTES or raw == old:
+                if (not raw and 'old_text' not in operation) or len(raw) > MAX_FILE_BYTES or raw == old:
                     raise ValueError('patch must make a nonempty bounded change')
                 total += len(raw) - (len(old) if old is not None else 0)
                 expected[name] = sha(raw)
@@ -400,7 +403,9 @@ class EngineeringBroker(RepoBroker):
                     raise ValueError('batch replacement not confirmed')
                 self._confirmed_removed_paths.difference_update(names)
             else:
-                for name, path, raw, old_sha, operation in staged:
+                for name, path, raw, old_sha, operation in sorted(staged, key=lambda row:
+                        -self.path(row[0]).stat().st_size if row[2] is None else
+                        len(row[2]) - (self.path(row[0]).stat().st_size if row[0] in before else 0)):
                     if raw is None:
                         old = path.read_bytes()
                         if sha(old) != old_sha:
@@ -472,7 +477,7 @@ class EngineeringBroker(RepoBroker):
         execution['observed_wall_seconds'] = time.monotonic() - started
         result = {'ok': not failures, 'suite': SUITE, 'failures': failures,
                   'checks_total': len(contract['checks']),
-                  'checks_passed': checked['checks_passed'] if checked is not None and checked.get('integrity_ok') is True else None,
+                  'checks_passed': checked['checks_passed'] if checked is not None and execution['status'] == 'EXECUTED' and execution['unknown'] is False else None,
                   'diagnostics': copy.deepcopy(checked.get('diagnostics', []))
                       if execution['status'] == 'EXECUTED' and execution['unknown'] is False else [],
                   'execution': execution}
@@ -638,7 +643,7 @@ def _receipt_file_states(task, events):
                     del files[name]
                     observed.pop(name, None)
                 else:
-                    if (type(text) is not str or not text or text == files.get(name)
+                    if (type(text) is not str or (not text and "old_text" not in operation) or text == files.get(name)
                             or len(text.encode('utf-8')) > MAX_FILE_BYTES
                             or type(readback) is not dict or type(readback.get('byte_size')) is not int
                             or readback != {'sha256': sha(text.encode('utf-8')), 'byte_size': len(text.encode('utf-8'))}):

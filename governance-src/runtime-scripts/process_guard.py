@@ -62,7 +62,9 @@ if os.name == "nt":
         if not size or size >= len(buffer):
             raise ctypes.WinError(ctypes.get_last_error())
         value = buffer.value
-        if value.startswith("\\\\?\\"):
+        if value.startswith("\\\\?\\UNC\\"):
+            value = "\\\\" + value[8:]
+        elif value.startswith("\\\\?\\"):
             value = value[4:]
         return os.path.normcase(os.path.normpath(value))
 else:
@@ -119,7 +121,16 @@ def acquire(root, name):
             guard.close()
             raise
     flags = os.O_RDWR | os.O_CREAT | getattr(os, "O_NOFOLLOW", 0)
-    handle = os.open(str(path), flags, 0o600)
+    directory_flags = os.O_RDONLY | os.O_DIRECTORY | getattr(os, "O_NOFOLLOW", 0)
+    root_fd = os.open(str(path.parent.parent), directory_flags)
+    try:
+        directory_fd = os.open(".governance", directory_flags, dir_fd=root_fd)
+        try:
+            handle = os.open(path.name, flags, 0o600, dir_fd=directory_fd)
+        finally:
+            os.close(directory_fd)
+    finally:
+        os.close(root_fd)
     guard = Guard(path, handle)
     try:
         info = os.fstat(handle)
@@ -234,6 +245,8 @@ def _spawn_guarded(argv, guards, kwargs):
     # Fixed own Python wrapper only; actual argv is interpreted by no shell.
     specs = [{"root": str(guard.path.parent.parent), "name": guard.path.name,
               "handle": guard.handle} for guard in guards]
+    if isinstance(argv, (str, bytes, os.PathLike)):
+        argv = [argv]
     command = [sys.executable, str(Path(__file__).resolve()), "--hold",
                json.dumps(specs, separators=(",", ":")), "--"] + list(argv)
     options = dict(kwargs)
@@ -241,7 +254,7 @@ def _spawn_guarded(argv, guards, kwargs):
         raise ValueError("guarded subprocess does not support alternate launchers or shells")
     options["shell"] = False
     if os.name == "nt":
-        options["creationflags"] = subprocess.CREATE_NO_WINDOW
+        options["creationflags"] = options.get("creationflags", 0) | subprocess.CREATE_NO_WINDOW
     import session_lifetime
     if session_lifetime.active():
         return session_lifetime.spawn(command, guards=guards, **options)
@@ -294,7 +307,7 @@ def run(argv, timeout=None, check=False, **kwargs):
     process = _spawn_guarded(argv, guards, kwargs)
     try:
         output, error = process.communicate(input=data, timeout=timeout)
-    except subprocess.TimeoutExpired:
+    except BaseException:
         with _PENDING_LOCK:
             _PENDING[process] = keys
         threading.Thread(target=_reap_pending, args=(process,), daemon=True).start()
@@ -313,6 +326,14 @@ def _hold_command(arguments):
     specs = json.loads(arguments[1])
     if not isinstance(specs, list) or not 1 <= len(specs) <= 8:
         raise ValueError("guard wrapper requires one to eight inherited guards")
+    handles = []
+    for item in specs:
+        if not isinstance(item, dict) or set(item) != {"root", "name", "handle"}:
+            raise ValueError("invalid inherited guard specification")
+        handle = item["handle"]
+        if type(handle) is not int or handle < 0 or handle in handles:
+            raise ValueError("inherited guard handles must be distinct nonnegative integers")
+        handles.append(handle)
     guards = []
     try:
         for item in specs:

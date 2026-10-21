@@ -17,14 +17,15 @@ class CommandAdapter(object):
 
     def identity(self):
         canonical=json.dumps(self.config,sort_keys=True,separators=(",",":"),ensure_ascii=False).encode("utf-8")
-        runtime_files={"command_adapter.py":pathlib.Path(__file__).read_bytes()}
+        runtime_files={"builtin/command_adapter.py":pathlib.Path(__file__).read_bytes()}
         for raw in self.config.get("adapter_runtime_files",[]):
-            path=pathlib.Path(raw)
-            if not path.is_absolute(): path=self.base_dir/path
+            path=self._contained_file(self.base_dir,raw)
             if path.is_symlink(): raise ValueError("adapter runtime file is unavailable or symlinked: %s" % raw)
             path=path.resolve()
             if not path.is_file(): raise ValueError("adapter runtime file is unavailable or symlinked: %s" % raw)
-            runtime_files[str(raw).replace("\\","/")]=path.read_bytes()
+            name=str(raw).replace("\\","/")
+            if name in runtime_files: raise ValueError("adapter runtime identity key collision: "+name)
+            runtime_files[name]=path.read_bytes()
         runtime=b"".join(name.encode("utf-8")+b"\0"+data+b"\0" for name,data in sorted(runtime_files.items()))
         host=self.config.get("host_tool") or {}
         return {
@@ -49,6 +50,16 @@ class CommandAdapter(object):
             raise ValueError("locked execution requires an operator isolation attestation; booleans alone are insufficient")
     def supports(self,capability):
         return capability in set(self.config.get("capabilities",[]))
+    @staticmethod
+    def _contained_file(root,raw):
+        relative=pathlib.PurePosixPath(str(raw).replace("\\","/"))
+        if not str(raw) or relative.is_absolute() or pathlib.PureWindowsPath(str(raw)).drive or ".." in relative.parts:
+            raise ValueError("adapter evidence path must be relative and contained")
+        root=pathlib.Path(root).resolve(); path=root.joinpath(*relative.parts)
+        if any(item.is_symlink() for item in [path]+list(path.parents) if item!=root and root in item.parents):
+            raise ValueError("adapter evidence path must not be symlinked")
+        if root not in path.resolve().parents: raise ValueError("adapter evidence path escapes root")
+        return path
     def _environment(self,skill_path=None):
         env={"PATH":os.environ.get("PATH",""),"HOME":os.environ.get("HOME",""),"LANG":os.environ.get("LANG","C.UTF-8")}
         for name in self.config.get("environment_passthrough",[]):
@@ -78,14 +89,20 @@ class CommandAdapter(object):
         with tempfile.TemporaryDirectory(prefix="upg-qualification-setup-") as td:
             control=pathlib.Path(td)
             values=self._control_values(control,workspace,task,condition,skill_path,checkpoint,phase)
-            cp=subprocess.run(_expand(self.config["skill_install_command"],values),cwd=str(workspace),env=self._environment(skill_path),text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=int(self.config.get("timeout_seconds",900)),check=False)
-            if cp.returncode!=0: raise RuntimeError("skill installation failed: "+cp.stderr[-2000:])
+            try:
+                cp=subprocess.run(_expand(self.config["skill_install_command"],values),cwd=str(workspace),env=self._environment(skill_path),text=True,encoding="utf-8",errors="replace",stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=float(self.config.get("timeout_seconds",900)),check=False)
+            except subprocess.TimeoutExpired as exc:
+                raise RuntimeError("skill installation timed out") from exc
+            if cp.returncode!=0: raise RuntimeError("skill installation failed: "+redact_public(cp.stderr[-2000:]))
     def _execute(self,key,workspace,task,condition,skill_path=None,raw_dir=None,checkpoint=None,phase="single",skill_prepared=False):
         workspace=pathlib.Path(workspace).resolve()
         timeout=float(self.config.get("timeout_seconds",900))
         env=self._environment(skill_path)
+        setup_started=time.monotonic()
         if skill_path and not skill_prepared:
             self.prepare_skill(workspace,task,condition,skill_path,checkpoint,phase)
+        timeout-=time.monotonic()-setup_started
+        if timeout<=0: raise RuntimeError("adapter timeout exhausted during setup")
         with tempfile.TemporaryDirectory(prefix="upg-qualification-control-") as td:
             control=pathlib.Path(td)
             values=self._control_values(control,workspace,task,condition,skill_path,checkpoint,phase)
@@ -95,21 +112,29 @@ class CommandAdapter(object):
             started=time.monotonic()
             timed_out=False
             try:
-                cp=subprocess.run(_expand(command,values),cwd=str(workspace),env=env,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=timeout,check=False)
+                cp=subprocess.run(_expand(command,values),cwd=str(workspace),env=env,text=True,encoding="utf-8",errors="replace",stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=timeout,check=False)
                 stdout=_decode_output(cp.stdout); stderr=_decode_output(cp.stderr); exit_code=cp.returncode
             except subprocess.TimeoutExpired as exc:
                 stdout=_decode_output(exc.stdout); stderr=_decode_output(exc.stderr); exit_code=124; timed_out=True
             elapsed=time.monotonic()-started
             usage={}; events={}
             usage_name=self.config.get("usage_file")
-            if usage_name and (workspace/usage_name).is_file():
-                usage=json.loads((workspace/usage_name).read_text(encoding="utf-8"))
+            if usage_name:
+                try:
+                    usage_path=self._contained_file(workspace,usage_name)
+                    if usage_path.is_file():
+                        usage=json.loads(usage_path.read_text(encoding="utf-8"))
+                        if not isinstance(usage,dict): raise ValueError("usage must be an object")
+                except (OSError,ValueError,UnicodeError):
+                    usage={}; events["usage_file_invalid"]=True
             if output_file.is_file():
                 try:
                     meta=json.loads(output_file.read_text(encoding="utf-8"))
                     if not isinstance(meta,dict): raise ValueError("adapter metadata must be an object")
                     if isinstance(meta.get("usage"),dict): usage.update(meta["usage"])
-                    events=redact_public(meta.get("events",{}))
+                    metadata_events=redact_public(meta.get("events",{}))
+                    if isinstance(metadata_events,dict): events.update(metadata_events)
+                    else: events["adapter_events"]=metadata_events
                 except (OSError,ValueError,json.JSONDecodeError):
                     events={"adapter_metadata_invalid":True}
             if not isinstance(events,dict): events={"adapter_events":events}
@@ -142,7 +167,6 @@ class CommandAdapter(object):
                     source=output_file.with_suffix(suffix)
                     if source.is_file():
                         data=source.read_bytes(); (raw/(phase+"-"+label+".txt")).write_bytes(data)
-                        evidence[label.replace("-","_")+"_sha256"]=hashlib.sha256(data).hexdigest()
             for suffix,label in [
                 (".stdout.raw","inner_stdout"),
                 (".stderr.raw","inner_stderr"),

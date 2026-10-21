@@ -14,6 +14,7 @@ import math
 from pathlib import Path
 import random
 import shutil
+import stat
 import subprocess
 import tempfile
 
@@ -36,7 +37,7 @@ def _need(condition, reason):
 
 
 def _number(value, name, positive=False):
-    _need(type(value) in (int, float) and math.isfinite(value), "unknown or invalid " + name)
+    _need(type(value) in (int, float) and (not isinstance(value, float) or math.isfinite(value)), "unknown or invalid " + name)
     _need(value > 0 if positive else value >= 0, "invalid " + name)
     return value
 
@@ -54,10 +55,23 @@ def _artifact(reference, base):
     _need(isinstance(reference, dict), "missing artifact reference")
     _need(isinstance(reference.get("sha256"), str) and len(reference["sha256"]) == 64,
           "artifact requires a SHA256 digest")
-    path = Path(reference.get("path", ""))
-    if not path.is_absolute():
-        path = base / path
-    raw = path.read_bytes()
+    _need(isinstance(reference.get("path"), str) and reference["path"], "artifact requires a path")
+    base = Path(base).resolve()
+    path = Path(reference["path"])
+    path = path if path.is_absolute() else base / path
+    try:
+        path.resolve().relative_to(base)
+    except ValueError as error:
+        raise EvidenceError("artifact path escapes its evidence root") from error
+    before = path.lstat()
+    _need(stat.S_ISREG(before.st_mode) and not getattr(before, "st_file_attributes", 0) & 1024
+          and before.st_size <= 16777216, "artifact must be a bounded regular file")
+    with path.open("rb") as stream:
+        raw = stream.read(16777217)
+    after = path.lstat()
+    _need(len(raw) <= 16777216 and (before.st_dev, before.st_ino, before.st_size, before.st_mtime_ns) ==
+          (after.st_dev, after.st_ino, after.st_size, after.st_mtime_ns), "artifact changed during reading")
+    path = path.resolve()
     _need(hashlib.sha256(raw).hexdigest() == reference["sha256"], "artifact hash mismatch: " + str(path))
     data = json.loads(raw)
     _need(isinstance(data, dict), "artifact must contain an object")
@@ -84,7 +98,9 @@ def _freeze(manifest, repo):
     frozen = json.loads(raw)
     _need(isinstance(frozen, dict), "frozen evidence must contain an object")
     _need(frozen.get("kind") == "independent-holdout-freeze", "missing independent holdout freeze")
-    _need(frozen.get("independent_actor") and frozen["independent_actor"] != frozen.get("optimizer_actor"),
+    _need(all(isinstance(frozen.get(key), str) and frozen[key].strip()
+              for key in ("independent_actor", "optimizer_actor"))
+          and frozen["independent_actor"] != frozen["optimizer_actor"],
           "holdout evaluator must be independent of candidate selection")
     _need(_time(frozen.get("selected_at")) <= _time(frozen.get("frozen_at")),
           "candidate selection happened after the holdout freeze")
@@ -180,7 +196,8 @@ def _admit(record, base, frozen, protocol, final, seen):
         for field in ("input_tokens", "output_tokens"):
             _number(usage.get(field), "provider " + field)
         totals.append(total)
-        dollars.append(usage.get("cost_usd"))
+        cost = usage.get("cost_usd")
+        dollars.append(_number(cost, "provider cost_usd") if cost is not None else None)
         _need(_time(receipt.get("observed_at")) >= _time(record["started_at"]), "provider receipt predates task")
     _need(all(attempt["status"] == "failed" for attempt in attempts[:-1]), "calls after a completed task require a separate rework observation")
     _need(sum(totals) == record.get("usage", {}).get("total_tokens"), "failed/retried call costs omitted from total")
@@ -267,7 +284,9 @@ def paired_bootstrap(pairs, field, model_weights, task_weights, inference):
 def _empirical(run, protocol, repo):
     manifest, base = _artifact(run.get("independent_evidence"), repo)
     frozen = _freeze(manifest, repo)
-    _need(frozen.get("run_id") == run.get("run_id"), "independent evidence run mismatch")
+    _need(isinstance(run.get("run_id"), str) and run["run_id"].strip()
+          and isinstance(frozen.get("run_id"), str) and frozen["run_id"] == run["run_id"],
+          "independent evidence run mismatch")
     _need(frozen.get("protocol_sha256") == digest(protocol), "holdout protocol was not preregistered")
     _need(frozen.get("baseline_revisions", {}).get("rc15") == RC15, "fixed RC15 anchor is missing")
     from .controller import engine_identity
@@ -418,18 +437,22 @@ def propose(run: dict, repo: Path | str, output: Path | str) -> dict:
     after = (json.dumps(materialize(candidate), indent=2, ensure_ascii=False) + "\n").splitlines(keepends=True)
     patch = "".join(difflib.unified_diff(before, after, fromfile="a/governance-src/model/governance-model.json",
                                       tofile="b/governance-src/model/governance-model.json"))
-    output.mkdir(parents=True)
-    (output / "candidate.patch").write_text(patch, encoding="utf-8")
-    (output / "verification.json").write_bytes(canonical_bytes(verification))
-    # Compilation output is reviewable in the proposal; canonical source remains unchanged.
-    (output / "model.json").write_bytes(canonical_bytes(materialize(candidate)))
-    from compiler.compile_governance import compile_runtime
-    with tempfile.TemporaryDirectory(prefix="upg-proposal-") as temporary:
-        isolated = Path(temporary)
-        shutil.copytree(repo / "governance-src", isolated / "governance-src",
-                        ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "*.pyo"))
-        shutil.copyfile(repo / "LICENSE", isolated / "LICENSE")
-        (isolated / "governance-src/model/governance-model.json").write_bytes(canonical_bytes(materialize(candidate)))
-        compile_runtime(isolated, output / "universal-project-governance")
+    output.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix=".upg-proposal-", dir=output.parent) as staging:
+        staged = Path(staging) / "proposal"
+        staged.mkdir()
+        (staged / "candidate.patch").write_text(patch, encoding="utf-8")
+        (staged / "verification.json").write_bytes(canonical_bytes(verification))
+        # Compilation output is reviewable in the proposal; canonical source remains unchanged.
+        (staged / "model.json").write_bytes(canonical_bytes(materialize(candidate)))
+        from compiler.compile_governance import compile_runtime
+        with tempfile.TemporaryDirectory(prefix="upg-proposal-") as temporary:
+            isolated = Path(temporary)
+            shutil.copytree(repo / "governance-src", isolated / "governance-src",
+                            ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "*.pyo"))
+            shutil.copyfile(repo / "LICENSE", isolated / "LICENSE")
+            (isolated / "governance-src/model/governance-model.json").write_bytes(canonical_bytes(materialize(candidate)))
+            compile_runtime(isolated, staged / "universal-project-governance")
+        staged.replace(output)
     return {"status": "PROPOSED", "candidate_id": selected, "patch": str(output / "candidate.patch"),
             "formal_qualification": "UNASSESSED"}

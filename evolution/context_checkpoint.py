@@ -9,6 +9,8 @@ from evolution.tool_broker import canonical, sha
 
 POLICY_ID = "state-facts-new-conversation-once-262144-v1"
 SCHEMA = "engineering-context-checkpoint-v1"
+FACTS_SCHEMA = "engineering-context-checkpoint-facts-v1"
+WORKING_SET_FACTS_SCHEMA = "engineering-context-checkpoint-working-set-facts-v1"
 POLICY = {"policy_id": POLICY_ID, "trigger_bytes": 262144, "max_checkpoints": 1,
           "max_facts_bytes": 65536, "max_bootstrap_bytes": 262144}
 PREFIX = ("Explicit new conversation for the same unfinished task. Original RAW is retained. "
@@ -94,7 +96,8 @@ def facts(task, received, current, events, traces, budgets, *, include_working_s
             if result.get("ok") is True:
                 before_edit = False
             writes.append({"sequence": number, "state_sha256": event["state_sha256"],
-                           "result_sha256": event["result_sha256"], "paths": [op["path"] for op in arguments["operations"]]})
+                           "result_sha256": event["result_sha256"], "ok": result.get("ok") is True,
+                           "paths": list(result.get("changed", [])) if result.get("ok") is True else []})
         elif event["tool"] == "repo_validate":
             execution = result.get("execution", {})
             if execution.get("unknown") is not False or execution.get("status") != "EXECUTED":
@@ -118,7 +121,7 @@ def facts(task, received, current, events, traces, budgets, *, include_working_s
     if validation is not None and validation["ok"] is False: risks.append("latest-validation-known-fail")
     if status is None or not status["current"]: risks.append("current-status-missing-or-stale")
     if status is not None and (status["ok"] is False or status["exit_code"] != 0): risks.append("latest-status-known-fail")
-    value = {"schema": "engineering-context-checkpoint-facts-v1", "current_files": copy.deepcopy(current),
+    value = {"schema": FACTS_SCHEMA, "current_files": copy.deepcopy(current),
         "changed_paths": sorted(p for p in current if current[p] != received.get(p)),
         "deleted_paths": sorted(set(received) - set(current)), "read_evidence": reads, "write_evidence": writes,
         "unmet_required_initial_reads": missing, "latest_validation": validation, "latest_status": status,
@@ -126,7 +129,7 @@ def facts(task, received, current, events, traces, budgets, *, include_working_s
         "next_intent": "UNASSESSED", "budgets": copy.deepcopy(budgets),
         "broker_event_count": len(events), "previous_broker_chain_sha256": previous}
     if include_working_set:
-        value.update(schema="engineering-context-checkpoint-working-set-facts-v1",
+        value.update(schema=WORKING_SET_FACTS_SCHEMA,
             working_set=_working_set(task, current, events))
         value["not_carried_paths"] = sorted(set(current) - set(value["working_set"]))
     if len(canonical(value)) > POLICY["max_facts_bytes"]:
@@ -137,8 +140,8 @@ def facts(task, received, current, events, traces, budgets, *, include_working_s
 
 
 def bootstrap(initial_messages, value, *, include_working_set=False):
-    if type(include_working_set) is not bool or (include_working_set and
-            value.get("schema") != "engineering-context-checkpoint-working-set-facts-v1"):
+    if (type(include_working_set) is not bool or not isinstance(value, dict) or
+            value.get("schema") != (WORKING_SET_FACTS_SCHEMA if include_working_set else FACTS_SCHEMA)):
         raise ValueError("checkpoint bootstrap working set identity differs")
     content = (WORKING_SET_PREFIX if include_working_set else PREFIX) + canonical(value).decode("utf-8")
     return copy.deepcopy(initial_messages) + [{"role": "user", "content": content}]

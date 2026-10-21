@@ -163,6 +163,20 @@
             "0.1 Transition handoff",
             "3.2 Timebox strategy"
           ]
+        },
+        {
+          "path": "skills/case-review/scripts/review_case.py",
+          "git_blob_sha1": "4408bec6661f34a9f9318aa93b54cbea2ff3134f",
+          "bytes": 20559,
+          "url": "https://github.com/zhaoxuya520/reverse-skill/blob/cab634bd855fc287f6e420c1f36fd1a6b9245960/skills/case-review/scripts/review_case.py",
+          "sections": ["bounded evidence review reference; no executable import"]
+        },
+        {
+          "path": "skills/js-reverse/references/local-rebuild.md",
+          "git_blob_sha1": "2ce5302dc844ac092c4e4097790031fb0768e1a6",
+          "bytes": 295,
+          "url": "https://github.com/zhaoxuya520/reverse-skill/blob/cab634bd855fc287f6e420c1f36fd1a6b9245960/skills/js-reverse/references/local-rebuild.md",
+          "sections": ["minimal local entry and environment reproduction"]
         }
       ],
       "adaptation_mode": "independent-concepts-no-source-import",

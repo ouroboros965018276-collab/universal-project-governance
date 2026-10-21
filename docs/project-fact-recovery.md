@@ -22,8 +22,11 @@ files, credential paths and VCS internals are rejected as file inputs.
 Git inspection uses index/object metadata and local bounded-byte comparison;
 it avoids worktree-conversion commands that can launch project clean filters.
 Active filtering or normalization rules leave content validity unknown. Git
-metadata has its own timeout and post-read output check; the content budget is
-not an operating-system memory or process-isolation guarantee.
+metadata has its own timeout and bounded stdout/stderr reads, with limits scaled
+to the encoded scope paths. The optional handoff has one reserved read attempt
+in addition to the 64 scoped files. A file changed after observation becomes
+unavailable before evidence inheritance; matching an earlier hash cannot make it
+current again. These limits are not an operating-system isolation guarantee.
 
 The returned view distinguishes observed source identity, static declarations,
 referenced evidence, hypotheses and contradictions. Python imports and package
@@ -47,7 +50,7 @@ The planner emits optional recovery guidance only for relevant signals, while
 the existing policy closure remains authoritative. The helper is compiler-owned;
 change `governance-src/` and regenerate the installed bundle.
 
-New tool-task regression fixtures cover stale PASS records and interrupted
+Tool-task regression fixtures cover stale PASS records and interrupted
 consumer migrations with current-hash and positive artifact contracts. Their
 mechanical success proves grader behavior, not model efficacy. Independent model
 quality, total tokens and complete callback time remain separate release gates.

@@ -1,7 +1,7 @@
 """Frozen paired artifact-task collection, independent of search feedback.
 
 This small development holdout cannot grant formal qualification. It compares
-the exact pinned baseline with the prespecified canonical neutral candidate;
+the exact pinned baseline with the source-bound canonical neutral candidate;
 it never selects a candidate from final responses or retries a failed task.
 """
 from __future__ import annotations
@@ -36,6 +36,9 @@ def _collect(repo, protocol, output, runner):
         raise ValueError("historical baseline failed engineering checks before dispatch")
     candidate = {"model": json.loads((repo / "governance-src/model/governance-model.json").read_text(encoding="utf-8")),
                  "theta": [0.5, 0.5, 0.5], "operator": "prespecified-neutral-compression"}
+    pinned_candidate = protocol.get("paired_candidate_id")
+    if pinned_candidate is not None and pinned_candidate != candidate_id(candidate):
+        raise ValueError("paired candidate differs from the owner preregistration")
     validation = validate_candidate(candidate, repo)
     if not validation["ok"]:
         raise ValueError("prespecified candidate failed engineering checks before dispatch")
@@ -49,7 +52,7 @@ def _collect(repo, protocol, output, runner):
                      "treatment": candidate_id(candidate)}
     identities = {"source": {key: source_hash(value) for key, value in sources.items()},
                   "artifacts": {key: digest(value) for key, value in artifacts.items()},
-                  "engine": engine_identity(repo), "runner": callable_identity(runner), "protocol": digest(protocol)}
+                  "engine": engine_identity(repo, excluded=(output,)), "runner": callable_identity(runner), "protocol": digest(protocol)}
     if output.exists():
         run = json.loads(output.read_text(encoding="utf-8"))
         if run["identities"] != identities:
@@ -74,7 +77,8 @@ def _collect(repo, protocol, output, runner):
                "identities": identities, "candidate_ids": candidate_ids, "order": order,
                "observations": [], "cache": {}, "pending": None, "budget": budget.state(),
                "independent_formal_qualification": False, "empirical_status": "BLOCKED",
-               "scope": protocol["development_scope"]}
+               "scope": protocol["development_scope"],
+               "candidate_registration": "protocol-pinned" if pinned_candidate is not None else "source-bound-at-collection; prior selection unassessed"}
 
     def checkpoint():
         run["budget"] = budget.state()
@@ -92,7 +96,6 @@ def _collect(repo, protocol, output, runner):
                 candidate_identity=candidate_ids[condition], execution_artifact=artifacts[condition])
             run["observations"].append({"condition": condition, "family": task["family"], "observation": observation})
             run["pending"] = {"kind": "unknown-usage", "observation": observation} if budget.unknown_usage else None
-            checkpoint()
             if budget.unknown_usage:
                 raise BudgetExceeded("paired final usage unknown; reconcile before further dispatch")
             state = budget.state()
@@ -105,6 +108,7 @@ def _collect(repo, protocol, output, runner):
                 run["status"] = "failed-no-retry"
                 checkpoint()
                 return run
+            checkpoint()
         run["status"] = "completed"
     except BudgetExceeded as error:
         run["status"], run["stop_reason"] = "budget-exhausted", str(error)
@@ -123,10 +127,17 @@ def summarize(run, *, repetitions=4000, seed=18012):
     task_ids = sorted(set(matched["control"]) & set(matched["treatment"]))
     quality = (run["status"] == "completed" and task_loss(by_condition["control"]) is not None
                and task_loss(by_condition["treatment"], by_condition["control"]) is not None)
-    samples_fresh = all(row["observation"].get("independent_sample") and not row["observation"].get("cache_hit") for row in rows)
+    samples_fresh = bool(rows) and all(row["observation"].get("independent_sample") and not row["observation"].get("cache_hit") for row in rows)
     summary = {"status": run["status"], "pairs": len(task_ids), "task_quality_pass": quality,
                "all_samples_new_calls": samples_fresh, "actual_charged_usage": run["budget"],
-               "empirical_status": "BLOCKED", "formal_qualification": "UNASSESSED", "metrics": {}}
+               "empirical_status": "BLOCKED", "formal_qualification": "UNASSESSED", "metrics": {
+                   name: None for name in ("input_tokens", "output_tokens", "total_tokens", "wall_seconds", "cli_wall_seconds")}}
+    complete = (run["status"] == "completed" and bool(task_ids)
+                and set(matched["control"]) == set(matched["treatment"])
+                and len(rows) == 2 * len(task_ids) == len(run.get("order", rows)))
+    if not complete:
+        summary["inference_scope"] = "Incomplete paired collection; no paired estimates"
+        return summary
     family_by_task = {row["observation"]["task_id"]: row["family"] for row in rows}
     families = sorted({family_by_task[key] for key in task_ids})
     groups = [[key for key in task_ids if family_by_task[key] == family] for family in families]
@@ -153,5 +164,5 @@ def summarize(run, *, repetitions=4000, seed=18012):
             "ratio": treatment / control if control > 0 else None,
             "savings_fraction": 1 - treatment / control if control > 0 else None,
             "paired_family_bootstrap_95_interval": [ratios[int(len(ratios)*0.025)], ratios[min(len(ratios)-1,int(len(ratios)*0.975))]] if ratios else None}
-    summary["inference_scope"] = "Eight prespecified artifact-task pairs in one requested model; no cross-family Agent/provider or tool-execution claim"
+    summary["inference_scope"] = f"{len(task_ids)} registered artifact-task pairs in one requested model; no cross-family Agent/provider or tool-execution claim"
     return summary

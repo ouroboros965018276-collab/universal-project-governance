@@ -979,9 +979,9 @@ class CompiledRuntimeTests(unittest.TestCase):
                     self.assertFalse((project / ".governance/field-reports.json").exists())
 
                     cp = run(tool, "status", project)
-                    self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
-                    self.assertTrue(json.loads(cp.stdout)["ok"])
-                    self.assertFalse(json.loads(cp.stdout)["field_test_reporting"])
+                    self.assertEqual(cp.returncode, 1, cp.stdout + cp.stderr)
+                    self.assertFalse(json.loads(cp.stdout)["ok"])
+                    self.assertEqual(json.loads(cp.stdout)["reason"], "binding-drift")
 
     def test_planner_validates_full_context_schema_and_keeps_unknown_profile_fallback(self):
         with tempfile.TemporaryDirectory() as td:

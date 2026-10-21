@@ -23,8 +23,12 @@ MODULES = {"reflection", "annealing", "de", "curvature"}
 
 
 def _command(command, cwd):
-    observed = subprocess.run(command, cwd=cwd, capture_output=True, text=True,
-                              encoding="utf-8", timeout=60, check=False)
+    try:
+        observed = subprocess.run(command, cwd=cwd, capture_output=True, text=True,
+                                  encoding="utf-8", timeout=60, check=False)
+    except (OSError, subprocess.TimeoutExpired) as error:
+        return {"command": [str(value) for value in command], "returncode": 1,
+                "stdout": "", "stderr": type(error).__name__}
     return {"command": [Path(str(value)).name if Path(str(value)).is_absolute() else str(value)
                         for value in command],
             "returncode": observed.returncode, "stdout": observed.stdout, "stderr": observed.stderr}
@@ -34,8 +38,11 @@ def _baseline(repo, revision, *, include_source=False):
     """Observe the actual historical runtime, without modern materialization."""
     if not isinstance(revision, str) or len(revision) != 40 or any(c not in "0123456789abcdef" for c in revision):
         raise ValueError("baseline must pin a full Git commit")
-    archive = subprocess.run(["git", "-C", str(repo), "archive", "--format=tar", revision],
-                             capture_output=True, timeout=60, check=False)
+    try:
+        archive = subprocess.run(["git", "-C", str(repo), "archive", "--format=tar", revision],
+                                 capture_output=True, timeout=60, check=False)
+    except (OSError, subprocess.TimeoutExpired) as error:
+        raise ValueError("baseline Git archive unavailable: " + revision) from error
     if archive.returncode:
         raise ValueError("baseline Git archive unavailable: " + revision)
     with tempfile.TemporaryDirectory(prefix="upg-ablation-baseline-") as temporary:
@@ -94,7 +101,7 @@ def _real_baseline(repo, revision, protocol, output, runner):
         execution_artifact = historical.pop("execution_artifact")
         identities = {"revision": revision, "source": source_hash(source),
                       "execution_artifact": digest(execution_artifact),
-                      "protocol": digest(protocol), "engine": engine_identity(repo),
+                      "protocol": digest(protocol), "engine": engine_identity(repo, excluded=(output,)),
                       "runner": callable_identity(runner)}
         candidate_identity = digest({"historical_revision": revision,
                                      "source_sha256": identities["source"]})
@@ -221,7 +228,7 @@ def _run_matrix(repo, protocol, output, runner=None, backend=None):
     """
     repo, output = Path(repo).resolve(), Path(output).resolve()
     identity = {"protocol_sha256": digest(protocol), "source_sha256": source_hash(repo),
-                "engine_sha256": engine_identity(repo), "runner": callable_identity(runner),
+                "engine_sha256": engine_identity(repo, excluded=(output,)), "runner": callable_identity(runner),
                 "backend": callable_identity(backend)}
     matrix_path = output / "matrix.json"
     if matrix_path.exists():
@@ -246,7 +253,9 @@ def _run_matrix(repo, protocol, output, runner=None, backend=None):
             revision = protocol["baseline"]["rc15_revision" if name == "rc15" else "latest_revision"]
             if runner is None:
                 result = _baseline(repo, revision)
-                matrix["arms"][name] = dict(result, completed=True, terminal=True)
+                passed = result["engineering"] == "PASS"
+                matrix["arms"][name] = dict(result, completed=passed, terminal=True,
+                    status="completed" if passed else "no-feasible-baseline")
             else:
                 arm_path = output / "arms" / (name + ".json")
                 result = _real_baseline(repo, revision, protocol, arm_path, runner)
@@ -272,7 +281,8 @@ def _run_matrix(repo, protocol, output, runner=None, backend=None):
                                        terminal=not run.get("pending") and run.get("status") in {"completed", "budget-exhausted", "no-feasible-baseline", "selection-rejected"},
                                        checkpoint="arms/" + name + ".json")
         save_run(matrix_path, matrix)
-    if all(value.get("completed") for value in matrix["arms"].values()):
+    if (matrix["arms"] and set(matrix["arms"]) == set(protocol["arms"])
+            and all(value.get("completed") for value in matrix["arms"].values())):
         matrix["status"] = "completed"
     elif any(value.get("status") == "budget-exhausted" for value in matrix["arms"].values()):
         matrix["status"] = "budget-exhausted"

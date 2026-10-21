@@ -108,20 +108,14 @@ class QualificationTests(unittest.TestCase):
         )
         self.assertEqual({item["language"] for item in cases}, {"en", "zh"})
 
-    def test_racing_pilot_summary_is_diagnostic_and_desensitized(self):
-        summary = json.loads(
-            (ROOT / "qualification/pilots/racing-game-pilot.summary.json").read_text(
-                encoding="utf-8"
-            )
-        )
-        self.assertEqual(summary["status"], "diagnostic-field-pilot")
-        self.assertFalse(summary["formal_dev_smoke"])
-        self.assertFalse(summary["locked_qualification"])
-        self.assertFalse(summary["empirical_qualification"])
-        self.assertEqual(summary["arms"]["A0-no-skill"]["acceptance"], "10/10 PASS")
-        self.assertEqual(summary["arms"]["A2-full-upg"]["acceptance"], "10/10 PASS")
-        self.assertEqual(summary["committed_payload"], "desensitized-summary-only")
-        self.assertNotIn("index.html", json.dumps(summary))
+    def test_current_qualification_does_not_require_retired_pilot_snapshots(self):
+        # Current candidate identity is derived from maintained sources, not copied pilot runtimes.
+        from tools.qualification_freeze import expected
+        identity = expected(ROOT)
+        self.assertFalse((ROOT / "qualification/pilots").exists())
+        self.assertNotIn("qualification/pilots", identity["frozen_surfaces"])
+        self.assertEqual(identity["schema_version"], 3)
+        self.assertTrue(load_protocol()["inference"]["levels"])
 
     def test_scope_contract_detects_unrelated_change(self):
         lab = get_lab(

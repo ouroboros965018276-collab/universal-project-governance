@@ -26,7 +26,10 @@
         ],
         "properties": {
           "id": {
-            "type": "string"
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "\\S"
           },
           "status": {
             "enum": [
@@ -40,8 +43,11 @@
           "evidence": {
             "type": "array",
             "items": {
-              "type": "string"
-            }
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            },
+            "minItems": 1
           },
           "consequence": {
             "type": "string"
@@ -56,7 +62,8 @@
             "type": "string"
           }
         }
-      }
+      },
+      "$comment": "An empty collection means no outstanding feedback. Every recorded observation requires evidence; consumers enforce unique item IDs."
     }
   }
 }

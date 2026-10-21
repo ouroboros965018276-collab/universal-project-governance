@@ -20,9 +20,10 @@ class EngineeringStudyTests(unittest.TestCase):
     def setUp(self):
         self.current_candidate = json.loads((ROOT / 'governance-src/model/governance-model.json').read_bytes())
         self.baseline_delta = json.loads((ROOT / 'tests/fixtures/engineering-study-rc19-model-delta.json').read_bytes())
-        # Historical study inputs must survive later runtime semantics/version
-        # changes. This immutable fixture retains the existing complete digest.
-        self.full = json.loads((ROOT / 'tests/fixtures/engineering-study-frozen-rc20-model.json').read_bytes())
+        # Reconstruct only the three historical contract fields that differ;
+        # the maintained canonical model supplies all other policy structure.
+        self.full = copy.deepcopy(self.current_candidate)
+        self.full.update(copy.deepcopy(self.baseline_delta['full_model_test_overrides']))
         self.assertEqual(study.digest(self.full), self.baseline_delta['full_model_sha256'])
         self.baseline = copy.deepcopy(self.full)
         for field in self.baseline_delta['full_only_fields']:
@@ -101,7 +102,8 @@ class EngineeringStudyTests(unittest.TestCase):
             'actor_registry':current.fixed_registry(),'ledger_registry_identity':current.registry_identity(),
             'round_caps':current.caps(),'profile_configuration_sha256':study.EFFICIENT_DUAL_API_CONFIGURATION_SHA256,
             'configuration_sha256':study.EFFICIENT_DUAL_API_CONFIGURATION_SHA256,
-            'profile_id':study.EFFICIENT_DUAL_API_PROFILE_ID,'route_profile':study.DUAL_API_ROUTE_PROFILE,
+            'profile_id':study.EFFICIENT_DUAL_API_PROFILE_ID,'execution_profile_id':study.EFFICIENT_DUAL_API_PROFILE_ID,
+            'route_profile':study.DUAL_API_ROUTE_PROFILE,
             'study_topology_sha256':current.preregistration_sha256}
         self.assertEqual(current.validate_protocol(protocol),protocol)
         protocol['profile_id'] = study.DUAL_API_PROFILE_ID

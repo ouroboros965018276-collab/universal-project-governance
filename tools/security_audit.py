@@ -20,6 +20,7 @@ def portable_ast(value):
                   if not (name == "type_params" and getattr(value, name, None) == [])}
         return [type(value).__name__, fields]
     if isinstance(value, list): return [portable_ast(item) for item in value]
+    if isinstance(value, bytes): return ["bytes", value.hex()]
     return value
 
 def worker_launch_digest(fn):
@@ -30,22 +31,34 @@ def worker_launch_digest(fn):
 # no general process-launch exception is granted.
 OWN_WORKER_LAUNCH_SHA256 = "69019433c57ec60e10fe2eedea4c44a05093777d85392fdd37a2f5dcf90f884b"
 
-OWN_GUARDED_LAUNCH_SHA256 = "858fdf12a8550a3bc97ca99ba79a31b4700a4c56bbff7b67839aaf48055ca453"
+OWN_GUARDED_LAUNCH_SHA256 = "4f35f93a7f55a9a68568c7356ed96ef937873b08c066bbd22d50c3b16ea2d21a"
 
 OWN_SUPERVISOR_LAUNCH_SHA256 = "6d9700d22c0b7dc2066b522269ac9e932abf60c1bcd3d5c507c0d4b6f65047ab"
 
 SESSION_MEMBER_LAUNCH_SHA256 = '71325c51e9ca58e11f4aded2eb124142daa312816abb881eae2e6d4d2303e66c'
 SESSION_HOST_LAUNCH_SHA256 = '44b92c247494bd53147046305dc287da7a92e94d06e5d26ae897d537e4ae16e8'
 
+# Review covers the bounded reader and its fixed, read-only Git-query caller.
+# Altering command construction, scope, environment, timeout or stream bounds
+# invalidates this exception; other Popen calls remain prohibited.
+BOUNDED_GIT_QUERY_SHA256 = 'd7cb68c66a3f4ca01715922812b0247bc005796e41b7009a9b0c44ff3aa6357b'
+BOUNDED_GIT_STATE_SHA256 = 'b43792f138ec528ab736f291ad670536f0715ad13f08b21077254c9474a98dbb'
+
 def approved_worker_launch(path, tree, node):
     reviewed = {("git_watch.py", "_spawn_worker"): OWN_WORKER_LAUNCH_SHA256,
                 ("git_watch.py", "_spawn_supervisor"): OWN_SUPERVISOR_LAUNCH_SHA256,
                 ("process_guard.py", "_spawn_guarded"): OWN_GUARDED_LAUNCH_SHA256,
+                ("project_facts.py", "_bounded_git_query"): BOUNDED_GIT_QUERY_SHA256,
                 ("session_lifetime.py", "spawn"): SESSION_MEMBER_LAUNCH_SHA256,
                 ("session_lifetime.py", "run_host"): SESSION_HOST_LAUNCH_SHA256}
     for fn in tree.body:
         if isinstance(fn, ast.FunctionDef) and node in ast.walk(fn):
             expected = reviewed.get((path.name, fn.name))
+            if path.name == "project_facts.py" and fn.name == "_bounded_git_query":
+                caller = next((item for item in tree.body if isinstance(item, ast.FunctionDef)
+                               and item.name == "git_state"), None)
+                if caller is None or worker_launch_digest(caller) != BOUNDED_GIT_STATE_SHA256:
+                    return False
             return expected is not None and worker_launch_digest(fn) == expected
     return False
 

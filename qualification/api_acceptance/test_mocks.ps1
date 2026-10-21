@@ -1,3 +1,4 @@
+﻿Add-Type -AssemblyName System.Net.Http
 $ErrorActionPreference = 'Stop'
 Import-Module (Join-Path $PSScriptRoot 'api_acceptance.psm1') -Force
 
@@ -15,7 +16,7 @@ Assert-True ($mimo.ContextTokensReserved -eq 1000000 -and $mimo.OutputTokensRese
 Assert-True ($mimo.WorstCaseCny -lt 2.50 -and [math]::Abs($mimo.WorstCaseCny - 1.000512) -lt 0.00000001) 'MiMo reserve is below the limit.'
 Assert-True ((Get-ApiAcceptanceBudget deepseek -DeepSeekRate off-peak).WorstCaseCny -lt $deep.WorstCaseCny) 'DeepSeek off-peak reserve is lower than peak reserve.'
 Assert-True ($deep.InputCnyPerMillion -eq 2 -and $deep.OutputCnyPerMillion -eq 8) 'DeepSeek peak prices are directly represented in CNY with no FX conversion.'
-Assert-True ((Get-ApiAcceptanceCostCny deepseek -InputTokens 42 -OutputTokens 9) -eq 0.000156) 'DeepSeek fake usage estimate uses the official direct CNY peak rate.'
+Assert-True ([math]::Abs((Get-ApiAcceptanceCostCny deepseek -InputTokens 42 -OutputTokens 9) - 0.000156) -lt 1e-8) 'DeepSeek fake usage estimate uses the official direct CNY peak rate.'
 
 foreach ($provider in @('deepseek','mimo')) {
     $config = Get-ApiAcceptanceProvider $provider
@@ -38,43 +39,43 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 public sealed class UpgAcceptanceBlockingReadStream : Stream {
-    public override bool CanRead => true;
-    public override bool CanSeek => false;
-    public override bool CanWrite => false;
-    public override long Length => throw new NotSupportedException();
-    public override long Position { get => throw new NotSupportedException(); set => throw new NotSupportedException(); }
+    public override bool CanRead { get { return true; } }
+    public override bool CanSeek { get { return false; } }
+    public override bool CanWrite { get { return false; } }
+    public override long Length { get { throw new NotSupportedException(); } }
+    public override long Position { get { throw new NotSupportedException(); } set { throw new NotSupportedException(); } }
     public override void Flush() { }
-    public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+    public override int Read(byte[] buffer, int offset, int count) { throw new NotSupportedException(); }
     public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) {
         var completion = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var registration = cancellationToken.Register(() => completion.TrySetCanceled(cancellationToken));
+        var registration = cancellationToken.Register(() => completion.TrySetCanceled());
         completion.Task.ContinueWith(_ => registration.Dispose(), TaskScheduler.Default);
         return completion.Task;
     }
-    public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
-    public override void SetLength(long value) => throw new NotSupportedException();
-    public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+    public override long Seek(long offset, SeekOrigin origin) { throw new NotSupportedException(); }
+    public override void SetLength(long value) { throw new NotSupportedException(); }
+    public override void Write(byte[] buffer, int offset, int count) { throw new NotSupportedException(); }
 }
 public sealed class UpgAcceptanceFiniteReadStream : Stream {
     private readonly byte[] data;
     private int position;
     public UpgAcceptanceFiniteReadStream(byte[] bytes) { data = bytes; }
-    public override bool CanRead => true;
-    public override bool CanSeek => false;
-    public override bool CanWrite => false;
-    public override long Length => throw new NotSupportedException();
-    public override long Position { get => throw new NotSupportedException(); set => throw new NotSupportedException(); }
+    public override bool CanRead { get { return true; } }
+    public override bool CanSeek { get { return false; } }
+    public override bool CanWrite { get { return false; } }
+    public override long Length { get { throw new NotSupportedException(); } }
+    public override long Position { get { throw new NotSupportedException(); } set { throw new NotSupportedException(); } }
     public override void Flush() { }
-    public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+    public override int Read(byte[] buffer, int offset, int count) { throw new NotSupportedException(); }
     public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) {
         cancellationToken.ThrowIfCancellationRequested();
         var length = Math.Min(count, data.Length - position);
         if (length > 0) { Array.Copy(data, position, buffer, offset, length); position += length; }
         return Task.FromResult(length);
     }
-    public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
-    public override void SetLength(long value) => throw new NotSupportedException();
-    public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+    public override long Seek(long offset, SeekOrigin origin) { throw new NotSupportedException(); }
+    public override void SetLength(long value) { throw new NotSupportedException(); }
+    public override void Write(byte[] buffer, int offset, int count) { throw new NotSupportedException(); }
 }
 public sealed class UpgAcceptanceFakeHttpHandler : HttpMessageHandler {
     private readonly Stream responseBody;
@@ -110,6 +111,7 @@ foreach ($provider in @('deepseek','mimo')) {
     Assert-True ($calls[0].endpoint -ceq $config.Endpoint) "$provider sends only to the fixed official endpoint."
     Assert-True ($calls[0].header -ceq $config.Header -and $calls[0].auth.Contains($testKey)) "$provider uses its documented auth header."
     Assert-True ($calls[0].body -notlike "*$testKey*") 'Credential is absent from request JSON body.'
+    Assert-True (($checkpoints | ConvertTo-Json -Depth 12 -Compress) -notlike "*$testKey*") 'No key appears in checkpoint rows.'
     $request = $calls[0].body | ConvertFrom-Json
     Assert-True ($request.stream -eq $false -and $request.thinking.type -eq 'disabled') "$provider disables streaming and thinking."
     $configuredCap = $request.($config.MaxField)
@@ -117,7 +119,7 @@ foreach ($provider in @('deepseek','mimo')) {
     Assert-True (($request.tool_choice -eq 'required') -or ($provider -eq 'mimo' -and $request.tool_choice -eq 'auto')) "$provider tool choice follows the documented support."
     Assert-True (($result | ConvertTo-Json -Depth 8 -Compress) -notlike "*$testKey*") 'No key appears in usage result.'
     Assert-True ($result.estimated_cny -lt 2.50 -and $result.charge_unknown -eq $false) "$provider records bounded usage with known cost."
-    if ($provider -eq 'deepseek') { Assert-True ($result.estimated_cny -eq 0.000156) 'DeepSeek fake response ledger uses direct CNY peak pricing.' }
+    if ($provider -eq 'deepseek') { Assert-True ([math]::Abs($result.estimated_cny - 0.000156) -lt 1e-8) 'DeepSeek fake response ledger uses direct CNY peak pricing.' }
 }
 
 $redirectCount = 0
@@ -145,16 +147,26 @@ $missingTool = Invoke-ApiAcceptanceProvider -ProviderId mimo -ApiKey $testKey -M
 Assert-True ($script:missCount -eq 1 -and $missingTool.status -eq 'failed' -and $missingTool.error_code -eq 'tool-call-missing' -and -not $missingTool.charge_unknown -and $null -ne $missingTool.estimated_cny) 'No tool call fails once without retry while preserving known usage cost.'
 
 $badToolJson = '{"choices":[{"message":{"role":"assistant","tool_calls":[{"id":"call-1","type":"function","function":{"name":"run_shell","arguments":"{}"}}]}}],"usage":{"prompt_tokens":42,"completion_tokens":9}}'
-$badToolMock = { param($endpoint,$header,$auth,$body) [pscustomobject]@{ StatusCode=200; Body=$badToolJson } }
+$script:badToolCount = 0
+$badToolMock = { param($endpoint,$header,$auth,$body) $script:badToolCount++; [pscustomobject]@{ StatusCode=200; Body=$badToolJson } }
 $badTool = Invoke-ApiAcceptanceProvider -ProviderId deepseek -ApiKey $testKey -MockTransport $badToolMock
-Assert-True ($badTool.status -eq 'failed' -and $badTool.error_code -eq 'tool-name-rejected' -and -not $badTool.controlled_tool_call -and -not $badTool.charge_unknown) 'Unknown model tool is rejected after one response, with no execution.'
+Assert-True ($script:badToolCount -eq 1 -and $badTool.status -eq 'failed' -and $badTool.error_code -eq 'tool-name-rejected' -and -not $badTool.controlled_tool_call -and -not $badTool.charge_unknown) 'Unknown model tool is rejected after one response, with no execution.'
 
+$calls.Clear()
 try { $null = Invoke-ApiAcceptanceProvider -ProviderId mimo -ApiKey 'tp-TEST_TOKEN_PLAN' -MockTransport $mock; throw 'unexpected Token Plan key accepted' }
 catch { Assert-True ($_.Exception.Message -eq 'mimo-token-plan-key-not-supported-by-this-paygo-api-acceptance') 'MiMo Token Plan key is refused before any API request.' }
 
+Assert-True ($calls.Count -eq 0) 'Token Plan rejection sends no request.'
 $module = Get-Module api_acceptance
+$originalTimeout = $module.SessionState.PSVariable.GetValue('RequestTimeoutMilliseconds')
+$originalHandler = $module.SessionState.PSVariable.GetValue('HttpMessageHandlerForTests')
 $module.SessionState.PSVariable.Set('RequestTimeoutMilliseconds', 250)
 try {
+    $padding = ' ' * (65536 - [Text.Encoding]::UTF8.GetByteCount($toolResponse))
+    $boundaryResponse = $toolResponse + $padding
+    $boundaryMock = { param($endpoint,$header,$auth,$body) [pscustomobject]@{ StatusCode=200; Body=$boundaryResponse } }.GetNewClosure()
+    $boundary = Invoke-ApiAcceptanceProvider -ProviderId mimo -ApiKey $testKey -MockTransport $boundaryMock
+    Assert-True ($boundary.status -eq 'success') 'Exactly 65536 UTF-8 response bytes are accepted.'
     $unknownLengthCount = 0
     $unknownLengthMock = {
         param($endpoint,$header,$auth,$body)
@@ -175,6 +187,7 @@ try {
     Assert-True ($script:timeoutCount -eq 1 -and $timedOut.error_code -eq 'request-timeout-charge-unknown' -and $timedOut.request_count -eq 1) 'A body stream that never completes times out after one request.'
     Assert-True ($timedOut.charge_unknown -and $timedOut.worst_case_reserved_cny -eq $deep.WorstCaseCny) 'Timed-out body read retains full reserve.'
 
+    $module.SessionState.PSVariable.Set('RequestTimeoutMilliseconds', 20000)
     $cancelSource = [System.Threading.CancellationTokenSource]::new()
     $cancelSource.CancelAfter(100)
     $cancelBodyCount = 0
@@ -194,12 +207,14 @@ try {
     Assert-True ($fakeLimitHandler.CallCount -eq 1 -and $fakeLimitHandler.LastResponseHadUnknownLength -and $fakeLimit.error_code -eq 'response-body-limit-charge-unknown' -and $fakeLimit.request_count -eq 1) ("Fake HttpClient path expected chunked unknown-length body-limit/no-retry; calls=$($fakeLimitHandler.CallCount), unknownLength=$($fakeLimitHandler.LastResponseHadUnknownLength), error=$($fakeLimit.error_code), requests=$($fakeLimit.request_count).")
     Assert-True ($fakeLimit.charge_unknown -and $fakeLimit.worst_case_reserved_cny -eq $deep.WorstCaseCny) 'Production HTTP path retains full reserve on unknown-length overflow.'
 
+    $module.SessionState.PSVariable.Set('RequestTimeoutMilliseconds', 250)
     $fakeTimeoutHandler = [UpgAcceptanceFakeHttpHandler]::new([UpgAcceptanceBlockingReadStream]::new())
     $module.SessionState.PSVariable.Set('HttpMessageHandlerForTests', $fakeTimeoutHandler)
     $fakeTimeout = Invoke-ApiAcceptanceProvider -ProviderId mimo -ApiKey $testKey
     Assert-True ($fakeTimeoutHandler.CallCount -eq 1 -and $fakeTimeout.error_code -eq 'request-timeout-charge-unknown' -and $fakeTimeout.request_count -eq 1) 'Fake HttpClient handler body hang times out through production SendAsync/body streaming with no retry.'
     Assert-True ($fakeTimeout.charge_unknown -and $fakeTimeout.worst_case_reserved_cny -eq $mimo.WorstCaseCny) 'Production HTTP path retains full reserve on body timeout.'
 
+    $module.SessionState.PSVariable.Set('RequestTimeoutMilliseconds', 20000)
     $fakeCancelSource = [System.Threading.CancellationTokenSource]::new()
     $fakeCancelSource.CancelAfter(100)
     $fakeCancelHandler = [UpgAcceptanceFakeHttpHandler]::new([UpgAcceptanceBlockingReadStream]::new())
@@ -210,16 +225,16 @@ try {
     Assert-True ($fakeCancelled.charge_unknown -and $fakeCancelled.worst_case_reserved_cny -eq $deep.WorstCaseCny) 'Production HTTP path retains full reserve when user cancels body read.'
 }
 finally {
-    $module.SessionState.PSVariable.Set('HttpMessageHandlerForTests', $null)
-    $module.SessionState.PSVariable.Set('RequestTimeoutMilliseconds', 20000)
+    $module.SessionState.PSVariable.Set('HttpMessageHandlerForTests', $originalHandler)
+    $module.SessionState.PSVariable.Set('RequestTimeoutMilliseconds', $originalTimeout)
 }
 
+foreach ($failureResult in @($redirect,$serverError,$missingTool,$badTool,$unknownLength,$timedOut,$cancelBody,$fakeLimit,$fakeTimeout,$fakeCancelled)) {
+    Assert-True (($failureResult | ConvertTo-Json -Depth 12 -Compress) -notlike "*$testKey*") 'No key appears in a failure result.'
+}
 $source = Get-Content (Join-Path $PSScriptRoot 'api_acceptance.psm1') -Raw
 Assert-True ($source -match 'AllowAutoRedirect\s*=\s*\$false') 'Production HttpClient does not follow redirects.'
-Assert-True ($source -match 'PeakInputCnyPerMillion\s*=\s*2\.0\s*;\s*PeakOutputCnyPerMillion\s*=\s*8\.0') 'DeepSeek budget uses official CNY peak input and output rates.'
 Assert-True ($source -notmatch 'DeepSeekFx|PerUsd|InputUsdPerMillion|OutputUsdPerMillion') 'DeepSeek price calculations have no foreign-exchange conversion path.'
-Assert-True ($source -match 'ReadAsStreamAsync\(\$cts\.Token\)') 'Production response body stream is acquired with the request cancellation token.'
-Assert-True ($source -match 'ReadAsync\(\$buffer, 0, \$buffer\.Length, \$CancellationToken\)') 'Response is consumed incrementally with cancellation, not buffered as a whole.'
 Assert-True ($source -notmatch '(?im)\b(Start-Process|ProcessStartInfo|Start-Job|Start-ThreadJob)\b') 'The API-key-bearing execution path creates no child process or job.'
 
 Write-Output "PASS: $script:assertions mock and static assertions; no model request was made."

@@ -29,19 +29,27 @@
       ]
     },
     "risk_score": {
-      "type": "integer"
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 99
     },
     "active_rules": {
       "type": "array",
       "items": {
-        "type": "string"
-      }
+        "type": "string",
+        "minLength": 1,
+        "pattern": "\\S"
+      },
+      "uniqueItems": true
     },
     "required_closures": {
       "type": "array",
       "items": {
-        "type": "string"
-      }
+        "type": "string",
+        "minLength": 1,
+        "pattern": "\\S"
+      },
+      "uniqueItems": true
     },
     "evidence": {
       "type": "array",
@@ -64,7 +72,10 @@
       ]
     },
     "field_report_file": {
-      "type": "string"
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "handoff": {
       "enum": [
@@ -104,25 +115,34 @@
           "type": "array",
           "items": {
             "type": "string",
-            "maxLength": 1024
+            "maxLength": 1024,
+            "minLength": 1
           },
-          "maxItems": 16
+          "maxItems": 16,
+          "minItems": 1,
+          "uniqueItems": true
         },
         "steps": {
           "type": "array",
           "items": {
             "type": "string",
-            "maxLength": 1024
+            "maxLength": 1024,
+            "minLength": 1
           },
-          "maxItems": 8
+          "maxItems": 8,
+          "minItems": 1,
+          "uniqueItems": true
         },
         "constraints": {
           "type": "array",
           "items": {
             "type": "string",
-            "maxLength": 1024
+            "maxLength": 1024,
+            "minLength": 1
           },
-          "maxItems": 8
+          "maxItems": 8,
+          "minItems": 1,
+          "uniqueItems": true
         }
       },
       "required": [
@@ -133,5 +153,60 @@
       ]
     }
   },
-  "description": "Task projection used with the loaded Skill. Its four execution guidance groups remain in the Skill. required_closures contains active policy closures and each applicable source-derived operational block once; operational blocks do not add policies. Without helpers apply the Skill and matching policy-index routing."
+  "description": "Task projection used with the loaded Skill. Its four execution guidance groups remain in the Skill. required_closures contains active policy closures and each applicable source-derived operational block once; operational blocks do not add policies. Without helpers apply the Skill and matching policy-index routing.",
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "field_report_obligation": {
+            "enum": [
+              "required-before-completion"
+            ]
+          }
+        },
+        "required": [
+          "field_report_obligation"
+        ]
+      },
+      "then": {
+        "required": [
+          "field_report_file"
+        ],
+        "properties": {
+          "field_report_file": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "change_mode": {
+            "enum": [
+              "structural"
+            ]
+          }
+        },
+        "required": [
+          "change_mode"
+        ]
+      },
+      "then": {
+        "properties": {
+          "scope_guard": {
+            "const": "task-bounded-responsible-layer"
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "scope_guard": {
+            "const": "local-only"
+          }
+        }
+      }
+    }
+  ]
 }

@@ -129,8 +129,6 @@ def main():
     # Importing modules does not construct a client or warm the public LRU cache.
     os.environ["UPG_NATIVE_CONFIG"] = str(config_path)
     dispatch = args.allow_dispatch_protocol_sha256
-    if dispatch is not None and dispatch != manifest["protocol_sha256"]:
-        raise ValueError("dispatch protocol is not the registered manifest")
     emit({"type": "ready", "verification_only": dispatch is None,
           "protocol_sha256": manifest["protocol_sha256"], "model_requested": config["model"],
           "manifest_sha256": args.manifest_sha256,
@@ -144,6 +142,9 @@ def main():
     expected_order = manifest["task_order"]
     if len(expected_order) != 8 or len(set(expected_order)) != 8:
         raise ValueError("worker requires its frozen eight-task order")
+    if any(not isinstance(manifest.get(field), dict) or set(manifest[field]) != set(expected_order)
+           for field in ("task_sha256", "task_phases")):
+        raise ValueError("worker task maps must match the frozen order")
     # Read the same strict ASCII JSONL wire the parent writes; never let the
     # host text decoder introduce surrogate escapes into registered sources.
     for index, line in enumerate(sys.stdin.buffer):
@@ -166,7 +167,7 @@ def main():
         transport_start=len(transport_state["records"])
         try:
             result = native.runner(request)  # Exact public release callback, never a preconstructed client.
-        except BaseException as error:
+        except Exception as error:
             emit({"type": "call_error", "sample_id": command["sample_id"],
                   "error_type": type(error).__name__, "error": str(error),
                   "usage": getattr(error, "usage", None),

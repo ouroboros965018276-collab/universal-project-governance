@@ -69,6 +69,30 @@ class GitWatchSecurityTests(unittest.TestCase):
         moved = source.replace("def _spawn_guarded(argv, guards, kwargs):", "def unknown_launch(argv, guards, kwargs):", 1)
         self.assertFalse(self.approved(moved, "process_guard.py", "_spawn_guarded"))
 
+    def test_bounded_git_reader_requires_reviewed_fixed_query_caller(self):
+        source = (ROOT / "governance-src/runtime-scripts/project_facts.py").read_text(encoding="utf-8")
+        self.assertTrue(self.approved(source, "project_facts.py", "_bounded_git_query"))
+        self.assertFalse(self.approved(source, "other_helper.py", "_bounded_git_query"))
+        for old, new in [('subprocess.Popen(command, **options)', 'subprocess.Popen(command, shell=True, **options)'),
+                         ('stream.read(output_limit + 1)', 'stream.read()'),
+                         ('prefix + arguments', '["untrusted-program"]'),
+                         ('timeout=5, output_limit=limit', 'timeout=None, output_limit=limit'),
+                         ('def git_state(root, scope, binary, *, reader=None):',
+                          'def unreviewed_caller(root, scope, binary, *, reader=None):')]:
+            with self.subTest(mutation=old):
+                self.assertIn(old, source)
+                changed = source.replace(old, new, 1)
+                self.assertFalse(self.approved(changed, "project_facts.py", "_bounded_git_query"))
+
+    def test_portable_ast_preserves_byte_literal_type_and_value(self):
+        byte_value = ast.parse("def example(): return b'\\x00'").body[0]
+        same_value = ast.parse("def example(): return b'\\0'").body[0]
+        string_value = ast.parse("def example(): return '\\x00'").body[0]
+        other_byte = ast.parse("def example(): return b'\\x01'").body[0]
+        self.assertEqual(audit.worker_launch_digest(byte_value), audit.worker_launch_digest(same_value))
+        self.assertNotEqual(audit.worker_launch_digest(byte_value), audit.worker_launch_digest(string_value))
+        self.assertNotEqual(audit.worker_launch_digest(byte_value), audit.worker_launch_digest(other_byte))
+
     def test_session_supervisor_uses_only_the_reviewed_own_script(self):
         source = self.source()
         self.assertTrue(self.approved(source, function="_spawn_supervisor"))

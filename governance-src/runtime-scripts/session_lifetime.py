@@ -95,7 +95,11 @@ def _adopt_pipe(value):
         if _KERNEL.GetFileType(value) != 3:  # FILE_TYPE_PIPE (0x0003)
             raise ValueError("session authority does not identify a pipe")
         os.set_handle_inheritable(value, False)
-        return msvcrt.open_osfhandle(value, os.O_RDONLY | os.O_BINARY)
+        try:
+            return msvcrt.open_osfhandle(value, os.O_RDONLY | os.O_BINARY)
+        except BaseException:
+            _KERNEL.CloseHandle(value)
+            raise
     if not stat.S_ISFIFO(os.fstat(value).st_mode):
         raise ValueError("session authority does not identify a pipe")
     os.set_inheritable(value, False)
@@ -131,12 +135,14 @@ class _Member:
             os.read(self.read_fd, 1)
         finally:
             self.active = False
-            if os.name != "nt":
-                # Only our currently joined private group, never a recorded PID.
-                if (self.group and os.getpgrp() == self.group
-                        and os.getsid(0) == self.group):
-                    os.killpg(os.getpgrp(), signal.SIGKILL)
-            os._exit(0)
+            try:
+                if os.name != "nt":
+                    # Only our currently joined private group, never a recorded PID.
+                    if (self.group and os.getpgrp() == self.group
+                            and os.getsid(0) == self.group):
+                        os.killpg(os.getpgrp(), signal.SIGKILL)
+            finally:
+                os._exit(0)
 
 
 def join_from_environment():
@@ -176,8 +182,8 @@ def _join_from_environment():
         if os.name == "nt" and group is not None:
             raise ValueError("Windows session cannot carry POSIX group authority")
         value = _Member(spec["root"], spec["token"], read_fd, group)
-        _CURRENT = value
         threading.Thread(target=value._revoked, name="upg-session-eof", daemon=True).start()
+        _CURRENT = value
         return value
     except BaseException:
         os.close(read_fd)
@@ -367,27 +373,36 @@ class Session:
 
     def close(self):
         global _CURRENT
+        errors = []
         with _LOCK:
             self.active = False
-            if self.write_fd is not None:
-                os.close(self.write_fd)
-                self.write_fd = None
-            if self.job is not None:
-                if not _KERNEL.CloseHandle(self.job):
-                    raise ctypes.WinError(ctypes.get_last_error())
-                self.job = None
-            if self.read_fd is not None:
-                os.close(self.read_fd)
-                self.read_fd = None
+            for name in ("write_fd", "job", "read_fd"):
+                handle = getattr(self, name)
+                setattr(self, name, None)
+                if handle is None:
+                    continue
+                try:
+                    if name == "job":
+                        if not _KERNEL.CloseHandle(handle):
+                            raise ctypes.WinError(ctypes.get_last_error())
+                    else:
+                        os.close(handle)
+                except OSError as exc:
+                    errors.append(exc)
             if _CURRENT is self:
                 _CURRENT = None
         # EOF/Job closure stops observers, never the separately launched host.
         for child in self._children:
             try:
-                child.wait(timeout=5)
-            except subprocess.TimeoutExpired:
-                child.kill()
-                child.wait(timeout=5)
+                try:
+                    child.wait(timeout=5)
+                except subprocess.TimeoutExpired:
+                    child.kill()
+                    child.wait(timeout=5)
+            except (OSError, subprocess.TimeoutExpired) as exc:
+                errors.append(exc)
+        if errors:
+            raise errors[0]
 
     def __exit__(self, *unused):
         self.close()

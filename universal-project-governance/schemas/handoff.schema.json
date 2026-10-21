@@ -18,10 +18,12 @@
   "properties": {
     "updated_at": {
       "type": "string",
-      "format": "date-time"
+      "format": "date-time",
+      "minLength": 1
     },
     "goal": {
-      "type": "string"
+      "type": "string",
+      "minLength": 1
     },
     "status": {
       "enum": [
@@ -33,43 +35,50 @@
     "completed": {
       "type": "array",
       "items": {
-        "type": "string"
+        "type": "string",
+        "minLength": 1
       }
     },
     "in_progress": {
       "type": "array",
       "items": {
-        "type": "string"
+        "type": "string",
+        "minLength": 1
       }
     },
     "decisions": {
       "type": "array",
       "items": {
-        "type": "string"
+        "type": "string",
+        "minLength": 1
       }
     },
     "invariants": {
       "type": "array",
       "items": {
-        "type": "string"
+        "type": "string",
+        "minLength": 1
       }
     },
     "risks": {
       "type": "array",
       "items": {
-        "type": "string"
+        "type": "string",
+        "minLength": 1
       }
     },
     "next_actions": {
       "type": "array",
       "items": {
-        "type": "string"
+        "type": "string",
+        "minLength": 1
       }
     },
     "validation": {
       "type": "array",
       "items": {
-        "type": "string"
+        "type": "string",
+        "minLength": 1
       }
     },
     "validation_ref": {
@@ -94,19 +103,21 @@
         },
         "sha256": {
           "type": "string",
-          "pattern": "^[a-f0-9]{64}$"
+          "pattern": "^[a-f0-9]{64}$",
+          "minLength": 1
         },
         "pointer": {
           "type": "string",
           "maxLength": 1024,
-          "pattern": "^(?:/.*)?$"
+          "pattern": "^(?:/(?:[^~]|~[01])*)*$"
         }
       }
     },
     "canonical_sources": {
       "type": "array",
       "items": {
-        "type": "string"
+        "type": "string",
+        "minLength": 1
       }
     },
     "recovery": {
@@ -163,9 +174,11 @@
                   "type": "array",
                   "items": {
                     "type": "string",
-                    "maxLength": 1024
+                    "maxLength": 1024,
+                    "minLength": 1
                   },
-                  "maxItems": 64
+                  "maxItems": 64,
+                  "uniqueItems": true
                 },
                 "coverage": {
                   "const": "explicit-scope-only"
@@ -188,7 +201,8 @@
                 "properties": {
                   "path": {
                     "type": "string",
-                    "maxLength": 1024
+                    "maxLength": 1024,
+                    "minLength": 1
                   },
                   "sha256": {
                     "type": [
@@ -208,13 +222,44 @@
                   "path",
                   "sha256",
                   "status"
+                ],
+                "allOf": [
+                  {
+                    "if": {
+                      "properties": {
+                        "status": {
+                          "enum": [
+                            "observed"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "status"
+                      ]
+                    },
+                    "then": {
+                      "properties": {
+                        "sha256": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "else": {
+                      "properties": {
+                        "sha256": {
+                          "type": "null"
+                        }
+                      }
+                    }
+                  }
                 ]
               },
               "maxItems": 64
             },
             "scope_sha256": {
               "type": "string",
-              "pattern": "^[a-f0-9]{64}$"
+              "pattern": "^[a-f0-9]{64}$",
+              "minLength": 1
             }
           },
           "required": [
@@ -242,7 +287,8 @@
               },
               "claim": {
                 "type": "string",
-                "maxLength": 1024
+                "maxLength": 1024,
+                "minLength": 1
               },
               "reference": {
                 "type": "object",
@@ -255,7 +301,8 @@
                   },
                   "sha256": {
                     "type": "string",
-                    "pattern": "^[a-f0-9]{64}$"
+                    "pattern": "^[a-f0-9]{64}$",
+                    "minLength": 1
                   }
                 },
                 "required": [
@@ -276,7 +323,8 @@
                     },
                     "sha256": {
                       "type": "string",
-                      "pattern": "^[a-f0-9]{64}$"
+                      "pattern": "^[a-f0-9]{64}$",
+                      "minLength": 1
                     }
                   },
                   "required": [
@@ -299,7 +347,8 @@
                     },
                     "sha256": {
                       "type": "string",
-                      "pattern": "^[a-f0-9]{64}$"
+                      "pattern": "^[a-f0-9]{64}$",
+                      "minLength": 1
                     }
                   },
                   "required": [
@@ -323,7 +372,8 @@
                   },
                   "sha256": {
                     "type": "string",
-                    "pattern": "^[a-f0-9]{64}$"
+                    "pattern": "^[a-f0-9]{64}$",
+                    "minLength": 1
                   }
                 },
                 "required": [
@@ -340,13 +390,15 @@
               },
               "coverage": {
                 "type": "string",
-                "maxLength": 1024
+                "maxLength": 1024,
+                "minLength": 1
               },
               "invalidation_conditions": {
                 "type": "array",
                 "items": {
                   "type": "string",
-                  "maxLength": 1024
+                  "maxLength": 1024,
+                  "minLength": 1
                 },
                 "maxItems": 16
               }
@@ -370,11 +422,13 @@
             "properties": {
               "path": {
                 "type": "string",
-                "maxLength": 1024
+                "maxLength": 1024,
+                "minLength": 1
               },
               "expected_sha256": {
                 "type": "string",
-                "pattern": "^[a-f0-9]{64}$"
+                "pattern": "^[a-f0-9]{64}$",
+                "minLength": 1
               },
               "actual_sha256": {
                 "type": [
@@ -397,9 +451,41 @@
               "expected_sha256",
               "actual_sha256",
               "status"
+            ],
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "status": {
+                      "enum": [
+                        "match",
+                        "changed"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "status"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "actual_sha256": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "else": {
+                  "properties": {
+                    "actual_sha256": {
+                      "type": "null"
+                    }
+                  }
+                }
+              }
             ]
           },
-          "maxItems": 225
+          "maxItems": 225,
+          "uniqueItems": true
         },
         "evidence_checks": {
           "type": "array",
@@ -409,7 +495,8 @@
             "properties": {
               "id": {
                 "type": "string",
-                "maxLength": 128
+                "maxLength": 128,
+                "minLength": 1
               },
               "fixity": {
                 "enum": [
@@ -440,7 +527,8 @@
           "type": "array",
           "items": {
             "type": "string",
-            "maxLength": 1024
+            "maxLength": 1024,
+            "minLength": 1
           },
           "maxItems": 32
         },
@@ -457,7 +545,8 @@
               },
               "sha256": {
                 "type": "string",
-                "pattern": "^[a-f0-9]{64}$"
+                "pattern": "^[a-f0-9]{64}$",
+                "minLength": 1
               }
             },
             "required": [
@@ -471,7 +560,8 @@
           "type": "array",
           "items": {
             "type": "string",
-            "maxLength": 1024
+            "maxLength": 1024,
+            "minLength": 1
           },
           "maxItems": 32
         },
@@ -479,7 +569,8 @@
           "type": "array",
           "items": {
             "type": "string",
-            "maxLength": 1024
+            "maxLength": 1024,
+            "minLength": 1
           },
           "maxItems": 32
         },
@@ -509,7 +600,8 @@
           "type": "array",
           "items": {
             "type": "string",
-            "maxLength": 1024
+            "maxLength": 1024,
+            "minLength": 1
           },
           "maxItems": 64
         },
@@ -531,7 +623,8 @@
             "properties": {
               "path": {
                 "type": "string",
-                "maxLength": 1024
+                "maxLength": 1024,
+                "minLength": 1
               },
               "kind": {
                 "enum": [
@@ -541,7 +634,8 @@
               },
               "name": {
                 "type": "string",
-                "maxLength": 128
+                "maxLength": 128,
+                "minLength": 1
               },
               "basis": {
                 "const": "static-declaration-only"
@@ -567,5 +661,6 @@
         "static_observations"
       ]
     }
-  }
+  },
+  "$comment": "Empty narrative sections explicitly record no observations. recovery is optional; when present it is a complete internally consistent bounded recovery view. validation_ref is optional because narrative/manual validation need not have a machine run identity."
 }
