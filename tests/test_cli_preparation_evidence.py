@@ -212,10 +212,10 @@ class PreparationEvidenceTests(unittest.TestCase):
         self.assertEqual(receipt['preparation_stage'], 'capability-verification')
         self.assertEqual(self.git_calls, 1)
 
-    def test_sensitive_private_stream_is_exact_but_never_in_error_or_provider_prompt(self):
+    def test_sensitive_private_stream_is_suppressed_from_disk_and_provider_prompt(self):
         self.stderr = b'Bearer ' + b'SYNTHETIC_SECRET_TOKEN_1234567890\n'
         receipt = self.assert_fenced_before_model(self.invoke(), 'git-init-sensitive-output')
-        self.assertEqual((self.git_dir() / 'stderr.raw').read_bytes(), self.stderr)
+        self.assertFalse((self.git_dir() / 'stderr.raw').exists())
         self.assertNotIn('SYNTHETIC_SECRET_TOKEN', canonical(receipt).decode())
         self.assertTrue(json.loads((self.git_dir() / 'result.json').read_bytes())['sensitive_output'])
 

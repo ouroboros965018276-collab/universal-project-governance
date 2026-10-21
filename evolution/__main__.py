@@ -14,7 +14,10 @@ def load_callable(name):
     module, separator, function = name.partition(":")
     if not separator or not module or not function.isidentifier():
         raise ValueError("callback must be an explicitly trusted module:function")
-    callback = getattr(importlib.import_module(module), function)
+    try:
+        callback = getattr(importlib.import_module(module), function)
+    except AttributeError as error:
+        raise ValueError("configured callback does not exist") from error
     if not callable(callback):
         raise ValueError("configured callback is not callable")
     return callback
@@ -29,9 +32,9 @@ def main(argv=None):
         sub.add_argument("--repo", default=".")
         sub.add_argument("--output", default="eval-workspaces/evolution/" + ("run.json" if name == "run" else "matrix"))
         sub.add_argument("--runner", help="trusted module:function returning actual task receipts")
-        sub.add_argument("--backend", help="trusted module:function for UPG reflection model calls")
-        if name == "run":
-            run_parser = sub
+        if name != "paired":
+            sub.add_argument("--backend", help="trusted module:function for UPG reflection model calls")
+    run_parser = commands.choices["run"]
     run_parser.add_argument("--resume", action="store_true")
     run_parser.add_argument("--disable", action="append", default=[], choices=["reflection", "annealing", "de", "curvature"])
     run_parser.add_argument("--ordinary", action="store_true", help="ordinary perturbation control")
@@ -60,6 +63,8 @@ def main(argv=None):
                 result = summarize(result)
         else:
             run = json.loads(Path(args.run).read_text(encoding="utf-8"))
+            if not isinstance(run, dict):
+                raise ValueError("checkpoint must contain an object")
             if args.command == "inspect":
                 result = summarize(run)
             elif args.command == "verify":
@@ -74,7 +79,7 @@ def main(argv=None):
         if args.command == "propose" and result.get("status") != "PROPOSED":
             return 1
         return 0
-    except (OSError, ValueError, RuntimeError, ImportError, KeyError, TypeError) as exc:
+    except (OSError, ValueError, ImportError) as exc:
         print("error: %s" % exc, file=sys.stderr)
         return 2
 

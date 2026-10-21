@@ -34,7 +34,10 @@ def trusted_arm_models(full_model):
         raise ValueError("trusted governance model must be an object")
     groups = full_model.get("execution_guidance", [])
     if (not isinstance(groups, list) or len(groups) != 4
-            or any(not isinstance(group, dict) or not isinstance(group.get("id"), str) for group in groups)
+            or any(not isinstance(group, dict) or not isinstance(group.get("id"), str)
+                   or not isinstance(group.get("statement"), str) or not group["statement"]
+                   or not isinstance(group.get("policy_ids"), list)
+                   or any(not isinstance(p, str) for p in group["policy_ids"]) for group in groups)
             or {group["id"] for group in groups} != GUIDANCE_IDS):
         raise ValueError("full condition requires the four registered guidance groups")
     result = {"full_rc20": copy.deepcopy(full_model)}
@@ -133,7 +136,10 @@ def _validate(protocol, private_tasks, configs):
                 raise ValueError("condition requires exact " + field)
         if condition["candidate_sha256"] != digest(condition["governance_model"]):
             raise ValueError("candidate identity must bind the exact trusted arm model")
-        retained = {group["id"] for group in condition["governance_model"].get("execution_guidance", [])}
+        guidance = condition["governance_model"].get("execution_guidance", [])
+        if not isinstance(guidance, list) or any(not isinstance(group, dict) for group in guidance):
+            raise ValueError("execution_guidance must be a list of groups")
+        retained = {group["id"] for group in guidance}
         for group in expected["full_rc20"]["execution_guidance"]:
             if condition["skill"].count(group["statement"]) != int(group["id"] in retained):
                 raise ValueError("compiled Skill leaks or omits guidance: " + arm + "/" + group["id"])
@@ -141,6 +147,8 @@ def _validate(protocol, private_tasks, configs):
             plan = tools._plan(condition, task_id)
             tools.build_prompt(condition["skill"], plan, private_tasks[task_id]["prompt"])
             plan = json.loads(plan) if isinstance(plan, str) else plan
+            if not isinstance(plan, dict):
+                raise ValueError("compiled plan must be an object")
             active, closures = plan.get("active_rules"), plan.get("required_closures")
             if (not isinstance(active, list) or any(not isinstance(value, str) for value in active)
                     or not isinstance(closures, list) or any(not isinstance(value, str) for value in closures)):
@@ -151,7 +159,7 @@ def _validate(protocol, private_tasks, configs):
                 if text.count(group["statement"]) != count:
                     raise ValueError("compiled plan leaks or omits guidance: " + arm + "/" + group["id"])
     limits = protocol.get("budget", {})
-    if (type(limits.get("model_calls")) is not int or limits["model_calls"] != 84
+    if (not isinstance(limits, dict) or type(limits.get("model_calls")) is not int or limits["model_calls"] != 84
             or type(limits.get("tokens")) is not int or not 0 < limits["tokens"] <= 10_000_000
             or type(limits.get("wall_seconds")) not in (int, float)
             or not 0 < limits["wall_seconds"] <= 7200):
@@ -177,7 +185,7 @@ def collect(repo, protocol, private_tasks, configs, output, *, expected_capabili
     sequence = order(protocol["models"], protocol["task_ids"], protocol["seed"])
     identities = {"protocol_sha256": digest(protocol), "task_manifest_sha256": digest(private_tasks),
                   "configs_sha256": digest(configs), "capabilities_sha256": digest(capabilities),
-                  "engine_sha256": engine_identity(repo), "conditions_sha256": digest(protocol["conditions"]),
+                  "engine_sha256": engine_identity(repo, excluded=(output,)), "conditions_sha256": digest(protocol["conditions"]),
                   "order_sha256": digest(sequence)}
     with checkpoint_lock(output):
         if output.exists():
@@ -249,7 +257,7 @@ def collect(repo, protocol, private_tasks, configs, output, *, expected_capabili
             checkpoint()
             started, dispatch_error = time.perf_counter(), False
             try:
-                raw = services[model].run(copy.deepcopy(task), prompt=prompt, bindings=bindings)
+                raw = services[model].run(copy.deepcopy(task), prompt=prompt, bindings=copy.deepcopy(bindings))
                 if not isinstance(raw, dict):
                     raise ValueError("bounded runner must return an object")
                 raw = copy.deepcopy(raw)

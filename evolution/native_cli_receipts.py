@@ -16,29 +16,36 @@ def _state_digest(files):
     return hashlib.sha256(_canonical(hashes)).hexdigest()
 
 
-def replay_current_validation(task, journal, *, receipt_file_states, verify_validation):
+def replay_current_validation(task, journal, *, receipt_file_states, verify_validation, current_snapshot_sha256=None):
     """Verify every occurred execution, then classify the final replay snapshot.
 
     The existing independent execution reader is supplied as verify_validation.
     Its errors propagate: unknown/missing receipts or cleanup never become a
-    known task failure. Missing or stale final validation is a known NOT_RUN,
+    known task failure. The supplied journal is authoritative only for its
+    replayed bytes; pass current_snapshot_sha256 to bind separate current disk
+    evidence. This classifier does not inspect disk itself.
+    Missing or stale final validation is a known NOT_RUN,
     with a non-None sentinel suitable for the existing pure quality projection.
     """
     files = copy.deepcopy(task["initial_files"])
     validation, validation_state, count = None, None, 0
     for event, files in receipt_file_states(task, journal):
         wall = event["wall_seconds"]
-        if type(wall) not in (int, float) or not math.isfinite(wall) or wall < 0:
+        if type(wall) not in (int, float) or (isinstance(wall, float) and not math.isfinite(wall)) or wall < 0:
             raise ValueError("native-tool-time")
         if event["tool"] == "repo_validate":
             count += 1
             result = event["result"]
-            if (result.get("execution", {}).get("receipt_ref") !=
+            if not isinstance(result.get("execution"), dict):
+                raise ValueError("native-execution-object")
+            if (result["execution"].get("receipt_ref") !=
                     "validation-%03d/result.json" % count):
                 raise ValueError("native-historical-execution-ordinal")
             verify_validation(result, task, files)
             validation, validation_state = result, event["state_sha256"]
     current = _state_digest(files)
+    if current_snapshot_sha256 is not None and current_snapshot_sha256 != current:
+        raise ValueError("native-current-snapshot-state")
     if journal and journal[-1]["state_sha256"] != current:
         raise ValueError("native-final-journal-state")
     not_run = validation_state != current

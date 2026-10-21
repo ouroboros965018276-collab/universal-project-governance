@@ -54,7 +54,7 @@ def snapshot(workspace):
     workspace = pathlib.Path(workspace)
     result = {}
     for p in sorted(workspace.rglob("*")):
-        if p.is_file() and ".git" not in p.parts:
+        if p.is_file() and not p.is_symlink() and workspace.resolve() in p.resolve().parents and ".git" not in p.parts:
             result[p.relative_to(workspace).as_posix()] = sha256_file(p)
     return result
 
@@ -360,7 +360,7 @@ def _evaluate_check(check, workspace, before, after):
     elif typ == "chronology":
         text = _read(workspace, rel).strip() if p.is_file() else ""
         try:
-            data = json.loads(text.removeprefix("```json").removesuffix("```").strip()) if hasattr(text, "removeprefix") else json.loads(text[7:-3].strip() if text.startswith("```json") and text.endswith("```") else text)
+            data = json.loads(text[7:-3].strip() if text.startswith("```json") and text.endswith("```") else text)
             expected = {"previous_event_id": "owner-import", "function": "workflow", "before": "step=previous", "after": "step=current", "rationale": "user-requested workflow update", "source": "task and owner notes", "prior_occurred_at": None, "prior_commit": None, "validation": "workflow.txt contains step=current"}
             ok = data == expected and "step=current" in _read(workspace, "workflow.txt")
         except (ValueError, TypeError):
@@ -423,7 +423,8 @@ def _diff_lines(lab, workspace, paths):
     for rel in paths:
         before_text = lab.get("initial_files", {}).get(rel, "")
         p = root / safe_rel(rel)
-        after_text = p.read_text(encoding="utf-8", errors="replace") if p.is_file() else ""
+        readable = not p.is_symlink() and root.resolve() in p.resolve().parents and p.is_file()
+        after_text = p.read_text(encoding="utf-8", errors="replace") if readable else ""
         diff = difflib.ndiff(before_text.splitlines(), after_text.splitlines())
         total += sum(1 for line in diff if line.startswith("+ ") or line.startswith("- "))
     return total
@@ -464,6 +465,7 @@ def project_integration_status(workspace, expected_version=None):
         "report_count": 0,
         "managed_project_files": 0,
     }
+    result["managed_project_files"] = sum(1 for rel in MANAGED_PROJECT_FILES if (root / rel).is_file())
     if not binding_path.is_file() or not report_path.is_file():
         return result
     try:
@@ -471,6 +473,9 @@ def project_integration_status(workspace, expected_version=None):
         ledger = json.loads(report_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return result
+    if not isinstance(binding,dict) or not isinstance(ledger,dict): return result
+    latest=binding.get("latest_change")
+    if latest is not None and not isinstance(latest,dict): return result
     expected_files = [".governance/upg.json", ".governance/field-reports.json"]
     binding_ok = (
         binding.get("managed_by") == "universal-project-governance"
@@ -485,15 +490,18 @@ def project_integration_status(workspace, expected_version=None):
     reports = ledger.get("reports") if isinstance(ledger, dict) else None
     result["binding_ok"] = bool(binding_ok)
     result["report_count"] = len(reports) if isinstance(reports, list) else 0
-    schema = json.loads((ROOT / "universal-project-governance/schemas/field-report.schema.json").read_text(encoding="utf-8"))
+    try:
+        schema = json.loads((ROOT / "universal-project-governance/schemas/field-report.schema.json").read_text(encoding="utf-8"))
+    except (OSError,ValueError): return result
     result["field_report_recorded"] = (
         result["report_count"] == 1 and isinstance(reports[0], dict)
         and not validate_node(reports[0], schema)
         and reports[0].get("status") == "complete"
         and (expected_version is None or reports[0].get("runtime_version") == expected_version)
         and reports[0].get("event_id") == "%s:%s:complete" % (reports[0].get("epoch"), reports[0].get("workflow_id"))
-        and ledger.get("next_sequence", 0) > reports[0].get("sequence", 0)
-        and binding.get("latest_change", {}).get("event_id") == reports[0].get("event_id")
+        and type(ledger.get("next_sequence")) is int and type(reports[0].get("sequence")) is int
+        and ledger["next_sequence"] > reports[0]["sequence"]
+        and (latest or {}).get("event_id") == reports[0].get("event_id")
         and not binding.get("active_workflow")
     )
     result["managed_project_files"] = sum(

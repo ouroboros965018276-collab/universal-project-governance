@@ -28,6 +28,6 @@
 
 源码变化后需要统一生成、lint、完整性、确定性测试和资格冻结校验。已开始的结果轮保留原冻结身份；新源码不能重写旧结果或沿用旧轮的收益结论。
 
-schema 校验使用 `state_tool.py` 已实现的显式子集：类型与联合、对象属性、required、const、enum、数组界限与唯一性、字符串界限/模式/RFC3339、数值界限。新关键词需要实现和反例测试。
+schema 校验使用 `state_tool.py` 已实现的显式子集：类型与联合、对象属性及附加属性 schema、propertyNames、required、const、enum、allOf 与 if/then/else、数组界限与唯一性、字符串界限/模式/RFC3339、数值界限。跨字段计数顺序、运行标识唯一性及恢复身份一致性由相应消费者补充校验；新关键词需要实现和反例测试。
 
-`evolution/context_campaign.py` 是旧六条件冻结实验的专用收集器，保留其双面 inline 契约及测试；新投影不能放宽该旧 validator。新的前瞻运行器须严格核对新编译器实际输出的 source、Skill、plan 和交付身份。静态测试或字节减少不证明 token、延迟、质量、因果收益或 Stable 资格。
+运行器须严格核对当前编译器实际输出的 source、Skill、plan 和交付身份。开发夹具用于检验契约和故障边界；静态测试或字节减少不证明 token、延迟、质量、因果收益或 Stable 资格。

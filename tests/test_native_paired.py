@@ -69,7 +69,7 @@ class NativePairedTests(unittest.TestCase):
         output=self.root/('eval-workspaces/rc19-native-paired-bundle-'+str(self.counter))
         def plan(*args,**kwargs):return subprocess.CompletedProcess(args,0,b'{"synthetic_plan":true}',b'')
         with patch.object(PREP['subprocess'],'check_output',side_effect=self.git),patch.object(PREP['subprocess'],'run',side_effect=plan):
-            info=PREP['prepare'](self.root,output,self.root/('artifacts-'+str(self.counter)),self.root/'binary.exe',self.root/'git.exe','a'*40,'b'*40,self.root/'catalog.json',
+            info=PREP['prepare'](self.root,output,self.root/('eval-workspaces/artifacts-'+str(self.counter)),self.root/'binary.exe',self.root/'git.exe','a'*40,'b'*40,self.root/'catalog.json',
                                  models=['gpt-6-luna','gpt-6-sol'] if models is None else models,protocol_id=protocol_id)
         spec=json.loads(Path(info['protocol']).read_text(encoding='utf-8'))
         self.assertEqual(info['models_dispatched'],0)
@@ -200,7 +200,11 @@ class NativePairedTests(unittest.TestCase):
             spec,output=self.bundle()
             def behavior(worker,command,index):raise exception('synthetic worker loss')
             factory,instances,calls=self.factory(output,behavior)
-            run=self.collect(spec,output,factory)
+            if issubclass(exception, Exception):
+                run=self.collect(spec,output,factory)
+            else:
+                with self.assertRaises(exception):self.collect(spec,output,factory)
+                run=json.loads(output.read_text(encoding='utf-8'))
             self.assertEqual(run['status'],'unknown-call-blocked');self.assertTrue(run['budget']['unknown_usage'])
             self.assertEqual(run['budget']['calls'],1);self.assertIsNotNone(run['pending'])
             with self.assertRaises(ValueError):self.collect(spec,output,factory)
@@ -373,7 +377,7 @@ class NativePairedTests(unittest.TestCase):
         state['sample_id']='synthetic call'
         cli=[entry['config']['binary'],'--ask-for-approval','never','exec','--sandbox','read-only','-']
         result=native.subprocess.run(cli,input=b'exact-model-prompt',timeout=180)
-        expected=cli[:-1]+[x for value in T['PROFILE'] for x in ('-c',value)]+['-']
+        expected=cli[:-1]+[x for value in T['load_profile'](sha(T['PROFILE_SOURCE'].read_bytes())) for x in ('-c',value)]+['-']
         self.assertEqual(seen[1][0],expected);self.assertEqual(seen[1][2],{'input':b'exact-model-prompt','timeout':180})
         self.assertEqual(result.stdout,b'actual-stdout');self.assertEqual(result.stderr,b'actual-stderr')
         row=state['records'][0];self.assertEqual(row['stdout_sha256'],sha(result.stdout));self.assertEqual(row['status'],'returned')
@@ -464,7 +468,7 @@ class NativePairedTests(unittest.TestCase):
         changed=copy.deepcopy(message);row=changed['transport_receipts'][0]
         original=P['expected_cli_arguments'](spec,item,raw)
         malicious=original[:-1]+['-c','features.shell_tool=true','-']
-        row['argv']=malicious[:-1]+[part for value in T['PROFILE'] for part in ('-c',value)]+['-']
+        row['argv']=malicious[:-1]+[part for value in T['load_profile'](sha(T['PROFILE_SOURCE'].read_bytes())) for part in ('-c',value)]+['-']
         row['original_argv_sha256']=digest(malicious);row['argv_sha256']=digest(row['argv'])
         Path(row['receipt_path']).write_text(json.dumps(row),encoding='utf-8')
         with self.assertRaisesRegex(ValueError,'binding mismatch'):P['verify_transport'](spec,item,changed,raw)

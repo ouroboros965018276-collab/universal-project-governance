@@ -93,7 +93,8 @@ class ActorCheckpointTests(unittest.TestCase):
 
     def validate(self,value=None,**kwargs):
         return a.validate_resume(self.value if value is None else value,task=self.task,provider='mimo',
-            model=self.cfg['providers']['mimo']['model'],system_context=self.system,configuration=self.cfg,root=self.project,**kwargs)
+            model=self.cfg['providers']['mimo']['model'],system_context=self.system,configuration=self.cfg,root=self.project,
+            trusted_checkpoint_sha256=sha(canonical(self.value)),**kwargs)
 
     def test_owned_seed_cumulative_budget_and_scope(self):
         seed=self.validate();self.assertEqual((seed['requests_used'],seed['tools_used'],seed['conversation_index']),(2,3,1))

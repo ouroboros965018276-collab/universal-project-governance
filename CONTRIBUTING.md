@@ -1,6 +1,6 @@
 # Contributing
 
-Current candidate: **3.0.0-rc.20.6 — Project Host Adapters**. Change canonical source, regenerate the runtime, and keep engineering, bounded development measurements, independent efficacy evidence, and formal qualification distinct. Qualification thresholds remain unchanged; current evidence and remaining gaps are recorded in [PROJECT_STATE.md](PROJECT_STATE.md).
+Current candidate: **3.0.0-rc.20.7 — Report-driven Safety and Contract Corrections**. Change canonical source, regenerate the runtime, and keep engineering, bounded development measurements, independent efficacy evidence, and formal qualification distinct. Qualification thresholds remain unchanged; current evidence and remaining gaps are recorded in [PROJECT_STATE.md](PROJECT_STATE.md).
 
 ## Structural contribution rule
 
@@ -10,7 +10,7 @@ Small isolated fixes may remain narrow. Non-trivial changes modify the responsib
 
 ## Runtime evolution
 
-Edit `governance-src/`, regenerate runtime, run lint/integrity/tests, and regenerate test-freeze identity before empirical results begin.
+Edit `governance-src/`, regenerate runtime, run lint/integrity/tests, and regenerate test-freeze identity before empirical results begin. The compiler stages a complete candidate before replacing an existing runtime, so failed generation retains the previous package.
 
 Do not hand-edit generated runtime.
 
@@ -30,4 +30,4 @@ Grader repairs must reject demonstrated false positives and accept legitimate ta
 
 ## Evidence rules
 
-No result placeholders, threshold changes after seeing results, deterministic-failure relabeling, holdout leakage, raw secret-bearing traces, private chain-of-thought collection, or rewriting completed qN rounds.
+No result placeholders, threshold changes after seeing results, deterministic-failure relabeling, holdout leakage, raw secret-bearing traces, private chain-of-thought collection, or rewriting completed result rounds. Current documentation describes the live contract; [CHANGELOG.md](CHANGELOG.md) keeps only the latest and previous meaningful changes with observed dates and reasons. Earlier records remain in Git history.

@@ -455,7 +455,6 @@ class EngineeringBrokerTests(unittest.TestCase):
         base = {'path': 'README.md', 'old_sha256': self.before['README.md'], 'old_text': 'old', 'new_text': 'new'}
         invalid = [dict(base, old_text=value) for value in ('', 'absent', 'r', None, 1)]
         invalid += [dict(base, new_text=None), dict(base, new_text='old'), dict(base, old_sha256='0' * 64),
-                    dict(base, old_text=self.task['initial_files']['README.md'], new_text=''),
                     dict(base, path='pkg/new.py', old_sha256=None), dict(base, path='CONTRACT.json')]
         for operation in invalid:
             with self.subTest(operation=operation):

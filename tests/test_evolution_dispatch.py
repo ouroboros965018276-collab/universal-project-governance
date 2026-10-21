@@ -24,7 +24,7 @@ class ExactDispatchTests(unittest.TestCase):
             seen.append(copy.deepcopy(request))
             request["source"]["templates/SKILL.template.md"] = "modified private copy"
             request["execution_artifact"]["runtime"]["SKILL.md"] = "modified private copy"
-            return {"status": "completed", "provider_receipt": "synthetic-unit-receipt",
+            return {"status": "completed", "provider_receipt": {"id": "synthetic-unit-receipt"},
                     "usage": {"total_tokens": 7}, "outcome": {"loss": 1, "hard": 1, "soft": 1}}
         with patch("evolution.evaluator.candidate_id", side_effect=AssertionError("modern materialization forbidden")):
             result = evaluate(candidate, {"id": "historical-task"}, runner,
@@ -41,7 +41,7 @@ class ExactDispatchTests(unittest.TestCase):
         calls = []
         def runner(request):
             calls.append(request)
-            return {"status": "completed", "provider_receipt": "synthetic-unit-receipt",
+            return {"status": "completed", "provider_receipt": {"id": "synthetic-unit-receipt"},
                     "usage": {"total_tokens": 2}, "outcome": {"loss": 1}}
         options = {"runner_identity": {"id": "unit", "version": "1"}, "source": {"model.json": "{}"},
                    "candidate_identity": "c" * 64, "cache": {}}

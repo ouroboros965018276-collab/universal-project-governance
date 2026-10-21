@@ -18,6 +18,9 @@ def load_index() -> dict:
 
 def normalize_context(args: argparse.Namespace) -> dict:
     if args.context:
+        if (args.operation is not None or args.domain or args.signal or args.profile
+                or args.risk or args.unfinished or args.audit):
+            raise ValueError("--context cannot be combined with task normalization flags")
         data = json.loads(Path(args.context).read_text(encoding="utf-8-sig"))
     else:
         risk = {}
@@ -30,7 +33,7 @@ def normalize_context(args: argparse.Namespace) -> dict:
                 raise ValueError("risk values must be 0..2")
             risk[key] = value
         data = {
-            "operation": args.operation,
+            "operation": args.operation or "edit",
             "domains": args.domain or ["code"],
             "signals": args.signal or [],
             "profiles": args.profile or [],
@@ -81,7 +84,7 @@ def risk(index: dict, ctx: dict):
     for key, spec in index["risk_model"]["dimensions"].items():
         score += int(ctx.get("risk", {}).get(key, 0)) * int(spec["weight"])
     if ctx["operation"] == "release":
-        return "release", score, "audit"
+        return "release", score, index["risk_model"]["release_operation_forces"]
     level = "high"
     report = "engineering"
     for item in index["risk_model"]["levels"]:
@@ -123,6 +126,8 @@ def operational_closures(index: dict, active: set, field_reporting: bool, report
 def compile_plan(index: dict, ctx: dict) -> dict:
     validate_context(ctx, index)
     policies = {p["id"]: p for p in index["policies"]}
+    if len(policies) != len(index["policies"]):
+        raise ValueError("duplicate policy ID in policy index")
     risk_level, risk_score, report = risk(index, ctx)
     active = set(index["default_rules"])
 
@@ -225,12 +230,20 @@ def compile_plan(index: dict, ctx: dict) -> dict:
         "handoff": handoff,
         "warnings": warnings,
     }
-    if set(ctx.get("signals", [])) & set(policies["HANDOFF_CONTINUITY"]["triggers"].get("signals", [])):
+    continuity = policies.get("HANDOFF_CONTINUITY")
+    if continuity is None:
+        raise ValueError("policy index is missing HANDOFF_CONTINUITY")
+    if set(ctx.get("signals", [])) & set(continuity["triggers"].get("signals", [])):
         # Explicit sibling loading also supports hosts importing this script by path.
         import importlib.util
         spec = importlib.util.spec_from_file_location("_upg_project_facts", Path(__file__).with_name("project_facts.py"))
-        helper = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(helper)
+        if spec is None or spec.loader is None:
+            raise ValueError("project fact recovery helper is unavailable")
+        try:
+            helper = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(helper)
+        except (OSError, ImportError, AttributeError) as exc:
+            raise ValueError("project fact recovery helper cannot load") from exc
         recovery = helper.recovery_plan(ctx.get("signals", []))
         if recovery is not None: plan["recovery"] = recovery
     return plan
@@ -265,7 +278,7 @@ def render_markdown(plan: dict) -> str:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--context")
-    ap.add_argument("--operation", default="edit")
+    ap.add_argument("--operation")
     ap.add_argument("--domain", action="append", default=[])
     ap.add_argument("--signal", action="append", default=[])
     ap.add_argument("--profile", action="append", default=[])

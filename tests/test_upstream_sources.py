@@ -79,7 +79,15 @@ def validate(manifest, model):
             require(re.fullmatch(r"[0-9a-f]{40}", file.get("git_blob_sha1", "")), "invalid blob: " + path)
             require(file.get("url") == prefix + "/blob/" + commit + "/" + path, "unpinned file URL: " + path)
         for notice in license_record.get("existing_notices", []):
-            local_file(notice)
+            notice_path = local_file(notice)
+            if notice_path.suffix == ".json":
+                record = json.loads(notice_path.read_text(encoding="utf-8"))
+                if record.get("file_identity_algorithm") == "git-blob-sha1" and "files" in record:
+                    require(record.get("repository") == source["repository"]
+                            and record.get("commit") == commit, "notice source identity mismatch")
+                    catalog = {f["path"]: f["git_blob_sha1"] for f in selected + reviewed}
+                    for path, digest in record["files"].items():
+                        require(catalog.get(path) == digest, "uncatalogued notice blob: " + path)
         exclusions = source.get("excluded", [])
         require(isinstance(exclusions, list) and all(isinstance(x, str) for x in exclusions), "invalid exclusions")
         for pattern in REQUIRED_EXCLUSIONS[source_id]:
@@ -138,6 +146,8 @@ class UpstreamSourcesTests(unittest.TestCase):
             "short-pin": lambda m: m["sources"][0].update(commit="343db229"),
             "missing-selected-file": lambda m: m["sources"][0].update(selected_files=[]),
             "invalid-blob": lambda m: m["sources"][0]["selected_files"][0].update(git_blob_sha1="bad"),
+            "missing-notice-blob": lambda m: m["sources"][1]["selected_files"].pop(),
+            "mismatched-notice-blob": lambda m: m["sources"][1]["selected_files"][-1].update(git_blob_sha1="0" * 40),
             "unpinned-url": lambda m: m["sources"][0]["selected_files"][0].update(url="https://example.invalid/main"),
             "caveman-is-not-blanket-mit": lambda m: m["sources"][2]["license"].update(spdx="MIT"),
             "unknown-license": lambda m: m["sources"][0]["license"].update(spdx="NOASSERTION"),

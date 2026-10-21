@@ -105,6 +105,8 @@ def _plan(condition, task_id):
             return value[task_id]
         return value
     if "plans" in condition:
+        if not isinstance(condition["plans"], dict) or task_id not in condition["plans"]:
+            raise ValueError("condition lacks plan for task " + task_id)
         return condition["plans"][task_id]
     return condition.get("plan")
 
@@ -189,6 +191,8 @@ def _validate(protocol, private_tasks, configs):
         if type(value) not in (int, float) or not math.isfinite(value) or not 0 < value <= 1:
             raise ValueError("invalid or weakened acceptance threshold: " + key)
     limits = protocol.get("budget", {})
+    if not isinstance(limits, dict) or not {"model_calls", "tokens", "wall_seconds"} <= set(limits):
+        raise ValueError("campaign budget requires model_calls, tokens and wall_seconds")
     return Budget(max_calls=limits["model_calls"], max_total_tokens=limits["tokens"], max_seconds=limits["wall_seconds"])
 
 
@@ -212,7 +216,10 @@ def _normalized_usage(raw):
 def _cli_seconds(raw):
     timing = raw.get("timing")
     if not isinstance(timing, dict):
-        timing = (raw.get("receipt") or {}).get("timing")
+        receipt = raw.get("receipt")
+        if receipt is not None and not isinstance(receipt, dict):
+            raise ValueError("adapter receipt must be an object")
+        timing = (receipt or {}).get("timing")
     return timing.get("cli_seconds") if isinstance(timing, dict) else None
 
 
@@ -229,7 +236,12 @@ def _transport_failure(raw):
     result, the raw CLI artifact must be verified before deciding whether the
     known transport-wide failure occurred; unverifiable evidence fences replay.
     """
-    if (raw.get("status") != "completed" or (raw.get("quality") or {}).get("hard_pass") is not False
+    quality, receipt = raw.get("quality"), raw.get("receipt")
+    if any(value is not None and not isinstance(value, dict) for value in (quality, receipt)):
+        raise ValueError("adapter quality/receipt must be objects")
+    if receipt and receipt.get("artifact_sha256") is not None and not isinstance(receipt["artifact_sha256"], dict):
+        raise ValueError("receipt artifact_sha256 must be an object")
+    if (raw.get("status") != "completed" or (quality or {}).get("hard_pass") is not False
             or raw.get("tool_events") != []):
         return None
     receipt = raw.get("receipt") or {}
@@ -296,7 +308,7 @@ def collect(repo, protocol, private_tasks, configs, output, *, expected_capabili
         raise ValueError("current tool capabilities differ from the preregistered freeze")
     identities = {"protocol_sha256": digest(protocol), "task_manifest_sha256": digest(private_tasks),
                   "configs_sha256": digest(configs), "capabilities_sha256": digest(capabilities),
-                  "engine_sha256": engine_identity(repo), "conditions_sha256": digest(protocol["conditions"])}
+                  "engine_sha256": engine_identity(repo, excluded=(output,)), "conditions_sha256": digest(protocol["conditions"])}
     if "order_stratification" in protocol:
         order = _family_order(protocol["models"], protocol["task_ids"], protocol["seed"], private_tasks)
     else:
@@ -314,6 +326,8 @@ def collect(repo, protocol, private_tasks, configs, output, *, expected_capabili
             if run.get("pending"):
                 raise ValueError("campaign pending call requires independent reconciliation; never automatic replay")
             if run.get("status") != "running":
+                run["summary"] = summarize(run)
+                save_run(output, run)
                 return run
             budget = Budget.from_state(run["budget"])
         else:
@@ -344,6 +358,8 @@ def collect(repo, protocol, private_tasks, configs, output, *, expected_capabili
                     run["actual_budget_overrun"] = terminal_overrun
                     if run.get("status") == "completed":
                         run.update(status="budget-exhausted", stop_reason="terminal measurement exceeded a stop threshold")
+            if run.get("status") != "running" and not isinstance(run.get("summary"), dict):
+                run["summary"] = summarize(run)
             if isinstance(run.get("summary"), dict):
                 run["summary"]["actual_charged_usage"] = copy.deepcopy(snapshot)
                 run["summary"]["status"] = run["status"]

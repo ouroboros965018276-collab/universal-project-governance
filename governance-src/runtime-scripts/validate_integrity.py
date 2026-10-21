@@ -5,6 +5,8 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
+import stat
 from pathlib import Path
 import sys
 
@@ -13,11 +15,22 @@ IGNORE_SUFFIXES = {".pyc", ".pyo"}
 
 
 def sha256(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+    before = path.lstat()
+    if stat.S_ISLNK(before.st_mode) or getattr(before, "st_file_attributes", 0) & 0x400:
+        raise ValueError("runtime symlink/reparse entry: " + str(path))
+    descriptor = os.open(str(path), os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_BINARY", 0))
+    with os.fdopen(descriptor, "rb") as stream:
+        opened = os.fstat(stream.fileno())
+        if (opened.st_dev, opened.st_ino) != (before.st_dev, before.st_ino):
+            raise ValueError("runtime file changed while opening: " + str(path))
+        return hashlib.sha256(stream.read()).hexdigest()
 
 
 def eligible(root: Path):
     for p in sorted(root.rglob("*")):
+        info = p.lstat()
+        if stat.S_ISLNK(info.st_mode) or getattr(info, "st_file_attributes", 0) & 0x400:
+            raise ValueError("runtime symlink/reparse entry: " + str(p))
         if not p.is_file() or p == root / "integrity" / "manifest.json":
             continue
         rel = p.relative_to(root)
@@ -38,7 +51,11 @@ def main() -> int:
         print("error: cannot read integrity manifest: %s" % exc, file=sys.stderr)
         return 2
     expected = manifest.get("files", {})
-    current = {str(p.relative_to(root)).replace("\\","/"): sha256(p) for p in eligible(root)}
+    try:
+        current = {str(p.relative_to(root)).replace("\\","/"): sha256(p) for p in eligible(root)}
+    except (OSError, ValueError) as exc:
+        print("error: cannot inspect runtime: %s" % exc, file=sys.stderr)
+        return 2
     errors = []
     for rel in sorted(set(expected) | set(current)):
         if rel not in expected:

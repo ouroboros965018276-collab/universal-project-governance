@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import argparse
 import copy
-import hashlib
 import json
 import math
 import os
@@ -60,11 +59,13 @@ def validate(spec):
         raise ValueError("matched context order changed")
     for name, expected in spec["harness_files"].items():
         if sha(Path(name).read_bytes()) != expected: raise ValueError("harness source changed")
-    if spec["transport"]["profile"]!=transport_api["PROFILE"] or sha(Path(spec["transport"]["path"]).read_bytes())!=spec["transport"]["source_sha256"]:
+    if sha(Path(spec["transport"]["path"]).read_bytes())!=spec["transport"]["source_sha256"]:
         raise ValueError("common child transport differs from registration")
     profile=spec["transport"]["profile_source"];profile_path=transport_api["PROFILE_SOURCE"]
     if (Path(profile["path"]).resolve()!=profile_path or sha(profile_path.read_bytes())!=profile["sha256"]
             or spec["harness_files"].get(str(profile_path))!=profile["sha256"]):
+        raise ValueError("common child transport profile differs from registration")
+    if spec["transport"]["profile"] != transport_api["load_profile"](profile["sha256"]):
         raise ValueError("common child transport profile differs from registration")
     catalog_bytes=Path(spec["model_catalog"]["path"]).read_bytes()
     if sha(catalog_bytes)!=spec["model_catalog"]["sha256"]:raise ValueError("frozen model catalog changed")
@@ -128,11 +129,19 @@ class ProcessWorker:
         started = time.perf_counter(); self.active = False
         log_directory = Path(log_directory); log_directory.mkdir(parents=True, exist_ok=True)
         self.stderr = (log_directory / "worker.stderr.raw").open("ab")
-        self.stdout_log = (log_directory / "worker.stdout.jsonl").open("ab")
+        try:
+            self.stdout_log = (log_directory / "worker.stdout.jsonl").open("ab")
+        except BaseException:
+            self.stderr.close()
+            raise
         manifest = Path(entry["manifest_path"])
         command = [sys.executable, "-B", str(WORKER), "--manifest", str(manifest), "--manifest-sha256", sha(manifest.read_bytes()),
                    "--allow-dispatch-protocol-sha256", protocol_sha]
-        self.process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=self.stderr)
+        try:
+            self.process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=self.stderr)
+        except BaseException:
+            self.stderr.close(); self.stdout_log.close()
+            raise
         self.messages = queue.Queue()
         def read():
             try:
@@ -154,9 +163,12 @@ class ProcessWorker:
             # No request has been sent. Closing input can safely end this child.
             if self.process.stdin: self.process.stdin.close()
             try: self.process.wait(timeout=10)
-            except subprocess.TimeoutExpired: pass
+            except subprocess.TimeoutExpired:
+                self.process.kill(); self.process.wait(timeout=5)
             if self.process.poll() is not None:
-                self.thread.join(timeout=1);self.stderr.close();self.stdout_log.close()
+                self.thread.join(timeout=1)
+                if self.process.stdout: self.process.stdout.close()
+                self.stderr.close();self.stdout_log.close()
             raise
         self.startup_seconds = time.perf_counter() - started
         self.pid = self.process.pid
@@ -183,8 +195,11 @@ class ProcessWorker:
         if self.active:
             return {"pid": self.pid, "state": "pending process left for independent reconciliation; no new input"}
         try: self.process.wait(timeout=10)
-        except subprocess.TimeoutExpired: return {"pid": self.pid, "state": "worker shutdown unconfirmed"}
-        self.thread.join(timeout=1); self.stderr.close(); self.stdout_log.close()
+        except subprocess.TimeoutExpired:
+            self.process.kill(); self.process.wait(timeout=5)
+        self.thread.join(timeout=1)
+        if self.process.stdout: self.process.stdout.close()
+        self.stderr.close(); self.stdout_log.close()
         return {"pid": self.pid, "state": "exited", "exit_code": self.process.returncode}
 
 
@@ -227,7 +242,14 @@ def strict_artifact_quality(task, response_text):
             files[item["path"]]=item["content"]
         if set(files)!={check["path"] for check in task["artifact_checks"]}: return False
         for check in task["artifact_checks"]:
-            if check["kind"]=="json" and not same_json(strict_json(files[check["path"]]),strict_json(check["expected"])):
+            if check["kind"]=="json":
+                if not same_json(strict_json(files[check["path"]]),strict_json(check["expected"])):
+                    return False
+            elif check["kind"] in {"text", "python-ast"}:
+                from evolution.task_benchmark import _equal
+                if not _equal(files[check["path"]], check["expected"], check["kind"]):
+                    return False
+            else:
                 return False
         return True
     except (ValueError,TypeError,KeyError): return False
@@ -450,8 +472,10 @@ def collect(spec, output, *, allow_dispatch_protocol_sha256, worker_factory=Proc
             run["budget"]["calls"]+=1;run["pending"]={"sample_id":sample_id,"request_sha256":digest(request),"observation_index":len(run["observations"])};checkpoint()
             roundtrip_started=time.perf_counter()
             try: message=workers[key].call({"protocol_sha256":protocol_sha,"sample_id":sample_id,"request":request})
-            except BaseException as error:
+            except Exception as error:
                 run.update(status="unknown-call-blocked",stop_reason=type(error).__name__+": "+str(error));run["budget"]["unknown_usage"]=True;checkpoint();break
+            # Reject nonfinite/non-JSON worker values before they enter durable state.
+            json.dumps(message, allow_nan=False)
             roundtrip=time.perf_counter()-roundtrip_started
             raw=message.get("result") or {"status":"failed","usage":message.get("usage"),"provider_receipt":message.get("provider_receipt"),"error":message.get("error")}
             actual=usage(raw.get("usage"));receipt=raw.get("provider_receipt") or {};replayed=receipt.get("replayed_from_local_receipt") is True
@@ -502,9 +526,11 @@ def collect(spec, output, *, allow_dispatch_protocol_sha256, worker_factory=Proc
         for key,value in workers.items():
             try:close_states[key]=value.close()
             except BaseException as error:close_states[key]={"state":"cleanup unconfirmed","error":type(error).__name__+": "+str(error)}
-        if run.get("status")!="running":
-            run["worker_close_states"]=close_states;checkpoint()
-        if lock.exists():lock.unlink()
+        try:
+            if run.get("status")!="running":
+                run["worker_close_states"]=close_states;checkpoint()
+        finally:
+            if lock.exists():lock.unlink()
 
 
 if __name__=="__main__":

@@ -12,7 +12,7 @@ from pathlib import Path, PurePosixPath
 import sys
 import hashlib
 import functools
-from contextlib import contextmanager, ExitStack
+from contextlib import ExitStack
 import threading
 import time
 from state_tool import validate_node
@@ -38,7 +38,10 @@ def serialized(fn):
             if not legacy.exists() and not legacy.is_symlink():
                 guard = guards.acquire(root, ".upg-writer.guard")
                 if guard is not None:
-                    break
+                    if not legacy.exists() and not legacy.is_symlink():
+                        break
+                    guard.close()
+                    guard = None
             time.sleep(0.02)
         else:
             raise ValueError("project state writer busy; legacy directory locks require explicit owner inspection")
@@ -229,6 +232,43 @@ def validate_binding(value):
         errors.append("project_origin drift detected")
     if "git_checkpoint" in value:
         errors += _validate_git_policy(value["git_checkpoint"])
+    errors += _transient_binding_errors(value)
+    return errors
+
+
+def _transient_binding_errors(value):
+    errors = []
+    for key in ("active_workflow", "latest_change", "previous_change", "current_state", "export_receipt"):
+        if key in value and not isinstance(value[key], dict):
+            errors.append("%s must be an object" % key)
+    sequence = value.get("current_state_sequence", 0)
+    if type(sequence) is not int or sequence < 0:
+        errors.append("current_state_sequence must be a nonnegative integer")
+    records = [(key, value[key]) for key in ("active_workflow", "latest_change", "previous_change")
+               if isinstance(value.get(key), dict)]
+    active = value.get("active_workflow")
+    if isinstance(active, dict):
+        for key in ("last_outcome", "outcome_receipts"):
+            if key in active and not isinstance(active[key], dict):
+                errors.append("active_workflow.%s must be an object" % key)
+        if isinstance(active.get("last_outcome"), dict):
+            records.append(("active_workflow.last_outcome", active["last_outcome"]))
+        if isinstance(active.get("outcome_receipts"), dict):
+            for key, receipt in active["outcome_receipts"].items():
+                if not isinstance(receipt, dict):
+                    errors.append("active_workflow.outcome_receipts.%s must be an object" % key)
+                elif any(not isinstance(receipt.get(name), str) for name in ("event_id", "payload_sha256")):
+                    errors.append("active_workflow.outcome_receipts.%s requires string event_id/payload_sha256" % key)
+    for name, record in records:
+        if any(key in record and (type(record[key]) is not int or record[key] < 0)
+               for key in ("sequence", "epoch")):
+            errors.append("%s sequence/epoch is invalid" % name)
+        for key in ("event_id", "workflow_id", "recorded_at", "payload_sha256"):
+            if key in record and not isinstance(record[key], str):
+                errors.append("%s.%s must be string" % (name, key))
+        for key in ("change", "start_change"):
+            if key in record and not isinstance(record[key], dict):
+                errors.append("%s.%s must be an object" % (name, key))
     return errors
 def ledger_default(epoch=0, next_sequence=1):
     return {"schema_version": 1, "runtime_version": index()["version"], "epoch": epoch, "next_sequence": next_sequence, "reports": []}
@@ -246,7 +286,11 @@ def ensure(project, field_test_reporting=None):
         current = load_json(binding_path)
         origin = current.get("project_origin", "existing") if isinstance(current, dict) else "existing"
         if _upgradeable_binding(current):
-            errors = []
+            errors = _transient_binding_errors(current)
+            if "field_test_reporting" in current and type(current["field_test_reporting"]) is not bool:
+                errors.append("field_test_reporting must be boolean")
+            if "git_checkpoint" in current:
+                errors += _validate_git_policy(current["git_checkpoint"])
         else:
             errors = validate_binding(current)
         if errors:
@@ -273,6 +317,9 @@ def ensure(project, field_test_reporting=None):
     merged = defaults
     merged.update(binding.get("git_checkpoint", {}))
     binding["git_checkpoint"] = merged
+    errors = validate_binding(binding)
+    if errors:
+        raise ValueError("; ".join(errors))
     if not reporting:
         write_json_atomic(binding_path, binding)
         return {
@@ -493,6 +540,8 @@ def _metadata_errors(value):
     return errors
 
 def validate_report(report):
+    if not isinstance(report, dict):
+        raise ValueError("field report must be an object")
     required = {
         "task": str,
         "status": str,
@@ -708,9 +757,12 @@ def begin_workflow(project, input_path):
         prepared = bootstrap(project_root(project), binding["git_checkpoint"])
         if not prepared.get("ok"):
             raise ValueError("cannot prepare project Git: " + prepared.get("reason", "initialization unavailable"))
+        snapshot = capture(project_root(project), binding["git_checkpoint"])
+        if not snapshot.get("ok"):
+            raise ValueError("cannot capture project Git baseline: " + snapshot.get("reason", "snapshot unavailable"))
         binding["git_checkpoint"]["start"] = {
             "workflow_id": payload["workflow_id"],
-            "snapshot": capture(project_root(project), binding["git_checkpoint"]),
+            "snapshot": snapshot,
         }
     write_json_atomic(binding_path, binding)
     return {"active_workflow": payload}
@@ -719,7 +771,11 @@ def begin_workflow(project, input_path):
 def record_report(project, input_path):
     if ensure(project)["field_test_reporting"] is not True:
         raise ValueError("field-test reporting is disabled for this project; opt in during install")
-    return _record_report_payload(project, _read_report(input_path))
+    payload = _read_report(input_path)
+    binding = load_json(resolve(project, config()["binding_file"]))
+    if payload["status"] == "complete" and binding.get("git_checkpoint", {}).get("enabled"):
+        return finish_workflow(project, input_path)
+    return _record_report_payload(project, payload)
 
 def _record_report_payload(project, payload, require_active=False):
     ensured = ensure(project)

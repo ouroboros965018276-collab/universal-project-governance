@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate current RC9 canonical source, generated runtime, test freeze, deployment, and release surfaces."""
+"""Validate current canonical source, generated runtime, test freeze, deployment, and release surfaces."""
 from __future__ import annotations
 import argparse
 import json
@@ -32,7 +32,7 @@ def main():
     required = [
         "README.md", "CHANGELOG.md", "PUBLISHING.md", "PROJECT_STATE.md",
         "MODULE_MAP.md", "DECISIONS.md", "AGENTS.md", "SECURITY.md",
-        "audits/rc9-readiness.audit.json",
+        "audits/rc20-ocr-report.audit.json",
         "governance-src/model/governance-model.json",
         "governance-src/schemas/field-report.schema.json",
         "governance-src/runtime-scripts/project_tool.py",
@@ -74,7 +74,7 @@ def main():
         if binding.get("field_test_reporting") is not False:
             errors.append("compiled runtime must default to opt-in field-test reporting")
         if binding.get("schema_version") != 2:
-            errors.append("compiled runtime RC9 binding schema mismatch")
+            errors.append("compiled runtime binding schema mismatch")
         if binding.get("adoption_mode") != "in-place":
             errors.append("compiled runtime missing in-place legacy adoption")
         if binding.get("continuity_mode") != "handoff-or-reconstruct":
@@ -124,7 +124,7 @@ def main():
     ]
     for rel in expected_runtime:
         if not (root / SKILL / rel).is_file():
-            errors.append("compiled runtime missing RC9 surface: " + rel)
+            errors.append("compiled runtime missing required surface: " + rel)
 
     checks = [
         ([sys.executable, "compiler/compile_governance.py", "--check"], "compiler drift"),

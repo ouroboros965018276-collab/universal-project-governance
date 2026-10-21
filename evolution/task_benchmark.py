@@ -8,6 +8,7 @@ The frozen task declares its checks before any model dispatch.
 from __future__ import annotations
 
 import ast
+from decimal import Decimal
 import json
 import math
 
@@ -24,12 +25,30 @@ def _json(text, max_bytes=16384):
         return result
     def constant(unused):
         raise ValueError("non-finite JSON constant")
-    return json.loads(text, object_pairs_hook=pairs, parse_constant=constant)
+    return json.loads(text, object_pairs_hook=pairs, parse_constant=constant, parse_float=Decimal)
 
 
 def _canonical(value):
     # Python equality conflates bool/int and int/float; contracts must not.
-    return json.dumps(value, sort_keys=True, separators=(",", ":"),
+    def decimal_key(item):
+        sign, digits, exponent = item.as_tuple()
+        digits = list(digits)
+        while digits and digits[-1] == 0:
+            digits.pop(); exponent += 1
+        return [sign if digits else 0, digits, exponent if digits else 0]
+    def typed(item):
+        if isinstance(item, Decimal):
+            return ["number", decimal_key(item)]
+        if type(item) is float:
+            if not math.isfinite(item):
+                raise ValueError("nonfinite JSON number")
+            return ["number", decimal_key(Decimal(str(item)))]
+        if isinstance(item, dict):
+            return ["object", sorted((key, typed(child)) for key, child in item.items())]
+        if isinstance(item, list):
+            return ["array", [typed(child) for child in item]]
+        return [type(item).__name__, item]
+    return json.dumps(typed(value), sort_keys=True, separators=(",", ":"),
                       ensure_ascii=False, allow_nan=False)
 
 
@@ -81,14 +100,20 @@ def grade(request):
                 break
             files[row["path"]] = row["content"]
     # The task explicitly requires complete final contents of this file set.
+    for check in checks:
+        forbidden = check.get("forbidden_text", [])
+        if not isinstance(forbidden, list) or any(not isinstance(text, str) for text in forbidden):
+            raise ValueError("forbidden_text must be a list of strings")
+        if check.get("kind", "text") not in {"text", "json", "python-ast"}:
+            raise ValueError("unsupported artifact check kind")
     results = {check["path"]: bool(valid and check["path"] in files and
                _equal(files[check["path"]], check["expected"], check.get("kind", "text")) and
                all(text not in files[check["path"]] for text in check.get("forbidden_text", [])))
                for check in checks}
-    scope = set(files) == {check["path"] for check in checks}
+    scope = valid and set(files) == {check["path"] for check in checks}
     hard = int(valid and scope and all(results.values()))
     tokens, seconds = request["usage"].get("total_tokens"), request.get("wall_seconds")
-    if type(tokens) is not int or tokens < 0 or type(seconds) not in (int, float) or not math.isfinite(seconds) or seconds < 0:
+    if type(tokens) is not int or tokens < 0 or type(seconds) not in (int, float) or (isinstance(seconds, float) and not math.isfinite(seconds)) or seconds < 0:
         raise ValueError("actual token/time usage is required")
     return {"hard": hard, "soft": float(hard), "critical_failures": 0,
             "core_requirement_failures": int(not hard),
@@ -108,8 +133,19 @@ OUTPUT_SCHEMA = {
 
 def task(identity, family, initial, expected, instruction, *, kinds=None, forbidden=None, unfinished=False):
     """Task factory for an operator-frozen development campaign, not hidden data."""
-    kinds = kinds or {}
-    forbidden = forbidden or {}
+    kinds = {} if kinds is None else kinds
+    forbidden = {} if forbidden is None else forbidden
+    if (not isinstance(initial, dict) or not isinstance(expected, dict) or not expected
+            or not set(initial) <= set(expected) or not isinstance(kinds, dict) or not isinstance(forbidden, dict)
+            or not set(kinds) <= set(expected) or not set(forbidden) <= set(expected)
+            or any(kind not in {"text", "json", "python-ast"} for kind in kinds.values())
+            or any(not isinstance(texts, list) or any(not isinstance(text, str) for text in texts)
+                   for texts in forbidden.values())):
+        raise ValueError("artifact task paths, kinds and forbidden text must be satisfiable")
+    for name, content in expected.items():
+        if (not isinstance(name, str) or not _equal(content, content, kinds.get(name, "text"))
+                or any(text in content for text in forbidden.get(name, []))):
+            raise ValueError("expected artifact cannot pass its frozen checks")
     return {"id": identity, "family": family,
             "plan_context": {"operation": "edit", "domains": ["code"],
                              "signals": ["handoff"] if unfinished else [],

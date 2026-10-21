@@ -26,13 +26,15 @@ from qualification.analysis.gates import (
 def load_jsonl(paths):
     rows = []
     for raw in paths:
-        for line in pathlib.Path(raw).read_text(encoding="utf-8").splitlines():
-            if line.strip():
-                rows.append(json.loads(line))
+        with pathlib.Path(raw).open(encoding="utf-8") as stream:
+            for number,line in enumerate(stream,1):
+                if line.strip():
+                    try: rows.append(json.loads(line))
+                    except ValueError as exc: raise ValueError("%s:%d: invalid JSON" % (raw,number)) from exc
     return rows
 
-def analyze(rows, thresholds, protocol, fingerprint, manifest=None):
-    admission = admit(rows, fingerprint, protocol, manifest, thresholds=thresholds)
+def analyze(rows, thresholds, protocol, fingerprint, manifest=None, artifact_root=None):
+    admission = admit(rows, fingerprint, protocol, manifest, thresholds=thresholds, artifact_root=artifact_root)
     if admission["state"] == "FAIL":
         return {"schema_version": 3, "qualification_fingerprint": fingerprint, "status": "FAIL", "gates": {"evidence_admission": admission}, "sample_sizes": {"rows_total": len(rows)}, "effects": {}, "notes": ["Evidence rejected before inference."]}
     coverage = behavioral_coverage(rows, protocol)
@@ -55,8 +57,12 @@ def analyze(rows, thresholds, protocol, fingerprint, manifest=None):
         "generalization": generalization(rows, protocol, thresholds, coverage),
     }
 
-    ordered = {name: gates[name] for name in protocol["gate_order"]}
+    order=protocol.get("gate_order")
+    if not isinstance(order,list) or len(order)!=len(gates) or set(order)!=set(gates):
+        raise ValueError("protocol gate_order must name every gate exactly once")
+    ordered = {name: gates[name] for name in order}
     states = [item["state"] for item in ordered.values()]
+    if any(state not in {"PASS","FAIL","MORE_DATA"} for state in states): raise ValueError("unknown qualification gate state")
     status = "FAIL" if "FAIL" in states else ("MORE_DATA" if "MORE_DATA" in states else "PASS")
     locked = [row for row in rows if row.get("environment", {}).get("qualification_set") == "locked"]
 
@@ -92,11 +98,12 @@ def analyze(rows, thresholds, protocol, fingerprint, manifest=None):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("inputs", nargs="+")
-    parser.add_argument("--thresholds", default="qualification/protocol/thresholds.json")
-    parser.add_argument("--protocol", default="qualification/protocol/qualification-v3.json")
+    parser.add_argument("--thresholds", default=str(ROOT / "qualification/protocol/thresholds.json"))
+    parser.add_argument("--protocol", default=str(ROOT / "qualification/protocol/qualification-v3.json"))
     parser.add_argument("--fingerprint", required=True)
     parser.add_argument("--output")
     parser.add_argument("--round-manifest", required=True)
+    parser.add_argument("--artifact-root", help="Retained artifacts directory; defaults to the registered manifest's sibling artifacts directory")
     args = parser.parse_args()
     result = analyze(
         load_jsonl(args.inputs),
@@ -104,8 +111,9 @@ def main():
         json.loads(pathlib.Path(args.protocol).read_text(encoding="utf-8")),
         args.fingerprint,
         json.loads(pathlib.Path(args.round_manifest).read_text(encoding="utf-8")),
+        artifact_root=args.artifact_root or pathlib.Path(args.round_manifest).resolve().parent / "artifacts",
     )
-    text = json.dumps(result, indent=2, sort_keys=True) + "\n"
+    text = json.dumps(result, indent=2) + "\n"
     if args.output:
         pathlib.Path(args.output).write_text(text, encoding="utf-8")
     else:

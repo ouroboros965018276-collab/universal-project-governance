@@ -4,8 +4,8 @@ import random
 import statistics
 
 def pair_key(record):
-    agent = record.get("agent", {})
-    env = record.get("environment", {})
+    agent = record.get("agent") if isinstance(record.get("agent"),dict) else {}
+    env = record.get("environment") if isinstance(record.get("environment"),dict) else {}
     return (
         record.get("scenario_id"),
         agent.get("family"),
@@ -43,14 +43,23 @@ def mcnemar_exact_p(b, c):
     if n == 0:
         return 1.0
     k = min(b, c)
-    tail = sum(math.comb(n, i) for i in range(0, k + 1)) / float(2 ** n)
+    tail = sum(math.comb(n, i) for i in range(0, k + 1)) / (2 ** n)
     return min(1.0, 2.0 * tail)
 
 def _arm_map(records):
     grouped = {}
     for record in records:
-        grouped.setdefault(pair_key(record), {})[record["arm"]] = record
+        if not isinstance(record,dict) or not isinstance(record.get("arm"),str): raise ValueError("paired record requires an arm")
+        bucket=grouped.setdefault(pair_key(record), {})
+        if record["arm"] in bucket: raise ValueError("duplicate paired arm: "+record["arm"])
+        bucket[record["arm"]] = record
     return grouped
+
+def _boolean_outcome(record,field):
+    outcome=record.get("outcome")
+    if not isinstance(outcome,dict) or type(outcome.get(field)) is not bool:
+        raise ValueError("paired outcome requires boolean "+field)
+    return outcome[field]
 
 def _observation(record, delta):
     return {
@@ -65,8 +74,8 @@ def paired_binary(records, left_arm, right_arm, field):
     observations = []
     for arms in _arm_map(records).values():
         if left_arm in arms and right_arm in arms:
-            left = bool(arms[left_arm]["outcome"].get(field, False))
-            right = bool(arms[right_arm]["outcome"].get(field, False))
+            left = _boolean_outcome(arms[left_arm],field)
+            right = _boolean_outcome(arms[right_arm],field)
             delta = int(right) - int(left)
             pairs.append((left, right))
             observations.append(_observation(arms[right_arm], delta))
@@ -104,13 +113,15 @@ def paired_condition(records, baseline_condition, treatment_condition, field, hi
             record.get("outcome", {}).get("handoff_condition")
             or record.get("environment", {}).get("handoff_condition")
         )
-        grouped.setdefault(pair_key(record), {})[condition] = record
+        bucket=grouped.setdefault(pair_key(record), {})
+        if condition in bucket: raise ValueError("duplicate paired condition: "+str(condition))
+        bucket[condition] = record
     observations = []
     for values in grouped.values():
         if baseline_condition not in values or treatment_condition not in values:
             continue
-        baseline = bool(values[baseline_condition]["outcome"].get(field, False))
-        treatment = bool(values[treatment_condition]["outcome"].get(field, False))
+        baseline = _boolean_outcome(values[baseline_condition],field)
+        treatment = _boolean_outcome(values[treatment_condition],field)
         if higher_is_better:
             delta = int(treatment) - int(baseline)
         else:
@@ -138,25 +149,28 @@ def hierarchical_bootstrap_delta(observations, seed=1729, reps=4000, alpha=0.05)
         scenario = obs["scenario_id"]
         hierarchy.setdefault(family, {}).setdefault(scenario, []).append(float(obs["delta"]))
     families = sorted(hierarchy)
+    family_scenarios={family:sorted(hierarchy[family]) for family in families}
     rng = random.Random(seed)
     means = []
     for _ in range(reps):
         sample = []
         for __ in range(len(families)):
             family = families[rng.randrange(len(families))]
-            scenarios = sorted(hierarchy[family])
+            scenarios = family_scenarios[family]
+            scenario_means=[]
             for ___ in range(len(scenarios)):
                 scenario = scenarios[rng.randrange(len(scenarios))]
                 values = hierarchy[family][scenario]
-                for ____ in range(len(values)):
-                    sample.append(values[rng.randrange(len(values))])
+                draws=[values[rng.randrange(len(values))] for ____ in range(len(values))]
+                scenario_means.append(sum(draws)/len(draws))
+            sample.append(sum(scenario_means)/len(scenario_means))
         means.append(sum(sample) / float(len(sample)))
     means.sort()
     lo_index = int((alpha / 2.0) * reps)
     hi_index = min(reps - 1, max(0, int((1.0 - alpha / 2.0) * reps) - 1))
     scenario_count = sum(len(items) for items in hierarchy.values())
     return {
-        "mean_delta": sum(float(x["delta"]) for x in observations) / float(len(observations)),
+        "mean_delta": sum(sum(sum(values)/len(values) for values in hierarchy[family].values())/len(hierarchy[family]) for family in families)/len(families),
         "ci": [means[lo_index], means[hi_index]],
         "method": "hierarchical-bootstrap",
         "levels": ["agent_family", "scenario_id", "pair_id"],

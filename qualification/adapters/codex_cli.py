@@ -76,12 +76,15 @@ def _usage(stdout):
             event = json.loads(line)
         except json.JSONDecodeError:
             continue
+        if not isinstance(event,dict): continue
         if event.get("type") == "item.completed":
-            item = event.get("item", {})
+            item = event.get("item")
+            if not isinstance(item,dict): continue
             if item.get("type") in {"command_execution", "mcp_tool_call", "file_change"}:
                 calls += 1
         if event.get("type") == "turn.completed":
-            usage = event.get("usage", {})
+            usage = event.get("usage")
+            if not isinstance(usage,dict): continue
             input_tokens = usage.get("input_tokens", usage.get("total_input_tokens"))
             output_tokens = usage.get("output_tokens", usage.get("total_output_tokens"))
             if type(input_tokens) is int and type(output_tokens) is int:
@@ -141,14 +144,16 @@ def _preflight_windows_sandbox(codex, preferences, output_file=None, timeout_sec
         )
     except subprocess.TimeoutExpired as exc:
         if raw_paths:
-            _write_raw(raw_paths[0], exc.stdout)
-            _write_raw(raw_paths[1], exc.stderr)
+            for path,value in zip(raw_paths,(exc.stdout,exc.stderr)):
+                try: _write_raw(path,value)
+                except OSError: pass
         raise PreflightTimeoutError("Codex Windows sandbox preflight timed out") from exc
     stdout = _decode_output(checked.stdout)
     stderr = _decode_output(checked.stderr)
     if raw_paths:
-        _write_raw(raw_paths[0], checked.stdout)
-        _write_raw(raw_paths[1], checked.stderr)
+        for path,value in zip(raw_paths,(checked.stdout,checked.stderr)):
+            try: _write_raw(path,value)
+            except OSError: pass
     try:
         report = json.loads(stdout)
     except (TypeError, json.JSONDecodeError) as exc:
@@ -176,10 +181,12 @@ def _diagnostics(stdout, last_message, return_code, timed_out, stderr=""):
             event = json.loads(line)
         except json.JSONDecodeError:
             continue
+        if not isinstance(event,dict): continue
         event_type = event.get("type")
         if isinstance(event_type, str):
             event_counts[event_type] = event_counts.get(event_type, 0) + 1
-        item = event.get("item", {})
+        item = event.get("item")
+        if not isinstance(item,dict): item={}
         message = event.get("message") if event_type == "error" else item.get("message") if item.get("type") == "error" else None
         if isinstance(message, str) and len(errors) < 5:
             errors.append(redact_text(message)[:300])
@@ -228,18 +235,23 @@ def run(workspace, task_file, condition_file, output_file, phase, model_id, skil
     prompt = "\n\n".join(
         part for part in [skill, condition, "Task:\n" + task, "Evaluation phase: " + phase] if part
     )
-    host_preferences = _host_preferences()
     output_path = pathlib.Path(output_file)
+    host_preferences = {}
+    preparation_phase = "host_config"
     preflight_started = time.monotonic()
     try:
+        host_preferences = _host_preferences()
         preflight_timeout = float(os.environ.get("UPG_ADAPTER_PREFLIGHT_TIMEOUT_SECONDS", "30"))
+        task_timeout = float(os.environ.get("UPG_ADAPTER_TIMEOUT_SECONDS", "870"))
+        if not (0 < preflight_timeout < float("inf") and 0 < task_timeout < float("inf")): raise ValueError("timeouts must be positive finite values")
+        preparation_phase = "preflight"
         sandbox_preflight = _preflight_windows_sandbox(codex, host_preferences, output_path, preflight_timeout)
-    except (OSError, RuntimeError) as exc:
+    except (OSError, RuntimeError, ValueError) as exc:
         reason = redact_text(str(exc))
         elapsed = time.monotonic() - preflight_started
         timed_out = isinstance(exc, PreflightTimeoutError)
         exit_code = 124 if timed_out else 78
-        failure_category = "preflight_timed_out" if timed_out else "preflight_failed"
+        failure_category = "host_config_failed" if preparation_phase == "host_config" else "preflight_timed_out" if timed_out else "preflight_failed"
         payload = {
             "usage": {"usage_available": False, "wall_time_seconds": elapsed},
             "events": {
@@ -294,7 +306,7 @@ def run(workspace, task_file, condition_file, output_file, phase, model_id, skil
             input=prompt.encode("utf-8"),
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            timeout=float(os.environ.get("UPG_ADAPTER_TIMEOUT_SECONDS", "870")),
+            timeout=task_timeout,
             check=False,
         )
         stdout_raw = completed.stdout
@@ -331,7 +343,7 @@ def run(workspace, task_file, condition_file, output_file, phase, model_id, skil
     }
     output_path.write_text(json.dumps(payload), encoding="utf-8")
     if timed_out:
-        print("error: Codex CLI exceeded the 900-second task timeout", file=sys.stderr)
+        print("error: Codex CLI exceeded the %s-second task timeout" % task_timeout, file=sys.stderr)
     return return_code
 
 
@@ -342,7 +354,7 @@ def main():
             return 0
         if len(sys.argv) == 9 and sys.argv[1] == "run":
             return run(*sys.argv[2:])
-        raise ValueError("expected install <workspace> <skill-path> or run <workspace> <task> <condition> <output> <phase> <skill-path>")
+        raise ValueError("expected install <workspace> <skill-path> or run <workspace> <task> <condition> <output> <phase> <model-id> <skill-path>")
     except (OSError, ValueError, RuntimeError, subprocess.TimeoutExpired) as exc:
         print("error: %s" % exc, file=sys.stderr)
         return 2

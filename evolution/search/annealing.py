@@ -10,6 +10,8 @@ class ChaoticAnnealing:
     """Deterministic logistic proposals plus a Metropolis acceptance rule.
 
     A proposal consumes one schedule step, including hard-rejected proposals.
+    accept() uses the most recently proposed temperature; callers must accept
+    before proposing again. temperature reports the next proposal schedule step.
     Temperature is in objective-loss units. Checkpoints include the PRNG and
     logistic state, so JSON round trips reproduce subsequent proposals exactly.
     """
@@ -86,23 +88,33 @@ class ChaoticAnnealing:
 
     @classmethod
     def from_state(cls, state):
-        if state.get("algorithm") != "chaotic-annealing-v1":
-            raise ValueError("unsupported annealing checkpoint")
-        result = cls(0, state["dimensions"], initial_temperature=state["initial_temperature"],
-                     cooling=state["cooling"], cycle_length=state["cycle_length"],
-                     step_size=state["step_size"])
-        for key in ("iteration", "chaos_resets"):
-            if isinstance(state[key], bool) or not isinstance(state[key], int) or state[key] < 0:
-                raise ValueError("invalid annealing checkpoint counter")
-            setattr(result, key, state[key])
-        result._chaos = float(state["chaos"])
-        result._recent = [float(item) for item in state["recent"]]
-        if (not math.isfinite(result._chaos) or not 0 <= result._chaos <= 1 or
-                len(result._recent) > 16 or any(not math.isfinite(item) or not 0 <= item <= 1
-                                              for item in result._recent)):
-            raise ValueError("invalid chaotic checkpoint")
-        result._last_temperature = positive(state["last_temperature"], "last_temperature")
-        if result._last_temperature > result.initial_temperature:
-            raise ValueError("checkpoint temperature exceeds its initial temperature")
-        result._rng.setstate(tuple_state(state["rng_state"]))
-        return result
+        try:
+            if not isinstance(state, dict):
+                raise ValueError("annealing checkpoint must be an object")
+            if state.get("algorithm") != "chaotic-annealing-v1":
+                raise ValueError("unsupported annealing checkpoint")
+            result = cls(0, state["dimensions"], initial_temperature=state["initial_temperature"],
+                         cooling=state["cooling"], cycle_length=state["cycle_length"],
+                         step_size=state["step_size"])
+            for key in ("iteration", "chaos_resets"):
+                if isinstance(state[key], bool) or not isinstance(state[key], int) or state[key] < 0:
+                    raise ValueError("invalid annealing checkpoint counter")
+                setattr(result, key, state[key])
+            result._chaos = float(state["chaos"])
+            result._recent = [float(item) for item in state["recent"]]
+            if (not math.isfinite(result._chaos) or not 0 <= result._chaos <= 1 or
+                    len(result._recent) > 16 or any(not math.isfinite(item) or not 0 <= item <= 1
+                                                  for item in result._recent)):
+                raise ValueError("invalid chaotic checkpoint")
+            result._last_temperature = positive(state["last_temperature"], "last_temperature")
+            if result._last_temperature > result.initial_temperature:
+                raise ValueError("checkpoint temperature exceeds its initial temperature")
+            expected_temperature = (result.initial_temperature if result.iteration == 0 else
+                max(math.ulp(0.0), result.initial_temperature * max(1e-12,
+                    result.cooling ** ((result.iteration - 1) % result.cycle_length))))
+            if result._last_temperature != expected_temperature:
+                raise ValueError("checkpoint temperature differs from its schedule")
+            result._rng.setstate(tuple_state(state["rng_state"]))
+            return result
+        except (KeyError, TypeError, AttributeError, OverflowError) as error:
+            raise ValueError("invalid annealing checkpoint") from error

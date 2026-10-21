@@ -24,13 +24,21 @@ def materialize(candidate):
     Neutral weights preserve alphabetical order. Only the order of already
     required closures/evidence changes; selection and dependency closure do not.
     """
+    if not isinstance(candidate, dict) or not isinstance(candidate.get("model"), dict):
+        raise ValueError("candidate model must be an object")
     model = copy.deepcopy(candidate["model"])
     theta = candidate.get("theta", [0.5, 0.5, 0.5])
-    if len(theta) != 3 or any(isinstance(x, bool) or not isinstance(x, (int, float))
+    if not isinstance(theta, (list, tuple)) or len(theta) != 3 or any(isinstance(x, bool) or not isinstance(x, (int, float))
                               or not math.isfinite(x) or not 0 <= x <= 1 for x in theta):
         raise ValueError("theta must contain three finite normalized values")
     weights = [round((x - 0.5) * 8) for x in theta]
-    policies = model["policies"]
+    policies = model.get("policies")
+    if not isinstance(policies, list) or any(not isinstance(p, dict) or
+            not isinstance(p.get("id"), str) or not p["id"] or
+            p.get("severity") not in {'blocking', 'required'} or
+            any(not isinstance(p.get(key, []), list) for key in ("requires", "evidence"))
+            for p in policies):
+        raise ValueError("candidate policies must contain valid identity, severity and list fields")
     ids = [p["id"] for p in policies]
     if len(set(ids)) != len(ids):
         raise ValueError("duplicate policy identity")
@@ -80,7 +88,9 @@ class Budget:
         for index, receipt in enumerate(self.records):
             if not isinstance(receipt, dict) or receipt.get("attempt") != index + 1:
                 raise ValueError("invalid budget receipt sequence")
-            total = receipt.get("usage", {}).get("total_tokens")
+            if not isinstance(receipt.get("usage"), dict):
+                raise ValueError("checkpoint usage must be an object")
+            total = receipt["usage"].get("total_tokens")
             if total is None:
                 if not self.unknown_usage:
                     raise ValueError("unknown usage flag was cleared")

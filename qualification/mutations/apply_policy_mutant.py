@@ -4,10 +4,18 @@ import argparse,copy,json,pathlib,sys
 def apply_mutant(index,mutant):
     out=copy.deepcopy(index); policies=out["policies"]; target=mutant["target"]
     if mutant["operation"]=="remove_policy":
+        if not any(p["id"] == target for p in policies): raise ValueError("unknown target policy: " + target)
         out["policies"]=[p for p in policies if p["id"]!=target]
         out["default_rules"]=[x for x in out.get("default_rules",[]) if x!=target]
         for p in out["policies"]:
             p["requires"]=[x for x in p.get("requires",[]) if x!=target]
+            if "conflicts_with" in p: p["conflicts_with"]=[x for x in p["conflicts_with"] if x!=target]
+        for block in out.get("operational_guidance", []):
+            block["policy_ids"]=[x for x in block.get("policy_ids", []) if x != target]
+        for profile in out.get("profiles", {}).values():
+            if "activates" in profile: profile["activates"]=[x for x in profile["activates"] if x != target]
+        presentation=out.get("presentation", {})
+        if "policy_order" in presentation: presentation["policy_order"]=[x for x in presentation["policy_order"] if x != target]
     else:
         p=next((p for p in policies if p["id"]==target),None)
         if p is None: raise ValueError("unknown target policy: "+target)
@@ -15,6 +23,7 @@ def apply_mutant(index,mutant):
         elif mutant["operation"]=="force_report": p["report"]=mutant["value"]
         elif mutant["operation"]=="remove_requirement": p["requires"]=[x for x in p.get("requires",[]) if x!=mutant["value"]]
         else: raise ValueError("unknown operation: "+mutant["operation"])
+    if out == index: raise ValueError("mutation did not change the policy index")
     return out
 
 def main():

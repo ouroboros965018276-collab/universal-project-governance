@@ -2,6 +2,10 @@
 import hashlib
 import json
 import pathlib
+import os
+import re
+import shutil
+import tempfile
 import uuid
 from datetime import datetime, timezone
 from qualification.lib.contracts import frozen_candidate
@@ -47,6 +51,10 @@ def registration(args, adapter, kind, scenario, arm, condition=None, source=None
     candidate = frozen_candidate()
     freeze = candidate["identity"]
     protocol = candidate["protocol"]
+    if manifest.get("qualification_set") not in {None, "locked"}:
+        raise ValueError("locked registration requires a locked manifest")
+    if type(manifest.get("randomization_seed")) is not int or manifest.get("order_method") != "blocked-temporally-interleaved":
+        raise ValueError("locked registration method is invalid")
     if manifest.get("qualification_fingerprint") != freeze["qualification_fingerprint"] or manifest.get("protocol_revision") != protocol["protocol_revision"]:
         raise ValueError("round candidate fingerprint mismatch")
     slots = [x for x in manifest.get("trials", []) if x.get("trial_id") == args.trial_id]
@@ -63,8 +71,10 @@ def registration(args, adapter, kind, scenario, arm, condition=None, source=None
             raise ValueError("registered adapter mismatch: " + key)
     if slot.get("isolation_attestation") != adapter.config.get("isolation_attestation"):
         raise ValueError("registered isolation attestation mismatch")
-    if condition is not None and slot.get("handoff_condition") != condition:
+    if (condition is not None or "handoff_condition" in slot) and slot.get("handoff_condition") != condition:
         raise ValueError("registered handoff condition mismatch")
+    if any(key.startswith("source_") for key in slot) and source is None:
+        raise ValueError("registered handoff requires a source adapter")
     if source:
         source.require_locked_holdout()
         if slot.get("source_isolation_attestation") != source.config.get("isolation_attestation"):
@@ -82,9 +92,10 @@ def registration(args, adapter, kind, scenario, arm, condition=None, source=None
 def persist_evidence(args, trial_id, workspace, lab=None, result=None):
     """Qualification-only state; never copied into the Agent workspace."""
     output = pathlib.Path(args.output).resolve()
+    if not isinstance(trial_id,str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]*",trial_id):
+        raise ValueError("trial_id must be a safe path component")
     folder = output.parent / "artifacts" / trial_id
     if folder.exists(): raise ValueError("immutable evidence directory already exists")
-    folder.mkdir(parents=True)
     before = dict((lab or {}).get("initial_files", {}))
     after = {}
     root = pathlib.Path(workspace)
@@ -95,5 +106,17 @@ def persist_evidence(args, trial_id, workspace, lab=None, result=None):
             after[path.relative_to(root).as_posix()] = data.decode("utf-8", errors="replace")
     payload = {"trial_id": trial_id, "before": before, "after": after, "execution": result or {}}
     data = (json.dumps(payload, sort_keys=True, indent=2, ensure_ascii=False) + "\n").encode("utf-8")
-    path = folder / "manifest.json"; path.write_bytes(data)
+    folder.parent.mkdir(parents=True,exist_ok=True)
+    staged=pathlib.Path(tempfile.mkdtemp(prefix=trial_id+".pending-",dir=str(folder.parent)))
+    try:
+        (staged/"manifest.json").write_bytes(data)
+        # Claim only after collection and serialization succeeded. mkdir is exclusive.
+        folder.mkdir()
+        try: os.replace(staged/"manifest.json",folder/"manifest.json")
+        except BaseException:
+            folder.rmdir()
+            raise
+    finally:
+        shutil.rmtree(staged)
+    path = folder / "manifest.json"
     return {"artifact_manifest": str(path), "artifact_manifest_sha256": "sha256:" + hashlib.sha256(data).hexdigest()}

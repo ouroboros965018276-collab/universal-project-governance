@@ -1,6 +1,6 @@
 # Git 自动接管与阶段保存
 
-RC20.6 支持已有仓库、无 `.git` 项目和尚无首个提交的仓库。未调用 `begin/finish` 的宿主可以在明确前台项目会话内使用观察器；没有可靠会话结束信号时只执行有限检查点／单次观察，不启动独立常驻进程。当前验证与交付事实见 [PROJECT_STATE.md](../PROJECT_STATE.md)，不能从本说明推断已安装或已通过 CI。
+Git 检查点用于保存已验证的有意义阶段，减少中断后丢失工作边界的风险。它支持已有仓库、无 `.git` 项目和尚无首个提交的仓库。未调用 `begin/finish` 的宿主可以在明确前台项目会话内使用观察器；没有可靠会话结束信号时只执行有限检查点／单次观察，不启动独立常驻进程。当前验证与交付事实见 [PROJECT_STATE.md](../PROJECT_STATE.md)，不能从本说明推断已安装或已通过 CI。
 
 ## 初始化与范围
 
@@ -54,7 +54,7 @@ Codex 适配器只启动既有可执行文件，固定使用 `--no-daemon --no-a
 
 运行时只能验证 stdin 是管道，专属归属由调用方保证。管道适配由宿主为每个活跃项目创建并持有；只适用于拥有可靠项目结束回调的集成。关闭项目时关闭管道，重入时重新调用入口；不得用跨项目共享连接、常驻客户端或永不关闭的终端 stdin 代替项目生存信号。输入按有界块丢弃，不解析或记录提示词、心跳或会话内容；只认 EOF，读取异常先收回观察能力再报告失败。EOF 不需轮询宿主进程。此入口提供可执行的通用适配契约，不能自行给未提供信号的宿主增加该能力。
 
-[官方 Codex CLI 文档](https://learn.chatgpt.com/docs/developer-commands?surface=cli)说明 `--no-daemon` 前台能力。[官方会话钩子文档](https://learn.chatgpt.com/docs/hooks)支持项目内 `SessionStart/SessionEnd`，但精确钩子需受信任，切换线程不等于 SessionEnd；[App Server 文档](https://learn.chatgpt.com/docs/app-server)的取消订阅还可能经过 30 分钟卸载宽限。本版不注入这些配置，不把回答结束、取消订阅或进程名推测当作即时项目关闭。桌面端需要可靠项目级入口／结束信号后才能验收。
+宿主入口必须提供真实项目级开始与结束信号；回答结束、取消订阅或进程名推测不构成项目关闭。桌面端只有提供可靠入口／结束信号后才能验收。适配器不注入会话钩子、App Server 配置或宿主全局设置。
 
 没有该前台能力时，`start` 返回 `session-required` 且不创建进程；普通 `ensure/install/git-configure/recover` 不会分离启动观察器，不猜测父 PID、进程名或编辑器关闭事件。已接入 `begin/finish` 的宿主继续按原生命周期保存；其他宿主可用有限的 `--action tick`。这不等于已为任意编辑器提供适配器。没有宿主全局配置、开机／登录项、任务、服务或系统权限变更。
 
@@ -72,7 +72,7 @@ Windows 使用本次会话拥有且不可继承的关闭即终止 Job；首监�
 
 会话结束时先关闭生存能力、终止所拥有子树并核对原生锁释放，再清空当前会话 PID／令牌；所有者硬退出后的元数据可由下次入口在证实锁已释放后收束。物理进程退出与 JSON 状态清理分别验收。未知遗留进程／锁不按裸 PID 强杀，也不删除锁文件来伪造释放。
 
-配置与有限运行状态仍在原 `upg.json`，不生成第二套当前状态。新写入使用独占、刷盘核对的唯一临时文件，异常遗留候选不会阻止后续写入，也不会成为当前状态；未知旧版固定 `.tmp` 仍会阻止。治理移除需等待原生命令结束并持有相关锁，再删除绑定。本版校准覆盖进程硬退出；未验证断电持久性，journal 不可证明时安全阻止，不声称断电无损恢复。
+配置与有限运行状态仍在原 `upg.json`，不生成第二套当前状态。新写入使用独占、刷盘核对的唯一临时文件，异常遗留候选不会阻止后续写入，也不会成为当前状态；未知旧版固定 `.tmp` 仍会阻止。治理移除需等待原生命令结束并持有相关锁，再删除绑定。进程硬退出恢复与断电持久性是不同能力；journal 无法证明时安全阻止，不声称断电无损恢复。
 
 ## 已接入的工作流与恢复
 
@@ -80,4 +80,4 @@ Windows 使用本次会话拥有且不可继承的关闭即终止 Job；首监�
 
 `committed` 表示核实提交；`unchanged/duplicate/disabled` 不新增提交，`deferred/cooldown/waiting` 仍在等待，`blocked` 需要处理。阶段保存不等于全部功能验收。原生索引锁及分支 CAS 保护并发工作；本版以操作系统独占锁证明旧进程及其原生命令已退出，再恢复同一事务；索引锁先持久化归属后原子发布。旧版本无归属证明的锁或无法证明的中断结果仍需所有者核对，不能直接删除锁当作修复。
 
-规范默认值在 [治理模型](../governance-src/model/governance-model.json)，实现为 [生命周期](../governance-src/runtime-scripts/project_tool.py)、[Git helper](../governance-src/runtime-scripts/git_checkpoint.py) 、[观察器](../governance-src/runtime-scripts/git_watch.py) 、[进程锁](../governance-src/runtime-scripts/process_guard.py)与[会话生存能力](../governance-src/runtime-scripts/session_lifetime.py)。原始付费研究与正式资格不因本地 Git 校准而重写。
+规范默认值在 [治理模型](../governance-src/model/governance-model.json)，实现为 [生命周期](../governance-src/runtime-scripts/project_tool.py)、[Git helper](../governance-src/runtime-scripts/git_checkpoint.py) 、[观察器](../governance-src/runtime-scripts/git_watch.py) 、[进程锁](../governance-src/runtime-scripts/process_guard.py)与[会话生存能力](../governance-src/runtime-scripts/session_lifetime.py)。本地 Git 校准只验证这些确定性行为，不建立模型收益或正式资格。

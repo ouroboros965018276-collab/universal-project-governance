@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import ast
 import hashlib
+import keyword
 from dataclasses import dataclass, field
 
 
@@ -87,7 +88,7 @@ def _same(left, right):
 
 
 def _identifier(name):
-    return isinstance(name, str) and name.isidentifier() and not name.startswith("__")
+    return isinstance(name, str) and name.isidentifier() and not keyword.iskeyword(name) and not name.startswith("__")
 
 
 def _path(path):
@@ -103,7 +104,6 @@ class _Machine:
         self.limits = dict(DEFAULT_LIMITS)
         self.modules, self.globals, self.functions = {}, {}, {}
         self.steps = self.depth = self.expr_depth = 0
-        self.calls = 0
         self._check_contract()
         self._load()
 
@@ -154,11 +154,11 @@ class _Machine:
                 self._value(defaults)
                 self._value(kwdefaults)
             for name, expected in spec.get("constants", {}).items():
-                if not _identifier(name):
+                if not _identifier(name) or name in _BUILTINS | _ERRORS:
                     raise _Mismatch("invalid-constant", path)
                 self._value(expected)
             for local, target in spec.get("required_imports", {}).items():
-                if not _identifier(local) or not isinstance(target, dict) or set(target) != {"path", "name"} or target["path"] not in modules or not _identifier(target["name"]):
+                if not _identifier(local) or local in _BUILTINS | _ERRORS or not isinstance(target, dict) or set(target) != {"path", "name"} or target["path"] not in modules or not _identifier(target["name"]):
                     raise _Mismatch("invalid-required-import", path)
             for caller, targets in spec.get("required_calls", {}).items():
                 if caller not in spec.get("required_functions", {}) or not isinstance(targets, list) or not targets:
@@ -281,7 +281,7 @@ class _Machine:
                     if name in seen or name in _BUILTINS | _ERRORS:
                         raise _Unsupported("duplicate-or-forbidden-symbol", path)
                     self._syntax_expr(node.value, path, constant=True)
-                    self.globals[path][name] = self._expr(node.value, {}, path)
+                    self.globals[path][name] = self._constant_expr(node.value, path)
                     seen.add(name)
                 elif isinstance(node, ast.ImportFrom):
                     if node.level or not node.module or any(not _identifier(x.name) or not _identifier(x.asname or x.name) for x in node.names):
@@ -326,6 +326,8 @@ class _Machine:
                 raise _Mismatch("invalid-forbidden-symbol", path)
             if any(isinstance(n, ast.Name) and n.id == name or isinstance(n, ast.FunctionDef) and n.name == name
                    or isinstance(n, ast.arg) and n.arg == name
+                   or isinstance(n, ast.Attribute) and n.attr == name
+                   or isinstance(n, ast.keyword) and n.arg == name
                    or isinstance(n, ast.alias) and (n.name == name or n.asname == name)
                    for n in ast.walk(self.modules[path])):
                 raise _Mismatch("forbidden-symbol-present", path)
@@ -343,11 +345,11 @@ class _Machine:
                       "defaults": {}, "kwdefaults": {}}
             for parameter, expr in zip(args.args[len(args.args) - len(args.defaults):], args.defaults):
                 self._syntax_expr(expr, path, constant=True)
-                actual["defaults"][parameter.arg] = self._expr(expr, {}, path).raw
+                actual["defaults"][parameter.arg] = self._constant_expr(expr, path).raw
             for parameter, expr in zip(args.kwonlyargs, args.kw_defaults):
                 if expr is not None:
                     self._syntax_expr(expr, path, constant=True)
-                    actual["kwdefaults"][parameter.arg] = self._expr(expr, {}, path).raw
+                    actual["kwdefaults"][parameter.arg] = self._constant_expr(expr, path).raw
             wanted = {"params": signature.get("params", []), "kwonly": signature.get("kwonly", []),
                       "defaults": signature.get("defaults", {}), "kwdefaults": signature.get("kwdefaults", {})}
             if not _same(actual, wanted):
@@ -451,14 +453,26 @@ class _Machine:
             if self.expr_depth > self.limits["expression_depth"]:
                 raise _Unsupported("expression-depth-limit", path)
             return self._expression(node, local, path)
-        except (TypeError, ValueError) as error:
-            # Only operations on bounded JSON primitives reach this handler.
-            name = "ValueError" if isinstance(error, ValueError) else "TypeError"
-            raise _Raised(name) from None
+        except (TypeError, ValueError):
+            # User primitive failures are translated only at operand-aware sites.
+            raise _Unsupported("internal-operation-error", path) from None
         except (IndexError, KeyError, ZeroDivisionError, OverflowError):
             raise _Unsupported("unsupported-operation-error", path) from None
         finally:
             self.expr_depth -= 1
+
+    @staticmethod
+    def _primitive(operation, origins):
+        try:
+            return operation()
+        except (TypeError, ValueError) as error:
+            raise _Raised("ValueError" if isinstance(error, ValueError) else "TypeError", origins) from None
+
+    def _constant_expr(self, node, path):
+        try:
+            return self._expr(node, {}, path)
+        except _Raised:
+            raise _Mismatch("module-evaluation-error", path) from None
 
     def _expression(self, node, local, path):
         if isinstance(node, ast.Constant):
@@ -475,12 +489,14 @@ class _Machine:
         if isinstance(node, ast.Dict):
             keys = [self._expr(n, local, path) for n in node.keys]
             values = [self._expr(n, local, path) for n in node.values]
-            raw = {k.raw: v.raw for k, v in zip(keys, values)}
+            raw = self._primitive(lambda: {k.raw: v.raw for k, v in zip(keys, values)},
+                frozenset().union(*(_dependencies(v) for v in keys + values)))
             value = self._value(raw)
             return _Value(value.raw, frozenset().union(*(_dependencies(k) for k in keys)), {k.raw: v for k, v in zip(keys, values)})
         if isinstance(node, ast.UnaryOp):
             value = self._expr(node.operand, local, path)
-            raw = not value.raw if isinstance(node.op, ast.Not) else +value.raw if isinstance(node.op, ast.UAdd) else -value.raw
+            raw = self._primitive(lambda: not value.raw if isinstance(node.op, ast.Not) else
+                +value.raw if isinstance(node.op, ast.UAdd) else -value.raw, _dependencies(value))
             return self._value(raw, _dependencies(value))
         if isinstance(node, ast.BinOp):
             left, right = self._expr(node.left, local, path), self._expr(node.right, local, path)
@@ -488,15 +504,15 @@ class _Machine:
                 sequence, count = (left.raw, right.raw) if isinstance(left.raw, (str, list)) else (right.raw, left.raw)
                 if isinstance(sequence, (str, list)) and type(count) is int and len(sequence) * max(count, 0) > min(self.limits["collection_items"], self.limits["string_chars"]):
                     raise _Unsupported("operation-size-limit", path)
-                raw = left.raw * right.raw
+                raw = self._primitive(lambda: left.raw * right.raw, _dependencies(left) | _dependencies(right))
             elif isinstance(node.op, ast.Add):
-                raw = left.raw + right.raw
+                raw = self._primitive(lambda: left.raw + right.raw, _dependencies(left) | _dependencies(right))
             elif isinstance(node.op, ast.Sub):
-                raw = left.raw - right.raw
+                raw = self._primitive(lambda: left.raw - right.raw, _dependencies(left) | _dependencies(right))
             else:
                 if type(left.raw) is not int or type(right.raw) is not int:
                     raise _Unsupported("unsupported-modulo", path)
-                raw = left.raw % right.raw
+                raw = self._primitive(lambda: left.raw % right.raw, _dependencies(left) | _dependencies(right))
             return self._value(raw, _dependencies(left) | _dependencies(right))
         if isinstance(node, ast.BoolOp):
             dependencies = frozenset()
@@ -511,20 +527,20 @@ class _Machine:
             for op, child in zip(node.ops, node.comparators):
                 right = self._expr(child, local, path)
                 a, b = left.raw, right.raw
-                if isinstance(op, ast.Eq): raw = a == b
-                elif isinstance(op, ast.NotEq): raw = a != b
-                elif isinstance(op, ast.Lt): raw = a < b
-                elif isinstance(op, ast.LtE): raw = a <= b
-                elif isinstance(op, ast.Gt): raw = a > b
-                elif isinstance(op, ast.GtE): raw = a >= b
+                if isinstance(op, ast.Eq): raw = self._primitive(lambda: a == b, _dependencies(left) | _dependencies(right))
+                elif isinstance(op, ast.NotEq): raw = self._primitive(lambda: a != b, _dependencies(left) | _dependencies(right))
+                elif isinstance(op, ast.Lt): raw = self._primitive(lambda: a < b, _dependencies(left) | _dependencies(right))
+                elif isinstance(op, ast.LtE): raw = self._primitive(lambda: a <= b, _dependencies(left) | _dependencies(right))
+                elif isinstance(op, ast.Gt): raw = self._primitive(lambda: a > b, _dependencies(left) | _dependencies(right))
+                elif isinstance(op, ast.GtE): raw = self._primitive(lambda: a >= b, _dependencies(left) | _dependencies(right))
                 elif isinstance(op, ast.Is):
                     if b is not None and type(b) is not bool: raise _Unsupported("unsupported-identity", path)
                     raw = a is b
                 elif isinstance(op, ast.IsNot):
                     if b is not None and type(b) is not bool: raise _Unsupported("unsupported-identity", path)
                     raw = a is not b
-                elif isinstance(op, ast.In): raw = a in b
-                else: raw = a not in b
+                elif isinstance(op, ast.In): raw = self._primitive(lambda: a in b, _dependencies(left) | _dependencies(right))
+                else: raw = self._primitive(lambda: a not in b, _dependencies(left) | _dependencies(right))
                 dependencies |= _dependencies(left) | _dependencies(right)
                 if not raw: break
                 left = right
@@ -534,7 +550,7 @@ class _Machine:
             return _with_origins(self._expr(node.body if condition.raw else node.orelse, local, path), _dependencies(condition))
         if isinstance(node, ast.Subscript):
             value, index = self._expr(node.value, local, path), self._expr(node.slice, local, path)
-            raw = value.raw[index.raw]
+            raw = self._primitive(lambda: value.raw[index.raw], _dependencies(value) | _dependencies(index))
             key = index.raw + len(value.raw) if isinstance(value.raw, list) and type(index.raw) is int and index.raw < 0 else index.raw
             item = value.slots[key] if key in value.slots else self._value(raw)
             return _with_origins(item, value.origins | _dependencies(index))
@@ -549,10 +565,10 @@ class _Machine:
                 if type(receiver.raw) is not str or kwargs or len(args) > (1 if node.func.attr == "strip" else 0):
                     raise _Unsupported("unsupported-method", path)
                 origins |= _dependencies(receiver)
-                if node.func.attr == "strip": raw = receiver.raw.strip(*[v.raw for v in args])
-                elif node.func.attr == "casefold": raw = receiver.raw.casefold()
-                elif node.func.attr == "upper": raw = receiver.raw.upper()
-                else: raw = receiver.raw.lower()
+                if node.func.attr == "strip": raw = self._primitive(lambda: receiver.raw.strip(*[v.raw for v in args]), origins)
+                elif node.func.attr == "casefold": raw = self._primitive(lambda: receiver.raw.casefold(), origins)
+                elif node.func.attr == "upper": raw = self._primitive(lambda: receiver.raw.upper(), origins)
+                else: raw = self._primitive(lambda: receiver.raw.lower(), origins)
                 return self._value(raw, origins)
             name = node.func.id
             function = local.get(name, self.globals[path].get(name))
@@ -563,40 +579,43 @@ class _Machine:
             if kwargs or len(args) != 1:
                 raise _Raised("TypeError", origins)
             raw = args[0].raw
-            if name == "len": raw = len(raw)
-            elif name == "str": raw = str(raw)
-            elif name == "int": raw = int(raw)
-            elif name == "bool": raw = bool(raw)
-            else: raw = abs(raw)
+            if name == "len": raw = self._primitive(lambda: len(raw), origins)
+            elif name == "str": raw = self._primitive(lambda: str(raw), origins)
+            elif name == "int": raw = self._primitive(lambda: int(raw), origins)
+            elif name == "bool": raw = self._primitive(lambda: bool(raw), origins)
+            else: raw = self._primitive(lambda: abs(raw), origins)
             return self._value(raw, origins)
         raise _Unsupported("unsupported-expression", path)
 
     def _block(self, nodes, local, path, control=frozenset()):
         for node in nodes:
             self._tick()
-            if isinstance(node, ast.Assign):
-                local[node.targets[0].id] = _with_origins(self._expr(node.value, local, path), control)
-            elif isinstance(node, ast.Return):
-                value = self._value(None) if node.value is None else self._expr(node.value, local, path)
-                raise _Return(_with_origins(value, control))
-            elif isinstance(node, ast.If):
-                condition = self._expr(node.test, local, path)
-                # Retain the chosen condition for following statements as well:
-                # an early guard determines whether they are reached.
-                branch = node.body if condition.raw else node.orelse
-                alternate = node.orelse if condition.raw else node.body
-                self._block(branch, local, path, control | _dependencies(condition))
-                if self._must_exit(alternate):
-                    control |= _dependencies(condition)
-            elif isinstance(node, ast.Raise):
-                name = node.exc.id if isinstance(node.exc, ast.Name) else node.exc.func.id
-                origins = control
-                if isinstance(node.exc, ast.Call):
-                    for child in node.exc.args:
-                        origins |= _dependencies(self._expr(child, local, path))
-                raise _Raised(name, origins)
-            else:
-                self._expr(node.value, local, path)
+            try:
+                if isinstance(node, ast.Assign):
+                    local[node.targets[0].id] = _with_origins(self._expr(node.value, local, path), control)
+                elif isinstance(node, ast.Return):
+                    value = self._value(None) if node.value is None else self._expr(node.value, local, path)
+                    raise _Return(_with_origins(value, control))
+                elif isinstance(node, ast.If):
+                    condition = self._expr(node.test, local, path)
+                    # Retain the chosen condition for following statements as well:
+                    # an early guard determines whether they are reached.
+                    branch = node.body if condition.raw else node.orelse
+                    alternate = node.orelse if condition.raw else node.body
+                    self._block(branch, local, path, control | _dependencies(condition))
+                    if self._must_exit(alternate):
+                        control |= _dependencies(condition)
+                elif isinstance(node, ast.Raise):
+                    name = node.exc.id if isinstance(node.exc, ast.Name) else node.exc.func.id
+                    origins = control
+                    if isinstance(node.exc, ast.Call):
+                        for child in node.exc.args:
+                            origins |= _dependencies(self._expr(child, local, path))
+                    raise _Raised(name, origins)
+                else:
+                    self._expr(node.value, local, path)
+            except _Raised as raised:
+                raise _Raised(raised.name, raised.origins | control) from None
 
     @staticmethod
     def _must_exit(nodes):
@@ -615,7 +634,6 @@ class _Machine:
     def _call(self, function, args, kwargs):
         self._tick()
         self.depth += 1
-        self.calls += 1
         edge = frozenset({(function.path, function.name)})
         try:
             if self.depth > self.limits["call_depth"]:

@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Current candidate: **3.0.0-rc.20.6 — Project Host Adapters**.
+Current candidate: **3.0.0-rc.20.7 — Report-driven Safety and Contract Corrections**.
 
 ## First modifying activation
 
@@ -30,7 +30,7 @@ Governance semantics live in `governance-src/`. `universal-project-governance/` 
 
 New project bindings default field-test reporting off. Qualification A2 workspaces must explicitly opt in; preserve any existing enabled state and ledger during routine adoption.
 
-RC9 binding v2 records in-place adoption, handoff-or-reconstruct continuity, capability handshake, and whether the project existed before adoption. Never rewrite these paths outside the project-tool lifecycle.
+Binding schema v2 records in-place adoption, handoff-or-reconstruct continuity, capability handshake, and whether the project existed before adoption. Never rewrite these paths outside the project-tool lifecycle.
 
 ## Completion
 
@@ -52,7 +52,7 @@ Formal locked trials use fresh strong-isolation workspaces. Real trial evidence 
 
 Do not edit a frozen surface after a real result round begins.
 
-Exposed regression fixtures cannot become an independent holdout again. Keep RC18's bounded native-CLI artifact tasks separate from real tool execution, cross-Agent handoff, and formal qualification evidence. Requested model names, reported completed-turn usage, and provider-internal attempt coverage must retain their observed limits.
+Exposed regression fixtures cannot become an independent holdout again. Keep bounded artifact tasks separate from real tool execution, cross-Agent handoff, and formal qualification evidence. Requested model names, reported completed-turn usage, and provider-internal attempt coverage must retain their observed limits.
 
 Evidence overrides desired release outcomes.
 

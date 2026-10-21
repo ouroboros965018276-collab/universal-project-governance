@@ -1,22 +1,14 @@
 # 发布与测试冻结门禁
 
-当前候选：**3.0.0-rc.20.6 — Project Host Adapters**。
+当前候选：**3.0.0-rc.20.7 — Report-driven Safety and Contract Corrections**。
 
-RC20 从已合并的 RC19 `bd4a4d5c1c6fb9fca829e410729879d1b01f05b9` 开始。当前发布、验证和安装事实统一见[项目状态](PROJECT_STATE.md)；[RC19 安装验收](audits/rc19-installation.audit.json)是历史基线，不能验证 RC20。候选仍需自身的编译、回归、导航、完整性、打包及安装验收。规则来源比较保留每次注册调用、失败和 unknown 用量围栏；静态检查或更短文档都不证明净收益。Stable 仍须通过原正式资格门禁。
+发布用于证明当前源码、分发包、GitHub 修订与本地安装相互对应。当前事实统一见[项目状态](PROJECT_STATE.md)，本次报告处置与验收记录见[当前审计](audits/rc20-ocr-report.audit.json)。工程通过不代表独立模型收益或 Stable 资格；本次升级不增加付费实测。
 
-## RC20 本轮工程验收范围
+## 工程验收
 
-2026-10-20，维护者明确改为复用既有实测、只做必要校准和关键工程验收后发布 RC20；不再以扩大付费对照为本次 RC 合并前提。验收必须覆盖当前源生成一致性、关键状态生命周期回归、整仓回归、仓库门禁、CI、默认分支身份及本地安装。Insight 的状态修复须保留历史、未知项和未完成状态。旧实验结果、失败判据和成本保持不变；本次接受的是有边界的工程升级，独立模型净收益仍未建立，Stable 门槛不变。
+变更先落到负责的规范源码，统一生成后验证最终字节。检查必须覆盖源生成一致性、状态生命周期、受影响回归、整仓测试、仓库门禁、导航、完整性、确定性打包、CI、GitHub 目标修订与本地安装。
 
-RC20.2 将 Git 阶段保存接入实际生命周期，验收应覆盖允许范围、开始前脏文件排除、冷却、重复与状态噪声跳过、完成或显式交接/风险收束，以及 Git/钩子失败和中断恢复。该确定性功能使用本地 Git 回归与安装后验证；只有工程检查无法解决且确有必要的问题才进入已授权的付费测试范围，不扩大付费研究。执行结果与剩余限制仍只在当前项目状态登记。
-
-## 历史 RC18 证据
-
-RC18 的产物评分修正、测量范围、失败、费用、模型身份及资格限制保留在[不可变测量审计](audits/rc18-real-evaluation.audit.json)和[项目状态](PROJECT_STATE.md)。原始[配对测量](qualification/pilots/rc18-native/paired.summary.json)、[中止的 v1](qualification/pilots/rc18-native/round-v1.summary.json)及[v2 注册协议](evolution/protocol/rc18-native-development-v2.json)继续保留；发布流程不维护第二份历史结果摘要。产物修复不能证明真实工具执行或跨 Agent 交接，历史结果不替代当前候选验收或正式资格。
-
-## 真实 Agent 测试前的工程门禁
-
-以下检查均须通过；`python` 代表已验证的 Python 执行入口：
+`python` 代表已验证的执行入口：
 
 ```bash
 python compiler/compile_governance.py --check
@@ -31,35 +23,31 @@ python tools/validate_navigation.py .
 python -m unittest discover -s tests -v
 ```
 
-CI 还须通过 Linux Python 3.8/3.11/3.13、离线演化 Python 3.10/3.13、Windows Python 3.11/3.13、上游 Agent Skills 校验、本地生命周期安装/卸载、干净 Codex 目标安装、确定性打包，以及晋升后的默认分支安装验收。
+CI 的实际平台、Python 矩阵、上游 Agent Skills 校验和安装任务以[工作流](.github/workflows/validate.yml)为准。只有实际完成的检查可登记为通过；准备失败、平台跳过、未运行与结果未知分别记录。后续影响源码或身份的修改使相应旧检查过期。
 
-## 正式真实 Agent 锁定门禁
+Git 检查点须验证允许范围、开始前脏文件保护、冷却、状态噪声与重复排除、初始化与首提交、并发索引/分支保护、完成和显式交接/风险边界，以及钩子失败、中断恢复和前台会话终止。确定性行为使用本地真实 Git/进程校准；不因此调用模型、注入宿主全局配置或增加系统常驻。
 
-当前资格指纹下的一轮不可变结果必须满足全部不可补偿门禁。先验收注册轮次、冻结身份、schema 有效的隔离执行、匹配的模型/适配器/宿主条件及保留字节；被拒输入不得进入发布推断。分析器以 1 表示 FAIL、2 表示 MORE_DATA，均不晋升 Stable。
+工程验收后核对 GitHub 实际提交与 CI，再从目标修订安装并验证本地包字节和项目生命周期。磁盘完整性、宿主发现和新会话实际加载分别记录，不能互相代替。当前发布状态不由本文预先宣布。
+
+## 正式资格
+
+正式资格用于检验跨 Agent 的任务质量、治理效果、安全和成本。结果必须属于同一注册轮次与冻结指纹，满足隔离执行、匹配模型/适配器/宿主身份及原始字节留存要求。被拒输入不进入发布推断；分析器 1 表示 FAIL，2 表示 MORE_DATA，均不晋升 Stable。
+
+全部不可补偿门禁必须通过：
 
 1. 锁定场景、Agent 和实验条件完整覆盖；
 2. 项目部署完整性与完成报告；
-3. 评分器变异敏感性；
-4. attention-control 有效性；
-5. 类别特定的关键安全；
-6. 越界控制及独立 `local_guard`、`structural_guard` 暴露与置信界限；
-7. 核心任务非劣；
-8. 治理增益；
-9. 交接恢复与退化减少；
-10. 触发精确率与召回率；
-11. token、时间、工具、任务产物和受管文件效率；
-12. 明确置信区间语义下的分组泛化。
+3. 评分器变异敏感性与 attention-control 有效性；
+4. 类别特定关键安全，以及独立 local/structural 越界暴露与置信界限；
+5. 核心任务非劣、治理增益、交接恢复和退化减少；
+6. 触发精确率与召回率；
+7. token、时间、工具、任务产物和受管文件效率；
+8. 明确置信区间语义下的分组泛化。
 
-## 正式推断
+主要置信区间使用预注册的 Agent family → scenario → pair/repetition 分层 bootstrap。直接报告分组证据；不得用其他高分抵消关键失败。完整协议与门槛在[资格入口](qualification/README.md)维护，本文不建立第二份数值配置。
 
-主要置信区间使用预注册的 Agent family → scenario → pair/repetition 分层 bootstrap。直接报告分组证据；泛化 PASS 表示已建立预注册的严重反转判据，不默认为每组收益显著。
+## 状态与证据边界
 
-## 灰测证据
+临时灰测报告是诊断证据，不能替代锁定资格。新绑定默认不创建 ledger；已启用项目的非空 ledger 先导出并核实，再显式清理，移除不得静默丢弃。
 
-个人和朋友灰测可导出 `upg-field-test-reports.json`，它是诊断证据，不能替代锁定资格。Stable 前须明确决定保留或移除报告能力。关闭路径已可执行：新绑定不创建 ledger，report/export 不可用。退出前须先导出并清理已有非空 ledger；`remove` 在历史仍存在时拒绝继续，不静默丢弃记录。
-
-## 冻结规则
-
-当前候选统一生成 `qualification/FREEZE.json` 后，结果轮中不得修改冻结面；变化需要新指纹。新 Skill+plan 投影的编译契约与旧专用收集器分开验证，不放宽旧冻结实验的 validator，也不修改其历史审计。
-
-RC20.3 adds independent process and initial-repository behavior. Verify actual native processes/Git for initialization, zero-parent commits, parent/index protection, autonomous external edits, configured validators, drift, cooldown, stop/restart and manual workflow priority. Keep model calls at zero for this deterministic feature. Final source CI must fully pass; afterward verify default-main installation and installed byte identity, and publish one bounded acceptance observation.
+`qualification/FREEZE.json` 绑定当前候选的源码、协议、评估器与执行条件。身份变化必须重新生成并重新验证；已完成观察不能改写成新候选的成功。当前树只维护有效契约、当前验收及最新/上一次变更；更早版本通过 Git 历史检索。

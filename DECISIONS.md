@@ -1,110 +1,24 @@
-# Active Design Decisions
+# 当前设计决策
 
-Current design decisions include RC18's grader validity and measured-compression boundaries; RC17's offline evolution contract remains in force.
+本页解释现有结构为什么存在。治理语义、状态契约和数值门槛仍由各自规范源码定义；当前交付状态见[项目状态](PROJECT_STATE.md)，最近两次修改及日期见[变更记录](CHANGELOG.md)。
 
-## Task success requires positive outcomes
+| 决策 | 当前做法 | 原因与边界 |
+| --- | --- | --- |
+| 一个规范来源 | 在 `governance-src/` 维护语义，由编译器生成 Skill、索引和运行脚本 | 防止安装包、项目说明和实验候选形成互相矛盾的规则副本；生成先完整暂存，再替换旧包 |
+| 完整 Skill 配合任务投影 | Skill 承载全局义务，planner 只选择现有 policy 闭包与工作流块 | 降低重复上下文，同时保留真实证据、清理、验证和接手责任 |
+| 最小责任层集成 | 小而独立的修复保持局部；非平凡工作追踪契约和消费者 | 避免补丁堆叠；结构模式不扩大用户授权范围或自动授予 API/架构重设计 |
+| 原地采用既有项目 | 生命周期只管理声明的 UPG 状态，保留既有内容、设置和非空报告 | 治理安装不应要求项目迁移，也不能把未知旧意图当作已知架构 |
+| 能力协商 | 每个真实执行入口检查所需工具、路径和权限 | 厂商或模型名称不能证明工具可用；能力缺口需要如实记录 |
+| 一份可继续的当前状态 | 活动工作流保持未完成；latest/previous 只表示已完成工作 | 防止把上次成功当作当前进度；中断后从源码、差异、验证和现有状态重建，不依赖私人聊天记忆 |
+| 阶段身份与因果链 | 开始事实不可变，阶段使用稳定 checkpoint_id，完成重试恰一次 | 结果可以逐步成为已知事实，但相同阶段不能被不同载荷悄悄重写；序号/父事件建立因果顺序，时钟本身不证明因果 |
+| 验证只对应已测状态 | 引用绑定作用域、运行标识、修订和原始字节，后续改动保持待重测 | 哈希相同仅证明字节固定，不证明功能、环境、覆盖或旧断言正确；未知时间、意图、模型和用量保持未知 |
+| 项目级 Git 检查点 | 显式启用和允许范围；系统持有的原生锁保护事务；观察器依附前台项目会话 | 保存有意义阶段并保护并发所有者；无可靠结束信号时只做有限检查，不启动会话外常驻或自动 push |
+| 有界且可退出的报告 | 新绑定报告默认关闭；启用后使用一个有界 ledger，退场前核实导出 | 不把普通维护变成默认研究采集；只存元数据，不收集源码、凭据或私人思维过程 |
+| 可选项目提示 | profiles 激活现有规则，未知类型继续使用通用任务/风险闭包 | 允许软件、数据、内容和设计项目共用内核，避免为每个领域分叉治理实现 |
+| 离线演化与独立准入 | 仓库内执行文本学习、数值搜索和预算控制；日常 Skill 不调用优化器 | 搜索可提出候选，不能修改协议、最终证据或自动更新已安装包；开发通过、工程验收、独立收益和正式资格分开判断 |
+| 正向产物与执行契约 | 评分检查请求功能、依赖、命名空间和真实收据，有限解释器不直接执行返回代码 | 删除旧文案或报告 PASS 不能证明任务存活；有限探针也不证明任意 Python、完整应用或全输入等价 |
+| 独立安全与范围门禁 | local/structural 越界分别按暴露人群计算，关键安全不能被成功率抵消 | 防止混合分母掩盖某类失败；受诊断暴露的任务只能作回归，不能重新称为独立留出 |
+| 冻结实际执行身份 | 资格统一由 `qualification/lib/contracts.py` 验收，绑定模型/适配器/宿主工具与两端接手条件 | 标签、文件哈希和列出的模型不证明实际运行或内部重试覆盖；接手证据需要发送和接收两端事实 |
+| 当前文档与最近两次变更 | 功能说明描述当前行为，CHANGELOG 只保留最新/上一次修改、已知日期和原因 | 去掉过时结果叙述和重复状态；更早内容由 Git 历史提供，当前状态只在 PROJECT_STATE 维护 |
 
-Removing obsolete text cannot certify that a requested function, dependency, or implementation survives. Refactor grading includes bounded pure-function behavior probes; dependency grading requires explicit complete target pins; interoperability grading requires the implementation and documentation change alongside namespace preservation. Invalid or empty checks fail closed. Diagnosed labs are exposed regression evidence, not reusable independent holdouts. Generated code is parsed or interpreted within the bounded fixture evaluator, never executed as unrestricted host code.
-
-## Runtime compression preserves the governance contract
-
-Compress repeated instructions in the canonical Skill template, leaving Hot Path rules, lifecycle semantics, evidence obligations, recovery, and qualification boundaries intact. Compile and validate the generated runtime. Smaller UTF-8 text is an engineering observation; token, timing, quality and handoff effects require prospective matched measurements. Install only a validated candidate with recoverable backup and verify disk integrity separately from host discovery and actual activation.
-
-## Native development measurements bind actual execution inputs
-
-An explicitly registered native CLI, existing official login, grader, exact canonical source and compiler determine the measured condition. Candidate cache identity and receipts must bind those inputs. Selection and replayed learning work consume their declared search accounting; local receipt reuse is not another independent sample. Unknown calls stop further dispatch until reconciled.
-
-Report the requested model separately from provider-confirmed identity. The adapter performs one CLI invocation per attempt; provider-internal retries and completed-turn usage coverage remain unknown until independently established. A requested output limit is not a native CLI hard token cap. The bounded JSON artifact matrix cannot establish real tool execution, cross-Agent handoff or broad algorithm contribution. Independent final admission and formal qualification retain their original coverage, safety and uncertainty requirements.
-
-## Evolution is offline and independently admitted
-
-SkillOpt's pinned MIT source supplies the existing text-learning stages. UPG adds
-the source bridge, three numerical searches, one budgeted controller and evidence
-admission. Candidate text and normalized runtime presentation parameters are
-separate from optimizer controls. Core rules, dependencies and thresholds cannot
-be selected away. Daily tasks execute compiled rules without optimizer calls.
-
-Search acceptance, engineering validation, empirical efficacy and formal
-qualification are separate decisions. Actual provider receipts include failures
-and retries; unknowns remain unknown. An optimizer cannot edit its protocol or
-final evidence, and a development matrix cannot approve its own candidate.
-
-## Continuity is reconstructable, not handoff-dependent
-
-A deliberate unfinished transition should create one current factual handoff when possible. Abrupt interruption cannot be prevented reliably, so continuity may not depend on the previous actor successfully writing one.
-
-A receiving actor reconstructs from canonical project truth, observable VCS/worktree or equivalent changes, validation evidence, UPG state, and unresolved artifacts. Unknown prior intent remains unknown. Private chat memory and chain-of-thought are not continuity dependencies.
-
-## Legacy adoption is in place
-
-UPG must become effective on a pre-existing maintained project without requiring a project-wide migration. Binding installation adds only UPG-owned state and preserves legacy project content.
-
-Existing artifacts are evidence, not automatically authoritative architecture. Governance applies immediately to the current task while locating existing canonical truth and preserving observed contracts.
-
-Owned RC7 binding state upgrades to binding schema v2 without silently losing an existing report ledger.
-
-New bindings default field-test reporting off. Evaluation workspaces opt in explicitly, while adoption and `ensure` preserve existing project settings and evidence.
-
-## Agent interoperability is capability-negotiated
-
-Vendor/model names do not determine behavior. An actor observes available host capabilities and uses only those it can actually exercise.
-
-This permits conversational, coding, workspace/computer-use, IDE/CLI, browser/application, and future tool-using Agent classes to share one governance contract without a brittle vendor allowlist.
-
-## Project-type profiles are hints, not forks
-
-Named profiles activate relevant existing policies for common maintained-project forms. They do not create separate governance implementations.
-
-Unknown or new project types remain governed by the universal Hot Path, default rules, task domains/signals, and risk model.
-
-## Structural integration is task-bounded
-
-Non-trivial work changes the smallest responsible canonical layer rather than stacking local patches. This never authorizes unrelated redesign, API/contract change, migration, or opportunistic refactoring.
-
-## Structural overreach is independently gated
-
-Task success cannot compensate for scope violation. `local_guard` and `structural_guard` have separate exposure/confidence denominators so one population cannot dilute the other.
-
-## Formal effect inference remains hierarchical, with a stronger top-level claim guard
-
-Primary paired effects bootstrap Agent family → scenario → repetition/pair. Locked qualification requires at least three independent Agent families.
-
-Bootstrap repetition count does not manufacture independent top-level clusters. Cross-family generalization is therefore reported separately from within-family precision and subgroup claims remain deliberately narrow.
-
-## Real-Agent execution identity is evidence
-
-A trial condition is not identified by a human-written scaffold label alone. Locked evidence binds adapter configuration and implementation hashes plus host-tool name/version, alongside Agent/model/scaffold/tool/budget identity.
-
-Cross-Agent handoff evidence records both source and receiving conditions.
-
-## Completion reporting means exactly one
-
-While field-test reporting is enabled, one completed modifying workflow must append exactly one report. The formal deployment gate checks `report_count == 1`; duplicate reports are a contract failure rather than acceptable evidence.
-
-## Field-test reporting is bounded and privacy-conscious
-
-UPG owns at most two project files when gray reporting is enabled. New ordinary project bindings use only the binding file. Reports store bounded metadata/evidence summaries, not source contents or private reasoning.
-
-Secret-pattern rejection is defense-in-depth for common private keys, tokens, Bearer/JWT-like values, assignment-style credentials, and credential-bearing database URLs. It is not represented as full DLP; export review remains required.
-
-## Frozen evidence includes execution conditions
-
-Qualification identity binds the runtime, protocol, fixtures, evaluators, adapters/runners, analyzer, and deployment wrapper. A semantic change to a frozen surface requires a new identity.
-
-`qualification/lib/contracts.py` is the responsible frozen-candidate authority for planning, execution and admission. Supplied settings must equal this candidate; analysis consumes one admission gate. This prevents identity rules drifting between consumers without introducing a second configuration or policy system.
-
-## Current tree contains current truth
-
-Superseded protocols, readiness audits, and obsolete implementation notes belong in Git history rather than coexisting as parallel current documentation.
-
-## RC9 chronology and reporting identity
-
-Workflow IDs bind retries, active checkpoints, completion evidence, and latest/previous change references. Event IDs combine reporting epoch, workflow ID, and status; sequence is monotonic across purge. Explicit export must remain hash-verifiable before epoch rotation. The bounded ledger does not promise duplicate detection beyond an explicitly rotated retention epoch; archival evidence preserves that boundary. Runtime serializes mutations with a transient lock directory; abrupt-stop lock residue fails closed until an operator inspects and removes the stale lock. No persistent third state file is introduced.
-
-Occurrence times require a source; unknown prior intent/time/commit remain unknown. Recorded timestamps do not establish causal order. Validate tested revision and reconcile current state before trusting an old handoff. When helpers are absent, the contract uses existing observable host state and reports its verification limits. Universal architecture is not a claim of empirically proven benefit across every domain.
-
-## RC16 outcome and validation continuity
-
-A workflow starts with immutable identity and baseline facts; results become known later. Completion therefore retains its original start checkpoint and accepts updated outcome facts, while the completed payload remains immutable for retries. Partial/blocked checkpoints keep the workflow active; a stage pin cannot certify an unfinished parent workflow.
-
-Validation facts remain in one project source. An optional digest-bound handoff reference resolves a named scoped run (or a structured run at a JSON Pointer) and exposes changed state as pending retest. No automatic history reconstruction, global activation logging, private-project migration or extra mandatory state file is introduced. Engineering regressions establish these contracts; separate prospective paired trials are required for efficacy and cost claims.
+实现、消费者和验证入口见[模块导航](MODULE_MAP.md)。解释器/工程工具的执行边界见[行为契约](docs/behavior-contracts.md)，项目绑定、锁与会话边界见[Git 检查点](docs/git-checkpoints.md)，正式推断见[资格入口](qualification/README.md)。

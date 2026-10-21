@@ -232,7 +232,7 @@ class IsolatedPythonTests(unittest.TestCase):
                             "probes": [{"path": "core.py", "function": "transform", "args": [0], "expect": {"return": wanted}}]}
                 path = self.base / ("bool-case-" + str(type(wanted).__name__))
                 with patch.object(isolated, "_capture", FakeDocker([{"kind": "return", "value": actual}])):
-                    behavior, execution = isolated.validate_with_execution(files, contract, path, 30)
+                    behavior, execution = isolated.validate_with_execution(files, contract, path, 30, project_root=self.root)
                 self.assertFalse(behavior["ok"])
                 self.assertEqual(execution["status"], "EXECUTED")
                 self.assertFalse(execution["unknown"])
@@ -319,8 +319,8 @@ class IsolatedPythonTests(unittest.TestCase):
             with self.subTest(mode=mode):
                 self.artifacts = self.base / mode
                 broker = self.broker()
-                def tamper(files, invocations, path, remaining):
-                    result = primitive(files, invocations, path, remaining)
+                def tamper(files, invocations, path, remaining, **kwargs):
+                    result = primitive(files, invocations, path, remaining, **kwargs)
                     if mode == "raw-result":
                         (path / "result.json").write_bytes(canonical(result | {"extra": True}))
                     elif mode == "output":
@@ -341,7 +341,7 @@ class IsolatedPythonTests(unittest.TestCase):
             if (path / "result.json").exists():
                 clock[0] = 30.001
         with patch.object(isolated.time, "monotonic", lambda: clock[0]), patch.object(isolated.os, "fsync", fsync), patch.object(isolated, "_capture", FakeDocker()):
-            behavior, execution = isolated.validate_with_execution(self.task["initial_files"], self.task["behavior_contract"], path, 30)
+            behavior, execution = isolated.validate_with_execution(self.task["initial_files"], self.task["behavior_contract"], path, 30, project_root=self.root)
         raw = (path / "result.json").read_bytes()
         self.assertEqual(json.loads(raw)["status"], "EXECUTED")
         self.assertFalse(behavior["ok"])
@@ -353,8 +353,8 @@ class IsolatedPythonTests(unittest.TestCase):
     def test_snapshot_drift_or_protected_change_blocks_execution_evidence(self):
         broker = self.broker()
         primitive = isolated.execute_batch
-        def mutate(files, invocations, path, remaining):
-            record = primitive(files, invocations, path, remaining)
+        def mutate(files, invocations, path, remaining, **kwargs):
+            record = primitive(files, invocations, path, remaining, **kwargs)
             (self.root / "core.py").write_text("changed", encoding="utf-8")
             return record
         with patch.object(isolated, "execute_batch", mutate), patch.object(isolated, "_capture", FakeDocker()):

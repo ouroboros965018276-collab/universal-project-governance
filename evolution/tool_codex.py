@@ -76,7 +76,8 @@ def _preparation_error(error, reason):
 
 def _preparation_write(path, raw):
     # Fresh paths only. Never replace or clean partial evidence after a failure.
-    with Path(path).open('xb') as stream:
+    descriptor = os.open(Path(path), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    with os.fdopen(descriptor, 'wb') as stream:
         stream.write(raw)
         stream.flush()
         os.fsync(stream.fileno())
@@ -448,7 +449,7 @@ class ToolCodex:
                 or sha(_BROKER.read_bytes()) != self._frozen["broker_source_sha256"]
                 or sha(_TRANSPORT_PROFILE.read_bytes()) != self._frozen["transport_profile_source_sha256"]):
             raise ValueError("tool capability changed after registration")
-        if self.config.get("broker_profile_id") is not None and self._identity() != self._frozen:
+        if self._identity() != self._frozen:
             raise ValueError("project tool capability changed after registration")
         return copy.deepcopy(self._frozen)
 
@@ -570,7 +571,10 @@ class ToolCodex:
             observation['sensitive_output'] = any(SECRET.search(raw) is not None for raw in (stdout, stderr) if raw is not None)
             for name, raw in (('stdout', stdout), ('stderr', stderr)):
                 if raw is not None:
-                    observation[name] = {'ref': name + '.raw', 'sha256': sha(raw), 'bytes': len(raw)}
+                    observation[name] = {'ref': None if observation['sensitive_output'] else name + '.raw',
+                                         'sha256': sha(raw), 'bytes': len(raw)}
+                    if observation['sensitive_output']:
+                        continue
                     observation['stage'] = 'git-' + name + '-persistence'
                     observation['reason'] = 'preparation-evidence-persistence-failed'
                     _preparation_write(target / (name + '.raw'), raw)
@@ -585,13 +589,17 @@ class ToolCodex:
                                        preparation_wall_seconds=time.perf_counter() - started)) + b'\n'
             _preparation_write(target / 'result.json', result_raw)
             if original is not None:
-                observation['stage'] = 'git-completed'
+                observation['stage'] = 'git-invocation'
+                if not isinstance(original, Exception):
+                    raise original
                 raise _PreparationStageError(observation, original) from original
             return {'kind': observation['kind'], 'receipt_ref': 'preparation/git-init/result.json',
                     'receipt_sha256': sha(result_raw), 'intent_sha256': observation['intent_sha256']}
         except _PreparationStageError:
             raise
         except BaseException as error:
+            if not isinstance(error, Exception):
+                raise
             # The first cause/observed process state survives a later persistence failure.
             observation['reason'] = 'preparation-evidence-persistence-failed'
             observation['persistence_error'] = _preparation_error(error, observation['reason'])
@@ -630,7 +638,14 @@ class ToolCodex:
     def run(self, task, *, prompt, bindings):
         run_started = time.perf_counter()
         self._task_validate(task)
-        capability = self.binding()
+        try:
+            capability = self.binding()
+        except (OSError, ValueError) as error:
+            if isinstance(error, ValueError) and str(error) == "tool capability changed after registration":
+                raise
+            raise ToolCallPending("tool capability changed before preparation; no model invoked",
+                usage={"input_tokens": 0, "output_tokens": 0, "total_tokens": 0},
+                provider_receipt={"model_invoked": False, "dispatch_state": "not_started"}) from error
         if (not isinstance(bindings, dict) or bindings.get("capability") != capability
                 or any(not isinstance(bindings.get(key), str) or not bindings[key] for key in _BINDING_KEYS)):
             raise ValueError("explicit matching capability and frozen experiment bindings are required")
@@ -763,6 +778,10 @@ class ToolCodex:
             else:
                 receipt = json.loads((directory / "receipt.json").read_text(encoding="utf-8"))
                 result = json.loads((directory / "result.json").read_text(encoding="utf-8"))
+            if (not isinstance(receipt, dict) or not isinstance(receipt.get("artifact_sha256"), dict)
+                    or not isinstance(receipt.get("result_sha256"), str)
+                    or type(receipt.get("cli_exit_code")) is not int):
+                raise ToolCallPending("cached receipt schema incomplete; reconciliation required")
             for name, expected in receipt["artifact_sha256"].items():
                 if sha((directory / name).read_bytes()) != expected:
                     raise ToolCallPending("tool receipt artifact hash mismatch; no replay")
@@ -785,8 +804,6 @@ class ToolCodex:
                     if quality['execution_state_unknown'] or canonical(quality) != canonical(result['quality']):
                         raise ValueError('cached project execution or quality evidence differs')
             except (OSError, ValueError, TypeError, KeyError, UnicodeError, AttributeError, RecursionError) as error:
-                if self.config.get('broker_profile_id') is not None:
-                    raise
                 raise ToolCallPending("cached repository evidence changed; no replay") from error
             result["receipt"] = dict(receipt, artifact_directory=str(directory),
                                      receipt_sha256=(receipt_sha256 if cache_context is not None else

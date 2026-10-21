@@ -61,16 +61,92 @@
       }
     },
     "sampling": {
-      "type": "object"
+      "type": "object",
+      "required": [
+        "pairing_keys",
+        "development_repetitions_per_cell_min",
+        "locked_repetitions_per_cell_min",
+        "locked_repetitions_per_cell_max",
+        "checkpoints",
+        "minimum_agent_families",
+        "minimum_project_profiles",
+        "minimum_locked_behavioral_scenarios",
+        "minimum_locked_handoff_scenarios",
+        "locked_handoff_repetitions_per_cell_min",
+        "trigger_cases_minimum"
+      ],
+      "properties": {
+        "pairing_keys": {
+          "type": "array"
+        },
+        "development_repetitions_per_cell_min": {
+          "type": "integer"
+        },
+        "locked_repetitions_per_cell_min": {
+          "type": "integer"
+        },
+        "locked_repetitions_per_cell_max": {
+          "type": "integer"
+        },
+        "checkpoints": {
+          "type": "array"
+        },
+        "minimum_agent_families": {
+          "type": "integer"
+        },
+        "minimum_project_profiles": {
+          "type": "integer"
+        },
+        "minimum_locked_behavioral_scenarios": {
+          "type": "integer"
+        },
+        "minimum_locked_handoff_scenarios": {
+          "type": "integer"
+        },
+        "locked_handoff_repetitions_per_cell_min": {
+          "type": "integer"
+        },
+        "trigger_cases_minimum": {
+          "type": "integer"
+        }
+      }
     },
     "coverage": {
-      "type": "object"
+      "type": "object",
+      "required": [
+        "primary_arms",
+        "require_complete_primary_arm_matrix",
+        "require_all_locked_behavioral_scenarios_per_agent_family",
+        "release_evidence_set"
+      ],
+      "properties": {
+        "primary_arms": {
+          "type": "array"
+        },
+        "require_complete_primary_arm_matrix": {
+          "type": "boolean"
+        },
+        "require_all_locked_behavioral_scenarios_per_agent_family": {
+          "type": "boolean"
+        },
+        "release_evidence_set": {
+          "type": "string"
+        }
+      }
     },
     "safety_exposure_model": {
       "type": "object"
     },
     "evaluator_validity": {
-      "type": "object"
+      "type": "object",
+      "required": [
+        "required_mutants"
+      ],
+      "properties": {
+        "required_mutants": {
+          "type": "array"
+        }
+      }
     },
     "randomization": {
       "type": "object"
@@ -85,10 +161,86 @@
       "type": "object"
     },
     "inference": {
-      "type": "object"
+      "type": "object",
+      "required": [
+        "method",
+        "levels",
+        "bootstrap_repetitions",
+        "confidence",
+        "seed",
+        "top_level_claim_guard"
+      ],
+      "properties": {
+        "method": {
+          "type": "string"
+        },
+        "levels": {
+          "type": "array"
+        },
+        "bootstrap_repetitions": {
+          "type": "integer"
+        },
+        "confidence": {
+          "type": "number"
+        },
+        "seed": {
+          "type": "integer"
+        },
+        "top_level_claim_guard": {
+          "type": "string"
+        }
+      }
     },
     "structural_overreach": {
-      "type": "object"
+      "type": "object",
+      "required": [
+        "requires_scope_contract",
+        "normal_treatment_only",
+        "diagnostics",
+        "exposure_cohorts"
+      ],
+      "properties": {
+        "requires_scope_contract": {
+          "type": "boolean"
+        },
+        "normal_treatment_only": {
+          "type": "boolean"
+        },
+        "diagnostics": {
+          "type": "array"
+        },
+        "exposure_cohorts": {
+          "type": "object"
+        }
+      }
+    },
+    "protocol_revision": {
+      "type": "string",
+      "minLength": 1
+    },
+    "evidence_admission": {
+      "type": "object",
+      "required": [
+        "schema_required",
+        "round_manifest_required",
+        "identity_required",
+        "isolation_attestation_required"
+      ],
+      "properties": {
+        "schema_required": {
+          "type": "boolean"
+        },
+        "round_manifest_required": {
+          "type": "boolean"
+        },
+        "identity_required": {
+          "type": "boolean"
+        },
+        "isolation_attestation_required": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
     }
   }
 }

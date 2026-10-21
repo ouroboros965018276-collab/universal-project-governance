@@ -28,20 +28,38 @@
   "properties": {
     "git_boundary": {
       "type": "string",
-      "enum": ["verified", "handoff", "risk"],
+      "enum": [
+        "verified",
+        "handoff",
+        "risk"
+      ],
       "description": "Actual stage boundary for opt-in automatic Git checkpoints. Updating the handoff document alone does not bypass coalescing. Completion flushes automatically."
     },
     "checkpoint_id": {
-      "type": "string", "minLength": 1, "maxLength": 100,
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
       "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
-      "description": "Stable partial/blocked stage identity. Exact retries are idempotent; new observed stages use a new ID."
+      "description": "Stable partial/blocked stage identity. Exact retries are idempotent; new observed stages use a new ID.",
+      "$comment": "New partial/blocked checkpoints use stable stage IDs. Omission remains readable for legacy single-stage outcomes; further distinct stages require checkpoint_id. Complete outcomes reject checkpoint_id in the lifecycle validator."
     },
     "current_state": {
-      "type": "object", "additionalProperties": false,
-      "required": ["path", "sha256"],
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "sha256"
+      ],
       "properties": {
-        "path": {"type": "string", "minLength": 1, "maxLength": 1024},
-        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
       },
       "description": "Reference to the existing project current-state JSON, not a copy or historical completion record."
     },
@@ -177,15 +195,22 @@
       "additionalProperties": false,
       "properties": {
         "family": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
         },
         "model_id": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
         },
         "scaffold_version": {
-          "type": "string"
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
         }
-      }
+      },
+      "$comment": "Partial observed provenance is allowed; omitted dimensions remain unknown and never qualify as complete qualification identity."
     },
     "workflow_id": {
       "type": "string",
@@ -246,19 +271,19 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 1000,
-          "pattern": "^(unknown|[0-9a-f]{40}|sha256:[0-9a-f]{64})$"
+          "pattern": "^(unknown|[0-9a-f]{40}|[0-9a-f]{64}|sha256:[0-9a-f]{64})$"
         },
         "result_revision": {
           "type": "string",
           "minLength": 1,
           "maxLength": 1000,
-          "pattern": "^(unknown|[0-9a-f]{40}|sha256:[0-9a-f]{64})$"
+          "pattern": "^(unknown|[0-9a-f]{40}|[0-9a-f]{64}|sha256:[0-9a-f]{64})$"
         },
         "validation_revision": {
           "type": "string",
           "minLength": 1,
           "maxLength": 1000,
-          "pattern": "^(unknown|[0-9a-f]{40}|sha256:[0-9a-f]{64})$"
+          "pattern": "^(unknown|[0-9a-f]{40}|[0-9a-f]{64}|sha256:[0-9a-f]{64})$"
         },
         "time_source": {
           "type": "string",
@@ -327,19 +352,19 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 1000,
-          "pattern": "^(unknown|[0-9a-f]{40}|sha256:[0-9a-f]{64})$"
+          "pattern": "^(unknown|[0-9a-f]{40}|[0-9a-f]{64}|sha256:[0-9a-f]{64})$"
         },
         "result_revision": {
           "type": "string",
           "minLength": 1,
           "maxLength": 1000,
-          "pattern": "^(unknown|[0-9a-f]{40}|sha256:[0-9a-f]{64})$"
+          "pattern": "^(unknown|[0-9a-f]{40}|[0-9a-f]{64}|sha256:[0-9a-f]{64})$"
         },
         "validation_revision": {
           "type": "string",
           "minLength": 1,
           "maxLength": 1000,
-          "pattern": "^(unknown|[0-9a-f]{40}|sha256:[0-9a-f]{64})$"
+          "pattern": "^(unknown|[0-9a-f]{40}|[0-9a-f]{64}|sha256:[0-9a-f]{64})$"
         },
         "time_source": {
           "type": "string",

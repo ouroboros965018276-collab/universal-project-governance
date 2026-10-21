@@ -1,6 +1,11 @@
-"""Prepare only ignored exact-Git inputs. Never dispatch models/public protocols."""
+"""Owner-invoked trusted repository preparation; never dispatch models.
+
+Like the compiler, this entry executes its installed repository scaffold.
+Fresh scaffold hashes describe the resulting receipt; they do not authorize
+untrusted candidate code. Native candidate executable inputs require a separate
+owner registration before that adapter imports or executes preparation code.
+"""
 import argparse
-import hashlib
 import json
 from pathlib import Path
 import runpy
@@ -35,12 +40,16 @@ def prepare(repo, output, artifact_root, binary, git_binary, control_revision, t
         raise ValueError("all registered paths must be explicit absolute paths")
     repo, output, artifact_root, binary = map(lambda p: Path(p).resolve(), (repo, output, artifact_root, binary))
     if (not output.is_relative_to(repo / "eval-workspaces") or not output.name.startswith("rc19-native-paired-")
+            or not artifact_root.is_relative_to(repo / "eval-workspaces")
+            or artifact_root == output or artifact_root.is_relative_to(output) or output.is_relative_to(artifact_root)
             or output.exists() or artifact_root.exists() or not binary.is_file()):
         raise ValueError("fresh ignored preparation/artifact directories and registered binary required")
     def git(*args):
         return subprocess.check_output([str(git_binary), "-C", str(repo), *args])
     revisions = {"control": git("rev-parse", control_revision + "^{commit}").decode().strip(),
                  "treatment": git("rev-parse", treatment_revision + "^{commit}").decode().strip()}
+    if revisions["control"] == revisions["treatment"]:
+        raise ValueError("paired release revisions must differ")
     def blob(revision, relative):
         return git("show", revision + ":" + relative)
     def tree(revision, prefix):
@@ -63,7 +72,7 @@ def prepare(repo, output, artifact_root, binary, git_binary, control_revision, t
     profile_path=REPO/"evolution/cli_transport.py"
     transport={"path":str(transport_path),"source_sha256":sha(transport_path.read_bytes()),
                "profile_source":{"path":str(profile_path),"sha256":sha(profile_path.read_bytes())},
-               "profile":runpy.run_path(str(transport_path))["PROFILE"],
+               "profile":runpy.run_path(str(transport_path))["load_profile"](sha(profile_path.read_bytes())),
                "scope":"identical child-only HTTP overrides; historical and current callbacks under common transport scaffold"}
     conditions, workers = {}, {}
     for condition, revision in revisions.items():
@@ -71,7 +80,13 @@ def prepare(repo, output, artifact_root, binary, git_binary, control_revision, t
         reference_runtime=tree(revision,"universal-project-governance")
         runtime_directory=output/(condition+"-reference-runtime")
         for relative,content in reference_runtime.items():
-            path=runtime_directory/relative;path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(content.encode("utf-8"))
+            if (not relative or "\\" in relative or ":" in relative
+                    or any(part in {"", ".", ".."} for part in relative.split("/"))):
+                raise ValueError("unsafe release runtime path")
+            path=(runtime_directory/relative).resolve()
+            if not path.is_relative_to(runtime_directory.resolve()):
+                raise ValueError("release runtime path escapes preparation root")
+            path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(content.encode("utf-8"))
         expected_plans={}
         for task in tasks:
             context=task["plan_context"];context_sha=digest(context)
@@ -130,12 +145,12 @@ def prepare(repo, output, artifact_root, binary, git_binary, control_revision, t
                               "state":"listed low-effort support; provider access and observed model identity not attested"},
             "harness_files": {str(path): sha(path.read_bytes()) for path in (
                 HERE/"worker.py", HERE/"parent.py", HERE/"prepare.py", HERE/"tasks.py", HERE/"transport.py", HERE/"__init__.py",
-                HERE.parent/"__init__.py", profile_path, REPO/"tests/test_native_paired.py", REPO/"docs/evolution/native-paired-campaign.md")},
+                HERE.parent/"__init__.py", profile_path, REPO/"tests/test_native_paired.py", REPO/"docs/tool-transport.md")},
             "scope": {"provider": "OpenAI", "model_identity": "requested CLI IDs; internal selection unverified", "formal_qualification": "UNASSESSED",
                       "validation": "JSON/Python AST/exact text; no application-code execution", "tool_calls": "forbidden",
                       "B_joint_gate_unchanged": True, "tokens": "all reported, including regressions; A cannot establish joint token benefit",
                       "cache_scope": "first/repeat exact context in persistent arm workers; OS/provider caches uncontrolled", "automatic_resume": False},
-            "source_preparation": {"seconds": time.perf_counter() - started, "measurement_end": "before private protocol/derived manifest publication"}}
+            "source_preparation": {"measurement_end": "before private protocol/derived manifest publication; duration is in preparation.receipt.json"}}
     spec_sha = digest(spec)
     write(output / "protocol.private.json", spec)
     for entry in workers.values():

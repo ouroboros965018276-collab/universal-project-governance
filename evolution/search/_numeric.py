@@ -28,13 +28,19 @@ def loss(value):
 
 def reflect(value):
     """Reflect an arbitrary finite value into the unit interval."""
-    value %= 2.0
+    if type(value) not in (int, float) or (isinstance(value, float) and not math.isfinite(value)):
+        raise ValueError("reflection requires a finite number")
+    value %= 2
     return value if value <= 1 else 2.0 - value
 
 
 def json_state(value):
-    return [json_state(item) for item in value] if isinstance(value, tuple) else value
+    if isinstance(value, dict):
+        return {key: json_state(item) for key, item in value.items()}
+    return [json_state(item) for item in value] if isinstance(value, (tuple, list)) else value
 
 
 def tuple_state(value):
-    return tuple(tuple_state(item) for item in value) if isinstance(value, list) else value
+    if isinstance(value, dict):
+        return {key: tuple_state(item) for key, item in value.items()}
+    return tuple(tuple_state(item) for item in value) if isinstance(value, (tuple, list)) else value

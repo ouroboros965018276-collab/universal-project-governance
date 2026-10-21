@@ -9,25 +9,36 @@ from qualification.lib.contracts import ROOT, validate_node, frozen_candidate, c
 def digest(value):
     return "sha256:" + hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")).hexdigest()
 
-def verify_artifact(row):
+def verify_artifact(row, artifact_root=None):
     """Review the retained bytes, not just an asserted hash. Unit tests mock this I/O boundary."""
     import pathlib
+    import os
+    import stat
     try:
         evidence = row["evidence"]
-        path = pathlib.Path(evidence["artifact_manifest"])
-        if not path.is_file() or path.is_symlink():
+        path = pathlib.Path(evidence["artifact_manifest"]).absolute()
+        if path.name != "manifest.json" or path.parent.name != row["trial_id"] or path.parent.parent.name != "artifacts":
+            return ["retained artifact location does not match trial"]
+        boundary=pathlib.Path(artifact_root).resolve() if artifact_root is not None else path.parent.parent.resolve()
+        if boundary not in path.resolve().parents:
+            return ["retained artifact outside registered root"]
+        if not path.is_file() or any(item.is_symlink() or (hasattr(item,"is_junction") and item.is_junction()) for item in [path]+list(path.parents)):
             return ["retained artifact unavailable or symlinked"]
-        data = path.read_bytes()
+        fd=os.open(path,os.O_RDONLY|getattr(os,"O_BINARY",0)|getattr(os,"O_NOFOLLOW",0))
+        with os.fdopen(fd,"rb") as stream:
+            if not stat.S_ISREG(os.fstat(stream.fileno()).st_mode): return ["retained artifact is not a regular file"]
+            data=stream.read(64_000_001)
+        if len(data)>64_000_000: return ["retained artifact exceeds review bound"]
         if "sha256:" + hashlib.sha256(data).hexdigest() != evidence["artifact_manifest_sha256"]:
             return ["retained artifact digest mismatch"]
         artifact = json.loads(data.decode("utf-8"))
-        if artifact.get("trial_id") != row["trial_id"] or not all(isinstance(artifact.get(k), dict) for k in ["before", "after", "execution"]):
+        if not isinstance(artifact,dict) or artifact.get("trial_id") != row["trial_id"] or not all(isinstance(artifact.get(k), dict) for k in ["before", "after", "execution"]):
             return ["retained artifact contract mismatch"]
         return []
     except (KeyError, OSError, ValueError, TypeError):
         return ["retained artifact unreadable or malformed"]
 
-def admit(rows, fingerprint, protocol, manifest=None, *, thresholds):
+def admit(rows, fingerprint, protocol, manifest=None, *, thresholds, artifact_root=None):
     try:
         candidate = frozen_candidate()
     except (OSError, ValueError):
@@ -51,7 +62,7 @@ def admit(rows, fingerprint, protocol, manifest=None, *, thresholds):
     if not isinstance(slots, list) or not slots or not all(isinstance(x, dict) and isinstance(x.get("trial_id"), str) for x in slots):
         return {"state": "FAIL", "errors": errors + ["invalid registered trial list"], "accepted": 0}
     planned = {x.get("trial_id"): x for x in slots}
-    if len(planned) != len(slots) or None in planned:
+    if len(planned) != len(slots):
         errors.append("invalid/duplicate registered trial identities")
     seen = set(); cells = Counter()
     fixtures = {}
@@ -102,7 +113,8 @@ def admit(rows, fingerprint, protocol, manifest=None, *, thresholds):
         try:
             start = datetime.fromisoformat(row["started_at"].replace("Z", "+00:00")); end = datetime.fromisoformat(row["completed_at"].replace("Z", "+00:00"))
             if end < start: errors.append(prefix + "completion before start")
-        except ValueError:
+            if start.tzinfo is None or end.tzinfo is None: errors.append(prefix + "execution time requires timezone")
+        except (ValueError,TypeError):
             errors.append(prefix + "invalid execution time")
         kind = row["kind"]; lab = fixtures.get(kind, {}).get(row["scenario_id"])
         required_outcomes = {"behavioral": ["task_success", "governance_defect_free", "critical_failures"], "handoff": ["task_success", "governance_defect_free", "critical_failures", "handoff_degraded", "handoff_condition"], "trigger": ["should_trigger", "triggered"], "mutation": ["eval_detected_regression"]}.get(kind, [])
@@ -141,7 +153,7 @@ def admit(rows, fingerprint, protocol, manifest=None, *, thresholds):
         if row["repetition"] > protocol["sampling"]["locked_repetitions_per_cell_max"]: errors.append(prefix + "repetition exceeds preregistered maximum")
         if not row["evidence"].get("artifact_manifest_sha256") or not row["evidence"].get("exit_code") == 0:
             errors.append(prefix + "reviewable artifact identity missing or execution failed")
-        errors.extend(prefix + x for x in verify_artifact(row))
+        errors.extend(prefix + x for x in verify_artifact(row,artifact_root))
     max_reps = protocol["sampling"]["locked_repetitions_per_cell_max"]
     if any(n > max_reps for cell, n in cells.items() if cell[0] in {"behavioral", "handoff"}): errors.append("cell exceeds sampling maximum")
     missing = sorted(set(planned) - seen)

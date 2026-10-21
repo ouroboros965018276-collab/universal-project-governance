@@ -71,7 +71,8 @@
           "type": "string",
           "minLength": 1
         }
-      }
+      },
+      "additionalProperties": false
     },
     "environment": {
       "type": "object",
@@ -129,25 +130,29 @@
           "type": [
             "string",
             "null"
-          ]
+          ],
+          "minLength": 1
         },
         "source_adapter_config_sha256": {
           "type": [
             "string",
             "null"
-          ]
+          ],
+          "pattern": "^sha256:[0-9a-f]{64}$"
         },
         "source_host_tool_name": {
           "type": [
             "string",
             "null"
-          ]
+          ],
+          "minLength": 1
         },
         "source_host_tool_version": {
           "type": [
             "string",
             "null"
-          ]
+          ],
+          "minLength": 1
         },
         "sandboxed": {
           "type": "boolean"
@@ -185,8 +190,104 @@
               "pattern": "^sha256:[0-9a-f]{64}$"
             }
           }
+        },
+        "source_adapter_runtime_sha256": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "source_model_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "source_scaffold_version": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "mutation_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "language": {
+          "type": "string",
+          "minLength": 1
+        },
+        "object_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "handoff_condition": {
+          "enum": [
+            "present",
+            "ablated"
+          ]
+        },
+        "source_isolation_attestation": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "required": [
+            "issuer",
+            "reference",
+            "sha256"
+          ],
+          "properties": {
+            "issuer": {
+              "type": "string",
+              "minLength": 1
+            },
+            "reference": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^sha256:[0-9a-f]{64}$"
+            }
+          }
         }
-      }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "qualification_set": {
+                "const": "locked"
+              }
+            },
+            "required": [
+              "qualification_set"
+            ]
+          },
+          "then": {
+            "required": [
+              "isolation_attestation"
+            ],
+            "properties": {
+              "isolation_attestation": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      ]
     },
     "fingerprints": {
       "type": "object",
@@ -252,10 +353,51 @@
             "report_count": {
               "type": "integer",
               "minimum": 0
+            },
+            "required": {
+              "type": "boolean"
+            },
+            "field_report_recorded": {
+              "type": "boolean"
             }
+          },
+          "additionalProperties": false
+        },
+        "handoff_created_by_a": {
+          "type": "boolean"
+        },
+        "handoff_condition": {
+          "enum": [
+            "present",
+            "ablated"
+          ]
+        },
+        "checks": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "preserve_at_checkpoint": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "preserve_at_finish": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "changed_files": {
+          "type": "array",
+          "items": {
+            "type": "string"
           }
         }
-      }
+      },
+      "additionalProperties": false
     },
     "usage": {
       "type": "object",
@@ -283,6 +425,56 @@
         "managed_project_files": {
           "type": "number",
           "minimum": 0
+        },
+        "input_tokens": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "output_tokens": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "cached_input_tokens": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "agent_b_total_tokens": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "agent_b_wall_time_seconds": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "agent_b_tool_calls": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "usage_available": {
+          "type": [
+            "boolean",
+            "integer"
+          ],
+          "minimum": 0,
+          "maximum": 2
         }
       }
     },
@@ -304,8 +496,53 @@
         "artifact_manifest_sha256": {
           "type": "string",
           "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "stdout_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "stderr_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "inner_stdout_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "inner_stderr_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "preflight_stdout_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "preflight_stderr_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "before_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "after_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "timed_out": {
+          "type": "boolean"
+        },
+        "events": {
+          "type": "object"
+        },
+        "agent_a": {
+          "type": "object"
+        },
+        "agent_b": {
+          "type": "object"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "round_id": {
       "type": "string",
@@ -317,11 +554,106 @@
     },
     "started_at": {
       "type": "string",
-      "format": "date-time"
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$"
     },
     "completed_at": {
       "type": "string",
-      "format": "date-time"
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$"
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "behavioral"
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "then": {
+        "properties": {
+          "outcome": {
+            "required": [
+              "task_success",
+              "governance_defect_free",
+              "critical_failures"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "handoff"
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "then": {
+        "properties": {
+          "outcome": {
+            "required": [
+              "task_success",
+              "governance_defect_free",
+              "critical_failures",
+              "handoff_degraded",
+              "handoff_condition"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "trigger"
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "then": {
+        "properties": {
+          "outcome": {
+            "required": [
+              "should_trigger",
+              "triggered"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "mutation"
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "then": {
+        "properties": {
+          "outcome": {
+            "required": [
+              "eval_detected_regression"
+            ]
+          }
+        }
+      }
+    }
+  ]
 }

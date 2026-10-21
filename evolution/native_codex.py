@@ -28,7 +28,7 @@ from .contracts import canonical_bytes, digest
 VERSION = "1"
 _ROOT = Path(__file__).resolve().parents[1]
 _CONFIG_KEYS = {"binary", "model", "effort", "artifact_root", "timeout_seconds",
-                "grader", "cli_version"}
+                "grader", "cli_version", "execution_inputs_sha256"}
 
 
 class NativeCallError(RuntimeError):
@@ -73,6 +73,16 @@ def _text_files(root, files):
         destination = root.joinpath(*relative.parts)
         destination.parent.mkdir(parents=True, exist_ok=True)
         destination.write_bytes(content.encode("utf-8"))
+
+
+def execution_inputs_identity(source, artifact):
+    """Owner trust identity for executable preparation inputs, excluding policy prose.
+
+    Historical/alternate runtime registrations must supply this digest through
+    execution_inputs_sha256 before construction; request data cannot grant trust.
+    """
+    return digest({"artifact": artifact, "source_python": {
+        name: text for name, text in source.items() if name.endswith(".py")}})
 
 
 def _usage(events):
@@ -136,10 +146,17 @@ class NativeCodex:
     def __init__(self, config):
         if not isinstance(config, dict) or set(config) - _CONFIG_KEYS:
             raise ValueError("native config contains unsupported fields; no secrets are accepted")
-        for name in ("binary", "model", "effort", "artifact_root", "timeout_seconds"):
+        for name in ("binary", "model", "effort", "artifact_root", "timeout_seconds", "grader"):
             if name not in config:
                 raise ValueError("native config requires " + name)
         self.config = dict(config)
+        pins = config.get("execution_inputs_sha256")
+        if pins is not None and (not isinstance(pins, list) or not pins or
+                any(not isinstance(pin, str) or len(pin) != 64 or any(c not in "0123456789abcdef" for c in pin) for pin in pins)):
+            raise ValueError("execution_inputs_sha256 must contain owner-registered SHA-256 identities")
+        if pins is None:
+            pins = []  # Learner-only configs cannot execute preparation code.
+        self.execution_inputs_sha256 = frozenset(pins)
         self.binary = Path(config["binary"])
         self.artifacts = Path(config["artifact_root"])
         if not self.binary.is_absolute() or not self.binary.is_file():
@@ -173,7 +190,8 @@ class NativeCodex:
         if digest(dict(self.config, binary_sha256=self.binary_sha256)) != self.config_sha256:
             raise ValueError("native configuration changed after registration")
         unused, grader_identity = _grader(self.config.get("grader"))
-        return {"native_config_sha256": self.config_sha256, "grader": grader_identity}
+        return {"native_config_sha256": self.config_sha256, "grader": grader_identity,
+                "execution_inputs_sha256": sorted(self.execution_inputs_sha256)}
 
     def binding(self):
         """Read the exact capability identity to preregister in runner_config."""
@@ -185,6 +203,8 @@ class NativeCodex:
 
     def _prepare(self, source, artifact, context):
         """Cache only deterministic local preparation, never model observations."""
+        if execution_inputs_identity(source, artifact) not in self.execution_inputs_sha256:
+            raise ValueError("execution inputs are not owner-registered; new registration required")
         # Digests detect changed bytes inside this trusted Python process;
         # process memory and its cache anchors are not an authorization boundary.
         started = time.perf_counter()
@@ -302,6 +322,13 @@ class NativeCodex:
         return result
 
     def _locked_call(self, *, key, prompt, bindings, output_schema=None, local_timings=None):
+        if not isinstance(prompt, str) or not isinstance(bindings, dict):
+            raise ValueError("native prompt/bindings have invalid types")
+        if output_schema is not None and not isinstance(output_schema, dict):
+            raise ValueError("task output_schema must be an object")
+        # Validate all encoding before creating a per-call pending fence.
+        prompt.encode("utf-8")
+        canonical_bytes({"key": key, "bindings": bindings, "schema": output_schema})
         if (self.artifacts / "UNKNOWN_CALL.json").exists():
             raise NativeCallPending("unresolved native call: independently reconcile UNKNOWN_CALL.json before dispatch")
         verify_started = time.perf_counter()

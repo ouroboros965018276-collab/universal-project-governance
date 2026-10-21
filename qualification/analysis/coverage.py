@@ -2,6 +2,9 @@ from __future__ import annotations
 from collections import defaultdict
 from qualification.analysis.metrics import pair_key
 
+def _object(value):
+    return value if isinstance(value, dict) else {}
+
 def gate(state, **data):
     result = {"state": state}
     result.update(data)
@@ -10,7 +13,7 @@ def gate(state, **data):
 def release_rows(rows, kind=None):
     selected = [
         row for row in rows
-        if row.get("environment", {}).get("qualification_set") == "locked"
+        if _object(row.get("environment")).get("qualification_set") == "locked"
     ]
     if kind is not None:
         selected = [row for row in selected if row.get("kind") == kind]
@@ -47,7 +50,9 @@ def behavioral_coverage(rows, protocol):
         "host_tool_name", "host_tool_version",
     ]
     for row in locked:
-        env = row.get("environment", {})
+        env = _object(row.get("environment"))
+        if not isinstance(row.get("scenario_id"),str) or not row["scenario_id"]:
+            malformed.append({"trial_id":row.get("trial_id"),"error":"missing scenario_id"})
         missing_identity = [key for key in identity_fields if not env.get(key)]
         if missing_identity:
             malformed.append({
@@ -55,11 +60,11 @@ def behavioral_coverage(rows, protocol):
                 "error": "missing reproducibility identity",
                 "fields": missing_identity,
             })
-    scenarios = sorted({row.get("scenario_id") for row in locked})
+    scenarios = sorted({row.get("scenario_id") for row in locked if isinstance(row.get("scenario_id"),str) and row["scenario_id"]})
     families = sorted({
-        row.get("agent", {}).get("family")
+        _object(row.get("agent")).get("family")
         for row in locked
-        if row.get("agent", {}).get("family")
+        if _object(row.get("agent")).get("family")
     })
     required_scenarios = int(protocol["sampling"]["minimum_locked_behavioral_scenarios"])
     required_families = int(protocol["sampling"]["minimum_agent_families"])
@@ -110,7 +115,9 @@ def handoff_coverage(rows, protocol):
         "source_host_tool_name", "source_host_tool_version",
     ]
     for row in locked:
-        env = row.get("environment", {})
+        env = _object(row.get("environment"))
+        if not isinstance(row.get("scenario_id"),str) or not row["scenario_id"]:
+            malformed.append({"trial_id":row.get("trial_id"),"error":"missing scenario_id"})
         missing_identity = [key for key in identity_fields if not env.get(key)]
         if missing_identity:
             malformed.append({
@@ -121,9 +128,12 @@ def handoff_coverage(rows, protocol):
     for row in locked:
         key = pair_key(row)
         condition = (
-            row.get("outcome", {}).get("handoff_condition")
-            or row.get("environment", {}).get("handoff_condition")
+            _object(row.get("outcome")).get("handoff_condition")
+            or _object(row.get("environment")).get("handoff_condition")
         )
+        if condition not in {"present","ablated"}:
+            malformed.append({"trial_id":row.get("trial_id"),"error":"invalid handoff condition"})
+            continue
         bucket = groups.setdefault(key, {})
         if condition in bucket:
             malformed.append({"pair": list(key), "condition": condition, "error": "duplicate condition"})
@@ -133,11 +143,11 @@ def handoff_coverage(rows, protocol):
         for key, bucket in groups.items()
         if "present" in bucket and "ablated" in bucket
     ]
-    scenarios = sorted({row.get("scenario_id") for row in locked})
+    scenarios = sorted({row.get("scenario_id") for row in locked if isinstance(row.get("scenario_id"),str) and row["scenario_id"]})
     families = sorted({
-        row.get("agent", {}).get("family")
+        _object(row.get("agent")).get("family")
         for row in locked
-        if row.get("agent", {}).get("family")
+        if _object(row.get("agent")).get("family")
     })
     required_scenarios = int(protocol["sampling"]["minimum_locked_handoff_scenarios"])
     required_reps = int(protocol["sampling"]["locked_handoff_repetitions_per_cell_min"])

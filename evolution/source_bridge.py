@@ -55,7 +55,8 @@ class SourceBridge:
             if not isinstance(policy, dict):
                 raise SourceBridgeError("policy must be an object")
             policy_id = policy.get("id")
-            if not isinstance(policy_id, str) or not policy_id or "/" in policy_id or policy_id in ids:
+            if (not isinstance(policy_id, str) or not policy_id or "/" in policy_id or "\\" in policy_id or
+                    any(not c.isprintable() or c.isspace() for c in policy_id) or policy_id in ids):
                 raise SourceBridgeError("policy IDs must be nonempty, unique, and contain no slash")
             ids.add(policy_id)
             for field in sorted(self.EDITABLE_FIELDS):
@@ -104,7 +105,9 @@ class SourceBridge:
         from .reflective import Patch
 
         raw = self._patch_dict(patch)
-        details = raw.get("ranking_details") or {}
+        details = raw.get("ranking_details")
+        if details is None:
+            details = {}
         if not isinstance(details, dict):
             raise SourceBridgeError("ranking_details must be an object")
         if details.get("source_hash", self.source_hash) != self.source_hash:
@@ -148,7 +151,7 @@ class SourceBridge:
             current = result["policies"][index][field]
             target = edit.get("target", "")
             op = edit["op"]
-            if op != "append" and (not target or current.count(target) != 1):
+            if op != "append" and (not target or sum(current.startswith(target, i) for i in range(len(current))) != 1):
                 raise SourceBridgeError("edit anchor must occur exactly once")
             if op == "append" and target:
                 raise SourceBridgeError("append must not carry an anchor")

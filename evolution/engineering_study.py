@@ -11,7 +11,7 @@ import hashlib
 import json
 import re
 
-from .context_campaign import ABLATIONS, ATTENTION_INSTRUCTION, trusted_arm_models
+from .context_campaign import ABLATIONS, trusted_arm_models
 
 SCHEMA = 'real-engineering-six-condition-preregistration-v1'
 MODULE = 'evolution/engineering_study.py'
@@ -214,7 +214,7 @@ class EngineeringStudy:
                     'work_seconds': ENVELOPE['work_seconds'], 'max_requests': None if native else ENVELOPE['max_api_requests'],
                     'max_tools': ENVELOPE['max_tools'], 'minimum_dispatch_window_seconds': ENVELOPE['minimum_dispatch_window_seconds'],
                     **{key: row[key] for key in ('workflow_id', 'arm', 'case_id', 'block_id', 'cut_policy')},
-                    'role': role, 'surface': 'nativeCLI' if native else 'API', 'max_native_executions': 1 if native else 0}
+                    'role': role, 'surface': 'nativeCLI' if native else 'API', 'max_native_executions': ENVELOPE['max_native_executions'] if native else 0}
         return result
 
     def counts(self):
@@ -280,16 +280,22 @@ class EngineeringStudy:
                  'private registry metadata required')
         result = {}
         for family in registry['families']:
+            _require(type(family) is dict and type(family.get('family')) is str
+                     and type(family.get('stages')) is list, 'fixture family metadata shape differs')
             name = family['family']
             _require(name in self.family_stages() and name not in result, 'exact unique family identity required')
             stages = {}
             for row in family['stages']:
+                _require(type(row) is dict and type(row.get('stage')) is str
+                         and all(k in row for k in ('public_task', 'private_contract', 'reference')),
+                         'fixture stage metadata shape differs')
                 stage = row['stage']
                 self.validate_family_stage(name, stage)
                 _require(stage not in stages, 'duplicate fixture stage')
                 for key in ('public_task', 'private_contract', 'reference'):
                     _path(row[key])
-                stages[stage] = {'public_task_path': row['public_task'], 'private_contract_path': row['private_contract']}
+                stages[stage] = {'public_task_path': row['public_task'], 'private_contract_path': row['private_contract'],
+                                 'reference_path': row['reference']}
             _require(set(stages) == set(self.family_stages()[name]), 'complete family stages required')
             result[name] = stages
         _require(set(result) == set(self.family_stages()), 'complete preregistered family identities required')
@@ -305,8 +311,13 @@ class EngineeringStudy:
         if 'route_profile' in self._preregistration:
             expected.update(route_profile=DUAL_API_ROUTE_PROFILE, profile_id=self._profile_id,
                             configuration_sha256=self._configuration_sha256)
+            if 'execution_profile_id' in self._preregistration:
+                expected['execution_profile_id'] = self._profile_id
+            else:
+                _require(type(protocol) is dict and 'execution_profile_id' not in protocol,
+                         'execution profile requires its explicit preregistration')
         else:
-            _require(type(protocol) is dict and 'route_profile' not in protocol,
+            _require(type(protocol) is dict and not {'route_profile', 'profile_id', 'execution_profile_id'} & set(protocol),
                      'explicit route profile requires its own preregistration')
         _require(type(protocol) is dict and all(canonical(protocol.get(k)) == canonical(v) for k, v in expected.items()),
                  'protocol topology/identity differs from preregistration')

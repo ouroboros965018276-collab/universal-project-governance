@@ -5,7 +5,6 @@ not an independent reader, and never parses model tool argument JSON.
 """
 from __future__ import annotations
 
-import copy
 import json
 import math
 import re
@@ -87,6 +86,9 @@ class ChatSSE:
         self.identifier = self.model = self.finish = self.usage = None
         self.content = self.reasoning = None
         self.tools = {}
+        self._text_bytes = 0
+        self._metadata_dirty = True
+        self._projection_base_bytes = 0
         self.message_valid = True
 
     def _fail(self, code):
@@ -158,8 +160,13 @@ class ChatSSE:
         if value == "[DONE]":
             self.done = True
             return
-        before = copy.deepcopy((self.identifier, self.model, self.finish, self.usage,
-                                self.content, self.reasoning, self.tools, self.message_valid))
+        # Snapshot only fragment lengths and fixed metadata, never accumulated text.
+        lengths = [(parts, len(parts)) for parts in (self.content, self.reasoning) if parts is not None]
+        lengths += [(parts, len(parts)) for call in self.tools.values() for parts in call["function"].values()]
+        old_tools = {index: {**call, "function": dict(call["function"])} for index, call in self.tools.items()}
+        before = (self.identifier, self.model, self.finish, self.usage,
+                  self.content, self.reasoning, old_tools, self.message_valid, self._text_bytes,
+                  self._metadata_dirty, self._projection_base_bytes)
         try:
             raw = json.loads(value, object_pairs_hook=_pairs,
                              parse_float=_finite_float,
@@ -175,6 +182,7 @@ class ChatSSE:
             return
         if self.identifier is None:
             self.identifier, self.model = raw["id"], raw["model"]
+            self._metadata_dirty = True
         if (self.identifier, self.model) != (raw["id"], raw["model"]):
             self._fail("sse-response-identity")
             return
@@ -195,6 +203,7 @@ class ChatSSE:
                     self._fail("sse-finish-reason")
                     return
                 self.finish = finish
+                self._metadata_dirty = True
         elif raw.get("usage") is None:
             self._fail("sse-empty-choice-chunk")
             return
@@ -203,18 +212,25 @@ class ChatSSE:
                 self._fail("sse-terminal-usage")
                 return
             self.usage = raw["usage"]
+            self._metadata_dirty = True
             if self.finish is None:
                 # A valid observed component is not a complete terminal. Keep
                 # it for honest accounting while retaining unknown exposure.
                 self._fail("sse-terminal-usage")
         try:
-            oversized = len(_canonical(self.response())) > self.limits[3]
+            if self._metadata_dirty:
+                self._projection_base_bytes = len(_canonical(self._response(materialize=False)))
+                self._metadata_dirty = False
+            oversized = self._projection_base_bytes + self._text_bytes > self.limits[3]
         except (UnicodeError, ValueError, RecursionError):
             oversized = True
             self._fail("sse-invalid-json")
         if oversized:
             (self.identifier, self.model, self.finish, self.usage,
-             self.content, self.reasoning, self.tools, self.message_valid) = before
+             self.content, self.reasoning, self.tools, self.message_valid, self._text_bytes,
+                  self._metadata_dirty, self._projection_base_bytes) = before
+            for parts, length in lengths:
+                del parts[length:]
             self._fail("sse-projection-byte-limit")
 
     def _delta(self, delta):
@@ -226,7 +242,11 @@ class ChatSSE:
                 if not _text(part):
                     self.message_valid = False
                 else:
-                    setattr(self, attr, (getattr(self, attr) or "") + part)
+                    if getattr(self, attr) is None:
+                        setattr(self, attr, [])
+                        self._metadata_dirty = True
+                    getattr(self, attr).append(part)
+                    self._text_bytes += len(_canonical(part)) - 2
         calls = delta.get("tool_calls")
         if calls is None:
             return
@@ -239,13 +259,17 @@ class ChatSSE:
                 continue
             if not set(call) <= {"index", "id", "type", "function"}:
                 self.message_valid = False
-            target = self.tools.setdefault(call["index"], {"id": None, "type": None, "function": {"name": "", "arguments": ""}})
+            if call["index"] not in self.tools:
+                self._metadata_dirty = True
+            target = self.tools.setdefault(call["index"], {"id": None, "type": None, "function": {"name": [], "arguments": []}})
             for name in ("id", "type"):
                 value = call.get(name)
                 if value not in (None, ""):
                     if not _text(value) or target[name] not in (None, value):
                         self.message_valid = False
                     else:
+                        if target[name] != value:
+                            self._metadata_dirty = True
                         target[name] = value
             function = call.get("function")
             if function is None:
@@ -261,14 +285,21 @@ class ChatSSE:
                     if not _text(part):
                         self.message_valid = False
                     else:
-                        target["function"][name] += part
+                        target["function"][name].append(part)
+                        self._text_bytes += len(_canonical(part)) - 2
 
     def response(self):
+        return self._response(materialize=True)
+
+    def _response(self, *, materialize):
+        text = lambda parts: ("".join(parts) if materialize else "") if parts is not None else None
         return {"id": self.identifier, "model": self.model, "object": "chat.completion",
                 "choices": [{"index": 0, "finish_reason": self.finish, "message": {
-                    "role": "assistant", "content": self.content,
-                    "reasoning_content": self.reasoning,
-                    "tool_calls": [self.tools[i] for i in sorted(self.tools)] or None}}], "usage": self.usage}
+                    "role": "assistant", "content": text(self.content),
+                    "reasoning_content": text(self.reasoning),
+                    "tool_calls": [{**self.tools[i], "function": {
+                        name: text(parts) for name, parts in self.tools[i]["function"].items()}}
+                        for i in sorted(self.tools)] or None}}], "usage": self.usage}
 
     def report(self, *, body_complete):
         # EOF alone does not dispatch an unterminated event. A terminal CR is
@@ -290,7 +321,7 @@ class ChatSSE:
                 self.block_nonempty = False
         if self.tools and (sorted(self.tools) != list(range(len(self.tools))) or any(
                 type(v["id"]) is not str or not v["id"] or v["type"] != "function"
-                or not v["function"]["name"] for v in self.tools.values())):
+                or not any(v["function"]["name"]) for v in self.tools.values())):
             self.message_valid = False
         if self.error is None and (self.buffer or self.block_nonempty):
             self._fail("sse-undispatched-tail")

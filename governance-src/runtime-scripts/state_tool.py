@@ -37,6 +37,17 @@ def schema_root() -> Path:
 
 def validate_node(value, schema, where="$"):
     errors = []
+    for subschema in schema.get("allOf", []):
+        errors += validate_node(value, subschema, where)
+    if "if" in schema:
+        branch = "else" if validate_node(value, schema["if"], where) else "then"
+        if branch in schema:
+            errors += validate_node(value, schema[branch], where)
+    # Applicators may omit type while constraining an object or an array.
+    if "type" not in schema and isinstance(value, dict) and ("properties" in schema or "required" in schema):
+        schema = dict(schema, type="object")
+    if "type" not in schema and isinstance(value, str) and any(key in schema for key in ("pattern", "minLength", "maxLength", "format")):
+        schema = dict(schema, type="string")
     if "const" in schema and (value != schema["const"] or isinstance(value, bool) != isinstance(schema["const"], bool)):
         errors.append("%s must equal %r" % (where, schema["const"]))
     typ = schema.get("type")
@@ -44,7 +55,8 @@ def validate_node(value, schema, where="$"):
         alternatives = [validate_node(value, dict(schema, type=t), where) for t in typ]
         return [] if any(not e for e in alternatives) else ["%s has no permitted type" % where]
     if typ == "null":
-        return errors if value is None else ["%s must be null" % where]
+        if value is not None:
+            errors.append("%s must be null" % where)
     if typ == "object":
         if not isinstance(value, dict):
             return ["%s must be object" % where]
@@ -58,6 +70,12 @@ def validate_node(value, schema, where="$"):
         for key, subschema in schema.get("properties", {}).items():
             if key in value:
                 errors += validate_node(value[key], subschema, "%s.%s" % (where, key))
+        if isinstance(schema.get("additionalProperties"), dict):
+            for key in set(value) - set(schema.get("properties", {})):
+                errors += validate_node(value[key], schema["additionalProperties"], "%s.%s" % (where, key))
+        if "propertyNames" in schema:
+            for key in value:
+                errors += validate_node(key, schema["propertyNames"], "%s property name" % where)
     elif typ == "array":
         if not isinstance(value, list):
             return ["%s must be array" % where]
@@ -117,7 +135,7 @@ def validation_run_errors(runs) -> list:
         passed, total = run.get("passed"), run.get("total")
         if passed is not None and (total is None or passed > total):
             errors.append("validation run %s needs a denominator at least as large as passed" % run["run_id"])
-        if run["result"] == "passed" and passed is not None and passed != total:
+        if run["result"] == "passed" and (passed is None or total is None or passed != total):
             errors.append("validation run %s cannot pass with incomplete passing count" % run["run_id"])
     return errors
 
@@ -192,6 +210,10 @@ def validate_file(path: Path, schema_name: str, project_root: Path = None) -> li
     schema = load(schema_root() / (schema_name + ".schema.json"))
     data = load(path)
     errors = validate_node(data, schema)
+    if not errors and schema_name == "feedback":
+        ids = [item["id"] for item in data["items"]]
+        if len(ids) != len(set(ids)):
+            errors.append("duplicate feedback id")
     if not errors and "validation_runs" in data:
         errors += validation_run_errors(data["validation_runs"])
     if not errors and "recovery" in data:

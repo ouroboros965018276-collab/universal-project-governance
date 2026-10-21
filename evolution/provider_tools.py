@@ -1383,7 +1383,7 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
               before_request=None, after_request=None, profile_id=None, execution_backend=None, connect_retry_policy=None, tool_feedback_policy=None,
               broker_profile_id=None, controlled_local_stop_guard=None, settlement_policy=None,
               actor_timing=None, controlled_phase_stop_policy=None, controlled_phase_stop_guard=None,
-              reasoning_continuation_policy=None, resume_checkpoint=None):
+              reasoning_continuation_policy=None, resume_checkpoint=None, trusted_resume_sha256=None):
     """Run once on existing disk state; new actor => fresh artifact directory.
 
     Explicit resume_checkpoint consumes one independently authenticated unfinished
@@ -1519,6 +1519,7 @@ def run_actor(provider, model, task, root, artifact_dir, git_binary, system_cont
     if resume_checkpoint is not None:
         from evolution import actor_checkpoint
         resume_seed = actor_checkpoint.validate_resume(resume_checkpoint, task=task, provider=provider,
+            trusted_checkpoint_sha256=trusted_resume_sha256,
             model=model, system_context=system_context, configuration=configuration, root=root)
         if resume_seed["requests_used"] >= max_requests or resume_seed["tools_used"] >= MAX_TOOLS or resume_seed["elapsed_seconds_used"] >= timeout_seconds:
             raise ValueError("cumulative recovery budget leaves no dispatch/tool/active-work capacity")

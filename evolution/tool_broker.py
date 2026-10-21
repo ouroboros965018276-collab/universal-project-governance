@@ -305,6 +305,7 @@ def git_command(binary, root, *arguments):
 
 
 class RepoBroker:
+    _allow_empty_patch_results = False
     @staticmethod
     def _validate_task(task):
         return validate_task(task)
@@ -427,7 +428,7 @@ class RepoBroker:
                             else:
                                 directory = self.execution_artifacts / ("validation-%03d" % self._execution_validation_count)
                                 behavior, execution = validate_with_execution(
-                                    sources, self.task["behavior_contract"], directory, self.deadline - time.time())
+                                    sources, self.task["behavior_contract"], directory, self.deadline - time.time(), project_root=self.root)
                             behavior_ok = behavior["ok"]
                             if not behavior_ok:
                                 diagnostics = _behavior_diagnostics(behavior, self.task)
@@ -566,7 +567,7 @@ class RepoBroker:
                 if operation["old_sha256"] != (sha(old) if old is not None else None):
                     raise ValueError("patch precondition hash mismatch")
                 raw = text.encode("utf-8")
-                if not raw or len(raw) > MAX_FILE_BYTES or raw == old:
+                if (not raw and not self._allow_empty_patch_results) or len(raw) > MAX_FILE_BYTES or raw == old:
                     raise ValueError("patch must make a nonempty bounded change")
                 resulting_bytes += len(raw) - (len(old) if old is not None else 0)
                 staged.append((name, path, raw))

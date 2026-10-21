@@ -56,6 +56,12 @@ class RolloutResult:
         if not isinstance(self.extras, dict) or set(self.extras) & {
                 "id", "hard", "soft", "fail_reason", "task_type", "task_description", "predicted_answer"}:
             raise ValueError("rollout extras cannot override observed fields")
+        if any(not isinstance(key, str) for key in self.extras):
+            raise ValueError("rollout extras keys must be strings")
+        try:
+            json.dumps(self.extras, allow_nan=False)
+        except (TypeError, ValueError, OverflowError) as error:
+            raise ValueError("rollout extras must be finite JSON") from error
         return dict(id=self.id, hard=self.hard, soft=self.soft, fail_reason=self.fail_reason,
                     task_type=self.task_type, task_description=self.task_description,
                     predicted_answer=self.predicted_answer, **copy.deepcopy(self.extras))
@@ -77,9 +83,12 @@ class BudgetedBackend:
         self.terminal_error = None
         self._lock = threading.Lock()
 
-    def __call__(self, *, system, user, max_completion_tokens=16384, retries=1, stage="optimizer", **kwargs):
+    def __call__(self, *, system, user, max_completion_tokens=16384, retries=None, stage="optimizer", **kwargs):
+        if retries is not None and (type(retries) is not int or retries < 0):
+            raise ValueError("retries must be a nonnegative integer")
+        retry_limit = self.max_retries if retries is None else min(retries, self.max_retries)
         with self._lock:
-            for attempt in range(self.max_retries + 1):
+            for attempt in range(retry_limit + 1):
                 try:
                     remaining = self.budget.max_total_tokens - self.budget.total_tokens
                     cap = min(max_completion_tokens, max(0, remaining))
@@ -89,15 +98,19 @@ class BudgetedBackend:
                     raise
                 started = time.monotonic()
                 try:
-                    result = self.backend(system=system, user=user, max_completion_tokens=cap, stage=stage)
+                    result = self.backend(system=system, user=user, max_completion_tokens=cap, stage=stage, **kwargs)
                     if not isinstance(result, tuple) or len(result) != 2 or not isinstance(result[0], str):
                         raise TypeError("backend must return (text, usage_dict_or_None)")
                     response, usage = result
                     if usage is not None and not isinstance(usage, dict):
                         raise TypeError("backend usage must be an object or None")
                 except Exception as exc:
-                    self._record(getattr(exc, "usage", None), time.monotonic() - started, type(exc).__name__)
-                    if attempt == self.max_retries:
+                    try:
+                        self._record(getattr(exc, "usage", None), time.monotonic() - started, type(exc).__name__)
+                    except Exception as accounting_error:
+                        self.terminal_error = exc
+                        raise exc from accounting_error
+                    if attempt == retry_limit:
                         self.terminal_error = exc
                         raise
                 else:
@@ -148,6 +161,12 @@ def _rollout_dict(row):
             raise ValueError("rollout scores must be finite numbers in [0, 1]")
     if value["hard"] not in (0, 1) or not isinstance(value["id"], str) or not value["id"]:
         raise ValueError("rollout requires a binary hard score and nonempty ID")
+    try:
+        if any(not isinstance(key, str) for key in value):
+            raise ValueError("rollout keys must be strings")
+        json.dumps(value, allow_nan=False)
+    except (TypeError, ValueError, OverflowError) as error:
+        raise ValueError("rollout must be finite JSON") from error
     return value
 
 
@@ -218,6 +237,9 @@ class ReflectiveLearner:
                     len(set(indices)) != len(indices) or set(ranked) - {"selected_indices", "reasoning"}):
                 raise SourceBridgeError("invalid bounded ranking selection")
             edits = [edits[i] for i in indices]
+        paths = [edit["update_target"] for edit in edits]
+        if len(paths) != len(set(paths)):
+            raise SourceBridgeError("selected edits must target distinct policy fields")
         patch = self.bridge.bind_patch(Patch(edits=edits, reasoning="training reflection with bound source validation"))
         self.last_trace.update(raw_distinct_edits=len(candidates), selected_edits=len(patch.edits),
                                stages=["reflect", "consensus", "conditional-merge-select", "source_bridge"])

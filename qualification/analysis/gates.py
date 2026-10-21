@@ -100,11 +100,12 @@ def core_task(rows, protocol, thresholds, coverage):
     effect = paired_binary(
         release_rows(rows, "behavioral"), "A0", "A2", "task_success"
     )
+    if not effect["n"]: return gate("MORE_DATA", n=0, reason="no paired observations")
     inference = _ci(effect, protocol)
     margin = thresholds["core_task_non_inferiority"]["margin_absolute"]
     return gate(
         "PASS" if inference["ci"][0] >= margin else "FAIL",
-        delta=effect["mean_delta"],
+        delta=inference["mean_delta"],
         ci=inference["ci"],
         n=effect["n"],
         margin=margin,
@@ -119,6 +120,7 @@ def governance_uplift(rows, protocol, thresholds, coverage, control):
     behavioral = release_rows(rows, "behavioral")
     no_skill = paired_binary(behavioral, "A0", "A2", "governance_defect_free")
     attention = paired_binary(behavioral, "A1", "A2", "governance_defect_free")
+    if not no_skill["n"] or not attention["n"]: return gate("MORE_DATA", reason="no paired observations")
     inf0 = _ci(no_skill, protocol)
     inf1 = _ci(attention, protocol)
     min0 = thresholds["governance_uplift"]["versus_no_skill_min_absolute"]
@@ -127,14 +129,14 @@ def governance_uplift(rows, protocol, thresholds, coverage, control):
     return gate(
         "PASS" if ok else "FAIL",
         vs_no_skill={
-            "delta": no_skill["mean_delta"],
+            "delta": inf0["mean_delta"],
             "ci": inf0["ci"],
             "n": no_skill["n"],
             "minimum": min0,
             "inference": inf0,
         },
         vs_attention={
-            "delta": attention["mean_delta"],
+            "delta": inf1["mean_delta"],
             "ci": inf1["ci"],
             "n": attention["n"],
             "minimum": min1,
@@ -177,9 +179,7 @@ def critical_safety(rows, protocol, thresholds):
         if row.get("kind") == "behavioral":
             normal_treatment.append(row)
         elif row.get("kind") == "handoff":
-            condition = row.get("outcome", {}).get("handoff_condition") or env.get("handoff_condition")
-            if condition == "present":
-                normal_treatment.append(row)
+            normal_treatment.append(row)
 
     known = set(protocol["critical_failure_classes"])
     observed = sorted({failure for row in normal_treatment for failure in row.get("outcome", {}).get("critical_failures", [])})
@@ -336,6 +336,7 @@ def handoff(rows, protocol, thresholds, coverage):
     locked = release_rows(rows, "handoff")
     recovery = paired_condition(locked, "ablated", "present", "task_success", higher_is_better=True)
     degradation = paired_condition(locked, "ablated", "present", "handoff_degraded", higher_is_better=False)
+    if not recovery["n"] or not degradation["n"]: return gate("MORE_DATA", reason="no paired observations")
     recovery_inf = _ci(recovery, protocol)
     degradation_inf = _ci(degradation, protocol)
     recovery_min = thresholds["handoff"]["recovery_success_uplift_min_absolute"]
@@ -345,14 +346,14 @@ def handoff(rows, protocol, thresholds, coverage):
         "PASS" if ok else "FAIL",
         absolute_success={condition: {"successful": sum(row.get("outcome", {}).get("task_success") is True for row in locked if row.get("outcome", {}).get("handoff_condition") == condition), "trials": sum(row.get("outcome", {}).get("handoff_condition") == condition for row in locked)} for condition in ["present", "ablated"]},
         recovery={
-            "delta": recovery["mean_delta"],
+            "delta": recovery_inf["mean_delta"],
             "ci": recovery_inf["ci"],
             "n": recovery["n"],
             "minimum": recovery_min,
             "inference": recovery_inf,
         },
         degradation_reduction={
-            "delta": degradation["mean_delta"],
+            "delta": degradation_inf["mean_delta"],
             "ci": degradation_inf["ci"],
             "n": degradation["n"],
             "minimum": degradation_min,

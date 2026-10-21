@@ -1,3 +1,4 @@
+﻿Add-Type -AssemblyName System.Net.Http
 Set-StrictMode -Version Latest
 
 $script:Providers = @{
@@ -184,7 +185,9 @@ function Send-ApiAcceptanceRequest {
         $contentLength = -1L
         $reportedLength = $response.Content.Headers.ContentLength
         if ($null -ne $reportedLength) { $contentLength = [long]$reportedLength }
-        $stream = $response.Content.ReadAsStreamAsync($cts.Token).GetAwaiter().GetResult()
+        $cts.Token.ThrowIfCancellationRequested()
+        $stream = $response.Content.ReadAsStreamAsync().GetAwaiter().GetResult()
+        $cts.Token.ThrowIfCancellationRequested()
         $responseBody = Read-ApiAcceptanceResponseBody -Stream $stream -ContentLength $contentLength -CancellationToken $cts.Token
       }
     }

@@ -8,7 +8,10 @@ import time
 import uuid
 
 PROFILE_SOURCE=Path(__file__).resolve().parents[2]/'cli_transport.py'
-PROFILE=runpy.run_path(str(PROFILE_SOURCE))['profile_overrides']()
+def load_profile(expected_sha256):
+    if sha(PROFILE_SOURCE.read_bytes()) != expected_sha256:
+        raise ValueError('registered child transport source changed')
+    return runpy.run_path(str(PROFILE_SOURCE))['profile_overrides']()
 
 
 def sha(raw):return hashlib.sha256(raw).hexdigest()
@@ -30,13 +33,14 @@ def atomic(path,value):
 
 def install(native,config,registration):
     """Intercept only registered CLI exec; compiler/planner calls pass unchanged."""
-    if registration['profile']!=PROFILE:raise ValueError('unregistered child transport profile')
     def verify_sources():
         source=registration['profile_source']
         if (Path(source['path']).resolve()!=PROFILE_SOURCE or sha(PROFILE_SOURCE.read_bytes())!=source['sha256']
                 or sha(Path(__file__).read_bytes())!=registration['source_sha256']):
             raise ValueError('registered child transport source changed')
     verify_sources()
+    profile=load_profile(registration['profile_source']['sha256'])
+    if registration['profile']!=profile:raise ValueError('unregistered child transport profile')
     original=native.subprocess.run
     state={'sample_id':None,'records':[]}
     binary=Path(config['binary']).resolve();artifact_root=Path(config['artifact_root']).resolve()
@@ -45,15 +49,15 @@ def install(native,config,registration):
             return original(arguments,*args,**kwargs)
         argv=list(map(str,arguments))
         verify_sources()
-        if argv[:4]!=[str(binary),'--ask-for-approval','never','exec'] or argv[-1]!='-':
+        if Path(argv[0]).resolve()!=binary or argv[1:4]!=['--ask-for-approval','never','exec'] or argv[-1]!='-':
             raise ValueError('unexpected official CLI command in bounded native worker')
         if state['sample_id'] is None:raise ValueError('CLI dispatch missing pending parent sample identity')
         if any(value.startswith(('model_provider=','model_providers.','features.unbounded_connection_retries=')) for value in argv):
             raise ValueError('native release argv already selects an unreviewed provider')
-        effective=argv[:-1]+[part for value in PROFILE for part in ('-c',value)]+['-']
+        effective=argv[:-1]+[part for value in profile for part in ('-c',value)]+['-']
         directory=artifact_root/'transport';path=directory/(digest({'sample_id':state['sample_id']})+'.json')
         if path.exists():raise ValueError('transport dispatch receipt already exists; no replay')
-        row={'schema_version':1,'sample_id':state['sample_id'],'profile':PROFILE,
+        row={'schema_version':1,'sample_id':state['sample_id'],'profile':profile,
              'transport_source_sha256':registration['source_sha256'],
              'profile_source_sha256':registration['profile_source']['sha256'],'argv':effective,'argv_sha256':digest(effective),
              'original_argv_sha256':digest(argv),'status':'pending','automatic_retry':False,
@@ -65,9 +69,13 @@ def install(native,config,registration):
             completed=original(effective,*args,**kwargs)
         except BaseException as error:
             row.update(status='unknown',error_type=type(error).__name__,elapsed_seconds=time.perf_counter()-started)
-            atomic(path,row);raise
+            try:atomic(path,row)
+            except Exception as evidence_error:
+                row['evidence_error']=type(evidence_error).__name__
+            raise
         row.update(status='returned',exit_code=completed.returncode,elapsed_seconds=time.perf_counter()-started,
-                   stdout_sha256=sha(completed.stdout),stderr_sha256=sha(completed.stderr))
+                   stdout_sha256=sha(completed.stdout if isinstance(completed.stdout, bytes) else (completed.stdout or '').encode()),
+                   stderr_sha256=sha(completed.stderr if isinstance(completed.stderr, bytes) else (completed.stderr or '').encode()))
         try:atomic(path,row)
         except Exception as error:
             # Preserve the actual process result so native can retain paid usage;

@@ -393,7 +393,8 @@ class CompletionOutcomeTests(unittest.TestCase):
                 write(binding, state)
                 with self.assertRaisesRegex(ValueError, "sequence/epoch is invalid"):
                     self.finish(td, report(start))
-                self.assertIsNotNone(tool.status(td)["active_workflow"])
+                self.assertEqual(tool.status(td)["reason"], "binding-drift")
+                self.assertIsNotNone(json.loads(binding.read_bytes())["active_workflow"])
 
     def test_stage_reference_recovers_after_ledger_commit_before_binding_write(self):
         import hashlib

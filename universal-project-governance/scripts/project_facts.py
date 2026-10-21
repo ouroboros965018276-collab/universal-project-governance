@@ -11,6 +11,7 @@ from pathlib import Path, PurePosixPath, PureWindowsPath
 import re
 import stat
 import subprocess
+import threading
 
 MAX_FILES, MAX_FILE_BYTES, MAX_TOTAL_BYTES, MAX_DEPTH = 64, 1024 * 1024, 8 * 1024 * 1024, 16
 MAX_STATE_BYTES = 256 * 1024
@@ -55,7 +56,10 @@ def safe_path(root, relative):
     reserved = {"con", "prn", "aux", "nul"} | {"com%d" % i for i in range(1, 10)} | {"lpt%d" % i for i in range(1, 10)}
     if any(p.split(".", 1)[0].lower() in reserved for p in parts):
         raise ValueError("reserved filesystem path")
-    if any(p.lower().startswith(".env") or p.lower() in {".git", ".aws", ".ssh", ".codex", ".docker", ".kube",
+    if any(p.lower().startswith(".env") or p.lower().endswith((".pem", ".key", ".p12", ".pfx"))
+           or p.lower().startswith(("id_rsa", "id_ed25519", "id_ecdsa", "id_dsa"))
+           or p.lower() in {".git", ".aws", ".ssh", ".codex", ".docker", ".kube", ".gnupg",
+           ".git-credentials", ".pgpass", "pip.conf", ".yarnrc.yml", ".htpasswd",
            ".npmrc", ".pypirc", ".netrc", "credentials", "credentials.json", "auth.json"} for p in parts):
         raise ValueError("credential or VCS internals are outside fact recovery file scope")
     root = Path(root).absolute()
@@ -78,9 +82,11 @@ def safe_path(root, relative):
 
 
 class Reader:
-    def __init__(self, root):
+    def __init__(self, root, max_files=None):
         self.root, self.cache, self.total_bytes, self.attempted = Path(root).absolute(), {}, 0, set()
         self.identities = {}
+        self.max_files = MAX_FILES if max_files is None else max_files
+        self.raced_paths = set()
 
     def read(self, name, limit=MAX_FILE_BYTES):
         if name in self.cache:
@@ -88,7 +94,7 @@ class Reader:
             if len(raw) > limit: raise ValueError("file exceeds this read limit")
             return raw
         if name in self.attempted: raise ValueError("prior read unavailable; no automatic retry")
-        if len(self.attempted) >= MAX_FILES: raise ValueError("file read budget exhausted")
+        if len(self.attempted) >= self.max_files: raise ValueError("file read budget exhausted")
         self.attempted.add(name)
         path = safe_path(self.root, name)
         before = path.stat()
@@ -193,6 +199,43 @@ def recovery_errors(view):
     return errors
 
 
+def _bounded_git_query(command, *, output_limit, timeout, **options):
+    """Collect fixed Git query output with a bound on each buffered stream."""
+    process = subprocess.Popen(command, **options)
+    outputs, failures = {}, []
+    def read_stream(name, stream):
+        try:
+            # The reading thread owns this buffered stream. Another thread's
+            # close() can wait indefinitely for its read lock when a descendant
+            # inherited the pipe, even after the direct process was terminated.
+            with stream:
+                raw = stream.read(output_limit + 1)
+                if len(raw) > output_limit:
+                    failures.append("Git metadata exceeds bounded output limit")
+                    process.kill()
+                outputs[name] = raw
+        except OSError as exc:
+            failures.append(str(exc))
+    threads = [threading.Thread(target=read_stream, args=(name, stream), daemon=True)
+               for name, stream in (("stdout", process.stdout), ("stderr", process.stderr))]
+    try:
+        for thread in threads: thread.start()
+        process.wait(timeout=timeout)
+    finally:
+        if process.poll() is None:
+            process.kill()
+            process.wait(timeout=timeout)
+        for thread in threads:
+            if thread.ident is not None: thread.join(timeout=timeout)
+        # A thread that started must close its own stream, including after a
+        # caller timeout. Only unstarted readers have no read lock to contend.
+        for thread,stream in zip(threads,(process.stdout,process.stderr)):
+            if thread.ident is None: stream.close()
+    if failures or any(thread.is_alive() for thread in threads):
+        raise ValueError("Git metadata exceeds bounded output limit or read failed")
+    return subprocess.CompletedProcess(command, process.returncode, outputs["stdout"], outputs["stderr"])
+
+
 def git_state(root, scope, binary, *, reader=None):
     """Compare scoped raw bytes with index/HEAD without worktree conversions.
 
@@ -212,9 +255,11 @@ def git_state(root, scope, binary, *, reader=None):
               "-c", "core.untrackedCache=false", "-c", "core.autocrlf=false", "-c", "core.pager=cat",
               "-c", "core.attributesFile=" + os.devnull]
     def run(arguments):
-        result = subprocess.run(prefix + arguments, cwd=root, env=environment, stdin=subprocess.DEVNULL,
-                                stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=5, check=False)
-        if len(result.stdout) > 65536: raise ValueError("Git metadata exceeds bounded output limit")
+        # Each allowed path may appear six times in check-attr output. Bound
+        # both streams while reading rather than after communicate buffers all.
+        limit = max(65536, 16 * sum(len(os.fsencode(name)) + 256 for name in scope))
+        result = _bounded_git_query(prefix + arguments, cwd=root, env=environment, stdin=subprocess.DEVNULL,
+                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=5, output_limit=limit)
         if result.returncode: raise ValueError("fixed read-only Git query unavailable")
         return result.stdout
     try:
@@ -280,8 +325,10 @@ def git_state(root, scope, binary, *, reader=None):
                 raw = reader.read(name)
                 current = safe_path(root, name).stat()
                 identity = (current.st_dev, current.st_ino, current.st_size, current.st_mtime_ns, current.st_mode)
-                if identity != reader.identities[name]: raise ValueError("scoped file changed after bounded observation")
+                if identity != reader.identities[name]:
+                    raise ValueError("scoped file changed after bounded observation")
             except (OSError, ValueError):
+                reader.raced_paths.add(name)
                 changed.add(name)
                 continue
             algorithm = "sha1" if len(revision) == 40 else "sha256"
@@ -312,7 +359,7 @@ def recover(root, scope, *, handoff=None, git_binary=None):
         raise ValueError("recover requires 1..64 unique explicit scope files")
     if os.name == "nt" and len({name.casefold() for name in scope}) != len(scope):
         raise ValueError("scope contains case-insensitive path aliases")
-    root = Path(root).absolute(); reader = Reader(root)
+    root = Path(root).absolute(); reader = Reader(root, MAX_FILES + (handoff is not None))
     if not root.is_dir(): raise ValueError("recover requires an existing project root")
     for name in scope: safe_path(root, name)
     previous, gaps = {}, []
@@ -335,6 +382,11 @@ def recover(root, scope, *, handoff=None, git_binary=None):
             files.append({"path": name, "sha256": None, "status": "unavailable"})
             gaps.append("%s: %s" % (name, str(error)))
     git, git_gaps = git_state(root, scope, git_binary, reader=reader); gaps.extend(git_gaps)
+    for item in files:
+        if item["path"] in reader.raced_paths:
+            item.update(sha256=None, status="unavailable")
+            reader.cache.pop(item["path"], None)
+            gaps.append("%s: scoped bytes changed after observation; prior evidence cannot be inherited" % item["path"])
     source = {"git": git, "files": files, "scope_sha256": digest(files)}
     observations, static_gaps = declarations(reader.cache, scope); gaps.extend(static_gaps)
     current_hashes = {item["path"]: item["sha256"] for item in files if item["status"] == "observed"}

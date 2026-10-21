@@ -5,12 +5,14 @@ from __future__ import annotations
 import argparse
 import copy
 import hashlib
+import importlib.util
 import json
 import re
 from pathlib import Path
 import shutil
 import sys
 import tempfile
+import uuid
 
 RUNTIME_SCHEMA_NAMES = [
     "task-context.schema.json", "governance-plan.schema.json", "handoff.schema.json",
@@ -89,6 +91,8 @@ def compile_index(src: Path, model: dict) -> dict:
     # The loaded Skill carries global guidance; plans project selected base closures.
     execution_guidance(model)
     ids = sorted(p["id"] for p in model["policies"])
+    if len(ids) != len(set(ids)):
+        raise ValueError("duplicate policy ID")
     order = model.get("presentation", {}).get("policy_order", ids)
     if (not isinstance(order, list) or any(not isinstance(x, str) for x in order)
             or len(order) != len(ids) or sorted(order) != ids):
@@ -96,7 +100,20 @@ def compile_index(src: Path, model: dict) -> dict:
     profiles = {}
     for path in sorted((src / "profiles").glob("*.json")):
         item = read_json(path)
+        if not isinstance(item, dict) or not isinstance(item.get("id"), str):
+            raise ValueError("profile must be an object with a string ID")
+        if item["id"] in profiles:
+            raise ValueError("duplicate profile ID: " + item["id"])
         profiles[item["id"]] = item
+    known = set(ids)
+    refs = list(model["default_rules"]) + [model["structural_integration"]["policy_id"]]
+    for policy in model["policies"]:
+        refs.extend(policy.get("requires", []))
+        refs.extend(policy.get("conflicts_with", []))
+    for profile in profiles.values():
+        refs.extend(profile.get("activates", []))
+    if any(ref not in known for ref in refs):
+        raise ValueError("policy references must resolve to declared policy IDs")
     task_schema = read_json(src / "schemas" / "task-context.schema.json")
     policies = copy.deepcopy(model["policies"])
     result = {
@@ -130,11 +147,15 @@ def write_text(path: Path, text_value: str):
     path.write_bytes(text_value.encode("utf-8"))
 
 
-def compile_runtime(repo: Path, output: Path):
+def _build_runtime(repo: Path, output: Path):
     src = repo / "governance-src"
     model = read_json(src / "model" / "governance-model.json")
-    if output.exists():
-        shutil.rmtree(output)
+    spec = importlib.util.spec_from_file_location("_upg_source_validator", src / "runtime-scripts/state_tool.py")
+    validator = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(validator)
+    errors = validator.validate_node(model, read_json(src / "schemas/governance-model.schema.json"))
+    if errors:
+        raise ValueError("invalid governance model: " + "; ".join(errors))
     output.mkdir(parents=True)
 
     write_text(output / "SKILL.md", render_skill(src, model))
@@ -169,6 +190,27 @@ def compile_runtime(repo: Path, output: Path):
         "files": files,
     }
     write_text(output / "integrity" / "manifest.json", json.dumps(manifest, indent=2, sort_keys=True) + "\n")
+
+
+def compile_runtime(repo: Path, output: Path):
+    """Build completely before replacing the previous installable runtime."""
+    output = Path(output)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix=".upg-build-", dir=str(output.parent)) as directory:
+        staged = Path(directory) / "runtime"
+        _build_runtime(repo, staged)
+        backup = output.with_name(output.name + ".backup-" + uuid.uuid4().hex)
+        had_output = output.exists()
+        if had_output:
+            output.rename(backup)
+        try:
+            staged.rename(output)
+        except BaseException:
+            if had_output:
+                backup.rename(output)
+            raise
+        if had_output:
+            shutil.rmtree(backup)
 
 
 def compare_dirs(expected: Path, actual: Path):
@@ -210,7 +252,7 @@ def main() -> int:
             return 1
         print("Generated runtime check passed.")
         return 0
-    except (OSError, ValueError, KeyError, json.JSONDecodeError) as exc:
+    except (OSError, ValueError, KeyError, TypeError, AttributeError) as exc:
         print("error: compiler failure: %s" % exc, file=sys.stderr)
         return 2
 
