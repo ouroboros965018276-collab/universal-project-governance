@@ -1850,14 +1850,14 @@
   },
   "engineering": {
     "final_gates": {
-      "observed_at": "2026-10-21T21:52:34.807168+00:00",
+      "observed_at": "2026-10-21T22:57:05.731782+00:00",
       "successful": true,
       "gate_commands": 11,
       "passed": 11,
       "identical_packages": true,
-      "package_sha256": "f6af2c8fd508713c957331ca2672ba2f853444bd8df9e8551cc0f306a72bb217",
+      "package_sha256": "b5728bacc237afbaa0c20f577297874fd0d2d4faadd51f79e6b7579d8b82506e",
       "package": ".governance/rc207-dist-a/universal-project-governance-v3.0.0-rc.20.7.zip",
-      "source_sha256": "08a2d4b2a11d68b1ec924765c93dffc808911ffe50bef3241dd281b49ca1c577",
+      "source_sha256": "de445d599060e3a8dea5b83e78449c24b26ec72a8722cd882266ce2811a31bf3",
       "gates": [
         {
           "command": [
@@ -1865,7 +1865,7 @@
             "--check"
           ],
           "returncode": 0,
-          "seconds": 1.235000000000582,
+          "seconds": 1.4839999999999236,
           "raw_log": ".governance/rc207-final-gate-00.log",
           "raw_log_sha256": "16a781091d7bdbaccaf714f07c29d4424d1cb20d4f434562e28fadc68396a2c8"
         },
@@ -1875,7 +1875,7 @@
             "."
           ],
           "returncode": 0,
-          "seconds": 0.3899999999994179,
+          "seconds": 0.609000000000151,
           "raw_log": ".governance/rc207-final-gate-01.log",
           "raw_log_sha256": "a1654f7bbcea3597100a2aba21ad24260d51893875b7ad57ea53c46b378333d4"
         },
@@ -1885,7 +1885,7 @@
             "."
           ],
           "returncode": 0,
-          "seconds": 0.9219999999913853,
+          "seconds": 1.5,
           "raw_log": ".governance/rc207-final-gate-02.log",
           "raw_log_sha256": "05f7dfe43892703201286ccb994629adb86f0d346405e7eb86810c5bedc913d2"
         },
@@ -1896,9 +1896,9 @@
             "--check"
           ],
           "returncode": 0,
-          "seconds": 0.5630000000091968,
+          "seconds": 0.8279999999999745,
           "raw_log": ".governance/rc207-final-gate-03.log",
-          "raw_log_sha256": "2f875a5f9a7bfdcd7978d55462d453f278bf702ab59a803e55e2db8a4912a34b"
+          "raw_log_sha256": "96c356ecc68879ce5794bb2918df9ed70c25ae271b892b39135a565c9a2c6f46"
         },
         {
           "command": [
@@ -1906,7 +1906,7 @@
             "."
           ],
           "returncode": 0,
-          "seconds": 5.796999999991385,
+          "seconds": 5.406999999999925,
           "raw_log": ".governance/rc207-final-gate-04.log",
           "raw_log_sha256": "b72ff9168723a313496989c989b710c573f7eaa291d72abfa9d7ece0d20391e6"
         },
@@ -1916,7 +1916,7 @@
             "universal-project-governance"
           ],
           "returncode": 0,
-          "seconds": 0.6560000000026776,
+          "seconds": 0.7809999999999491,
           "raw_log": ".governance/rc207-final-gate-05.log",
           "raw_log_sha256": "8c194143ac96849550f9cd125757367f88209797ff88238e06b51321d2bd9d4d"
         },
@@ -1926,7 +1926,7 @@
             "universal-project-governance"
           ],
           "returncode": 0,
-          "seconds": 0.45300000000861473,
+          "seconds": 0.5779999999999745,
           "raw_log": ".governance/rc207-final-gate-06.log",
           "raw_log_sha256": "e246fd6e1c3b7cfa08d75826ffd961aa15f5e779a39bdb7f33bfb7c01f91ce21"
         },
@@ -1936,7 +1936,7 @@
             "."
           ],
           "returncode": 0,
-          "seconds": 2.375,
+          "seconds": 9.453000000000202,
           "raw_log": ".governance/rc207-final-gate-07.log",
           "raw_log_sha256": "57c428d631a537f528adff251f18017330838eb9da4329714dcd92ae41a591c2"
         },
@@ -1946,7 +1946,7 @@
             "."
           ],
           "returncode": 0,
-          "seconds": 0.6879999999946449,
+          "seconds": 0.875,
           "raw_log": ".governance/rc207-final-gate-08.log",
           "raw_log_sha256": "05a98a7f9ac303958b0b8e0a882ae7a46a09c2f938ddbdb8ed34a6abb690e7c1"
         },
@@ -1958,9 +1958,9 @@
             ".governance/rc207-dist-a"
           ],
           "returncode": 0,
-          "seconds": 4.717999999993481,
+          "seconds": 3.9379999999998745,
           "raw_log": ".governance/rc207-final-gate-09.log",
-          "raw_log_sha256": "6a8765b46f3f77840b2f32a70140e1ab122b786711c32471312c793a772c7185"
+          "raw_log_sha256": "ef52f890595c0bd3edfcb3586e4c43aafca5d50f678faaa88b4fa51e935b4043"
         },
         {
           "command": [
@@ -1970,9 +1970,9 @@
             ".governance/rc207-dist-b"
           ],
           "returncode": 0,
-          "seconds": 5.0,
+          "seconds": 4.0470000000000255,
           "raw_log": ".governance/rc207-final-gate-10.log",
-          "raw_log_sha256": "b87a6b31df46b8fffa30aeab9be47eeba77e901892e3ba9ec04a28988bed873c"
+          "raw_log_sha256": "2dede62959b02bcef58fc13d4992217340a22fb34084a0edcd3c61bf3fd90ac0"
         }
       ]
     },
@@ -2260,7 +2260,39 @@
         }
       }
     },
-    "complete_multiplatform_regression": "Exact source and merged-main GitHub CI required; final observed revisions/jobs/installation acceptance are recorded in acceptance_url, not inferred from interrupted local integration."
+    "complete_multiplatform_regression": "Exact source and merged-main GitHub CI required; final observed revisions/jobs/installation acceptance are recorded in acceptance_url, not inferred from interrupted local integration.",
+    "installed_native_query_refinement": {
+      "observed_at": "2026-10-21T22:58:12.481449+00:00",
+      "original_merged_revision": "da554451f651b8df3d6a19404b3e8e49cb32cd78",
+      "original_ci_archive": ".governance/rc207-ci-initial.json",
+      "original_ci_archive_sha256": "70b68c2b1daf63752c2f45a8fd8fc299375b0c3b959ddaf1b19a11c63be21c3b",
+      "rejected_local_acceptance": [
+        {
+          "receipt": ".governance/rc207-install-attempt-0a26d390f9564023a6ec2036576d5485.json",
+          "sha256": "fcaff07839f9fc3445c63870cdfa5b69bd40916ad9dd4d4549d62724ec9c0c5c",
+          "raw_log": ".governance/rc207-install-native-0a26d390f9564023a6ec2036576d5485.log",
+          "raw_log_sha256": "810cb09515abd776130f315c5a382dd35563654faebc2cdd9949300fdd834b4a",
+          "native_case": "test_owned_pipe_eof_stops_and_reentry_preserves_stages_and_deduplication",
+          "original_reentry_deadline_seconds": 60,
+          "elapsed_seconds": 144.852,
+          "status": "FAIL"
+        },
+        {
+          "receipt": ".governance/rc207-installed-diagnostic.json",
+          "sha256": "87334e4649fbf3d91865031e83377a33e5650ea66d6577caee30cc0ffb7ab0fe",
+          "raw_log": ".governance/rc207-installed-diagnostic.log",
+          "raw_log_sha256": "e96fdbb070c8171b43d7a21f6d22161359f2161db8fad724eec888e59b3629d8",
+          "native_case": "test_owned_pipe_eof_stops_and_reentry_preserves_stages_and_deduplication",
+          "original_reentry_deadline_seconds": 60,
+          "elapsed_seconds": 134.90599999999995,
+          "status": "FAIL"
+        }
+      ],
+      "observations": "Both validators succeeded. The monitored second stage had a prepared commit and was still executing guarded update-ref at the unchanged reentry deadline. Command PIDs/argv continued changing; no single validator hang, installed/source module mix or stale cache use was established.",
+      "repair": "Combine top-level/admin/shared-index rev-parse metadata in one guarded native call for unambiguous output; retain bounded separate queries for newline/split-index shapes. Preserve root ownership, branch/HEAD, merge/index/sparse checks, native guard retention and original test deadlines. No metadata reused across mutations.",
+      "validation": "Affected native metadata/checkpoint/host regression and exact new source/main CI plus installed acceptance must pass; final observed revisions/results remain in acceptance_url.",
+      "scope_limit": "Native process startup overhead is observed; a specific antivirus, storage, interpreter or host service cause is not established. Prior CI success did not establish local acceptance."
+    }
   },
   "limits": {
     "new_paid_model_calls": 0,
