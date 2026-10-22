@@ -1,6 +1,6 @@
 # 发布与测试冻结门禁
 
-当前候选：**3.0.0-rc.20.7 — Report-driven Safety and Contract Corrections**。
+当前候选：**3.0.0-rc.20.8 — Whole-project Contract Reconciliation**。
 
 发布用于证明当前源码、分发包、GitHub 修订与本地安装相互对应。当前事实统一见[项目状态](PROJECT_STATE.md)，本次报告处置与验收记录见[当前审计](audits/rc20-ocr-report.audit.json)。工程通过不代表独立模型收益或 Stable 资格；本次升级不增加付费实测。
 

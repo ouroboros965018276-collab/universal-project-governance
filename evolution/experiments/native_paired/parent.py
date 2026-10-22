@@ -116,6 +116,8 @@ def validate(spec):
         if (core["runner_config"]["native_config_sha256"] != digest(dict(config, binary_sha256=binary_sha))
                 or core["runner_config"]["grader"] != {"reference": "upg_native_common_grader:grade", "source_sha256": core["files"]["upg_native_common_grader.py"]}):
             raise ValueError("registered binary/grader capability changed")
+        if core["runner_config"].get("execution_inputs_sha256") != config.get("execution_inputs_sha256"):
+            raise ValueError("worker execution input registration differs from configuration")
         graders.add(core["files"]["upg_native_common_grader.py"]); artifacts.add(config["artifact_root"])
     if len(graders) != 1 or len(artifacts) != 4: raise ValueError("grader must be identical and artifact roots isolated")
     if (spec["common_grader"]["sha256"] not in graders
@@ -259,6 +261,8 @@ def verify_receipt(spec, item, raw, request):
     receipt = raw.get("provider_receipt") or {}
     if receipt.get("replayed_from_local_receipt") is True: raise ValueError("local receipt cannot be a fresh independent call")
     entry = spec["workers"][item["model"] + ":" + item["condition"]]
+    if request.get("config") != entry["manifest_core"]["runner_config"]:
+        raise ValueError("request capability differs from owner registration")
     reference = receipt.get("raw_artifact_reference", "")
     parts = reference.split("/")
     if len(parts) != 2 or parts[0] != "calls" or len(parts[1]) != 64 or any(c not in "0123456789abcdef" for c in parts[1]):
@@ -275,7 +279,7 @@ def verify_receipt(spec, item, raw, request):
             or receipt.get("usage") != raw.get("usage") or persisted_result.get("usage") != raw.get("usage")
             or receipt.get("sandbox")!="read-only" or receipt.get("ephemeral") is not True
             or receipt.get("provider_request_id") is not None or receipt.get("model_observed") is not None
-            or receipt["bindings"].get("capability") != {key:request["config"][key] for key in ("native_config_sha256","grader")}
+            or receipt["bindings"].get("capability") != {key:request["config"][key] for key in ("native_config_sha256","grader","execution_inputs_sha256") if key in request["config"]}
             or receipt["bindings"].get("grader") != request["config"]["grader"]
             or receipt["bindings"].get("campaign_id") != spec["protocol_id"]
             or receipt["bindings"].get("sample_id") != request["task"]["id"]

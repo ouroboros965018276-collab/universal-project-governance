@@ -28,7 +28,7 @@ import uuid
 REPO = Path(__file__).resolve().parent.parent
 sys.dont_write_bytecode = True
 sys.path.insert(0, str(REPO))
-from evolution.tool_broker import RepoBroker, TOOLS, canonical, normalize, sha, tool_definitions, validate_task
+from evolution.tool_broker import RepoBroker, canonical, normalize, sha, tool_definitions, validate_task
 from evolution.tool_broker import SEMANTIC_DIAGNOSTIC_CODES, SEMANTIC_DIAGNOSTIC_LIMIT
 from evolution.tool_codex import FINAL_SCHEMA
 from evolution import chat_sse

@@ -1,6 +1,6 @@
 # Contributing
 
-Current candidate: **3.0.0-rc.20.7 — Report-driven Safety and Contract Corrections**. Change canonical source, regenerate the runtime, and keep engineering, bounded development measurements, independent efficacy evidence, and formal qualification distinct. Qualification thresholds remain unchanged; current evidence and remaining gaps are recorded in [PROJECT_STATE.md](PROJECT_STATE.md).
+Current candidate: **3.0.0-rc.20.8 — Whole-project Contract Reconciliation**. Change canonical source, regenerate the runtime, and keep engineering, bounded development measurements, independent efficacy evidence, and formal qualification distinct. Qualification thresholds remain unchanged; current evidence and remaining gaps are recorded in [PROJECT_STATE.md](PROJECT_STATE.md).
 
 ## Structural contribution rule
 
@@ -22,7 +22,7 @@ Git checkpoint configuration and bounded recovery remain in the existing binding
 
 ## Qualification changes
 
-Protocol, fixtures, statistics, graders, mutations, adapters, runners, analyzer, deployment wrapper, canonical source, compiler, and generated runtime are frozen evidence surfaces.
+Protocol, fixtures, statistics, graders, mutations, adapters, runners, actual arm-condition text, analyzer, deployment wrapper, canonical source, compiler, and generated runtime are frozen evidence surfaces.
 
 After real testing starts, modifying any frozen surface invalidates the affected result round.
 

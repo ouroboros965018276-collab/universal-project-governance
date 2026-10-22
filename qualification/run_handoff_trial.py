@@ -4,7 +4,6 @@ import json
 import pathlib
 import sys
 import tempfile
-import uuid
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))

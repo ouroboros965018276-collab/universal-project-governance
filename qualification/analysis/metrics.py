@@ -24,15 +24,6 @@ def pair_key(record):
         record.get("pair_id"),
     )
 
-def wilson_interval(successes, total, z=1.959963984540054):
-    if total <= 0:
-        return (0.0, 1.0)
-    p = successes / float(total)
-    denom = 1.0 + z * z / total
-    center = (p + z * z / (2.0 * total)) / denom
-    half = z * math.sqrt((p * (1.0 - p) + z * z / (4.0 * total)) / total) / denom
-    return (max(0.0, center - half), min(1.0, center + half))
-
 def zero_event_upper_bound(total, alpha=0.05):
     if total <= 0:
         return 1.0

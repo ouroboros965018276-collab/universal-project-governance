@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Current candidate: **3.0.0-rc.20.7 — Report-driven Safety and Contract Corrections**.
+Current candidate: **3.0.0-rc.20.8 — Whole-project Contract Reconciliation**.
 
 ## First modifying activation
 
