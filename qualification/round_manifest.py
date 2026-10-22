@@ -1,6 +1,5 @@
 """Create a preregistered plan only; never execute an Agent."""
 import argparse
-import hashlib
 import json
 import pathlib
 import random

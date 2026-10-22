@@ -102,7 +102,7 @@ def main():
     config = json.loads(config_path.read_text(encoding="utf-8"))
     if digest(config) != manifest["config_sha256"]:
         raise ValueError("configuration differs from registration")
-    if (set(config) - {"binary", "model", "effort", "artifact_root", "timeout_seconds", "grader", "cli_version"}
+    if (set(config) - {"binary", "model", "effort", "artifact_root", "timeout_seconds", "grader", "cli_version", "execution_inputs_sha256"}
             or config.get("grader") != "upg_native_common_grader:grade"):
         raise ValueError("only the pinned common grader and native config fields are supported")
     if any(name == "evolution" or name.startswith("evolution.") for name in sys.modules):
@@ -115,6 +115,15 @@ def main():
             (native, "evolution/native_codex.py"), (contracts, "evolution/contracts.py"),
             (common, "upg_native_common_grader.py"))):
         raise ValueError("engine/grader import escaped its pinned snapshot")
+    registration = getattr(native, "execution_inputs_identity", None)
+    pins = config.get("execution_inputs_sha256")
+    if callable(registration):
+        if (not isinstance(pins, list) or len(pins) != 1 or not isinstance(pins[0], str)
+                or len(pins[0]) != 64 or any(c not in "0123456789abcdef" for c in pins[0])
+                or manifest["runner_config"].get("execution_inputs_sha256") != pins):
+            raise ValueError("owner-registered execution inputs are required by this adapter")
+    elif "execution_inputs_sha256" in config:
+        raise ValueError("legacy adapter does not support execution input registration config")
     transport_path=Path(manifest["transport"]["path"])
     if not transport_path.is_absolute() or sha(transport_path.read_bytes())!=manifest["transport"]["source_sha256"]:
         raise ValueError("common transport instrumentation source changed")
@@ -162,6 +171,11 @@ def main():
                 or digest(request["execution_artifact"]) != manifest["execution_artifact_sha256"]
                 or "runtime" in request["execution_artifact"]):
             raise ValueError("dispatch input differs from frozen worker registration")
+        # Every callback, including a legacy one, is already fenced by the
+        # independently owner-pinned full source and artifact digests above.
+        # A current callback additionally consumes its public registration API.
+        if callable(registration) and registration(request["source"], request["execution_artifact"]) not in pins:
+            raise ValueError("execution inputs differ from owner registration")
         callback_started = time.perf_counter()
         transport_state["sample_id"]=command["sample_id"]
         transport_start=len(transport_state["records"])

@@ -85,6 +85,8 @@ def expected(root):
     ], root)
     runner_hash = hash_paths([
         root / "qualification/adapters",
+        # A1 executes the attention-control text; its bytes are an execution condition.
+        root / "qualification/arms",
         root / "qualification/run_trial.py",
         root / "qualification/run_handoff_trial.py",
         root / "qualification/run_trigger_trial.py",
@@ -139,6 +141,7 @@ def expected(root):
             "qualification/lib",
             "qualification/mutations",
             "qualification/adapters",
+            "qualification/arms",
             "qualification/run_trial.py",
             "qualification/run_handoff_trial.py",
             "qualification/run_trigger_trial.py",

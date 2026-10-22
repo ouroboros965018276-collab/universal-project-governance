@@ -298,7 +298,7 @@ class NativePairedTests(unittest.TestCase):
         receipt={'status':'completed','tool_calls':0,'model_requested':item['model'],'provider_request_id':None,'model_observed':None,
                  'config_sha256':request['config']['native_config_sha256'],'sandbox':'read-only','ephemeral':True,'wall_seconds':.5,
                  'usage':actual,'cli_thread_id':'synthetic-real-format-thread','replayed_from_local_receipt':False,
-                 'bindings':{'capability':{k:request['config'][k] for k in ('native_config_sha256','grader')},
+                  'bindings':{'capability':{k:request['config'][k] for k in ('native_config_sha256','grader','execution_inputs_sha256') if k in request['config']},
                     'grader':request['config']['grader'],'campaign_id':spec['protocol_id'],'sample_id':task['id'],
                     'source_sha256':condition['source_sha256'],'task_sha256':digest(task),
                     'candidate_id':condition['candidate_id'],'execution_artifact_sha256':digest(condition['execution_artifact']),

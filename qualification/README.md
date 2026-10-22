@@ -8,6 +8,7 @@
 |---|---|
 | `protocol/`、`fixtures/` | 注册实验条件、任务、抽样、门禁及阈值；公开回归样例不能成为新的独立留出集。 |
 | `adapters/` | 绑定 Agent、模型、宿主和适配器字节；执行有界命令、收集用量及脱敏公共诊断。 |
+| `arms/attention-control.md` | A1 实际执行的注意力对照文本；随运行器一起冻结，修改文本会使旧注册失效。条件身份统一来自 `protocol/qualification-v3.json`，实际注入由 `run_trial.arm_condition` 投影，K 读取规范模型；不另保留未消费的条件 JSON。 |
 | `lib/contracts.py` | 同时核对当前冻结身份和有限 JSON 配置，拒绝以调用方参数绕过源码漂移检查。 |
 | `lib/execution.py`、`lib/deployment.py` | 在调用前核对注册条件，配置 A2 项目报告，保存完整后再发布不可覆盖的证据。 |
 | `lib/core.py` | 评价可观察产物、范围与项目绑定；评分不依赖模型自报完成。 |
@@ -23,6 +24,8 @@
 正式注册由 `round_manifest.py` 生成有种子、时间交错的 A0 基线、A1 注意力对照及 A2 UPG 配对矩阵。运行器要求 `--round-manifest` 和注册的 `--trial-id`；交接同时绑定源端与接收端条件。默认计划是同族交接，不能据此宣称跨族配对已经测过。
 
 正式准入需要当前配置/源码指纹、类型正确且身份一致的试验记录、固定任务与暴露标识、唯一注册身份、外部强隔离证明和可读取的原始证据。严重安全失败不可由成功率补偿；缺失数据保持 MORE_DATA，未知费用保持未知。A2 的新鲜工作区显式开启灰测报告，完成修改必须留下且只留下一个有效报告；普通安装仍默认关闭报告。
+
+`protocol/schemas/trial.schema.json` 是单条试验的规范契约。公开归档的 `result.schema.json` 保持自包含嵌入，以兼容当前不支持 `$ref` 的受限校验器；嵌入内容由现有 schema 同步回归检查防止漂移，当前没有自动生成步骤。分析器实际接收 JSONL，并逐条按规范 trial 契约准入。
 
 ## Structural overreach
 

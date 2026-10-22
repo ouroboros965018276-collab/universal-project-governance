@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "version": "3.0.0-rc.20.7",
+  "version": "3.0.0-rc.20.8",
   "status": "SOURCE_REVIEWED_ENGINEERING_ACCEPTANCE_TRACKED_IN_ISSUE",
   "observed_at": "2026-10-22T10:45:37.273403+00:00",
   "baseline_revision": "dc907ea43beebc76b44c82616ee440c43db03d0e",
@@ -6431,5 +6431,41 @@
       "status": "retired_obsolete_artifact",
       "reason_id": "D143"
     }
-  ]
+  ],
+  "whole_project_recheck": {
+    "started_at_utc": "2026-10-22T12:25:18.297883+00:00",
+    "updated_at_utc": "2026-10-22T19:02:35.667860+00:00",
+    "baseline_revision": "48ac150b395e477bff885149e3aaf58ce7f2f7ce",
+    "acceptance_url": "https://github.com/ouroboros965018276-collab/universal-project-governance/issues/36",
+    "scope": [
+      "all canonical sources and generated package",
+      "all Git worktrees, branches and independent experiment repositories in both project roots",
+      "historical toolkit, audit and experiment archives",
+      "preserved migration chat and attachment identities",
+      "installed bytes, actual host discovery and actual installed behavior"
+    ],
+    "confirmed_fixes": [
+      "Native paired owner preparation uses canonical execution-input identity; worker verifies the registered configuration and binding before the actual adapter. Legacy adapters retain owner-manifest full source/artifact guards without fabricated authorization.",
+      "Freeze includes the A1 attention-control text actually executed; mutation changes runner/qualification fingerprints and frozen_candidate rejects the old registration.",
+      "Version-normalization regression now changes the actual current Skill header, rather than replacing an absent RC8 string."
+    ],
+    "retired_source": [
+      "four unconsumed qualification arm JSON declarations; protocol remains canonical and A1 Markdown remains the actual condition",
+      "unused internal wilson_interval; live exact zero-event safety bounds unchanged",
+      "five unused import bindings; required module initialization and live consumers retained"
+    ],
+    "intentional_representations": [
+      "Generated package is compiler output, never another editable governance source.",
+      "Public result.schema embeds the canonical trial contract because the supported validator does not resolve references; existing consistency regression prevents drift. No second schema resolver introduced."
+    ],
+    "retirement_state": "Research and exact-path cleanup receipts are private; actual counts, limits, CI and installation results are tracked in issue36. This entry does not predeclare final acceptance.",
+    "external_limits": [
+      "Five exact pre-existing C: UPG temporary directories remain OS-access-denied; no ACL changes.",
+      "Ygg gateway connection timed out before dispatch; missing Git registrations were retired independently, business records were neither modified nor verified."
+    ],
+    "new_paid_model_calls": 0,
+    "formal_qualification": "UNASSESSED",
+    "locked_trials": "NOT_RUN",
+    "net_benefit": "NOT_ESTABLISHED"
+  }
 }

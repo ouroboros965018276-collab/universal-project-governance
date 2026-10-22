@@ -6,6 +6,7 @@ untrusted candidate code. Native candidate executable inputs require a separate
 owner registration before that adapter imports or executes preparation code.
 """
 import argparse
+import ast
 import json
 from pathlib import Path
 import runpy
@@ -16,6 +17,9 @@ import time
 
 HERE = Path(__file__).resolve().parent
 REPO = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(REPO))
+from evolution.native_codex import execution_inputs_identity
+
 worker = runpy.run_path(str(HERE / "worker.py"))
 digest, sha = worker["digest"], worker["sha"]
 
@@ -114,10 +118,19 @@ def prepare(repo, output, artifact_root, binary, git_binary, control_revision, t
                 destination = snapshot / name; destination.parent.mkdir(parents=True, exist_ok=True); destination.write_bytes(content)
             config = {"binary": str(binary), "model": model, "effort": "low", "artifact_root": str(artifact_root / model / condition),
                       "timeout_seconds": 180, "grader": "upg_native_common_grader:grade", "cli_version": "0.162.0-alpha.20"}
+            # The owner registers these Git-selected bytes before any worker
+            # receives candidate inputs. Legacy callbacks retain their original
+            # config ABI; their full source/artifact digests below remain pinned.
+            registration_api = any(isinstance(node, ast.FunctionDef) and node.name == "execution_inputs_identity"
+                                   for node in ast.parse(files["evolution/native_codex.py"]).body)
+            if registration_api:
+                config["execution_inputs_sha256"] = [execution_inputs_identity(source, artifact)]
             config_path = snapshot / "native.config.json"; write(config_path, config)
             capability = {"native_config_sha256": digest(dict(config, binary_sha256=binary_sha)),
                           "grader": {"reference": config["grader"], "source_sha256": sha(grader)},
                           "campaign_id": protocol_id}
+            if registration_api:
+                capability["execution_inputs_sha256"] = config["execution_inputs_sha256"]
             manifest = {"worker_sha256": sha((HERE / "worker.py").read_bytes()),
                         "transport":transport,
                         "snapshot_directory": str(snapshot), "files": {name: sha(content) for name, content in files.items()},

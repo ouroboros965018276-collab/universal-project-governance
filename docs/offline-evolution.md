@@ -13,7 +13,7 @@
 | `tool_codex`、`tool_broker`、`engineering_broker` | 注册的有界文件和 Git 工具、当前字节收据、工程验证 | `test_evolution_tools.py`、`test_engineering_cli.py`、`test_engineering_broker.py` |
 | `semantic_contract`、`isolated_python`、`project_executor` | 有限解释器、显式容器后端与固定工程配方 | `test_semantic_contract.py`、`test_isolated_python.py`、`test_project_executor.py` |
 | `provider_tools`、`chat_sse`、`actor_checkpoint` | 显式 API 工具循环、流重建、独立锚定的预算连续恢复 | `test_provider_tools*.py`、`test_actor_checkpoint.py` |
-| `engineering_study`、`context_checkpoint` | 前瞻拓扑和配置身份、交接事实与可复用当前工作集 | `test_engineering_study.py`、`test_context_checkpoint.py` |
+| `engineering_study`、`context_checkpoint` | 前瞻拓扑和配置身份、交接事实与可复用当前工作集 | `test_engineering_study.py`、`test_provider_tools_sse.py`、`test_ocr_evolution_regressions.py` |
 | `promotion` | 独立证据准入与原子发布提案 | `test_evolution_evidence.py`、`test_ocr_evolution_regressions.py` |
 
 完整源码、契约和消费者导航见[模块地图](../MODULE_MAP.md)。

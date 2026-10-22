@@ -131,6 +131,39 @@ class QualificationTests(unittest.TestCase):
             self.assertIn("surprise.txt", grade["scope_metrics"]["unexpected_changed_files"])
             self.assertFalse(grade["governance_defect_free"])
 
+    def test_frozen_candidate_rejects_attention_control_text_drift(self):
+        from qualification.lib import contracts
+        from tools.qualification_freeze import expected
+
+        with tempfile.TemporaryDirectory() as td:
+            candidate = pathlib.Path(td)
+            for relative in expected(ROOT)["frozen_surfaces"]:
+                source = ROOT / relative
+                target = candidate / relative
+                target.parent.mkdir(parents=True, exist_ok=True)
+                if source.is_dir():
+                    shutil.copytree(source, target)
+                else:
+                    shutil.copyfile(source, target)
+            identity = expected(candidate)
+            (candidate / "qualification/FREEZE.json").write_text(
+                json.dumps(identity), encoding="utf-8"
+            )
+            with patch.object(contracts, "ROOT", candidate):
+                contracts.frozen_candidate()
+                control = candidate / "qualification/arms/attention-control.md"
+                control.write_text(
+                    control.read_text(encoding="utf-8") + "\nChanged execution condition.\n",
+                    encoding="utf-8",
+                )
+                changed = expected(candidate)
+                self.assertNotEqual(identity["runner_sha256"], changed["runner_sha256"])
+                self.assertNotEqual(
+                    identity["qualification_fingerprint"], changed["qualification_fingerprint"]
+                )
+                with self.assertRaisesRegex(ValueError, "frozen source/runtime/evaluator drift"):
+                    contracts.frozen_candidate()
+
     def test_managed_binding_files_do_not_pollute_task_change_count(self):
         lab = get_lab(
             ROOT / "qualification/fixtures/dev/behavioral-labs.json",
@@ -165,10 +198,14 @@ class QualificationTests(unittest.TestCase):
             dst = pathlib.Path(td) / "runtime"
             shutil.copytree(RUNTIME, dst)
             skill = dst / "SKILL.md"
+            current_version = json.loads((dst / "policy-index.json").read_text(encoding="utf-8"))["version"]
+            original_skill = skill.read_text(encoding="utf-8")
+            changed_skill = original_skill.replace(
+                'version: "%s"' % current_version, 'version: "9.9.9-test"'
+            )
+            self.assertNotEqual(original_skill, changed_skill)
             skill.write_text(
-                skill.read_text(encoding="utf-8").replace(
-                    'version: "3.0.0-rc.8"', 'version: "9.9.9-test"'
-                ),
+                changed_skill,
                 encoding="utf-8",
             )
             index_path = dst / "policy-index.json"

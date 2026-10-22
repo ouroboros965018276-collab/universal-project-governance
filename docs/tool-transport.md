@@ -28,6 +28,8 @@ ToolCodex 为一次已注册执行建立子进程配置：使用既有官方登�
 
 准备固定双方源码、编译器、许可、运行包、共同评分器和相同 HTTP 传输，按注册目录中的 low effort 能力核对请求模型。列入目录不证明当前访问、内部模型身份或服务容量。每个修订/模型使用独立持久 worker，冻结首次/重复 context 顺序；每次任务仍需新 CLI 回合与新收据，准备缓存不是新的独立样本。
 
+所有者准备器用当前可信 `native_codex.execution_inputs_identity` 为支持该接口的修订生成 `execution_inputs_sha256`，同时固定配置与 runner capability；worker 只核对既有注册，不从请求创建或更新信任。旧修订保留其原始配置接口，但其完整 source 与 execution_artifact 摘要也在所有者 manifest 中预先固定，每次调用 legacy adapter 前均核验。修改编译器、Python 源码或执行产物需要重新准备、注册和审阅；旧代码不因此获得当前适配器的安全或实测资格背书。
+
 `python -B evolution/experiments/native_paired/parent.py --spec PATH` 只验证；真实派发还要求新的 output 路径和精确 `--allow-dispatch-protocol-sha256`，并须得到当前用户授权、公开注册与独立审阅。32 次调用、token/时间停止值和配对推断以新生成协议为准；这些是观测预算，不是账单保证。worker 丢失、未知调用、超时或不完整收据保持失败/未知并停止，不通过重启 worker 改变冻结的缓存计划。
 
 维护该工具可运行 `python -B -m unittest discover -s tests -p test_native_paired.py`；测试使用合成快照与收据，不调用模型。当前测试、发布和安装事实只在[项目状态](../PROJECT_STATE.md)登记。

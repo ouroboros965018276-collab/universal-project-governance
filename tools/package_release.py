@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build a deterministic ZIP from the compiler-verified installable runtime."""
 from __future__ import annotations
-import argparse,hashlib,os,re,subprocess,sys,tempfile,zipfile
+import argparse,hashlib,os,re,subprocess,sys,zipfile
 from pathlib import Path
 
 ZIP_TIME=(1980,1,1,0,0,0)
