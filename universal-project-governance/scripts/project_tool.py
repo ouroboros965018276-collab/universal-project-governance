@@ -8,6 +8,7 @@ import uuid
 from datetime import datetime, timezone
 import json
 import re
+import stat
 from pathlib import Path, PurePosixPath
 import sys
 import hashlib
@@ -83,13 +84,32 @@ def write_json_atomic(path, value):
             stream.write(raw)
             stream.flush()
             os.fsync(stream.fileno())
-        if temporary.read_bytes() != raw:
-            raise ValueError("managed temporary write failed readback")
-        if path.is_symlink() or path.parent.is_symlink():
-            raise ValueError("managed destination changed to a symlink")
-        os.replace(str(temporary), str(path))
+        # Windows readers may briefly omit FILE_SHARE_DELETE. Keep replacement
+        # atomic and bounded; permanent permission failures retain their error.
+        retry_delays = (0.01, 0.02, 0.04, 0.08, 0.1, 0.1, 0.1, 0.1, 0.1)
+        for attempt in range(len(retry_delays) + 1):
+            if path.is_symlink() or path.parent.is_symlink():
+                raise ValueError("managed destination changed to a symlink")
+            info = temporary.lstat()
+            if not stat.S_ISREG(info.st_mode) or (info.st_dev, info.st_ino) != identity:
+                raise ValueError("managed temporary path changed before replacement")
+            with temporary.open("rb") as stream:
+                info = os.fstat(stream.fileno())
+                if not stat.S_ISREG(info.st_mode) or (info.st_dev, info.st_ino) != identity:
+                    raise ValueError("managed temporary path changed before replacement")
+                if stream.read(len(raw) + 1) != raw:
+                    raise ValueError("managed temporary write failed readback")
+            try:
+                os.replace(str(temporary), str(path))
+                break
+            except PermissionError as error:
+                if (os.name != "nt" or getattr(error, "winerror", None) not in {5, 32, 33}
+                        or attempt == len(retry_delays)):
+                    raise
+                time.sleep(retry_delays[attempt])
     finally:
-        if identity is not None and temporary.is_file() and not temporary.is_symlink():
+        if (identity is not None and not temporary.parent.is_symlink()
+                and temporary.is_file() and not temporary.is_symlink()):
             info = temporary.stat()
             if (info.st_dev, info.st_ino) == identity:
                 temporary.unlink()

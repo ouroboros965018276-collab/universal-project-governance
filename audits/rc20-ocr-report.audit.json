@@ -1850,14 +1850,14 @@
   },
   "engineering": {
     "final_gates": {
-      "observed_at": "2026-10-21T22:57:05.731782+00:00",
+      "observed_at": "2026-10-22T11:23:37.426728+00:00",
       "successful": true,
       "gate_commands": 11,
       "passed": 11,
       "identical_packages": true,
-      "package_sha256": "b5728bacc237afbaa0c20f577297874fd0d2d4faadd51f79e6b7579d8b82506e",
+      "package_sha256": "13101fc8b4be530436d7b29efd7ecc7a2eb497e850a289dffb91c93a2353ff90",
       "package": ".governance/rc207-dist-a/universal-project-governance-v3.0.0-rc.20.7.zip",
-      "source_sha256": "de445d599060e3a8dea5b83e78449c24b26ec72a8722cd882266ce2811a31bf3",
+      "source_sha256": "b2765bb0f7e24192376b2b07efb55e07e2308bec882675eeeae151d70578f1b1",
       "gates": [
         {
           "command": [
@@ -1865,7 +1865,7 @@
             "--check"
           ],
           "returncode": 0,
-          "seconds": 1.4839999999999236,
+          "seconds": 0.3910000000000764,
           "raw_log": ".governance/rc207-final-gate-00.log",
           "raw_log_sha256": "16a781091d7bdbaccaf714f07c29d4424d1cb20d4f434562e28fadc68396a2c8"
         },
@@ -1875,7 +1875,7 @@
             "."
           ],
           "returncode": 0,
-          "seconds": 0.609000000000151,
+          "seconds": 0.125,
           "raw_log": ".governance/rc207-final-gate-01.log",
           "raw_log_sha256": "a1654f7bbcea3597100a2aba21ad24260d51893875b7ad57ea53c46b378333d4"
         },
@@ -1885,7 +1885,7 @@
             "."
           ],
           "returncode": 0,
-          "seconds": 1.5,
+          "seconds": 0.34400000000005093,
           "raw_log": ".governance/rc207-final-gate-02.log",
           "raw_log_sha256": "05f7dfe43892703201286ccb994629adb86f0d346405e7eb86810c5bedc913d2"
         },
@@ -1896,9 +1896,9 @@
             "--check"
           ],
           "returncode": 0,
-          "seconds": 0.8279999999999745,
+          "seconds": 0.20299999999997453,
           "raw_log": ".governance/rc207-final-gate-03.log",
-          "raw_log_sha256": "96c356ecc68879ce5794bb2918df9ed70c25ae271b892b39135a565c9a2c6f46"
+          "raw_log_sha256": "4a2e33206b9d98400c642e26673b001586c7cc6c972849871fa36ce3f88d65a4"
         },
         {
           "command": [
@@ -1906,7 +1906,7 @@
             "."
           ],
           "returncode": 0,
-          "seconds": 5.406999999999925,
+          "seconds": 1.4529999999999745,
           "raw_log": ".governance/rc207-final-gate-04.log",
           "raw_log_sha256": "b72ff9168723a313496989c989b710c573f7eaa291d72abfa9d7ece0d20391e6"
         },
@@ -1916,7 +1916,7 @@
             "universal-project-governance"
           ],
           "returncode": 0,
-          "seconds": 0.7809999999999491,
+          "seconds": 0.17200000000002547,
           "raw_log": ".governance/rc207-final-gate-05.log",
           "raw_log_sha256": "8c194143ac96849550f9cd125757367f88209797ff88238e06b51321d2bd9d4d"
         },
@@ -1926,7 +1926,7 @@
             "universal-project-governance"
           ],
           "returncode": 0,
-          "seconds": 0.5779999999999745,
+          "seconds": 0.1410000000000764,
           "raw_log": ".governance/rc207-final-gate-06.log",
           "raw_log_sha256": "e246fd6e1c3b7cfa08d75826ffd961aa15f5e779a39bdb7f33bfb7c01f91ce21"
         },
@@ -1936,7 +1936,7 @@
             "."
           ],
           "returncode": 0,
-          "seconds": 9.453000000000202,
+          "seconds": 2.8899999999998727,
           "raw_log": ".governance/rc207-final-gate-07.log",
           "raw_log_sha256": "57c428d631a537f528adff251f18017330838eb9da4329714dcd92ae41a591c2"
         },
@@ -1946,7 +1946,7 @@
             "."
           ],
           "returncode": 0,
-          "seconds": 0.875,
+          "seconds": 0.20299999999997453,
           "raw_log": ".governance/rc207-final-gate-08.log",
           "raw_log_sha256": "05a98a7f9ac303958b0b8e0a882ae7a46a09c2f938ddbdb8ed34a6abb690e7c1"
         },
@@ -1958,9 +1958,9 @@
             ".governance/rc207-dist-a"
           ],
           "returncode": 0,
-          "seconds": 3.9379999999998745,
+          "seconds": 0.9850000000001273,
           "raw_log": ".governance/rc207-final-gate-09.log",
-          "raw_log_sha256": "ef52f890595c0bd3edfcb3586e4c43aafca5d50f678faaa88b4fa51e935b4043"
+          "raw_log_sha256": "e9a88adb3bff4b3e97336d7486cdd74f9164a6a3412a6661f15ea8bf2b2bb9d9"
         },
         {
           "command": [
@@ -1970,9 +1970,9 @@
             ".governance/rc207-dist-b"
           ],
           "returncode": 0,
-          "seconds": 4.0470000000000255,
+          "seconds": 0.9839999999999236,
           "raw_log": ".governance/rc207-final-gate-10.log",
-          "raw_log_sha256": "2dede62959b02bcef58fc13d4992217340a22fb34084a0edcd3c61bf3fd90ac0"
+          "raw_log_sha256": "55696e5129da0056f2699fac967accdf389aed5594b25b464d36099cc76e622e"
         }
       ]
     },
@@ -2312,6 +2312,79 @@
         "path": ".governance/rc207-installed-diagnostic-analysis.json",
         "sha256": "c16d7e190252ff29d66259856c1fd70d4a08b4db072e1ee8d2b3ca7c6aed7e56"
       }
+    },
+    "windows_atomic_publication_repair": {
+      "observed_at": "2026-10-22T11:19:12.986425+00:00",
+      "rejected_ci": {
+        "source_revision": "94508c55c6d70034f31d8e64f0c3477962854334",
+        "workflow": 39765590994,
+        "job": 119780111538,
+        "runtime": "Windows Python3.11",
+        "tests_discovered": 1521,
+        "failures": 1,
+        "skipped": 3,
+        "failed_case": "test_git_recovery.GitRecoveryTests.test_native_crash_recovers_original_scope_and_deduplicates",
+        "raw_log": ".governance/rc207-final-windows311-failure.log",
+        "raw_log_sha256": "c39942447efccc2d8e3be60f2ee3e484aaab50aca3a489a2e88aeebf4c362b5b"
+      },
+      "failure_scope": "Atomic replacement returned WinError5; a short-lived Windows reader denial is reproduced, but exact CI reader/ACL cause is not established.",
+      "repair": {
+        "replace_error_types": [
+          "PermissionError"
+        ],
+        "platform": "nt only",
+        "winerror_codes": [
+          5,
+          32,
+          33
+        ],
+        "maximum_replace_attempts": 10,
+        "maximum_retry_sleep_seconds": 0.65,
+        "deadline_changes": false,
+        "acl_changes": false,
+        "host_configuration_changes": false,
+        "paid_calls": 0,
+        "per_attempt_checks": [
+          "destination and immediate parent not symlinks",
+          "temporary lstat owned regular-file identity",
+          "opened temporary fstat identity",
+          "bounded len(raw)+1 readback equal to original JSON bytes"
+        ],
+        "cleanup": "Delete only same owned temporary identity, refusing a symlinked parent"
+      },
+      "receipt": ".governance/rc207-windows-atomic-repair.json",
+      "receipt_sha256": "5448cc7898ab6b3bd5eed1365d1f2871c88f46c60b323ff157a3f799dcc58950",
+      "source_sha256": {
+        "governance-src/runtime-scripts/project_tool.py": "c63cb51848daed91adb6f02a13234d783f7645fe3cafe78f63034b90a415cf8f",
+        "universal-project-governance/scripts/project_tool.py": "c63cb51848daed91adb6f02a13234d783f7645fe3cafe78f63034b90a415cf8f",
+        "tests/test_windows_atomic_state.py": "c6cd949b151867b9278a0b4162e06c997379daec96a621e90ffa4d5560dac8d3",
+        "tests/test_git_recovery.py": "d7f882ac54c5668dd75021f2230dab2af4a0455de6b75c6f015c807d3c3a5134",
+        "tests/test_git_watch.py": "a26a5a309aa7eedda2a63c30a7be3998b27112b4302472748a450a69cc54cd12",
+        "tests/registration_fixture.py": "75f04efbac0564a4b628dfb06a132dc86f4d68c3c540044a13bc50c33e327f14"
+      },
+      "execution": {
+        "result": "pass",
+        "discovered": 11,
+        "executed": 9,
+        "passed": 9,
+        "skipped": 2,
+        "elapsed_seconds": 27.576,
+        "exit_code": 0,
+        "new_atomic_cases": 8,
+        "native_recovery_neighborhood_cases": 3,
+        "unchanged_original_failure_case": "test_git_recovery.GitRecoveryTests.test_native_crash_recovers_original_scope_and_deduplicates",
+        "neighborhood": [
+          "test_git_recovery.GitRecoveryTests.test_unique_atomic_crash_residue_never_blocks_or_becomes_canonical_state",
+          "test_git_recovery.GitRecoveryTests.test_os_writer_guard_recovers_after_hard_exit_and_preserves_unknown_legacy_lock"
+        ],
+        "raw_log": ".governance/rc207-windows-atomic-native-final.log",
+        "raw_log_sha256": "f9fff924938abc19e34670d7efd8b0aebde2f59ec7bb437b3773d267126ba6bb"
+      },
+      "observed_limits": [
+        "Windows native symlink creation lacks privilege (WinError 1314); destination and parent symlink race cases skipped locally, requiring supported-platform CI execution.",
+        "Native CreateFileW reader without FILE_SHARE_DELETE reproduces a temporary replacement denial and successful release/retry; this does not identify the exact reader or prove every CI denial had that cause.",
+        "Earlier seven-case success preceded final cleanup/readback changes and is not final-byte acceptance; the final eleven-case cohort supersedes those intermediate success logs."
+      ]
     }
   },
   "limits": {
