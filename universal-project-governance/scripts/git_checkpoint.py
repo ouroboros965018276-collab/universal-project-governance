@@ -120,10 +120,26 @@ def _repo(root):
     root = Path(root).resolve()
     if (root / ".git").is_symlink():
         raise CheckpointError("symlinked-git-directory")
-    top = Path(_text(root, ["rev-parse", "--show-toplevel"])).resolve()
+    # These read-only rev-parse options share one native launch. Git emits no
+    # shared-index line for an ordinary index. Newlines in a root/admin path or
+    # a split-index result are ambiguous here; retain the separate queries for
+    # that uncommon shape rather than misinterpreting a legitimate path.
+    metadata = _git(root, ["rev-parse", "--show-toplevel", "--absolute-git-dir",
+                           "--shared-index-path"]).stdout.decode("utf-8", "surrogateescape")
+    fields = metadata.split("\n")
+    if fields[-1] == "":
+        fields.pop()
+    if len(fields) == 2 and all(field and "\r" not in field for field in fields):
+        top_text, directory_text = (field.strip() for field in fields)
+        shared_index = ""
+    else:
+        top_text = _text(root, ["rev-parse", "--show-toplevel"])
+        directory_text = _text(root, ["rev-parse", "--absolute-git-dir"])
+        shared_index = _text(root, ["rev-parse", "--shared-index-path"])
+    top = Path(top_text).resolve()
     if top != root:
         raise CheckpointError("project-must-be-git-worktree-root")
-    directory = Path(_text(root, ["rev-parse", "--absolute-git-dir"])).resolve()
+    directory = Path(directory_text).resolve()
     branch = _text(root, ["symbolic-ref", "--quiet", "HEAD"])
     head = _head(root)
     if not branch.startswith("refs/heads/"):
@@ -135,7 +151,7 @@ def _repo(root):
             raise CheckpointError("git-operation-in-progress")
     if _git(root, ["ls-files", "--unmerged", "-z"]).stdout:
         raise CheckpointError("unmerged-index")
-    if _text(root, ["rev-parse", "--shared-index-path"]):
+    if shared_index:
         raise CheckpointError("split-index-unsupported")
     sparse = _git(root, ["config", "--bool", "core.sparseCheckout"], check=False)
     if sparse.stdout.strip() == b"true":
