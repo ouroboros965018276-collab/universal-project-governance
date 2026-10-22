@@ -2,7 +2,7 @@
   "schema_version": 1,
   "version": "3.0.0-rc.20.7",
   "status": "SOURCE_REVIEWED_ENGINEERING_ACCEPTANCE_TRACKED_IN_ISSUE",
-  "observed_at": "2026-10-21T21:53:19.972259+00:00",
+  "observed_at": "2026-10-22T10:45:37.273403+00:00",
   "baseline_revision": "dc907ea43beebc76b44c82616ee440c43db03d0e",
   "acceptance_url": "https://github.com/ouroboros965018276-collab/universal-project-governance/issues/33",
   "report": {
@@ -2264,8 +2264,8 @@
     "installed_native_query_refinement": {
       "observed_at": "2026-10-21T22:58:12.481449+00:00",
       "original_merged_revision": "da554451f651b8df3d6a19404b3e8e49cb32cd78",
-      "original_ci_archive": ".governance/rc207-ci-initial.json",
-      "original_ci_archive_sha256": "70b68c2b1daf63752c2f45a8fd8fc299375b0c3b959ddaf1b19a11c63be21c3b",
+      "original_ci_archive": ".governance/rc207-ci-before-native-refinement.json",
+      "original_ci_archive_sha256": "c53db0fbb1e76ffa322bcb8f867db91260f1a9e00a365627776bc7964efcab88",
       "rejected_local_acceptance": [
         {
           "receipt": ".governance/rc207-install-attempt-0a26d390f9564023a6ec2036576d5485.json",
@@ -2290,8 +2290,28 @@
       ],
       "observations": "Both validators succeeded. The monitored second stage had a prepared commit and was still executing guarded update-ref at the unchanged reentry deadline. Command PIDs/argv continued changing; no single validator hang, installed/source module mix or stale cache use was established.",
       "repair": "Combine top-level/admin/shared-index rev-parse metadata in one guarded native call for unambiguous output; retain bounded separate queries for newline/split-index shapes. Preserve root ownership, branch/HEAD, merge/index/sparse checks, native guard retention and original test deadlines. No metadata reused across mutations.",
-      "validation": "Affected native metadata/checkpoint/host regression and exact new source/main CI plus installed acceptance must pass; final observed revisions/results remain in acceptance_url.",
-      "scope_limit": "Native process startup overhead is observed; a specific antivirus, storage, interpreter or host service cause is not established. Prior CI success did not establish local acceptance."
+      "validation": "Affected metadata8/checkpoint26/original host1 cohort passed with2 Windows filename skips; final exact-source/main CI and installed acceptance remain tracked in acceptance_url.",
+      "scope_limit": "Native process startup overhead is observed; a specific antivirus, storage, interpreter or host service cause is not established. Prior CI success did not establish local acceptance.",
+      "affected_regression": {
+        "receipt": ".governance/rc207-native-query-repair.json",
+        "receipt_sha256": "e40d5e22865eb0692438c45595e1f393af09f9b461304362f168d95a26104681",
+        "raw_log": ".governance/rc207-native-query-repair.log",
+        "raw_log_sha256": "8392d143143a15c79dd19a8c33ad3ee9b19656ea6e41892c0af42357b807fb8d",
+        "tests_discovered": 35,
+        "tests_executed": 33,
+        "skipped": 2,
+        "skip_scope": "LF filenames unsupported on Windows; Linux coverage remains required.",
+        "status": "PASS",
+        "host_case_elapsed_seconds": 94.93799999999987,
+        "original_reentry_deadline_seconds": 60,
+        "fixture_deadlines_changed": false,
+        "tested_source_revision": "69bd2743d75c5871843d55fdaaa3667443c5bc2e",
+        "identity_scope": "Seven pre-recorded canonical/package/test file hashes match the tested commit; no full-tree identity is inferred from HEAD-at-start."
+      },
+      "failed_sampling_analysis": {
+        "path": ".governance/rc207-installed-diagnostic-analysis.json",
+        "sha256": "c16d7e190252ff29d66259856c1fd70d4a08b4db072e1ee8d2b3ca7c6aed7e56"
+      }
     }
   },
   "limits": {
