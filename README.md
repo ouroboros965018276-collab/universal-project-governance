@@ -1,6 +1,6 @@
 # 通用项目治理 UPG
 
-当前候选：**3.0.0-rc.20.9 — Scoped Engineering and Completion Review**。版本以[生成清单](universal-project-governance/VERSION.md)为准，发布、安装和验证状态见[项目状态](PROJECT_STATE.md)。
+当前候选：**3.0.0-rc.20.10 — Governed Task Lifecycle**。版本以[生成清单](universal-project-governance/VERSION.md)为准，发布、安装和验证状态见[项目状态](PROJECT_STATE.md)。
 
 UPG 帮助不同 Agent 和工程师持续维护同一个项目：依据当前事实定位任务，在正确层次完成关联改动，处理受影响的重复实现、过时内容和技术债，留下可验证、可继续接手的状态。软件、数据、研究、内容、设计和混合项目使用同一治理内核；具体工具能力须由宿主实际验收。
 
@@ -28,6 +28,8 @@ python upg.py status --project /path/to/project
 
 给 Agent 一个具体任务即可，例如“重命名这个接口，更新受影响调用方与测试，并安全清理旧路径”。普通小改动保留轻量路径；跨模块或高风险工作按影响范围补足验证与交接。新项目绑定默认不收集临时实测报告；需要时显式使用 `--field-test-reporting`。
 
+开展任务时先明确结果、范围、可观察验收与关键未知；复杂任务按有依赖的可验证单元推进。新跟踪任务以 task_contract 开始，阶段结果通过 task_progress 校验前置、当前证据与下一行动；发现新事实时有依据地重规划，原始目标与验收保留。输入、旧工作流兼容与无 helper 边界见[任务生命周期](docs/task-lifecycle.md)。小改动可以只有一个单元，不新增计划审批或任务账本。
+
 每次修改正常结束前都会审查受影响部分，并审计验证、重复实现、过时文档与残留。pstack 中适用的调查、设计、行为验证、评审和清理能力已归入现有规范与任务路由；新工作流的完成门禁核对最终文件身份，缺少或过期的审查证据不能登记完成。输入与证据边界见[完成审查](docs/completion-review.md)，完整选择依据见[来源映射](third_party/upstream-sources.json)。
 
 需要自动保存 Git 阶段时，显式配置允许提交的范围。启用后，已有工作流的 `begin` 记录基线，`finish` 自动识别有效改动、按阶段提交并去重；普通未完成阶段默认间隔 300 秒，完成或显式交接/风险边界时收束待提交改动。无变化、声明的状态文件和开始前已有改动不会触发自动提交。配置、失败恢复与能力边界见 [Git 检查点](docs/git-checkpoints.md)。
@@ -39,6 +41,7 @@ python upg.py status --project /path/to/project
 | 修改某个功能、契约或工具 | [模块索引与边界](MODULE_MAP.md) |
 | 维护治理规则或编译后的 Skill | [规范源](governance-src/model/governance-model.json)、[维护约定](AGENTS.md) |
 | 恢复中断任务或核对过期交接 | [项目事实恢复](docs/project-fact-recovery.md) |
+| 开展任务、推进阶段或重规划 | [任务生命周期与当前状态](docs/task-lifecycle.md) |
 | 审查本次修改、准备正常完成证据 | [完成审查与审计](docs/completion-review.md) |
 | 配置按阶段自动提交、去重或恢复 | [Git 检查点](docs/git-checkpoints.md) |
 | 了解当前变更、验证和未完成事项 | [项目状态](PROJECT_STATE.md) |

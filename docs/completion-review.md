@@ -4,6 +4,8 @@
 
 `finish` 与直接写入 field report 的新 `complete` 都要求 `completion_review`。旧历史仍可读取，原完成输入的精确重试保持幂等；`partial`、`blocked` 不强制伪造审查成功。报告开关、latest/previous、开始事实与 Git 允许范围保持原契约。
 
+新契约工作流先按[任务生命周期](task-lifecycle.md)完成阶段与原验收，再通过本页最终审查。推进状态、开始约定和原始变更事实各用自己的契约；field report 输入不能直接替代工程执行记录。
+
 ## 操作
 
 1. 从当前差异与任务事实确认完整 `changed_files`，包括新增、更新、删除、生成文件和受影响文档。追踪真实调用、数据、配置与异步消费者，不能只凭关键词命中判断覆盖。

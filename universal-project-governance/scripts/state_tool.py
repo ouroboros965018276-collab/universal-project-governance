@@ -162,6 +162,24 @@ def reference_path(ref, project_root: Path) -> Path:
     return target.resolve(strict=True)
 
 
+def resolve_current_state(project_root: Path, ref) -> Path:
+    """Verify the existing current-state authority without copying its contents."""
+    schema = load(schema_root() / "field-report.schema.json")["properties"]["current_state"]
+    errors = validate_node(ref, schema)
+    if errors:
+        raise ValueError("invalid current_state: " + "; ".join(errors))
+    if ref["path"] in {".governance/upg.json", ".governance/field-reports.json"}:
+        raise ValueError("current_state must reference project truth, not the UPG historical ledger")
+    from project_facts import Reader, strict_json
+    reader = Reader(project_root)
+    raw = reader.read(ref["path"], limit=256 * 1024)
+    if hashlib.sha256(raw).hexdigest() != ref["sha256"]:
+        raise ValueError("current_state changed; reconcile a new checkpoint against project truth")
+    if not isinstance(strict_json(raw), dict):
+        raise ValueError("current_state must reference a structured JSON object")
+    return (reader.root / ref["path"]).resolve(strict=True)
+
+
 def resolve_validation_ref(ref, project_root: Path, source_bytes=None) -> dict:
     schema = load(schema_root() / "handoff.schema.json")["properties"]["validation_ref"]
     errors = validate_node(ref, schema, "$.validation_ref")
@@ -319,25 +337,63 @@ def infer_schema(path: Path) -> str:
     raise ValueError("cannot infer schema; pass --schema")
 
 
+def active_task_references(root: Path, active) -> set:
+    """Protect only the latest active stage's currently verified task proofs."""
+    if active is None:
+        return set()
+    if not isinstance(active, dict):
+        raise ValueError("active_workflow must be an object")
+    outcome = active.get("last_outcome")
+    if outcome is None:
+        return set()
+    if not isinstance(outcome, dict):
+        raise ValueError("active_workflow.last_outcome must be an object")
+    progress = outcome.get("task_progress")
+    if progress is None:
+        return set()
+    from task_lifecycle import verify_evidence
+    from project_facts import safe_project_path
+    verify_evidence(root, outcome)
+    proofs = [result for result in progress["results"] if result["status"] == "passed"]
+    proofs += progress.get("acceptance", [])
+    referenced = set()
+    for proof in proofs:
+        for source in proof.get("sources", []):
+            if source["sha256"] is not None:
+                referenced.add(safe_project_path(root, source["path"]).resolve(strict=True))
+        for key in ("current_state", "validation_ref"):
+            if key in proof:
+                referenced.add(reference_path(proof[key], root))
+    return referenced
+
+
 def compact(root: Path, apply: bool, close_handoff: bool) -> list:
     gov = root / ".governance"
     actions = []
     handoff = gov / "handoff.json"
-    referenced = None
+    referenced = set()
+    binding = gov / "upg.json"
+    if binding.is_file():
+        state = load(binding)
+        if not isinstance(state, dict):
+            raise ValueError("project binding must be an object")
+        if state.get("current_state") is not None:
+            referenced.add(resolve_current_state(root, state["current_state"]))
+        referenced.update(active_task_references(root, state.get("active_workflow")))
     if handoff.is_file():
         ref = load(handoff).get("validation_ref")
         if ref is not None:
             resolve_validation_ref(ref, root)
-            referenced = reference_path(ref, root)
+            referenced.add(reference_path(ref, root))
     execution = gov / "execution" / "latest.json"
     if execution.is_file():
         data = load(execution)
-        if execution.resolve() != referenced and data.get("status") == "complete" and data.get("durable_summary_recorded") and not data.get("retain_for_audit"):
+        if execution.resolve() not in referenced and data.get("status") == "complete" and data.get("durable_summary_recorded") and not data.get("retain_for_audit"):
             actions.append("remove completed execution/latest.json after durable reconciliation")
             if apply:
                 execution.unlink()
     feedback = gov / "feedback" / "open.json"
-    if feedback.is_file():
+    if feedback.is_file() and feedback.resolve() not in referenced:
         data = load(feedback)
         open_items = [x for x in data.get("items", []) if x.get("status") == "open"]
         if len(open_items) != len(data.get("items", [])):
@@ -348,7 +404,7 @@ def compact(root: Path, apply: bool, close_handoff: bool) -> list:
                     feedback.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
                 else:
                     feedback.unlink()
-    if close_handoff and handoff.is_file():
+    if close_handoff and handoff.is_file() and handoff.resolve() not in referenced:
         data = load(handoff)
         if data.get("status") == "ready" and not data.get("in_progress") and not data.get("next_actions"):
             actions.append("remove closed current handoff")

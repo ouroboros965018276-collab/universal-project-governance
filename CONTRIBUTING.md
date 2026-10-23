@@ -1,6 +1,6 @@
 # Contributing
 
-Current candidate: **3.0.0-rc.20.9 — Scoped Engineering and Completion Review**. Change canonical source, regenerate the runtime, and keep engineering, bounded development measurements, independent efficacy evidence, and formal qualification distinct. Qualification thresholds remain unchanged; current evidence and remaining gaps are recorded in [PROJECT_STATE.md](PROJECT_STATE.md).
+Current candidate: **3.0.0-rc.20.10 — Governed Task Lifecycle**. Change canonical source, regenerate the runtime, and keep engineering, bounded development measurements, independent efficacy evidence, and formal qualification distinct. Qualification thresholds remain unchanged; current evidence and remaining gaps are recorded in [PROJECT_STATE.md](PROJECT_STATE.md).
 
 ## Structural contribution rule
 

@@ -4,7 +4,7 @@ description: Govern maintained projects; exclude read-only Q&A and unrelated one
 license: Apache-2.0
 compatibility: Core needs no runtime; optional helpers need Python 3.8+.
 metadata:
-  version: "3.0.0-rc.20.9"
+  version: "3.0.0-rc.20.10"
   maturity: "release-candidate"
 ---
 
@@ -25,7 +25,7 @@ First edit: resolve installed Skill; `scripts/project_tool.py ensure <root>` if 
 
 **decision_relevance** — Use the user's language. Keep project content useful for current use, maintenance, validation or takeover. Give the needed outcome, evidence and limits once. Fit technical detail and reasons to need; omit process recitals, rigid style rules and extra model polishing.
 
-**complete_change** — Keep contracts/safety/error handling; resolve affected consumers/tests and obsolete paths. Use current bytes/revisions and the tool's edit semantics; a fragment cannot replace a whole file. Change edge/error returns/exceptions only for the authorized goal. Minimize needless work, not diff size; reserve final validation/handoff budget and check every explicit task obligation before finishing. Priority: user intent; correctness/safety/truth; contracts/structure; maintainability/readability; cost.
+**complete_change** — Before changes, frame the user's outcome, scope/retained contracts, observable acceptance, current facts and material unknowns; choose the next proportionate check. Local low-risk work may be one short unit. Advance through verifiable units; check actual results before dependents and revise affected remaining work when evidence changes, preserving intent and original start facts. Keep contracts/safety/error handling; resolve affected consumers/tests and obsolete paths. Use current bytes/revisions and the tool's edit semantics; a fragment cannot replace a whole file. Change edge/error returns/exceptions only for the authorized goal. Minimize needless work, not diff size; reserve final validation/handoff budget and check every explicit task obligation before finishing. Priority: user intent; correctness/safety/truth; contracts/structure; maintainability/readability; cost.
 
 **evidence_fidelity** — Observe validation on the final affected state before claiming completion. Every normal modifying completion, including local/report-none work: review changed portions and affected consumers for correctness/contracts and audit their evidence, scope, duplicates, stale docs and residue; fix confirmed scoped blockers. Record proportionate review/audit evidence in existing final/VCS or required state, with explicit unverified limits. Tracked completion uses completion_review with exact changed_files/current-byte hashes (null for deletion), both passes and no unresolved findings; helpers reject missing/stale coverage before new completion. Later edits invalidate affected review and validation: rerun before completion or keep work unfinished. Preserve identifiers, input domains, numbers, references, negation and evidence limits when shortening; distinguish planned, failed and unknown checks from observed results.
 
@@ -37,13 +37,13 @@ Batch independent checks. After-state hashes: verified actual-byte receipts or s
 
 ## State when needed
 
-Apply selected operational blocks once. No helpers: select when policy_ids intersects active rules OR report_levels contains resolved report OR (on_field_reporting AND existing field reporting). Also select tracked_state for non-trivial/tracked/cross-session work; correct missed triggers.
+New tracked tasks: begin with task_contract; advance existing outcomes with task_progress, current evidence and an explicit remaining next action. Replan against original scope/acceptance; old starts are never retrospectively rewritten. Helpers validate record consistency, not semantic truth. Apply selected operational blocks once. No helpers: select when policy_ids intersects active rules OR report_levels contains resolved report OR (on_field_reporting AND existing field reporting). Also select tracked_state for non-trivial/tracked/cross-session work; correct missed triggers.
 
 Preserve reporting settings: field reporting defaults off; explicit temporary owner opt-in only (`project_tool install --field-test-reporting`). On: one bounded ledger, no permanent per-task reports. Both modes: `none` final/VCS evidence; `change-note` needed compact note; `engineering` `.governance/execution/latest.json`; `audit` frozen record.
 
 ## Verify and finish
 
-Finish only when evidence_fidelity review/audit, selected obligations, integrity, binding and active reporting hold. Tracked new completion: `scripts/completion_review.py <root> --path <file>` (repeatable) captures identities only; add actual review/audit evidence as `completion_review` for `project_tool finish`. Check finish/status; pending recovery or blocked Git is unfinished. Preserve historical records and unfinished checkpoints. State blockers; local review cannot establish project-wide debt clearance.
+Finish only when task acceptance/current required units, evidence_fidelity review/audit, selected obligations, integrity, binding and active reporting hold. Tracked new completion: `scripts/completion_review.py <root> --path <file>` (repeatable) captures identities only; add actual review/audit evidence as `completion_review` for `project_tool finish`. Check finish/status; pending recovery or blocked Git is unfinished. Preserve historical records and unfinished checkpoints. State blockers; local review cannot establish project-wide debt clearance.
 
 Installation/receipts/matching behavior/tests prove neither historical loading nor causal benefit; missing activation receipts stay unknown. Prospectively measure matched baseline/attention-control/UPG actual token/time/tool costs and cross-agent handoffs.
 

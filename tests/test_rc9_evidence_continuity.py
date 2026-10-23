@@ -32,7 +32,7 @@ from qualification.lib.core import evaluate_check, grade_lab, materialize_lab, s
 from qualification.round_manifest import build_manifest
 from qualification.dev_smoke import build_manifest as build_dev_smoke_manifest, rejects_development_before_inference
 from tools.qualification_freeze import expected
-from registration_fixture import registered_fixture, freeze, change, reviewed_report
+from registration_fixture import registered_fixture, freeze, change, reviewed_report, task_contract
 import test_qualification as legacy
 from qualification.analyze import analyze as release_analyze
 from qualification.lib.contracts import configuration_errors
@@ -479,7 +479,7 @@ class RC9Tests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td, tempfile.TemporaryDirectory() as inputs:
             project_tool.ensure(td)
             self.assertEqual(json.loads((pathlib.Path(td)/'.governance/upg.json').read_text())['project_origin'],'new')
-            start={'workflow_id':'one','change':change()}; path=write(pathlib.Path(inputs)/'start.json',start)
+            start={'workflow_id':'one','change':change(),'task_contract':task_contract()}; path=write(pathlib.Path(inputs)/'start.json',start)
             original=project_tool.begin_workflow(td,path)
             self.assertEqual(project_tool.begin_workflow(td,path)['active_workflow'],original['active_workflow'])
             start['workflow_id']='two'; write(path,start)

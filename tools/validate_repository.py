@@ -38,6 +38,8 @@ def main():
         "governance-src/schemas/field-report.schema.json",
         "governance-src/runtime-scripts/project_tool.py",
         "governance-src/runtime-scripts/completion_review.py",
+        "governance-src/runtime-scripts/task_lifecycle.py",
+        "docs/task-lifecycle.md",
         "compiler/compile_governance.py",
         "qualification/protocol/qualification-v3.json",
         "qualification/FREEZE.json",
@@ -124,6 +126,7 @@ def main():
         "schemas/field-report.schema.json",
         "scripts/project_tool.py",
         "scripts/completion_review.py",
+        "scripts/task_lifecycle.py",
     ]
     for rel in expected_runtime:
         if not (root / SKILL / rel).is_file():

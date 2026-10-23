@@ -24,13 +24,13 @@ Batch independent checks. After-state hashes: verified actual-byte receipts or s
 
 ## State when needed
 
-Apply selected operational blocks once. No helpers: select when policy_ids intersects active rules OR report_levels contains resolved report OR (on_field_reporting AND existing field reporting). Also select tracked_state for non-trivial/tracked/cross-session work; correct missed triggers.
+New tracked tasks: begin with task_contract; advance existing outcomes with task_progress, current evidence and an explicit remaining next action. Replan against original scope/acceptance; old starts are never retrospectively rewritten. Helpers validate record consistency, not semantic truth. Apply selected operational blocks once. No helpers: select when policy_ids intersects active rules OR report_levels contains resolved report OR (on_field_reporting AND existing field reporting). Also select tracked_state for non-trivial/tracked/cross-session work; correct missed triggers.
 
 Preserve reporting settings: field reporting defaults off; explicit temporary owner opt-in only (`project_tool install --field-test-reporting`). On: one bounded ledger, no permanent per-task reports. Both modes: `none` final/VCS evidence; `change-note` needed compact note; `engineering` `.governance/execution/latest.json`; `audit` frozen record.
 
 ## Verify and finish
 
-Finish only when evidence_fidelity review/audit, selected obligations, integrity, binding and active reporting hold. Tracked new completion: `scripts/completion_review.py <root> --path <file>` (repeatable) captures identities only; add actual review/audit evidence as `completion_review` for `project_tool finish`. Check finish/status; pending recovery or blocked Git is unfinished. Preserve historical records and unfinished checkpoints. State blockers; local review cannot establish project-wide debt clearance.
+Finish only when task acceptance/current required units, evidence_fidelity review/audit, selected obligations, integrity, binding and active reporting hold. Tracked new completion: `scripts/completion_review.py <root> --path <file>` (repeatable) captures identities only; add actual review/audit evidence as `completion_review` for `project_tool finish`. Check finish/status; pending recovery or blocked Git is unfinished. Preserve historical records and unfinished checkpoints. State blockers; local review cannot establish project-wide debt clearance.
 
 Installation/receipts/matching behavior/tests prove neither historical loading nor causal benefit; missing activation receipts stay unknown. Prospectively measure matched baseline/attention-control/UPG actual token/time/tool costs and cross-agent handoffs.
 

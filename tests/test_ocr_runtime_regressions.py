@@ -14,10 +14,11 @@ import tempfile
 import unittest
 from unittest.mock import Mock, patch
 from types import SimpleNamespace
-from registration_fixture import change as fixture_change
+from registration_fixture import change as fixture_change, task_contract
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "governance-src"
+sys.path.insert(0, str(SOURCE / "runtime-scripts"))
 
 def module(name, path):
     spec = importlib.util.spec_from_file_location(name, path)
@@ -164,7 +165,7 @@ class OcrRuntimeRegressions(unittest.TestCase):
         index = COMPILER.compile_index(SOURCE, json.loads((SOURCE / "model/governance-model.json").read_text()))
         with patch.object(PROJECT, "index", return_value=index): binding = PROJECT.expected_binding()
         binding["git_checkpoint"].update(enabled=True, allowed_paths=["."])
-        payload = {"workflow_id": "baseline-failure", "change": fixture_change()}
+        payload = {"workflow_id": "baseline-failure", "change": fixture_change(), "task_contract": task_contract()}
         helper = SimpleNamespace(bootstrap=Mock(return_value={"ok": True}), capture=Mock(return_value={"ok": False, "reason": "capture failed"}))
         with patch.object(PROJECT, "index", return_value=index), patch.object(PROJECT, "ensure"), \
              patch.object(PROJECT, "load_json", side_effect=[payload, schema("field-report"), binding]), \
