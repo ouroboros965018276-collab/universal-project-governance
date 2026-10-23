@@ -24,6 +24,8 @@
 
 `finish` 在 reporting 关闭时推进有界 latest/previous，在开启时复用恰一次报告路径。原始 start facts、因果顺序、未知状态和未完成工作流边界不因路由改变。正式资格 A2 运行器仍需显式 opt-in；普通项目不强制采集研究数据。
 
+每次修改正常完成的审查/审计属于 `evidence_fidelity`；适用的非平凡工程路径由 `engineering_workflow` 按既有规则与报告级别选取。新 `complete` 在生命周期写入前通过 `completion_review.py` 核对审查、审计及当前文件身份，历史读取和已完成精确重试保留原事实。字段与边界见[完成输入](../docs/completion-review.md)。
+
 ## 修改与验证
 
 源码变化后需要统一生成、lint、完整性、确定性测试和资格冻结校验。已开始的结果轮保留原冻结身份；新源码不能重写旧结果或沿用旧轮的收益结论。

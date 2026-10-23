@@ -76,6 +76,18 @@
       ],
       "report_levels": [],
       "statement": "Reconstruct UPG state and unresolved artifacts as part of the existing HANDOFF_CONTINUITY closure. Optional read-only scripts/state_tool.py recover <root> --scope <file> supports repeated scopes, explicit --handoff and a registered --git-binary. Carry deltas/references into the current handoff."
+    },
+    {
+      "id": "engineering_workflow",
+      "on_field_reporting": false,
+      "policy_ids": [
+        "STRUCTURAL_INTEGRATION"
+      ],
+      "report_levels": [
+        "engineering",
+        "audit"
+      ],
+      "statement": "Ground the requested outcome in current behavior, entry points and contracts; trace affected producers/consumers, data/config/generated/async paths and failure boundaries rather than trusting symbol search alone. After repeated failures on one premise, test it before another fix. For consequential design, challenge the premise and compare viable simpler alternatives before choosing the smallest responsible layer; separate domain invariants from host adapters. Sequence independently verifiable units with explicit dependencies and one owner per shared write surface; use available independent reviewers for material changes when useful, disclose unavailable review, and let evidence resolve disagreement. Bugs: reproduce or bound the missing reproduction, fix the cause and add failing-before/passing-after behavior checks when practical. Test user-visible outcomes, exceptions, retry/idempotency and concurrency boundaries; compilation, mocks, reviewer consensus and self-report alone do not prove the real execution path. Use actual CLI/API/UI/artifacts when relevant and available, preserving unavailable limits. Performance: measure representative baseline/work/error counts and the actual bottleneck before/after. State/concurrency changes: make transitions, ownership and invariants explicit; use bounded model/counterexample checks only when justified, bind models to code and keep proof scope explicit. UI changes: compare the actual rendered result with the relevant baseline. Maintain affected verification recipes when behavior changes; encode recurring lessons in existing canonical code/schema/lint/tests instead of another instruction ledger. Clean affected duplication, misleading comments, stale docs and replaced paths while preserving useful rationale and contracts. Apply evidence_fidelity before finishing; continue scoped fixes and recheck final bytes. Shipping/CI/review triage reuses actual target revisions and observed results; no implicit merge/push/messages, paid fanout, model selection, host configuration, automation or background process authority."
     }
   ],
   "policies": [
@@ -968,7 +980,7 @@
     "release_operation_forces": "audit"
   },
   "schema_version": 1,
-  "source_sha256": "636318c127e21352d9708ef075eb722f3cb407a6750d715540961fd877b501fc",
+  "source_sha256": "806bff49e4d0a515b29164a92257a42c93e9f8b38c399e21733e1da9056acd9c",
   "structural_integration": {
     "exempt_operations": [
       "release"
@@ -1022,5 +1034,5 @@
       "governance_upgrade"
     ]
   },
-  "version": "3.0.0-rc.20.8"
+  "version": "3.0.0-rc.20.9"
 }

@@ -213,7 +213,7 @@ class OperationalGuidanceTests(unittest.TestCase):
                          {k: v for k, v in unknown.items() if k != "warnings"})
         self.assertTrue(unknown["warnings"])
 
-    def test_temporary_source_compilation_is_deterministic_and_keeps_twenty_two_delivery_paths(self):
+    def test_temporary_source_compilation_is_deterministic_and_keeps_declared_delivery_paths(self):
         with tempfile.TemporaryDirectory(prefix="upg-operational-") as directory:
             repo = Path(directory)
             shutil.copytree(SOURCE, repo / "governance-src", ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
@@ -235,7 +235,8 @@ class OperationalGuidanceTests(unittest.TestCase):
             self.assertIn("scripts/session_lifetime.py", generated)
             self.assertEqual(generated["scripts/session_lifetime.py"], (SOURCE / "runtime-scripts/session_lifetime.py").read_bytes())
             self.assertEqual(generated["scripts/git_checkpoint.py"], (SOURCE / "runtime-scripts/git_checkpoint.py").read_bytes())
-            self.assertEqual(len(generated), 22)
+            self.assertIn("scripts/completion_review.py", generated)
+            self.assertEqual(len(generated), 23)
 
 
 if __name__ == "__main__":

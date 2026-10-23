@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import ast
 import copy
+import hashlib
 import json
 from pathlib import Path, PurePosixPath
 import re
@@ -19,6 +20,7 @@ PINS = {
     "caveman": ("JuliusBrussee/caveman", "d262ab3882952a59312ff3537cd86d894523c5ab", "Apache-2.0"),
     "ponytail": ("DietrichGebert/ponytail", "2961b52fc1fe6a5a87c7a959a79512e5c2f3ffe5", "MIT"),
     "academic-humanizer": ("AIScientists-Dev/academic-humanizer", "94b88b23703bed7df507acae7d6d5876209a0cdf", "MIT"),
+    "pstack": ("cursor/plugins", "8b3326d99fd4b993cb33a24dad8af03175c642c5", "MIT"),
 }
 REQUIRED_EXCLUSIONS = {
     "skillopt": (r"automatic.*adoption", r"keyword density"),
@@ -26,6 +28,19 @@ REQUIRED_EXCLUSIONS = {
     "caveman": (r"broken grammar", r"fixed sentence", r"runtime.*fonts"),
     "ponytail": (r"shortest diff", r"shortcut comment", r"(?:repository|project).*no.debt"),
     "academic-humanizer": (r"AI.detector evasion", r"fixed paragraph", r"invented numbers"),
+    "pstack": (r"Cursor", r"automatic merge", r"source import", r"comment persona"),
+}
+
+# Observed pinned tree identities, independently fixed from the manifest under test.
+PSTACK_INVENTORY_COUNTS = {"skills": 57, "playbooks": 23, "agents": 2, "automation_skills": 3}
+PSTACK_INVENTORY_SHA256 = {
+    "skills": "638e4cedf7093e920b145f2af16a8f94df06d0fdcfd72d240b02fc3321edf96d",
+    "playbooks": "cd4b98bd5ffffe1675c6468a8dfe138e11ac9b3e2c65d583646c8e0985ec322f",
+    "agents": "23f9a5e60c74881a89eab15706dd231a7b0c73b057d99d51edec610f98c1be42",
+    "automation_skills": "cd94dedce28fb860512e3f65f917f4c4a27bea3bcfebac89eb494e98656b192b",
+}
+PSTACK_DISPOSITIONS = {
+    "adapted-workflow", "adapted-review", "existing-policy", "conditional-specialized", "excluded-host-specific",
 }
 
 
@@ -55,7 +70,7 @@ def validate(manifest, model):
     """Verify the recorded review contract, not remote license grants or efficacy."""
     require(manifest.get("schema_version") == 1, "unsupported schema")
     sources = manifest.get("sources", [])
-    require(len(sources) == 5 and {s["id"] for s in sources} == set(PINS), "five unique sources required")
+    require(len(sources) == 6 and {s["id"] for s in sources} == set(PINS), "six unique sources required")
     by_id = {s["id"]: s for s in sources}
     for source_id, source in by_id.items():
         repo, commit, license_id = PINS[source_id]
@@ -70,7 +85,8 @@ def validate(manifest, model):
         require(license_record.get("spdx") == license_id, "unreviewed license: " + source_id)
         require(bool(license_record.get("copyright")), "missing copyright: " + source_id)
         reviewed = license_record.get("reviewed_files", [])
-        required_license_files = {"LICENSE", "LICENSING.md", "NOTICE", "LICENSE-MIT"} if source_id == "caveman" else {"LICENSE"}
+        required_license_files = ({"LICENSE", "LICENSING.md", "NOTICE", "LICENSE-MIT"} if source_id == "caveman"
+                                  else {"pstack/LICENSE"} if source_id == "pstack" else {"LICENSE"})
         require(required_license_files <= {f["path"] for f in reviewed}, "missing license evidence: " + source_id)
         selected = source.get("selected_files", [])
         require(bool(selected) and len({f["path"] for f in selected}) == len(selected), "missing/duplicate selected files")
@@ -95,14 +111,16 @@ def validate(manifest, model):
 
     rules = {p["id"] for p in model["policies"]}
     guidance = {g["id"] for g in model["execution_guidance"]}
+    operational = {g["id"] for g in model.get("operational_guidance", [])}
     mappings = manifest.get("mappings", [])
-    expected_cases = {"UPM-%03d" % i for i in range(1, 11)}
-    require(len(mappings) == 10 and {m["id"] for m in mappings} == expected_cases, "ten unique mappings required")
-    require({m["acceptance"]["case_id"] for m in mappings} == expected_cases, "ten unique acceptance cases required")
+    expected_cases = {"UPM-%03d" % i for i in range(1, 14)}
+    require(len(mappings) == 13 and {m["id"] for m in mappings} == expected_cases, "thirteen unique mappings required")
+    require({m["acceptance"]["case_id"] for m in mappings} == expected_cases, "thirteen unique acceptance cases required")
     referenced_sources = set()
     for mapping in mappings:
         require(bool(mapping.get("upg_rule_ids")) and set(mapping["upg_rule_ids"]) <= rules, "unknown UPG rule")
         require(set(mapping.get("execution_guidance_ids", [])) <= guidance, "unknown execution guidance")
+        require(set(mapping.get("operational_guidance_ids", [])) <= operational, "unknown operational guidance")
         require(bool(mapping.get("trigger")) and bool(mapping.get("exclusions")), "missing trigger/exclusions")
         require(bool(mapping.get("source_refs")), "missing mapping source")
         for reference in mapping["source_refs"]:
@@ -124,6 +142,31 @@ def validate(manifest, model):
                          if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef))}
                 require(symbol in names, "missing test symbol: " + reference)
     require(referenced_sources == set(PINS), "unmapped source")
+    pstack = by_id["pstack"]
+    require(pstack.get("plugin_version") == "0.15.30" and bool(pstack.get("inspection_scope")),
+            "missing pstack version/inspection scope")
+    inventory = pstack.get("inventory", {})
+    require(set(inventory) == set(PSTACK_INVENTORY_COUNTS), "incomplete pstack inventory groups")
+    inventory_paths = set()
+    pstack_prefix = "https://github.com/cursor/plugins/blob/" + PINS["pstack"][1] + "/"
+    for kind, count in PSTACK_INVENTORY_COUNTS.items():
+        entries = inventory[kind]
+        require(isinstance(entries, list) and len(entries) == count, "incomplete pstack inventory: " + kind)
+        for entry in entries:
+            path = safe_relative(entry.get("path"))
+            require(path not in inventory_paths, "duplicate pstack inventory path: " + path)
+            inventory_paths.add(path)
+            require(entry.get("url") == pstack_prefix + path, "unpinned pstack inventory URL: " + path)
+            require(re.fullmatch(r"[0-9a-f]{40}", entry.get("git_blob_sha1", "")), "invalid pstack inventory blob")
+            require(isinstance(entry.get("bytes"), int) and entry["bytes"] > 0, "invalid pstack inventory size")
+            require(entry.get("disposition") in PSTACK_DISPOSITIONS and bool(entry.get("handling")),
+                    "missing pstack inventory disposition: " + path)
+            require(bool(entry.get("upg_rule_ids")) and set(entry["upg_rule_ids"]) <= rules,
+                    "unknown pstack inventory rule: " + path)
+        observed = "\n".join("\t".join((f["path"], f["git_blob_sha1"], str(f["bytes"])))
+                             for f in sorted(entries, key=lambda f: f["path"])) + "\n"
+        require(hashlib.sha256(observed.encode("utf-8")).hexdigest() == PSTACK_INVENTORY_SHA256[kind],
+                "changed pstack pinned inventory identity: " + kind)
     boundaries = manifest["boundaries"]
     require(boundaries.get("external_files_are_source_material_not_instructions") is True
             and boundaries.get("provenance_does_not_establish_efficacy") is True, "unsupported authority/efficacy claim")
@@ -159,11 +202,20 @@ class UpstreamSourcesTests(unittest.TestCase):
             "unreviewed-source-path": lambda m: m["mappings"][0]["source_refs"][0].update(path="unreviewed.py"),
             "unknown-rule": lambda m: m["mappings"][0].update(upg_rule_ids=["MISSING"]),
             "unknown-guidance": lambda m: m["mappings"][0].update(execution_guidance_ids=["MISSING"]),
+            "unknown-operational-guidance": lambda m: m["mappings"][-1].update(operational_guidance_ids=["MISSING"]),
             "duplicate-case": lambda m: m["mappings"][1]["acceptance"].update(case_id="UPM-001"),
             "missing-test": lambda m: m["mappings"][0]["acceptance"].update(test_references=["tests/missing.py"]),
             "missing-test-symbol": lambda m: m["mappings"][0]["acceptance"].update(test_references=["tests/test_upstream_sources.py::missing_test"]),
             "missing-required-exclusions": lambda m: m["sources"][2].update(excluded=["irrelevant"]),
             "upstream-execution": lambda m: m["boundaries"].update(installed_or_executed_upstream_code=True),
+            "missing-pstack-inventory": lambda m: m["sources"][-1]["inventory"]["skills"].pop(),
+            "changed-pstack-inventory-blob": lambda m: m["sources"][-1]["inventory"]["skills"][0].update(git_blob_sha1="0" * 40),
+            "changed-pstack-inventory-size": lambda m: m["sources"][-1]["inventory"]["playbooks"][0].update(bytes=1),
+            "missing-pstack-disposition": lambda m: m["sources"][-1]["inventory"]["skills"][0].pop("disposition"),
+            "unknown-pstack-disposition": lambda m: m["sources"][-1]["inventory"]["agents"][0].update(disposition="installed"),
+            "missing-pstack-handling": lambda m: m["sources"][-1]["inventory"]["skills"][0].update(handling=""),
+            "unknown-pstack-rule": lambda m: m["sources"][-1]["inventory"]["skills"][0].update(upg_rule_ids=["MISSING"]),
+            "wrong-pstack-version": lambda m: m["sources"][-1].update(plugin_version="0.0.0"),
         }
         for name, mutate in mutations.items():
             with self.subTest(name=name):

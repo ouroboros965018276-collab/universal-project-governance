@@ -13,7 +13,24 @@ def change():
     return {"function": "test", "before": "observed baseline", "after": "observed target", "rationale": "engineering test", "source": "test fixture", "base_revision": "unknown", "result_revision": "unknown", "validation_revision": "unknown", "occurred_at": None, "time_source": "unknown", "parent_event_id": None}
 
 def report_identity(payload):
-    return dict(payload, workflow_id="engineering-fixture", change=change())
+    return reviewed_report(dict(payload, workflow_id="engineering-fixture", change=change()))
+
+def reviewed_report(payload, root=None):
+    """Synthetic completion evidence only; never an actual semantic audit."""
+    if payload.get("status") != "complete":
+        return payload
+    payload = copy.deepcopy(payload)
+    files = []
+    for relative in payload["changed_files"]:
+        path = pathlib.Path(root) / relative if root is not None else None
+        present = path is not None and path.is_file()
+        files.append(dict(path=relative, sha256=hashlib.sha256(path.read_bytes()).hexdigest() if present else None,
+                          executable=path.stat().st_mode & 0o111 if present else 0))
+    payload["completion_review"] = dict(
+        review=dict(status="passed", evidence=["Synthetic engineering fixture review; no real-Agent acceptance"], findings=[]),
+        audit=dict(status="passed", evidence=["Synthetic engineering fixture audit; no real-Agent acceptance"], findings=[]),
+        files=files)
+    return payload
 
 def registered_fixture(input_rows):
     rows = copy.deepcopy(input_rows); identity = freeze()

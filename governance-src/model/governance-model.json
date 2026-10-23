@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "name": "universal-project-governance",
-  "version": "3.0.0-rc.20.8",
+  "version": "3.0.0-rc.20.9",
   "architecture": "compiled-governance",
   "principles": [
     "ONE_SEMANTIC_RULE_ONE_CANONICAL_DEFINITION",
@@ -66,7 +66,7 @@
       "policy_ids": [
         "EVIDENCE_AFFECTED"
       ],
-      "statement": "Observe validation on the final affected state before claiming completion. Later edits invalidate affected evidence: rerun those checks before completion, or report pending checks and keep work unfinished. Preserve identifiers, input domains, numbers, references, negation and evidence limits when shortening; distinguish planned, failed and unknown checks from observed results."
+      "statement": "Observe validation on the final affected state before claiming completion. Every normal modifying completion, including local/report-none work: review changed portions and affected consumers for correctness/contracts and audit their evidence, scope, duplicates, stale docs and residue; fix confirmed scoped blockers. Record proportionate review/audit evidence in existing final/VCS or required state, with explicit unverified limits. Tracked completion uses completion_review with exact changed_files/current-byte hashes (null for deletion), both passes and no unresolved findings; helpers reject missing/stale coverage before new completion. Later edits invalidate affected review and validation: rerun before completion or keep work unfinished. Preserve identifiers, input domains, numbers, references, negation and evidence limits when shortening; distinguish planned, failed and unknown checks from observed results."
     },
     {
       "id": "task_scoped_reading",
@@ -905,6 +905,18 @@
       "on_field_reporting": false,
       "statement": "Reconstruct UPG state and unresolved artifacts as part of the existing HANDOFF_CONTINUITY closure. Optional read-only scripts/state_tool.py recover <root> --scope <file> supports repeated scopes, explicit --handoff and a registered --git-binary. Carry deltas/references into the current handoff.",
       "report_levels": []
+    },
+    {
+      "id": "engineering_workflow",
+      "policy_ids": [
+        "STRUCTURAL_INTEGRATION"
+      ],
+      "on_field_reporting": false,
+      "report_levels": [
+        "engineering",
+        "audit"
+      ],
+      "statement": "Ground the requested outcome in current behavior, entry points and contracts; trace affected producers/consumers, data/config/generated/async paths and failure boundaries rather than trusting symbol search alone. After repeated failures on one premise, test it before another fix. For consequential design, challenge the premise and compare viable simpler alternatives before choosing the smallest responsible layer; separate domain invariants from host adapters. Sequence independently verifiable units with explicit dependencies and one owner per shared write surface; use available independent reviewers for material changes when useful, disclose unavailable review, and let evidence resolve disagreement. Bugs: reproduce or bound the missing reproduction, fix the cause and add failing-before/passing-after behavior checks when practical. Test user-visible outcomes, exceptions, retry/idempotency and concurrency boundaries; compilation, mocks, reviewer consensus and self-report alone do not prove the real execution path. Use actual CLI/API/UI/artifacts when relevant and available, preserving unavailable limits. Performance: measure representative baseline/work/error counts and the actual bottleneck before/after. State/concurrency changes: make transitions, ownership and invariants explicit; use bounded model/counterexample checks only when justified, bind models to code and keep proof scope explicit. UI changes: compare the actual rendered result with the relevant baseline. Maintain affected verification recipes when behavior changes; encode recurring lessons in existing canonical code/schema/lint/tests instead of another instruction ledger. Clean affected duplication, misleading comments, stale docs and replaced paths while preserving useful rationale and contracts. Apply evidence_fidelity before finishing; continue scoped fixes and recheck final bytes. Shipping/CI/review triage reuses actual target revisions and observed results; no implicit merge/push/messages, paid fanout, model selection, host configuration, automation or background process authority."
     }
   ]
 }

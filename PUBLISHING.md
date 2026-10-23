@@ -1,12 +1,14 @@
 # 发布与测试冻结门禁
 
-当前候选：**3.0.0-rc.20.8 — Whole-project Contract Reconciliation**。
+当前候选：**3.0.0-rc.20.9 — Scoped Engineering and Completion Review**。
 
-发布用于证明当前源码、分发包、GitHub 修订与本地安装相互对应。当前事实统一见[项目状态](PROJECT_STATE.md)，本次报告处置与验收记录见[当前审计](audits/rc20-ocr-report.audit.json)。工程通过不代表独立模型收益或 Stable 资格；本次升级不增加付费实测。
+发布用于证明当前源码、分发包、GitHub 修订与本地安装相互对应。当前事实统一见[项目状态](PROJECT_STATE.md)，本次适配与门禁验收见[当前审计](audits/rc20-pstack-workflow.audit.json)。工程通过不代表独立模型收益或 Stable 资格；本次升级不增加付费实测。
 
 ## 工程验收
 
 变更先落到负责的规范源码，统一生成后验证最终字节。检查必须覆盖源生成一致性、状态生命周期、受影响回归、整仓测试、仓库门禁、导航、完整性、确定性打包、CI、GitHub 目标修订与本地安装。
+
+正常完成还需按[完成审查输入](docs/completion-review.md)核对最终受影响文件、审查和审计依据。发布安装验收实际运行新安装的门禁，验证遗漏或过期证据被拒绝、正确证据可完成且精确重试不重复写入；字节一致、宿主发现和实际使用分别记录。
 
 `python` 代表已验证的执行入口：
 

@@ -258,12 +258,24 @@ def validate_binding(value):
 
 def _transient_binding_errors(value):
     errors = []
-    for key in ("active_workflow", "latest_change", "previous_change", "current_state", "export_receipt"):
+    for key in ("active_workflow", "latest_change", "previous_change", "current_state", "export_receipt", "completion_review_pending"):
         if key in value and not isinstance(value[key], dict):
             errors.append("%s must be an object" % key)
     sequence = value.get("current_state_sequence", 0)
     if type(sequence) is not int or sequence < 0:
         errors.append("current_state_sequence must be a nonnegative integer")
+    if isinstance(value.get("completion_review_pending"), dict):
+        errors += validate_node(value["completion_review_pending"], {
+            "type": "object", "additionalProperties": False, "required": ["event_id", "workflow_id", "paths", "git_owned_paths"],
+            "properties": {"event_id": {"type": "string", "minLength": 1},
+                           "workflow_id": {"type": "string", "minLength": 1, "maxLength": 200},
+                           "paths": {"type": "array", "maxItems": 512, "uniqueItems": True,
+                                     "items": {"type": "string", "minLength": 1, "maxLength": 1024}},
+                           "git_owned_paths": {"type": "array", "maxItems": 256, "uniqueItems": True,
+                                               "items": {"type": "string", "minLength": 1, "maxLength": 1024}},
+                           "git_identity": {"type": "object", "additionalProperties": False, "required": ["branch", "head"],
+                                            "properties": {"branch": {"type": "string", "minLength": 1},
+                                                           "head": {"type": ["string", "null"]}}}}})
     records = [(key, value[key]) for key in ("active_workflow", "latest_change", "previous_change")
                if isinstance(value.get(key), dict)]
     active = value.get("active_workflow")
@@ -328,7 +340,7 @@ def ensure(project, field_test_reporting=None):
 
     binding = expected_binding(origin, reporting)
     if isinstance(current, dict):
-        for key in ["active_workflow", "latest_change", "previous_change", "export_receipt", "current_state", "current_state_sequence", "git_checkpoint"]:
+        for key in ["active_workflow", "latest_change", "previous_change", "export_receipt", "current_state", "current_state_sequence", "git_checkpoint", "completion_review_pending"]:
             if key in current:
                 binding[key] = current[key]
     # Add optional capability defaults without changing any existing choice or
@@ -431,11 +443,12 @@ def status(project):
                                 or watcher.get("supervisor", {}).get("status") in {"starting", "recovering", "waiting", "blocked"}
                                 or watcher_state in {"starting", "blocked", "cancelled", "stale"}))
     return {
-        "ok": not state_errors and not pending_outcome and not git_pending and not watcher_pending,
+        "ok": not state_errors and not pending_outcome and not git_pending and not watcher_pending and not binding.get("completion_review_pending"),
         **({"reason": "git-watcher-pending", "errors": ["Git observer startup is unconfirmed, blocked, or its heartbeat is stale; inspect git-watch status before claiming automatic saving"]} if watcher_pending else {}),
         **({"reason": "git-checkpoint-pending", "errors": ["Git checkpoint requires reconciliation; retry its original finish input"]} if git_pending else {}),
         **({"reason": "checkpoint-unreconciled", "errors": ["ledger commit newer than binding checkpoint; retry the original report/finish input"]} if pending_outcome else {}),
         **({"reason": "current-state-drift", "errors": state_errors} if state_errors else {}),
+        **({"reason": "completion-review-pending", "errors": ["Historical completion preserved after later source drift; begin a new workflow and review the pending paths before normal completion"]} if binding.get("completion_review_pending") and not git_state.get("journal") else {}),
         "runtime_version": index()["version"],
         "binding_runtime_version": binding.get("runtime_version"),
         "field_test_reporting": reporting,
@@ -449,6 +462,7 @@ def status(project):
         "latest_change": binding.get("latest_change"),
         "previous_change": binding.get("previous_change"),
         "current_state": current_state,
+        "completion_review_pending": binding.get("completion_review_pending"),
         "git_checkpoint": git_state,
         "current_outcome": binding.get("active_workflow", {}).get("last_outcome") or binding.get("latest_change"),
         "state_roles": {"current": current_state.get("path") if isinstance(current_state, dict) else "active_workflow.last_outcome (if present)",
@@ -677,7 +691,17 @@ def _checkpoint_retry(binding, payload):
             return previous
     return None
 
-def _reconcile_completion(project, entry):
+def _review_recovery(project, binding, payload, event_id):
+    from completion_review import recovery_git_identity, recovery_owned_paths, recovery_paths
+    identity = recovery_git_identity(project_root(project), binding, payload)
+    pending = {"event_id": event_id, "workflow_id": payload["workflow_id"],
+               "paths": recovery_paths(project_root(project), binding, payload),
+               "git_owned_paths": recovery_owned_paths(binding, payload) if identity else []}
+    if identity:
+        pending["git_identity"] = identity
+    return pending
+
+def _reconcile_completion(project, entry, review_recovery=None):
     binding_path = resolve(project, config()["binding_file"])
     binding = load_json(binding_path)
     latest = binding.get("latest_change", {})
@@ -723,12 +747,18 @@ def _reconcile_completion(project, entry):
         binding["latest_change"] = {key: entry[key] for key in ["event_id", "workflow_id", "sequence", "epoch", "recorded_at", "change"]}
         if "start_change" in entry:
             binding["latest_change"]["start_change"] = entry["start_change"]
+        if "completion_review" in entry:
+            binding["latest_change"]["completion_review"] = entry["completion_review"]
         binding["latest_change"]["payload_sha256"] = payload_sha256
         if "current_state" in entry:
             binding["current_state"] = entry["current_state"]
             binding["current_state_sequence"] = entry["sequence"]
     if binding.get("active_workflow", {}).get("workflow_id") == entry["workflow_id"]:
         binding.pop("active_workflow", None)
+    if review_recovery is not None:
+        binding["completion_review_pending"] = review_recovery
+    elif "completion_review" in entry and entry["sequence"] > latest.get("sequence", 0):
+        binding.pop("completion_review_pending", None)
     write_json_atomic(binding_path, binding)
 
 @serialized
@@ -736,7 +766,7 @@ def begin_workflow(project, input_path):
     payload = load_json(input_path)
     if not isinstance(payload, dict) or not isinstance(payload.get("workflow_id"), str) or not payload["workflow_id"]:
         raise ValueError("workflow_id required")
-    if {"observed_at", "last_outcome", "outcome_receipts", "start_change", "git_start"}.intersection(payload):
+    if {"observed_at", "last_outcome", "outcome_receipts", "start_change", "git_start", "completion_baseline"}.intersection(payload):
         raise ValueError("workflow observation and recovery fields are tool-owned")
     # Validate the same change contract used at completion; no separate history database.
     change_schema = load_json(ROOT / "schemas/field-report.schema.json")["properties"]["change"]
@@ -747,14 +777,21 @@ def begin_workflow(project, input_path):
     binding_path = resolve(project, config()["binding_file"])
     binding = load_json(binding_path)
     git_state = binding.get("git_checkpoint", {})
+    recovery = binding.get("completion_review_pending", {})
+    from completion_review import matches_git_identity
+    recovery_transfer = bool(recovery and not binding.get("active_workflow") and not git_state.get("journal")
+                             and recovery.get("event_id") == binding.get("latest_change", {}).get("event_id")
+                             and git_state.get("start", {}).get("workflow_id") == recovery.get("workflow_id")
+                             and set(git_state.get("pending_paths", [])) <= set(recovery.get("git_owned_paths", []))
+                             and matches_git_identity(project_root(project), recovery.get("git_identity")))
     if (git_state.get("enabled") and (git_state.get("journal") or git_state.get("pending_paths"))
-            and git_state.get("start", {}).get("workflow_id") != payload["workflow_id"]):
+            and git_state.get("start", {}).get("workflow_id") != payload["workflow_id"] and not recovery_transfer):
         raise ValueError("pending Git checkpoint belongs to the previous workflow; reconcile it before starting another")
     active = binding.get("active_workflow")
     if active and active.get("workflow_id") != payload["workflow_id"]:
         raise ValueError("another workflow is unfinished; reconstruct it before replacing its identity")
     if active:
-        if {k: v for k, v in active.items() if k not in {"observed_at", "last_outcome", "outcome_receipts"}} != payload:
+        if {k: v for k, v in active.items() if k not in {"observed_at", "last_outcome", "outcome_receipts", "completion_baseline"}} != payload:
             raise ValueError("conflicting workflow start; preserve the original observed checkpoint")
         return {"active_workflow": active, "idempotent": True}
     if any(isinstance(value, dict) and value.get("workflow_id") == payload["workflow_id"]
@@ -780,10 +817,17 @@ def begin_workflow(project, input_path):
         snapshot = capture(project_root(project), binding["git_checkpoint"])
         if not snapshot.get("ok"):
             raise ValueError("cannot capture project Git baseline: " + snapshot.get("reason", "snapshot unavailable"))
+        if recovery_transfer and {"branch": snapshot.get("branch"), "head": snapshot.get("head")} != recovery.get("git_identity"):
+            raise ValueError("recovery Git identity changed while beginning the workflow; no ownership was transferred")
         binding["git_checkpoint"]["start"] = {
             "workflow_id": payload["workflow_id"],
             "snapshot": snapshot,
         }
+        from completion_review import capture_baseline
+        payload["completion_baseline"] = capture_baseline(project_root(project), snapshot)
+        if recovery_transfer and recovery.get("git_owned_paths"):
+            binding["git_checkpoint"]["pending_paths"] = list(recovery["git_owned_paths"])
+            binding["git_checkpoint"]["pending_workflow_id"] = payload["workflow_id"]
     write_json_atomic(binding_path, binding)
     return {"active_workflow": payload}
 
@@ -811,8 +855,22 @@ def _record_report_payload(project, payload, require_active=False):
         if _same_report_identity(previous, payload, ledger["epoch"]):
             if _completion_payload_sha256(previous) != _completion_payload_sha256(payload):
                 raise ValueError("conflicting retry for workflow report identity")
+            if (previous.get("status") == "complete" and "completion_review" in previous
+                    and previous.get("sequence", 0) > binding.get("latest_change", {}).get("sequence", 0)):
+                from completion_review import verify_completion
+                try:
+                    verify_completion(project_root(project), previous, binding)
+                except (OSError, ValueError):
+                    if binding.get("git_checkpoint", {}).get("journal"):
+                        raise ValueError("completion review drift cannot retire an active native Git journal; recover its original stage first")
+                    pending = _review_recovery(project, binding, previous, previous["event_id"])
+                    _reconcile_completion(project, previous, review_recovery=pending)
+                    return {"sequence": previous["sequence"], "event_id": previous["event_id"],
+                            "idempotent": True, "completed": False, "completion_review_pending": pending}
             _reconcile_completion(project, previous)
-            return {"sequence": previous["sequence"], "report_count": len(ledger["reports"]), "idempotent": True, "event_id": previous["event_id"]}
+            result = {"sequence": previous["sequence"], "report_count": len(ledger["reports"]), "idempotent": True, "event_id": previous["event_id"]}
+            pending = load_json(resolve(project, cfg["binding_file"])).get("completion_review_pending")
+            return dict(result, completed=False, completion_review_pending=pending) if pending else result
     if require_active:
         previous = _checkpoint_retry(binding, payload)
         if previous:
@@ -851,6 +909,8 @@ def _record_report_payload(project, payload, require_active=False):
         raise ValueError("observed clock moved backwards; reconcile clock/source before recording")
     entry["runtime_version"] = index()["version"]
     validate_report(entry)
+    from completion_review import verify_completion
+    verify_completion(project_root(project), entry, binding)
     ledger["runtime_version"] = index()["version"]
     ledger["reports"].append(entry)
     write_json_atomic(report_path, ledger)
@@ -863,6 +923,8 @@ def finish_workflow(project, input_path):
     result = _finish_workflow_payload(project, payload)
     binding_path = resolve(project, config()["binding_file"])
     binding = load_json(binding_path)
+    if binding.get("completion_review_pending"):
+        return dict(result, completed=False, completion_review_pending=binding["completion_review_pending"])
     if not binding.get("git_checkpoint", {}).get("enabled"):
         return result
     event_id = result.get("event_id")
@@ -878,8 +940,24 @@ def finish_workflow(project, input_path):
     if not event_id:
         raise ValueError("finished outcome lacks its durable Git stage identity")
     from git_checkpoint import run_checkpoint
+    validated_sources = None
+    if payload.get("status") == "complete" and "completion_review" in payload:
+        from completion_review import declared_sources
+        validated_sources = declared_sources(payload)
+        # Checkpoint scopes omit UPG bookkeeping and configured status paths.
+        from git_checkpoint import _excluded, _in_scope
+        validated_sources = {path: value for path, value in validated_sources.items()
+                             if not _excluded(path, binding["git_checkpoint"])
+                             and _in_scope(path, binding["git_checkpoint"])}
     git_result = run_checkpoint(project_root(project), binding, payload, event_id,
-                                lambda value: write_json_atomic(binding_path, value))
+                                lambda value: write_json_atomic(binding_path, value),
+                                validated_sources=validated_sources)
+    if (payload.get("status") == "complete" and "completion_review" in payload
+            and git_result.get("status") == "blocked" and git_result.get("reason") == "validated-source-drift"):
+        binding["completion_review_pending"] = _review_recovery(project, binding, payload, event_id)
+        write_json_atomic(binding_path, binding)
+        return dict(result, git_checkpoint=git_result, completed=False,
+                    completion_review_pending=binding["completion_review_pending"])
     return dict(result, git_checkpoint=git_result)
 
 def _finish_workflow_payload(project, payload):
@@ -932,6 +1010,8 @@ def _finish_workflow_payload(project, payload):
         raise ValueError("observed clock moved backwards; reconcile clock/source before finishing")
     entry["runtime_version"] = index()["version"]
     validate_report(entry)
+    from completion_review import verify_completion
+    verify_completion(project_root(project), entry, binding)
     _reconcile_completion(project, entry)
     if payload["status"] != "complete":
         return {"status": payload["status"], "completed": False, "active_workflow": load_json(binding_path)["active_workflow"], "field_test_reporting": False}
@@ -1181,6 +1261,8 @@ def main():
                 or result.get("watcher", {}).get("supervisor", {}).get("status") == "blocked"):
             return 1
         if result.get("git_checkpoint", {}).get("status") == "blocked":
+            return 1
+        if result.get("completion_review_pending"):
             return 1
         return 0
     except (OSError, ValueError, json.JSONDecodeError) as exc:
