@@ -2,14 +2,14 @@
   "schema_version": 1,
   "version": "3.0.0-rc.20.10",
   "status": "SOURCE_REVIEW_PASSED_ACCEPTANCE_SEPARATELY_RECORDED",
-  "observed_at_utc": "2026-10-23T19:35:53+00:00",
+  "observed_at_utc": "2026-10-23T19:58:27+00:00",
   "baseline_revision": "ff6d82fc548d0d05e6f1e1f47c4a0ee04ab04f9a",
   "scope": "UPG task intake/start, investigation, verifiable units/dependencies, actual stage evidence, monitoring/replan/recovery/handoff fused with existing completion review; existing policy/risk/reporting/authorization retained.",
   "canonical_provenance": "third_party/upstream-sources.json",
   "review": {
     "status": "PASSED",
     "actors": ["runtime implementer", "independent continuity and compatibility reviewer", "independent actual-use engineering actor", "primary integration reviewer"],
-    "resolved_findings": ["Current active task proofs are protected before compaction; invalid references fail before mutation.", "Legacy exact begin retries are checked before new-start contract requirements.", "Original unrelated policy fingerprints remain pinned; only the two authorized lifecycle prefixes are normalized in the historical comparison."],
+    "resolved_findings": ["Current active task proofs are protected before compaction; invalid references fail before mutation.", "Legacy exact begin retries are checked before new-start contract requirements.", "Original unrelated policy fingerprints remain pinned; only the two authorized lifecycle prefixes are normalized in the historical comparison.", "First full native regression and Linux CI exposed two stale fixture assertions: generated file count23 versus actual24, and expected whole-binding byte stability during a legitimate runtime-version migration. Tests now pin the new canonical module bytes and distinguish one-field migration from subsequent byte-stable exact retry; no runtime gate was weakened."],
     "required_coverage": [
       "New starts and observational/legacy boundaries",
       "Both report modes and stable checkpoint/idempotent/crash recovery",
@@ -25,7 +25,8 @@
     "static_gates_passed": 9,
     "freeze_fingerprint": "sha256:75781ddf4de4cfe4429d82d2c5554d1c937fb98fb003f06e5ea0f4ead3fbcdb1",
     "deterministic_package_sha256": "4eb30c71552444747a214c866edd3523f5feda4e2f4092ea45da67af1e69c9cf",
-    "focused_observations": {"task_lifecycle": "22/22 passed", "continuity": "22/22 passed plus separately executed new real-CLI compaction case 1/1 passed", "completion_review_compatibility": "30/30 passed", "actual_maintenance": "2 methods / 13 subcases passed after observing 5 original failing subcases; begin/partial/repair/review/finish/status passed; fixture retired"},
+    "focused_observations": {"task_lifecycle": "Earlier actor reported22/22 before final full regression; its invocation source identity was not independently captured and it is not final-revision acceptance", "continuity": "22/22 passed plus separately executed new real-CLI compaction case 1/1 passed", "completion_review_compatibility": "30/30 passed", "actual_maintenance": "2 methods / 13 subcases passed after observing 5 original failing subcases; begin/partial/repair/review/finish/status passed; fixture retired"},
+    "first_full_regression": {"status": "FAILED_AND_RETAINED", "source_revision": "b72e947437896b2510b0d889b42a96a5e33698fc", "native": "1599 tests,2 stale fixture failures,8 skips, numeric exit1, unchanged273 input files", "source_ci_run": "40012949247", "linux": "Python3.8/3.11/3.13 each failed the same two fixture assertions", "evidence": ".governance/rc2010-full-regression.json and rc2010-source-ci-first-failure-*.log", "resolution_scope": "Only two regression fixture assertions and this audit observation; generated runtime, package and frozen canonical semantics unchanged. Final source/main CI and the new native run remain required."},
     "actual_use_limits": "Actual maintenance exercised the candidate task lifecycle before the final active-proof compaction fix and did not call compact. Later focused compaction checks and required final full regression cover that fix. Early ensure/planner/begin per-command hashes were not captured and are not retrospectively asserted. This is an engineering usability check, not formal/model qualification.",
     "private_evidence": [".governance/rc2010-final-gates.json", ".governance/rc2010-final-packaging.json", ".governance/rc2010-forwardtest/lifecycle-formatter-ea38aff8f31d/.governance/acceptance.json"],
     "focused_tests": [
@@ -46,7 +47,7 @@
       "security",
       "navigation"
     ],
-    "full_regression_evidence_location": ".governance/rc2010-full-regression.log and exact-revision CI at acceptance_url; only actual completed runs establish pass",
+    "full_regression_evidence_location": ".governance/rc2010-final-full-regression.log and exact-revision CI at acceptance_url; only actual completed runs establish pass; the original failing run remains separately retained",
     "optional_authoring_validator": {
       "status": "UNAVAILABLE",
       "reason": "PyYAML absent in both existing Python runtimes; no dependency installed. Existing bundle validator and exact-revision upstream Agent Skills CI validate the actual supported Skill; no helper success fabricated."

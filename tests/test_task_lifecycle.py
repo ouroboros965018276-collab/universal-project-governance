@@ -139,6 +139,18 @@ class TaskLifecycleTests(unittest.TestCase):
             tool.begin_workflow(self.root, write(self.root / ".governance/start.json", start))
         self.assertEqual(before, self.durable())
         seed_legacy_active(tool, self.root, start)
+        legacy_binding = tool.load_json(self.root / ".governance/upg.json")
+        before = self.durable()
+        result = tool.begin_workflow(self.root, self.root / ".governance/start.json")
+        self.assertTrue(result["idempotent"])
+        self.assertEqual(result["active_workflow"], legacy_binding["active_workflow"])
+        self.assertNotIn("task_state", result["active_workflow"])
+        migrated = copy.deepcopy(legacy_binding)
+        migrated["runtime_version"] = tool.index()["version"]
+        self.assertEqual(tool.load_json(self.root / ".governance/upg.json"), migrated)
+        self.assertEqual({key: value for key, value in before.items() if key != "upg.json"},
+                         {key: value for key, value in self.durable().items() if key != "upg.json"})
+        self.assertFalse((self.root / ".governance/field-reports.json").exists())
         before = self.durable()
         self.assertTrue(tool.begin_workflow(self.root, self.root / ".governance/start.json")["idempotent"])
         self.assertEqual(before, self.durable())
