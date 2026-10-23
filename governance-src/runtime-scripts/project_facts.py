@@ -43,8 +43,8 @@ def strict_json(raw):
         raise ValueError("JSON nesting exceeds bounded parser depth") from error
 
 
-def safe_path(root, relative):
-    """Reuse the project's explicit-path broker boundary without scanning a tree."""
+def safe_project_path(root, relative):
+    """Resolve an explicit project file without traversal, links, or reparse points."""
     if not isinstance(relative, str) or len(relative) > 1024:
         raise ValueError("expected a bounded project-relative file path")
     parts = relative.split("/")
@@ -56,12 +56,6 @@ def safe_path(root, relative):
     reserved = {"con", "prn", "aux", "nul"} | {"com%d" % i for i in range(1, 10)} | {"lpt%d" % i for i in range(1, 10)}
     if any(p.split(".", 1)[0].lower() in reserved for p in parts):
         raise ValueError("reserved filesystem path")
-    if any(p.lower().startswith(".env") or p.lower().endswith((".pem", ".key", ".p12", ".pfx"))
-           or p.lower().startswith(("id_rsa", "id_ed25519", "id_ecdsa", "id_dsa"))
-           or p.lower() in {".git", ".aws", ".ssh", ".codex", ".docker", ".kube", ".gnupg",
-           ".git-credentials", ".pgpass", "pip.conf", ".yarnrc.yml", ".htpasswd",
-           ".npmrc", ".pypirc", ".netrc", "credentials", "credentials.json", "auth.json"} for p in parts):
-        raise ValueError("credential or VCS internals are outside fact recovery file scope")
     root = Path(root).absolute()
     for parent in root.parents:
         info = parent.lstat()
@@ -78,6 +72,18 @@ def safe_path(root, relative):
             raise ValueError("hardlinked files are outside fact recovery scope")
     try: current.resolve().relative_to(root.resolve())
     except ValueError: raise ValueError("path escaped project root")
+    return current
+
+
+def safe_path(root, relative):
+    """Keep credential and VCS content outside the fact recovery reader."""
+    current = safe_project_path(root, relative)
+    if any(p.lower().startswith(".env") or p.lower().endswith((".pem", ".key", ".p12", ".pfx"))
+           or p.lower().startswith(("id_rsa", "id_ed25519", "id_ecdsa", "id_dsa"))
+           or p.lower() in {".git", ".aws", ".ssh", ".codex", ".docker", ".kube", ".gnupg",
+           ".git-credentials", ".pgpass", "pip.conf", ".yarnrc.yml", ".htpasswd",
+           ".npmrc", ".pypirc", ".netrc", "credentials", "credentials.json", "auth.json"} for p in relative.split("/")):
+        raise ValueError("credential or VCS internals are outside fact recovery file scope")
     return current
 
 

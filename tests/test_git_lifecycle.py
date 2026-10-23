@@ -8,6 +8,7 @@ import tempfile
 import unittest
 
 from test_completion_outcomes import write, report, change
+from registration_fixture import reviewed_report
 
 ROOT = Path(__file__).resolve().parents[1]
 RUNTIME = ROOT / "universal-project-governance"
@@ -56,7 +57,7 @@ class GitLifecycleTests(unittest.TestCase):
         return start
 
     def finish(self, root, payload):
-        return tool.finish_workflow(root, write(root / ".governance/finish.json", payload))
+        return tool.finish_workflow(root, write(root / ".governance/finish.json", reviewed_report(payload, root)))
 
     def test_finish_automatically_commits_and_exact_retry_does_not_duplicate_in_both_modes(self):
         for reporting in (False, True):

@@ -30,7 +30,7 @@ Preserve reporting settings: field reporting defaults off; explicit temporary ow
 
 ## Verify and finish
 
-Finish only when selected obligations, integrity, binding and active reporting hold. State blockers; local review cannot establish project-wide debt clearance.
+Finish only when evidence_fidelity review/audit, selected obligations, integrity, binding and active reporting hold. Tracked new completion: `scripts/completion_review.py <root> --path <file>` (repeatable) captures identities only; add actual review/audit evidence as `completion_review` for `project_tool finish`. Check finish/status; pending recovery or blocked Git is unfinished. Preserve historical records and unfinished checkpoints. State blockers; local review cannot establish project-wide debt clearance.
 
 Installation/receipts/matching behavior/tests prove neither historical loading nor causal benefit; missing activation receipts stay unknown. Prospectively measure matched baseline/attention-control/UPG actual token/time/tool costs and cross-agent handoffs.
 

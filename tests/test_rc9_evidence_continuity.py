@@ -32,7 +32,7 @@ from qualification.lib.core import evaluate_check, grade_lab, materialize_lab, s
 from qualification.round_manifest import build_manifest
 from qualification.dev_smoke import build_manifest as build_dev_smoke_manifest, rejects_development_before_inference
 from tools.qualification_freeze import expected
-from registration_fixture import registered_fixture, freeze, change
+from registration_fixture import registered_fixture, freeze, change, reviewed_report
 import test_qualification as legacy
 from qualification.analyze import analyze as release_analyze
 from qualification.lib.contracts import configuration_errors
@@ -42,7 +42,7 @@ from types import SimpleNamespace
 
 def report(workflow='test-workflow', parent=None):
     metadata = change(); metadata['parent_event_id'] = parent
-    return dict(workflow_id=workflow, change=metadata, task='engineering acceptance', status='complete', change_mode='local', scope_guard='local-only', risk_level='low', active_rules=[], changed_files=[], validation=['unit test'], cleanup=[], structural_scope={'canonical_layer':'runtime', 'unrelated_changes':[], 'api_changes':[], 'architecture_changes':[], 'overreach_concern':False}, integrity='pass', handoff='not-required', feedback=[])
+    return reviewed_report(dict(workflow_id=workflow, change=metadata, task='engineering acceptance', status='complete', change_mode='local', scope_guard='local-only', risk_level='low', active_rules=[], changed_files=[], validation=['unit test'], cleanup=[], structural_scope={'canonical_layer':'runtime', 'unrelated_changes':[], 'api_changes':[], 'architecture_changes':[], 'overreach_concern':False}, integrity='pass', handoff='not-required', feedback=[]))
 
 def write(path, data):
     pathlib.Path(path).write_bytes((json.dumps(data) + '\n').encode())

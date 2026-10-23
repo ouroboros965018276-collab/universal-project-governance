@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "recorded_at_utc": "2026-10-14T00:47:28Z",
-  "scope": "RC20 selective source provenance; independent UPG-native conceptual adaptation",
+  "recorded_at_utc": "2026-10-23T17:48:54Z",
+  "scope": "RC20 selective source provenance and pstack workflow integration; independent UPG-native conceptual adaptation",
   "authority": {
     "governance_semantics": "governance-src/model/governance-model.json",
     "provenance_and_acceptance": "third_party/upstream-sources.json",
@@ -169,14 +169,18 @@
           "git_blob_sha1": "4408bec6661f34a9f9318aa93b54cbea2ff3134f",
           "bytes": 20559,
           "url": "https://github.com/zhaoxuya520/reverse-skill/blob/cab634bd855fc287f6e420c1f36fd1a6b9245960/skills/case-review/scripts/review_case.py",
-          "sections": ["bounded evidence review reference; no executable import"]
+          "sections": [
+            "bounded evidence review reference; no executable import"
+          ]
         },
         {
           "path": "skills/js-reverse/references/local-rebuild.md",
           "git_blob_sha1": "2ce5302dc844ac092c4e4097790031fb0768e1a6",
           "bytes": 295,
           "url": "https://github.com/zhaoxuya520/reverse-skill/blob/cab634bd855fc287f6e420c1f36fd1a6b9245960/skills/js-reverse/references/local-rebuild.md",
-          "sections": ["minimal local entry and environment reproduction"]
+          "sections": [
+            "minimal local entry and environment reproduction"
+          ]
         }
       ],
       "adaptation_mode": "independent-concepts-no-source-import",
@@ -448,6 +452,1301 @@
         "casualization, mechanical synonym replacement or removal of legitimate uncertainty",
         "institutional/venue/funder templates as universal governance rules",
         "importing attributed third-party text without a separately checked grant"
+      ]
+    },
+    {
+      "id": "pstack",
+      "repository": "https://github.com/cursor/plugins",
+      "commit": "8b3326d99fd4b993cb33a24dad8af03175c642c5",
+      "commit_url": "https://github.com/cursor/plugins/commit/8b3326d99fd4b993cb33a24dad8af03175c642c5",
+      "pin_basis": {
+        "endpoint": "https://api.github.com/repos/cursor/plugins/branches/main",
+        "branch_scope": "main at observation; pstack subtree ed6351a9f6ec6e18cc2dbf2ba673effa33f3c9fe",
+        "latest_observed_on_utc": "2026-10-23",
+        "commit_committer_at_utc": "2026-10-23T03:15:24Z",
+        "recursive_tree_truncated": false
+      },
+      "file_identity_algorithm": "git-blob-sha1",
+      "license": {
+        "spdx": "MIT",
+        "copyright": "Copyright (c) 2026 Lauren Tan",
+        "reviewed_files": [
+          {
+            "path": "pstack/LICENSE",
+            "git_blob_sha1": "6b5400237fdf6545be0b8fae370d6f2fcff8fb25",
+            "bytes": 1067,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/LICENSE"
+          }
+        ],
+        "existing_notices": []
+      },
+      "plugin_version": "0.15.30",
+      "selected_files": [
+        {
+          "path": "pstack/skills/poteto-mode/SKILL.md",
+          "git_blob_sha1": "21993f546032ca37671d5f1caf39c9a82ab4fa9d",
+          "bytes": 20362,
+          "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/poteto-mode/SKILL.md",
+          "sections": [
+            "Non-negotiables",
+            "Principles",
+            "Subagents",
+            "Playbooks"
+          ]
+        },
+        {
+          "path": "pstack/skills/how/SKILL.md",
+          "git_blob_sha1": "67edc340d4d8a9c7ab0b9e08c663e0e63b8d9125",
+          "bytes": 2651,
+          "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/how/SKILL.md",
+          "sections": [
+            "Assess complexity",
+            "Explore",
+            "Synthesize"
+          ]
+        },
+        {
+          "path": "pstack/skills/architect/SKILL.md",
+          "git_blob_sha1": "88e23ca105b89e67f4085d0e676c40d4b170a623",
+          "bytes": 5469,
+          "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/architect/SKILL.md",
+          "sections": [
+            "Ground the problem",
+            "Sketch",
+            "Scrap when the architecture is wrong"
+          ]
+        },
+        {
+          "path": "pstack/skills/figure-it-out/SKILL.md",
+          "git_blob_sha1": "0d04c2e69b75b22ff1a9a1d8ab339580a5fbbfed",
+          "bytes": 4111,
+          "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/figure-it-out/SKILL.md",
+          "sections": [
+            "Frame",
+            "Run the loop",
+            "Verify and hand back"
+          ]
+        },
+        {
+          "path": "pstack/skills/interrogate/SKILL.md",
+          "git_blob_sha1": "94946d22d8bf896bfcc2c54d363df5af3d17b4ca",
+          "bytes": 4548,
+          "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/interrogate/SKILL.md",
+          "sections": [
+            "Scope",
+            "Intent",
+            "Synthesize",
+            "Lead Judgment"
+          ]
+        },
+        {
+          "path": "pstack/skills/interrogate/references/rubric.md",
+          "git_blob_sha1": "8dab195ab840554bfe5e74e9b5ca0d9edbe9b496",
+          "bytes": 4772,
+          "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/interrogate/references/rubric.md",
+          "sections": [
+            "Correctness",
+            "Root Causes vs. Symptoms",
+            "Structural Integrity",
+            "Verification",
+            "Complexity Budget",
+            "Security"
+          ]
+        },
+        {
+          "path": "pstack/skills/interrogate/references/lead-judgment.md",
+          "git_blob_sha1": "3b41346c9c3f5c35453d34f1c77374b7e9346aa9",
+          "bytes": 2283,
+          "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/interrogate/references/lead-judgment.md",
+          "sections": [
+            "Filtering Principles",
+            "When Reviewers Are Right"
+          ]
+        },
+        {
+          "path": "pstack/skills/interrogate/references/code-quality-review.md",
+          "git_blob_sha1": "16581250d81044c7e80fe234c4970a3f7b7fc98a",
+          "bytes": 5217,
+          "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/interrogate/references/code-quality-review.md",
+          "sections": [
+            "Dimensions",
+            "Approval Bar"
+          ]
+        },
+        {
+          "path": "pstack/skills/blast-radius/SKILL.md",
+          "git_blob_sha1": "b296cce0d746260a53c16e3671cb05bacfe82daf",
+          "bytes": 3856,
+          "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/blast-radius/SKILL.md",
+          "sections": [
+            "How sure are you",
+            "Steps"
+          ]
+        },
+        {
+          "path": "pstack/skills/correct/SKILL.md",
+          "git_blob_sha1": "c45e06f48a0982ae19f92c6e83a8cd05988097a3",
+          "bytes": 2478,
+          "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/correct/SKILL.md",
+          "sections": [
+            "Fix each class at the highest level that works",
+            "Fix and prove"
+          ]
+        },
+        {
+          "path": "pstack/skills/create-verification-skill/SKILL.md",
+          "git_blob_sha1": "140d033a001e8d27acd14b06004506c43053b199",
+          "bytes": 6533,
+          "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/create-verification-skill/SKILL.md",
+          "sections": [
+            "Interview the repo, not the user",
+            "Generate the skill",
+            "Prove the generated skill before handing it over"
+          ]
+        },
+        {
+          "path": "pstack/skills/maintain-verification-skill/SKILL.md",
+          "git_blob_sha1": "a2680b91fead45a0b4963d8c367a854956bea59d",
+          "bytes": 4922,
+          "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/maintain-verification-skill/SKILL.md",
+          "sections": [
+            "Outcomes",
+            "Edit scope",
+            "Pass"
+          ]
+        },
+        {
+          "path": "pstack/skills/create-formal-verification-skill/SKILL.md",
+          "git_blob_sha1": "b97609fd2649e95ea2960e720b3b581a6c2cb75a",
+          "bytes": 5141,
+          "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/create-formal-verification-skill/SKILL.md",
+          "sections": [
+            "What makes it good",
+            "Prove it before you hand off"
+          ]
+        },
+        {
+          "path": "pstack/skills/maintain-formal-verification-skill/SKILL.md",
+          "git_blob_sha1": "5d2f7f2228a3b771ca5b03124fc265ddfc53c5fc",
+          "bytes": 7012,
+          "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/maintain-formal-verification-skill/SKILL.md",
+          "sections": [
+            "Outcomes",
+            "Pass"
+          ]
+        },
+        {
+          "path": "pstack/skills/principle-attack-the-premise/SKILL.md",
+          "git_blob_sha1": "e9a6d499606992edd9963b80f8f8f57feaccb221",
+          "bytes": 1916,
+          "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/principle-attack-the-premise/SKILL.md",
+          "sections": [
+            "Pattern",
+            "Stop"
+          ]
+        },
+        {
+          "path": "pstack/skills/principle-make-operations-idempotent/SKILL.md",
+          "git_blob_sha1": "c93f323d694a4d310515ea27165a093d399bc55e",
+          "bytes": 1809,
+          "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/principle-make-operations-idempotent/SKILL.md",
+          "sections": [
+            "The idea",
+            "The test"
+          ]
+        },
+        {
+          "path": "pstack/skills/principle-prove-it-works/SKILL.md",
+          "git_blob_sha1": "5dc14a3b06f9d579e5c17cd8a7242f432ddb3125",
+          "bytes": 1371,
+          "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/principle-prove-it-works/SKILL.md",
+          "sections": [
+            "Prove It Works",
+            "Script the check when you can"
+          ]
+        },
+        {
+          "path": "pstack/skills/principle-separate-before-serializing-shared-state/SKILL.md",
+          "git_blob_sha1": "ff93b4a2032c08e2232992a9a24f2891ee14e58f",
+          "bytes": 1565,
+          "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/principle-separate-before-serializing-shared-state/SKILL.md",
+          "sections": [
+            "Pattern"
+          ]
+        },
+        {
+          "path": "pstack/skills/principle-test-behavior-not-implementation/SKILL.md",
+          "git_blob_sha1": "78c9389bfe707d6d56485ade32c59150958228f9",
+          "bytes": 2614,
+          "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/principle-test-behavior-not-implementation/SKILL.md",
+          "sections": [
+            "Test Behavior, Not Implementation"
+          ]
+        },
+        {
+          "path": "pstack/skills/benchmark-checklist/SKILL.md",
+          "git_blob_sha1": "e901d1fdbc9ffce53e94d6514be7d9a22e771a1a",
+          "bytes": 5002,
+          "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/benchmark-checklist/SKILL.md",
+          "sections": [
+            "Before you run anything",
+            "The questions",
+            "Report"
+          ]
+        },
+        {
+          "path": "pstack/skills/tdd/SKILL.md",
+          "git_blob_sha1": "ca6f24c963001d9d518db2936dfe3d12f29b4e94",
+          "bytes": 3143,
+          "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/tdd/SKILL.md",
+          "sections": [
+            "Workflow",
+            "If a Failing Test Is Impractical",
+            "Guardrails"
+          ]
+        },
+        {
+          "path": "pstack/skills/why/references/epistemics.md",
+          "git_blob_sha1": "b18abf41dfa245ee55e94f1b3a80c0b750eb10cf",
+          "bytes": 6736,
+          "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/why/references/epistemics.md",
+          "sections": [
+            "Confidence Tiers",
+            "Avoid Rationalization",
+            "When Evidence Contradicts"
+          ]
+        },
+        {
+          "path": "pstack/skills/poteto-mode/playbooks/feature.md",
+          "git_blob_sha1": "eb1040cb2631f3eeacd8f9f6469d7e97277f24ef",
+          "bytes": 2870,
+          "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/poteto-mode/playbooks/feature.md",
+          "sections": [
+            "Feature"
+          ]
+        },
+        {
+          "path": "pstack/skills/poteto-mode/playbooks/bug-fix.md",
+          "git_blob_sha1": "b5de0bfa63add6ed38a38a8bd668cf36ac009c61",
+          "bytes": 2359,
+          "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/poteto-mode/playbooks/bug-fix.md",
+          "sections": [
+            "Bug fix"
+          ]
+        },
+        {
+          "path": "pstack/skills/poteto-mode/playbooks/refactoring.md",
+          "git_blob_sha1": "c04b07eeb8b8fa651d080729363466ab73d2fe40",
+          "bytes": 3315,
+          "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/poteto-mode/playbooks/refactoring.md",
+          "sections": [
+            "Refactoring"
+          ]
+        },
+        {
+          "path": "pstack/skills/poteto-mode/playbooks/shipping.md",
+          "git_blob_sha1": "0a0c3cfde8948e3aa8ee80c6f3f9ce7e3e64fcba",
+          "bytes": 4387,
+          "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/poteto-mode/playbooks/shipping.md",
+          "sections": [
+            "Shipping"
+          ]
+        },
+        {
+          "path": "pstack/skills/poteto-mode/playbooks/session-pickup.md",
+          "git_blob_sha1": "876b1433828ccc7c874123cdf300240abb285dd9",
+          "bytes": 1782,
+          "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/poteto-mode/playbooks/session-pickup.md",
+          "sections": [
+            "Session pickup"
+          ]
+        },
+        {
+          "path": "pstack/skills/poteto-mode/playbooks/worktree-cleanup.md",
+          "git_blob_sha1": "45e1af693cc40d0271249a0e98f15bfc815af615",
+          "bytes": 2947,
+          "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/poteto-mode/playbooks/worktree-cleanup.md",
+          "sections": [
+            "Worktree and simulator cleanup"
+          ]
+        },
+        {
+          "path": "pstack/agents/poteto-agent.md",
+          "git_blob_sha1": "e1d2df2e8c3c4954b87ee1b29655c898bc7ee699",
+          "bytes": 1316,
+          "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/agents/poteto-agent.md",
+          "sections": [
+            "Poteto subagent"
+          ]
+        },
+        {
+          "path": "pstack/agents/comment-sicko.md",
+          "git_blob_sha1": "209e3704dfa75022060c936bd3f3362fa3bbe254",
+          "bytes": 2230,
+          "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/agents/comment-sicko.md",
+          "sections": [
+            "Comment Sicko"
+          ]
+        }
+      ],
+      "adaptation_mode": "independent-concepts-no-source-import",
+      "handling": "Independent task-bounded conceptual adaptation into existing canonical policies, engineering_workflow, universal final-change review guidance and the bounded completion lifecycle. No pstack source, prompts, scripts, package, roles or automation are installed or executed.",
+      "inspection_scope": "All 57 top-level skill bodies and 23 playbooks were fetched at the pin and inspected for declared scope, routing and steps; selected_files identifies the substantive sections reviewed for adaptation. Both agents and the three nested Benny skill scopes were separately inspected. This is source research, not observed upstream runtime behavior.",
+      "inventory": {
+        "skills": [
+          {
+            "path": "pstack/skills/architect/SKILL.md",
+            "git_blob_sha1": "88e23ca105b89e67f4085d0e676c40d4b170a623",
+            "bytes": 5469,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/architect/SKILL.md",
+            "disposition": "adapted-workflow",
+            "upg_rule_ids": [
+              "STRUCTURAL_INTEGRATION"
+            ],
+            "handling": "Ground behavior and constraints; choose a canonical data and ownership shape before consequential implementation. Alternative sketches are proportional to unresolved design risk."
+          },
+          {
+            "path": "pstack/skills/arena/SKILL.md",
+            "git_blob_sha1": "b198b9e425c6b3e6ff01ca789b97ca5b4abb7ce2",
+            "bytes": 4511,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/arena/SKILL.md",
+            "disposition": "conditional-specialized",
+            "upg_rule_ids": [
+              "EVIDENCE_AFFECTED"
+            ],
+            "handling": "Compare genuinely competing designs with a declared rubric and isolated outputs only when the task warrants alternatives; final choice requires direct validation."
+          },
+          {
+            "path": "pstack/skills/automate-me/SKILL.md",
+            "git_blob_sha1": "50971b894688b1e1923458996b89f2a9961feeb3",
+            "bytes": 7297,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/automate-me/SKILL.md",
+            "disposition": "existing-policy",
+            "upg_rule_ids": [
+              "GOVERNANCE_UPGRADE"
+            ],
+            "handling": "Explicit, repeated user preferences may inform authorized canonical evolution. No transcript sweep, personal skill creation or host configuration is installed."
+          },
+          {
+            "path": "pstack/skills/benchmark-checklist/SKILL.md",
+            "git_blob_sha1": "e901d1fdbc9ffce53e94d6514be7d9a22e771a1a",
+            "bytes": 5002,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/benchmark-checklist/SKILL.md",
+            "disposition": "conditional-specialized",
+            "upg_rule_ids": [
+              "EVIDENCE_AFFECTED"
+            ],
+            "handling": "When making measured performance claims, verify completed work, correct output, error counts, comparable conditions, noise and end-to-end relevance; retain inconclusive results."
+          },
+          {
+            "path": "pstack/skills/blast-radius/SKILL.md",
+            "git_blob_sha1": "b296cce0d746260a53c16e3671cb05bacfe82daf",
+            "bytes": 3856,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/blast-radius/SKILL.md",
+            "disposition": "adapted-review",
+            "upg_rule_ids": [
+              "CONTRACT_VALIDATE"
+            ],
+            "handling": "Trace load-bearing safety claims through real callers, wire/data/config/generated contracts and asynchronous ordering; prove relevant risks with actual execution when available."
+          },
+          {
+            "path": "pstack/skills/bro/SKILL.md",
+            "git_blob_sha1": "b1701b778639c08bfc306291d70170c525c66a68",
+            "bytes": 267,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/bro/SKILL.md",
+            "disposition": "existing-policy",
+            "upg_rule_ids": [
+              "TRUTH_CURRENT"
+            ],
+            "handling": "Use readable user-language explanations without imposing a persona or fixed format."
+          },
+          {
+            "path": "pstack/skills/correct/SKILL.md",
+            "git_blob_sha1": "c45e06f48a0982ae19f92c6e83a8cd05988097a3",
+            "bytes": 2478,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/correct/SKILL.md",
+            "disposition": "adapted-workflow",
+            "upg_rule_ids": [
+              "STRUCTURAL_INTEGRATION"
+            ],
+            "handling": "For repeated demonstrated mistakes, prefer canonical ownership, schemas/types, actionable lint or behavior checks over duplicate instructions."
+          },
+          {
+            "path": "pstack/skills/create-formal-verification-skill/SKILL.md",
+            "git_blob_sha1": "b97609fd2649e95ea2960e720b3b581a6c2cb75a",
+            "bytes": 5141,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/create-formal-verification-skill/SKILL.md",
+            "disposition": "conditional-specialized",
+            "upg_rule_ids": [
+              "EVIDENCE_AFFECTED"
+            ],
+            "handling": "For consequential modeled boundaries, reuse or explicitly authorize suitable bounded verification, code correspondence and failing counterexamples; model proof is limited by its assumptions."
+          },
+          {
+            "path": "pstack/skills/create-verification-skill/SKILL.md",
+            "git_blob_sha1": "140d033a001e8d27acd14b06004506c43053b199",
+            "bytes": 6533,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/create-verification-skill/SKILL.md",
+            "disposition": "adapted-workflow",
+            "upg_rule_ids": [
+              "EVIDENCE_AFFECTED"
+            ],
+            "handling": "Discover existing launch/drive/observe/cleanup entry points; prove the real surface and retain evidence. New project-local harnesses are justified by actual gaps, not automatic skill generation."
+          },
+          {
+            "path": "pstack/skills/figure-it-out/SKILL.md",
+            "git_blob_sha1": "0d04c2e69b75b22ff1a9a1d8ab339580a5fbbfed",
+            "bytes": 4111,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/figure-it-out/SKILL.md",
+            "disposition": "adapted-workflow",
+            "upg_rule_ids": [
+              "STRUCTURAL_INTEGRATION"
+            ],
+            "handling": "Set a checkable outcome, scale rigor to risk, and iterate hypotheses using existing state and evidence rather than a second workflow store."
+          },
+          {
+            "path": "pstack/skills/how/SKILL.md",
+            "git_blob_sha1": "67edc340d4d8a9c7ab0b9e08c663e0e63b8d9125",
+            "bytes": 2651,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/how/SKILL.md",
+            "disposition": "adapted-workflow",
+            "upg_rule_ids": [
+              "EXPLAIN_SIGNIFICANT_UNIT"
+            ],
+            "handling": "Ground ownership, data flow, runtime behavior, consumers and invariants in task-scoped source before changing them."
+          },
+          {
+            "path": "pstack/skills/in-your-own-words/SKILL.md",
+            "git_blob_sha1": "4b2a476a9017863032c8dba9d12f0a2026943292",
+            "bytes": 315,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/in-your-own-words/SKILL.md",
+            "disposition": "existing-policy",
+            "upg_rule_ids": [
+              "TRUTH_CURRENT"
+            ],
+            "handling": "Resolve actual intent and acceptance from the user and project evidence; restatement is needed only when it changes an implementation decision."
+          },
+          {
+            "path": "pstack/skills/interrogate/SKILL.md",
+            "git_blob_sha1": "94946d22d8bf896bfcc2c54d363df5af3d17b4ca",
+            "bytes": 4548,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/interrogate/SKILL.md",
+            "disposition": "adapted-review",
+            "upg_rule_ids": [
+              "EVIDENCE_AFFECTED"
+            ],
+            "handling": "Review the affected final change against intent, synthesize evidence-based findings and disagreements, and retain lead responsibility for disposition and follow-up."
+          },
+          {
+            "path": "pstack/skills/ketchup/SKILL.md",
+            "git_blob_sha1": "9eef27f92f8029137a7bfa7378305b075df9dc4f",
+            "bytes": 6426,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/ketchup/SKILL.md",
+            "disposition": "existing-policy",
+            "upg_rule_ids": [
+              "HANDOFF_CONTINUITY"
+            ],
+            "handling": "Report current progress, evidence, unresolved decisions and next action from existing canonical state; avoid a new status ledger."
+          },
+          {
+            "path": "pstack/skills/maintain-formal-verification-skill/SKILL.md",
+            "git_blob_sha1": "5d2f7f2228a3b771ca5b03124fc265ddfc53c5fc",
+            "bytes": 7012,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/maintain-formal-verification-skill/SKILL.md",
+            "disposition": "conditional-specialized",
+            "upg_rule_ids": [
+              "EVIDENCE_AFFECTED"
+            ],
+            "handling": "When covered code changes, inspect model-to-code correspondence and bounds before rerunning; distinguish model drift, real invariant failure and unavailable proof."
+          },
+          {
+            "path": "pstack/skills/maintain-verification-skill/SKILL.md",
+            "git_blob_sha1": "a2680b91fead45a0b4963d8c367a854956bea59d",
+            "bytes": 4922,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/maintain-verification-skill/SKILL.md",
+            "disposition": "adapted-review",
+            "upg_rule_ids": [
+              "TRUTH_CURRENT"
+            ],
+            "handling": "Keep affected verification recipes and maps aligned with actual behavior; exercise changed harness paths and distinguish doc drift, harness gaps and product defects."
+          },
+          {
+            "path": "pstack/skills/make-bot-ui/SKILL.md",
+            "git_blob_sha1": "446342ca35a46af771271e0cd901354a61997589",
+            "bytes": 4649,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/make-bot-ui/SKILL.md",
+            "disposition": "excluded-host-specific",
+            "upg_rule_ids": [
+              "SECURITY_ASSURANCE"
+            ],
+            "handling": "Grok Bot webhooks, sender keys, Tailscale hosting and bot wake flows are not UPG dependencies or implicit authorization."
+          },
+          {
+            "path": "pstack/skills/no-comments/SKILL.md",
+            "git_blob_sha1": "a07ce9dfc657bdf1b2bdf3f7619225e7faac091b",
+            "bytes": 2693,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/no-comments/SKILL.md",
+            "disposition": "existing-policy",
+            "upg_rule_ids": [
+              "CLEANUP_OBSOLETE"
+            ],
+            "handling": "Review misleading or obsolete scoped comments, retaining legal, safety and contract context. Reject delete-on-ambiguity, comment personas and forced code reshapes."
+          },
+          {
+            "path": "pstack/skills/poteto-help/SKILL.md",
+            "git_blob_sha1": "bf430fcd520e94748f1e1dbf93f6799e803d747a",
+            "bytes": 15651,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/poteto-help/SKILL.md",
+            "disposition": "excluded-host-specific",
+            "upg_rule_ids": [
+              "EXPLAIN_SIGNIFICANT_UNIT"
+            ],
+            "handling": "Use existing UPG navigation; importing pstack command routing or a second help system would duplicate canonical guidance."
+          },
+          {
+            "path": "pstack/skills/poteto-mode/SKILL.md",
+            "git_blob_sha1": "21993f546032ca37671d5f1caf39c9a82ab4fa9d",
+            "bytes": 20362,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/poteto-mode/SKILL.md",
+            "disposition": "adapted-workflow",
+            "upg_rule_ids": [
+              "STRUCTURAL_INTEGRATION"
+            ],
+            "handling": "Adapt the intent/ground/design/implement/clean/review/prove/finish sequence into existing compiled governance. Exclude host roles, model defaults, rigid ceremony and ungranted autonomy."
+          },
+          {
+            "path": "pstack/skills/principle-attack-the-premise/SKILL.md",
+            "git_blob_sha1": "e9a6d499606992edd9963b80f8f8f57feaccb221",
+            "bytes": 1916,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/principle-attack-the-premise/SKILL.md",
+            "disposition": "adapted-workflow",
+            "upg_rule_ids": [
+              "EVIDENCE_AFFECTED"
+            ],
+            "handling": "When repeated fixes fail under one assumption, test that assumption directly before repeating it; discard changes whose hypothesis is refuted."
+          },
+          {
+            "path": "pstack/skills/principle-boundary-discipline/SKILL.md",
+            "git_blob_sha1": "dfe9a6fb0e5acd6ae43a41437ee0951adfe839cb",
+            "bytes": 1883,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/principle-boundary-discipline/SKILL.md",
+            "disposition": "existing-policy",
+            "upg_rule_ids": [
+              "CONTRACT_VALIDATE"
+            ],
+            "handling": "Place validation at actual trust boundaries and preserve internal invariants; do not remove defensive checks merely because they are repeated."
+          },
+          {
+            "path": "pstack/skills/principle-build-the-lever/SKILL.md",
+            "git_blob_sha1": "cbf003850489d95fea78e64198fd972c35b1aad3",
+            "bytes": 2386,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/principle-build-the-lever/SKILL.md",
+            "disposition": "adapted-workflow",
+            "upg_rule_ids": [
+              "EVIDENCE_AFFECTED"
+            ],
+            "handling": "Reuse or add a rerunnable check or transformation when it reduces repeatable work or proves a meaningful claim; no tool-building quota."
+          },
+          {
+            "path": "pstack/skills/principle-encode-lessons-in-structure/SKILL.md",
+            "git_blob_sha1": "4a96f77fe70e36cb030f9c5efa142f66877bf58a",
+            "bytes": 558,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/principle-encode-lessons-in-structure/SKILL.md",
+            "disposition": "adapted-workflow",
+            "upg_rule_ids": [
+              "STRUCTURAL_INTEGRATION"
+            ],
+            "handling": "Encode recurring demonstrated constraints at their canonical enforcement layer; keep judgment guidance only where structural enforcement is insufficient."
+          },
+          {
+            "path": "pstack/skills/principle-exhaust-the-design-space/SKILL.md",
+            "git_blob_sha1": "395a0839126bb231430a9c9da02ebab5422557d5",
+            "bytes": 395,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/principle-exhaust-the-design-space/SKILL.md",
+            "disposition": "conditional-specialized",
+            "upg_rule_ids": [
+              "STRUCTURAL_INTEGRATION"
+            ],
+            "handling": "Explore alternatives when consequential uncertainty remains; no mandatory candidate count, paid model fan-out or prototype for settled local work."
+          },
+          {
+            "path": "pstack/skills/principle-experience-first/SKILL.md",
+            "git_blob_sha1": "5ea51741302cf3af4cc0b90ec70815bd3208dbf2",
+            "bytes": 1184,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/principle-experience-first/SKILL.md",
+            "disposition": "existing-policy",
+            "upg_rule_ids": [
+              "TRUTH_CURRENT"
+            ],
+            "handling": "Judge outcomes against actual user-visible needs and agreed contracts; implementation convenience does not define acceptance."
+          },
+          {
+            "path": "pstack/skills/principle-explain-the-number/SKILL.md",
+            "git_blob_sha1": "1e180c14aefe49a3b2a515320398e08c3ebeb57d",
+            "bytes": 1663,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/principle-explain-the-number/SKILL.md",
+            "disposition": "conditional-specialized",
+            "upg_rule_ids": [
+              "EVIDENCE_AFFECTED"
+            ],
+            "handling": "Tie measured claims to actual work, units, context and limiting factors, with unknown or inconclusive results preserved."
+          },
+          {
+            "path": "pstack/skills/principle-fix-root-causes/SKILL.md",
+            "git_blob_sha1": "14fc189fa1ec3fb1614b0a3c75557f92943d8f13",
+            "bytes": 1821,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/principle-fix-root-causes/SKILL.md",
+            "disposition": "adapted-workflow",
+            "upg_rule_ids": [
+              "STRUCTURAL_INTEGRATION"
+            ],
+            "handling": "Trace confirmed symptoms to the responsible contract or invariant; legitimate boundary guards stay legitimate and scope remains bounded."
+          },
+          {
+            "path": "pstack/skills/principle-foundational-thinking/SKILL.md",
+            "git_blob_sha1": "19cc6c0eaa6fcbc2863fb73d1d25ca196c6a46e0",
+            "bytes": 1530,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/principle-foundational-thinking/SKILL.md",
+            "disposition": "adapted-workflow",
+            "upg_rule_ids": [
+              "STRUCTURAL_INTEGRATION"
+            ],
+            "handling": "Choose state, data shape and ownership before scattering control flow; integrate at the smallest responsible canonical layer."
+          },
+          {
+            "path": "pstack/skills/principle-guard-the-context-window/SKILL.md",
+            "git_blob_sha1": "0a1d3cfcf4539fe048887174000fecbf2fa40e81",
+            "bytes": 519,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/principle-guard-the-context-window/SKILL.md",
+            "disposition": "existing-policy",
+            "upg_rule_ids": [
+              "EVIDENCE_AFFECTED"
+            ],
+            "handling": "Use task-scoped indexes and concise delegated evidence without treating a summary or read budget as proof of coverage."
+          },
+          {
+            "path": "pstack/skills/principle-laziness-protocol/SKILL.md",
+            "git_blob_sha1": "016c3c7c8dfffd995c1a02135a62248e6625879b",
+            "bytes": 552,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/principle-laziness-protocol/SKILL.md",
+            "disposition": "existing-policy",
+            "upg_rule_ids": [
+              "STRUCTURAL_INTEGRATION"
+            ],
+            "handling": "Minimize unnecessary work and indirection while completing all affected contracts, consumers and obligations; shortest diff is not the objective."
+          },
+          {
+            "path": "pstack/skills/principle-make-operations-idempotent/SKILL.md",
+            "git_blob_sha1": "c93f323d694a4d310515ea27165a093d399bc55e",
+            "bytes": 1809,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/principle-make-operations-idempotent/SKILL.md",
+            "disposition": "adapted-review",
+            "upg_rule_ids": [
+              "CONTRACT_VALIDATE"
+            ],
+            "handling": "Check repeated execution and interruption recovery against observed state; recognize stale residue and reconcile partial operations."
+          },
+          {
+            "path": "pstack/skills/principle-migrate-callers-then-delete-legacy-apis/SKILL.md",
+            "git_blob_sha1": "57ddd7b27d06ba4ee9e2d3811880476a18b88df6",
+            "bytes": 637,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/principle-migrate-callers-then-delete-legacy-apis/SKILL.md",
+            "disposition": "existing-policy",
+            "upg_rule_ids": [
+              "MIGRATION_CUTOVER"
+            ],
+            "handling": "Migrate affected callers and retire obsolete paths when safe, preserving external contracts and explicit compatibility obligations."
+          },
+          {
+            "path": "pstack/skills/principle-minimize-reader-load/SKILL.md",
+            "git_blob_sha1": "628999088c5d05c1c546b3a3ca89da553cd3f3b2",
+            "bytes": 1996,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/principle-minimize-reader-load/SKILL.md",
+            "disposition": "existing-policy",
+            "upg_rule_ids": [
+              "STRUCTURAL_INTEGRATION"
+            ],
+            "handling": "Prefer direct ownership and discoverable contracts over needless wrappers, hidden state or duplicated policy."
+          },
+          {
+            "path": "pstack/skills/principle-model-the-domain/SKILL.md",
+            "git_blob_sha1": "09b7c739955facf03f08f66e1e329745d2f8880e",
+            "bytes": 1858,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/principle-model-the-domain/SKILL.md",
+            "disposition": "adapted-workflow",
+            "upg_rule_ids": [
+              "STRUCTURAL_INTEGRATION"
+            ],
+            "handling": "Use an appropriate canonical model, state machine, table or collection when it removes repeated shape assumptions and invalid states."
+          },
+          {
+            "path": "pstack/skills/principle-never-block-on-the-human/SKILL.md",
+            "git_blob_sha1": "4f59bdc69f79d536b30b0014a563ed3be05b8b62",
+            "bytes": 910,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/principle-never-block-on-the-human/SKILL.md",
+            "disposition": "existing-policy",
+            "upg_rule_ids": [
+              "TRUTH_CURRENT"
+            ],
+            "handling": "Proceed on already authorized reversible work; retain actual user approval gates, permission boundaries and preference decisions."
+          },
+          {
+            "path": "pstack/skills/principle-outcome-oriented-execution/SKILL.md",
+            "git_blob_sha1": "c49be0bc74783f0dee013101365ae09b2abb48a2",
+            "bytes": 1078,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/principle-outcome-oriented-execution/SKILL.md",
+            "disposition": "existing-policy",
+            "upg_rule_ids": [
+              "MIGRATION_CUTOVER"
+            ],
+            "handling": "Define the target and cutover condition and finish migration obligations instead of preserving throwaway parallel truths."
+          },
+          {
+            "path": "pstack/skills/principle-prove-it-works/SKILL.md",
+            "git_blob_sha1": "5dc14a3b06f9d579e5c17cd8a7242f432ddb3125",
+            "bytes": 1371,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/principle-prove-it-works/SKILL.md",
+            "disposition": "adapted-review",
+            "upg_rule_ids": [
+              "EVIDENCE_AFFECTED"
+            ],
+            "handling": "Inspect current real artifacts and behavior before completion; timestamps, compile success and delegated self-reports do not prove the claim."
+          },
+          {
+            "path": "pstack/skills/principle-redesign-from-first-principles/SKILL.md",
+            "git_blob_sha1": "5ca5246cbb0fa08884ce17b0d22c117ae1ad67b8",
+            "bytes": 758,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/principle-redesign-from-first-principles/SKILL.md",
+            "disposition": "existing-policy",
+            "upg_rule_ids": [
+              "STRUCTURAL_INTEGRATION"
+            ],
+            "handling": "Integrate new requirements at the responsible layer; redesign wording does not authorize unrelated architecture changes."
+          },
+          {
+            "path": "pstack/skills/principle-separate-before-serializing-shared-state/SKILL.md",
+            "git_blob_sha1": "ff93b4a2032c08e2232992a9a24f2891ee14e58f",
+            "bytes": 1565,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/principle-separate-before-serializing-shared-state/SKILL.md",
+            "disposition": "adapted-review",
+            "upg_rule_ids": [
+              "CONTRACT_VALIDATE"
+            ],
+            "handling": "Give independent actors disjoint owned writes; when a canonical shared object is required, enforce one-writer or locking/atomic behavior structurally."
+          },
+          {
+            "path": "pstack/skills/principle-sequence-verifiable-units/SKILL.md",
+            "git_blob_sha1": "986371260ebccd9a5a6818c9561e88c1d270d0ee",
+            "bytes": 1705,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/principle-sequence-verifiable-units/SKILL.md",
+            "disposition": "adapted-workflow",
+            "upg_rule_ids": [
+              "EVIDENCE_AFFECTED"
+            ],
+            "handling": "Sequence dependent work into meaningful validated units and validate after affected changes; no commit-per-step requirement."
+          },
+          {
+            "path": "pstack/skills/principle-subtract-before-you-add/SKILL.md",
+            "git_blob_sha1": "b8740ba6f06922d8e7ef3b23f9fb16e0fc4a876f",
+            "bytes": 909,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/principle-subtract-before-you-add/SKILL.md",
+            "disposition": "existing-policy",
+            "upg_rule_ids": [
+              "CLEANUP_OBSOLETE"
+            ],
+            "handling": "Remove proven obsolete in-scope paths when safe; retain required compatibility, historical evidence and retention obligations."
+          },
+          {
+            "path": "pstack/skills/principle-test-behavior-not-implementation/SKILL.md",
+            "git_blob_sha1": "78c9389bfe707d6d56485ade32c59150958228f9",
+            "bytes": 2614,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/principle-test-behavior-not-implementation/SKILL.md",
+            "disposition": "adapted-review",
+            "upg_rule_ids": [
+              "EVIDENCE_AFFECTED"
+            ],
+            "handling": "Use checks that fail on broken observable behavior and survive harmless internal changes; no implementation-mirroring test quota."
+          },
+          {
+            "path": "pstack/skills/principle-type-system-discipline/SKILL.md",
+            "git_blob_sha1": "9fa08b0b17d536ce751fffa90134be8fb03699c7",
+            "bytes": 1557,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/principle-type-system-discipline/SKILL.md",
+            "disposition": "existing-policy",
+            "upg_rule_ids": [
+              "CONTRACT_VALIDATE"
+            ],
+            "handling": "Encode valid states and parse external input at boundaries when supported by the actual language and contracts."
+          },
+          {
+            "path": "pstack/skills/recall/SKILL.md",
+            "git_blob_sha1": "cd8cc20790d90579e632626fe6db2b1fff593eea",
+            "bytes": 5345,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/recall/SKILL.md",
+            "disposition": "existing-policy",
+            "upg_rule_ids": [
+              "HANDOFF_CONTINUITY"
+            ],
+            "handling": "Recover task-relevant history and verify surfaced live state; no broad private transcript harvesting or invented prior intent."
+          },
+          {
+            "path": "pstack/skills/reflect/SKILL.md",
+            "git_blob_sha1": "998ae6530fe294791c3a1daa635b36e2947fcca2",
+            "bytes": 4766,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/reflect/SKILL.md",
+            "disposition": "conditional-specialized",
+            "upg_rule_ids": [
+              "GOVERNANCE_UPGRADE"
+            ],
+            "handling": "Only explicitly authorized governance evolution may adapt durable lessons through canonical source, regeneration, checks and audit; no live installed-skill mutation."
+          },
+          {
+            "path": "pstack/skills/setup-pstack/SKILL.md",
+            "git_blob_sha1": "cb61b8d3ee5d2a1b8fa403d8b99ed8d2e18f77df",
+            "bytes": 6305,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/setup-pstack/SKILL.md",
+            "disposition": "excluded-host-specific",
+            "upg_rule_ids": [
+              "GOVERNANCE_UPGRADE"
+            ],
+            "handling": "Do not import model-role settings, .cursor rules, plugin setup or global host configuration."
+          },
+          {
+            "path": "pstack/skills/sharpen/SKILL.md",
+            "git_blob_sha1": "5b4a7b104e709f8cded1726541be42431c334164",
+            "bytes": 661,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/sharpen/SKILL.md",
+            "disposition": "existing-policy",
+            "upg_rule_ids": [
+              "EVIDENCE_AFFECTED"
+            ],
+            "handling": "Clarify the actual outcome, primary evidence and objective acceptance without enlarging the authorized task."
+          },
+          {
+            "path": "pstack/skills/show-me-your-work/SKILL.md",
+            "git_blob_sha1": "ada1bba1e51356de0e0d4da1d13ba5a56ba9c7cb",
+            "bytes": 6551,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/show-me-your-work/SKILL.md",
+            "disposition": "existing-policy",
+            "upg_rule_ids": [
+              "HANDOFF_CONTINUITY"
+            ],
+            "handling": "Keep factual decisions and reusable evidence in existing current state and bounded handoff; do not add a second TSV/history ledger."
+          },
+          {
+            "path": "pstack/skills/statechart/SKILL.md",
+            "git_blob_sha1": "1818f2a7376f2804edd390a0a7c33ab317f6c8c2",
+            "bytes": 5284,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/statechart/SKILL.md",
+            "disposition": "conditional-specialized",
+            "upg_rule_ids": [
+              "EVIDENCE_AFFECTED"
+            ],
+            "handling": "When existing models or a consequential state-machine task warrant it, map states and counterexamples to code and replay them against real behavior; no Mermaid/TLA runtime import."
+          },
+          {
+            "path": "pstack/skills/swarm/SKILL.md",
+            "git_blob_sha1": "b0b1eb83363853843ccf1524917b83d0c16d2cd8",
+            "bytes": 2734,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/swarm/SKILL.md",
+            "disposition": "adapted-workflow",
+            "upg_rule_ids": [
+              "STRUCTURAL_INTEGRATION"
+            ],
+            "handling": "Declare coverage and done criteria, isolate independent writes, account for delegated outcomes and verify their artifacts; respect actual host capacity and cost limits."
+          },
+          {
+            "path": "pstack/skills/tdd/SKILL.md",
+            "git_blob_sha1": "ca6f24c963001d9d518db2936dfe3d12f29b4e94",
+            "bytes": 3143,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/tdd/SKILL.md",
+            "disposition": "adapted-workflow",
+            "upg_rule_ids": [
+              "EVIDENCE_AFFECTED"
+            ],
+            "handling": "For a practical regression path, observe failing-before then passing-after behavior; use the closest meaningful executable check when a new test is unjustified."
+          },
+          {
+            "path": "pstack/skills/teach/SKILL.md",
+            "git_blob_sha1": "25369f3f554ed6b5826340ae3eee688fac0bda80",
+            "bytes": 5623,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/teach/SKILL.md",
+            "disposition": "existing-policy",
+            "upg_rule_ids": [
+              "EXPLAIN_SIGNIFICANT_UNIT"
+            ],
+            "handling": "Explain only decision-relevant behavior and rationale from source; no mandatory diagrams, image generation or full multi-source sweep."
+          },
+          {
+            "path": "pstack/skills/technical-writing/SKILL.md",
+            "git_blob_sha1": "3e6d26109376cd66439c87ed48b4033df8d78a3a",
+            "bytes": 9093,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/technical-writing/SKILL.md",
+            "disposition": "existing-policy",
+            "upg_rule_ids": [
+              "TRUTH_CURRENT"
+            ],
+            "handling": "Maintain readable task-relevant documentation with exact technical payload and evidence limits; no universal editorial taxonomy or punctuation rules."
+          },
+          {
+            "path": "pstack/skills/typescript-best-practices/SKILL.md",
+            "git_blob_sha1": "e1e5aa7c97ed39c425d60d933a96424a3f14539e",
+            "bytes": 2765,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/typescript-best-practices/SKILL.md",
+            "disposition": "conditional-specialized",
+            "upg_rule_ids": [
+              "CONTRACT_VALIDATE"
+            ],
+            "handling": "Language-specific guidance is routed only when actual TypeScript work needs it; UPG does not install a universal TypeScript layer."
+          },
+          {
+            "path": "pstack/skills/unslop/SKILL.md",
+            "git_blob_sha1": "97f5b6412148fa5b2a2fe478836fe8923ffa5cbb",
+            "bytes": 5827,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/unslop/SKILL.md",
+            "disposition": "existing-policy",
+            "upg_rule_ids": [
+              "TRUTH_CURRENT"
+            ],
+            "handling": "Remove empty phrasing while preserving contracts, uncertainty and exact payload; no mechanical vocabulary ban, punctuation ban or detector goal."
+          },
+          {
+            "path": "pstack/skills/why/SKILL.md",
+            "git_blob_sha1": "b5fe93f8b78f58b06e0bf245a6b5b8faae4300e8",
+            "bytes": 8903,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/why/SKILL.md",
+            "disposition": "existing-policy",
+            "upg_rule_ids": [
+              "HANDOFF_CONTINUITY"
+            ],
+            "handling": "Distinguish explicit rationale, supported inference, hypotheses and unknowns; search relevant authorized sources without mandatory unrelated connector sweeps."
+          }
+        ],
+        "playbooks": [
+          {
+            "path": "pstack/skills/poteto-mode/playbooks/authoring-a-skill.md",
+            "git_blob_sha1": "8c5a55a44f5e95bba92f652da0ac87e941c49538",
+            "bytes": 831,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/poteto-mode/playbooks/authoring-a-skill.md",
+            "disposition": "existing-policy",
+            "upg_rule_ids": [
+              "GOVERNANCE_UPGRADE"
+            ],
+            "handling": "For explicitly authorized skill evolution, edit canonical source and verify generated package metadata, references, behavior and installation."
+          },
+          {
+            "path": "pstack/skills/poteto-mode/playbooks/autonomous-run.md",
+            "git_blob_sha1": "e6b88703cf327a76bcdd424429345ac0efeca67e",
+            "bytes": 1982,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/poteto-mode/playbooks/autonomous-run.md",
+            "disposition": "adapted-workflow",
+            "upg_rule_ids": [
+              "EVIDENCE_AFFECTED"
+            ],
+            "handling": "Use a checkable exit condition and bounded evidence-led iterations within current authorization; no persistent loop, automatic schedule, side-scope fixes or relaxed acceptance."
+          },
+          {
+            "path": "pstack/skills/poteto-mode/playbooks/autopilot-full.md",
+            "git_blob_sha1": "068882379d9bdc2298052e7762d67ac795715baf",
+            "bytes": 6596,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/poteto-mode/playbooks/autopilot-full.md",
+            "disposition": "excluded-host-specific",
+            "upg_rule_ids": [
+              "RELEASE_AUDIT"
+            ],
+            "handling": "Retain current-revision independent verification and owner accounting as review concepts. Do not import cloud owners, automatic merge or a standing program."
+          },
+          {
+            "path": "pstack/skills/poteto-mode/playbooks/autopilot-stack.md",
+            "git_blob_sha1": "d7bdc289e045e8bc7da97b4ddfccc8d6c9ed0800",
+            "bytes": 2205,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/poteto-mode/playbooks/autopilot-stack.md",
+            "disposition": "excluded-host-specific",
+            "upg_rule_ids": [
+              "CONTRACT_VALIDATE"
+            ],
+            "handling": "Dependency ordering and single topology ownership inform review when a real stack exists; no implicit branch rewrite, retarget, push or merge authority."
+          },
+          {
+            "path": "pstack/skills/poteto-mode/playbooks/babysit.md",
+            "git_blob_sha1": "51549ab2da11e5905342bbb3aadb93685c8ac348",
+            "bytes": 7619,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/poteto-mode/playbooks/babysit.md",
+            "disposition": "conditional-specialized",
+            "upg_rule_ids": [
+              "EVIDENCE_AFFECTED"
+            ],
+            "handling": "When explicitly requested, reconcile actual PR state and evidence, classify failures before retrying and review bot findings on their merits; no automatic monitor."
+          },
+          {
+            "path": "pstack/skills/poteto-mode/playbooks/bug-fix.md",
+            "git_blob_sha1": "b5de0bfa63add6ed38a38a8bd668cf36ac009c61",
+            "bytes": 2359,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/poteto-mode/playbooks/bug-fix.md",
+            "disposition": "adapted-workflow",
+            "upg_rule_ids": [
+              "EVIDENCE_AFFECTED"
+            ],
+            "handling": "Reproduce the relevant symptom, discriminate root-cause hypotheses, implement the scoped cause and repeat the same meaningful path after the fix."
+          },
+          {
+            "path": "pstack/skills/poteto-mode/playbooks/eval.md",
+            "git_blob_sha1": "768a894e275b1e9b198e83ceb6b46964e3f9d6db",
+            "bytes": 2628,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/poteto-mode/playbooks/eval.md",
+            "disposition": "conditional-specialized",
+            "upg_rule_ids": [
+              "GOVERNANCE_UPGRADE"
+            ],
+            "handling": "For authorized evaluations, freeze question and evidence identities and retain failures, cost and uncertainty; no paid trial or promotion from development-only proof."
+          },
+          {
+            "path": "pstack/skills/poteto-mode/playbooks/feature.md",
+            "git_blob_sha1": "eb1040cb2631f3eeacd8f9f6469d7e97277f24ef",
+            "bytes": 2870,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/poteto-mode/playbooks/feature.md",
+            "disposition": "adapted-workflow",
+            "upg_rule_ids": [
+              "STRUCTURAL_INTEGRATION"
+            ],
+            "handling": "Ground affected behavior, model state/ownership, order dependent steps, delegate independent scopes proportionally and prove actual acceptance."
+          },
+          {
+            "path": "pstack/skills/poteto-mode/playbooks/hillclimb.md",
+            "git_blob_sha1": "e9cf267908a9737236b3a8a8a5a99fe9066f7554",
+            "bytes": 4507,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/poteto-mode/playbooks/hillclimb.md",
+            "disposition": "conditional-specialized",
+            "upg_rule_ids": [
+              "EVIDENCE_AFFECTED"
+            ],
+            "handling": "Only an authorized measured optimization task uses a bounded hypothesis loop with valid baseline, errors/work counts and keep-or-revert evidence; no unbounded or paid search."
+          },
+          {
+            "path": "pstack/skills/poteto-mode/playbooks/investigation.md",
+            "git_blob_sha1": "cd119f04f23e0b7acb3f8cc5ba13ce4ab7aa6c7d",
+            "bytes": 928,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/poteto-mode/playbooks/investigation.md",
+            "disposition": "existing-policy",
+            "upg_rule_ids": [
+              "EVIDENCE_AFFECTED"
+            ],
+            "handling": "A read-only request produces a cited explanation or judgment; it does not mutate maintained state or require a PR."
+          },
+          {
+            "path": "pstack/skills/poteto-mode/playbooks/multi-phase-plan.md",
+            "git_blob_sha1": "27e99947bd20575e2ff503dbfba985a4f0fa298e",
+            "bytes": 13217,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/poteto-mode/playbooks/multi-phase-plan.md",
+            "disposition": "conditional-specialized",
+            "upg_rule_ids": [
+              "STRUCTURAL_INTEGRATION"
+            ],
+            "handling": "For an actual planning deliverable, record dependencies, owned outputs, acceptance and unresolved gates in existing project form; reject fixed templates and ten verification lanes."
+          },
+          {
+            "path": "pstack/skills/poteto-mode/playbooks/opening-a-pr.md",
+            "git_blob_sha1": "d729a7a06c5b67e406b081e1777114bc03b66f4a",
+            "bytes": 5669,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/poteto-mode/playbooks/opening-a-pr.md",
+            "disposition": "existing-policy",
+            "upg_rule_ids": [
+              "RELEASE_AUDIT"
+            ],
+            "handling": "When delivery requires a PR, provide concrete intent, change, risks and current validation; no universal ready-PR, stack, reset-hard or rebasing policy."
+          },
+          {
+            "path": "pstack/skills/poteto-mode/playbooks/orchestrate.md",
+            "git_blob_sha1": "4ccb24d76c5e190125cecc99d4a9b5c9eb2932d9",
+            "bytes": 17127,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/poteto-mode/playbooks/orchestrate.md",
+            "disposition": "excluded-host-specific",
+            "upg_rule_ids": [
+              "HANDOFF_CONTINUITY"
+            ],
+            "handling": "Retain bounded owner/accountability and prerequisite ordering concepts in existing workflow state; do not install orch runtime, multi-day coordinator or parallel ledger."
+          },
+          {
+            "path": "pstack/skills/poteto-mode/playbooks/pause-safely.md",
+            "git_blob_sha1": "9d1c5f8303976fff40de099f7f28185909430c11",
+            "bytes": 1135,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/poteto-mode/playbooks/pause-safely.md",
+            "disposition": "existing-policy",
+            "upg_rule_ids": [
+              "HANDOFF_CONTINUITY"
+            ],
+            "handling": "On an explicit pause, leave factual resumable current state and stop owned work safely; no automatic WIP commit, push or temporary-only canonical handoff."
+          },
+          {
+            "path": "pstack/skills/poteto-mode/playbooks/perf-issue.md",
+            "git_blob_sha1": "46dcc9963366992016dfb1d59ccaae977930f982",
+            "bytes": 1550,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/poteto-mode/playbooks/perf-issue.md",
+            "disposition": "conditional-specialized",
+            "upg_rule_ids": [
+              "EVIDENCE_AFFECTED"
+            ],
+            "handling": "Use comparable real workload baseline and post-change evidence and diagnose the limiter before claiming improvement."
+          },
+          {
+            "path": "pstack/skills/poteto-mode/playbooks/prototype.md",
+            "git_blob_sha1": "18bedc7e9249d180f9198d5b4b13e3817d41d281",
+            "bytes": 2161,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/poteto-mode/playbooks/prototype.md",
+            "disposition": "conditional-specialized",
+            "upg_rule_ids": [
+              "EVIDENCE_AFFECTED"
+            ],
+            "handling": "For consequential empirical uncertainty, isolate the smallest experiment and label its observed scope and throwaway status; do not treat prototype evidence as release proof."
+          },
+          {
+            "path": "pstack/skills/poteto-mode/playbooks/refactoring.md",
+            "git_blob_sha1": "c04b07eeb8b8fa651d080729363466ab73d2fe40",
+            "bytes": 3315,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/poteto-mode/playbooks/refactoring.md",
+            "disposition": "adapted-workflow",
+            "upg_rule_ids": [
+              "CONTRACT_VALIDATE"
+            ],
+            "handling": "Pin affected behavior, move in verifiable steps, trace string/docs/generated consumers and prove equivalence before retiring obsolete paths."
+          },
+          {
+            "path": "pstack/skills/poteto-mode/playbooks/runtime-forensics.md",
+            "git_blob_sha1": "6bf64240d1a890df290b98c632ad374d20ca9fd4",
+            "bytes": 1314,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/poteto-mode/playbooks/runtime-forensics.md",
+            "disposition": "conditional-specialized",
+            "upg_rule_ids": [
+              "EVIDENCE_AFFECTED"
+            ],
+            "handling": "When live diagnosis is authorized, bind instrumented observations to actual process and source, with permissions and side effects explicit; no unrequested live hotfix."
+          },
+          {
+            "path": "pstack/skills/poteto-mode/playbooks/session-pickup.md",
+            "git_blob_sha1": "876b1433828ccc7c874123cdf300240abb285dd9",
+            "bytes": 1782,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/poteto-mode/playbooks/session-pickup.md",
+            "disposition": "existing-policy",
+            "upg_rule_ids": [
+              "HANDOFF_CONTINUITY"
+            ],
+            "handling": "Reuse still-current verified evidence and reconstruct observable state; prior transcripts and self-reports remain input and never override current code or validation."
+          },
+          {
+            "path": "pstack/skills/poteto-mode/playbooks/shipping.md",
+            "git_blob_sha1": "0a0c3cfde8948e3aa8ee80c6f3f9ce7e3e64fcba",
+            "bytes": 4387,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/poteto-mode/playbooks/shipping.md",
+            "disposition": "adapted-review",
+            "upg_rule_ids": [
+              "RELEASE_AUDIT"
+            ],
+            "handling": "Before authorized delivery, revalidate that the review covers current affected bytes and actual target context; confirm actual remote result. No automatic landing or patch-id-as-proof shortcut."
+          },
+          {
+            "path": "pstack/skills/poteto-mode/playbooks/trace-forensics.md",
+            "git_blob_sha1": "bf1b003786503623d91ca173fc97a6e54eee3acf",
+            "bytes": 1867,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/poteto-mode/playbooks/trace-forensics.md",
+            "disposition": "conditional-specialized",
+            "upg_rule_ids": [
+              "EVIDENCE_AFFECTED"
+            ],
+            "handling": "Interpret supplied capture and source mappings without inventing causality; retain strongest-hypothesis status when no paired or live confirmation exists."
+          },
+          {
+            "path": "pstack/skills/poteto-mode/playbooks/visual-parity.md",
+            "git_blob_sha1": "248830ec74a593fc22143a842026388f92f1b9f4",
+            "bytes": 1197,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/poteto-mode/playbooks/visual-parity.md",
+            "disposition": "conditional-specialized",
+            "upg_rule_ids": [
+              "EVIDENCE_AFFECTED"
+            ],
+            "handling": "When visual equivalence is the actual acceptance, preserve a meaningful baseline and compare relevant states on the real surface; do not alter the baseline merely to pass."
+          },
+          {
+            "path": "pstack/skills/poteto-mode/playbooks/worktree-cleanup.md",
+            "git_blob_sha1": "45e1af693cc40d0271249a0e98f15bfc815af615",
+            "bytes": 2947,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/poteto-mode/playbooks/worktree-cleanup.md",
+            "disposition": "existing-policy",
+            "upg_rule_ids": [
+              "SAFE_DELETE"
+            ],
+            "handling": "Verify actual ownership, active use, dirty/untracked/ignored content and recoverability before authorized cleanup; reject force removal, transcript-wide sweeps and system cache cleanup."
+          }
+        ],
+        "agents": [
+          {
+            "path": "pstack/agents/poteto-agent.md",
+            "git_blob_sha1": "e1d2df2e8c3c4954b87ee1b29655c898bc7ee699",
+            "bytes": 1316,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/agents/poteto-agent.md",
+            "disposition": "existing-policy",
+            "upg_rule_ids": [
+              "EVIDENCE_AFFECTED"
+            ],
+            "handling": "Delegate explicit scope and current instructions using observed host capabilities; the lead independently checks artifacts. Do not import role discovery, highest-version selection or background defaults."
+          },
+          {
+            "path": "pstack/agents/comment-sicko.md",
+            "git_blob_sha1": "209e3704dfa75022060c936bd3f3362fa3bbe254",
+            "bytes": 2230,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/agents/comment-sicko.md",
+            "disposition": "excluded-host-specific",
+            "upg_rule_ids": [
+              "CLEANUP_OBSOLETE"
+            ],
+            "handling": "Reject the comment-hating persona, deletion on uncertainty and required code reshape flags; retain evidence-based cleanup with legal, safety and contract context."
+          }
+        ],
+        "automation_skills": [
+          {
+            "path": "pstack/automations/benny/skills/reproduce-and-fix-issues/SKILL.md",
+            "git_blob_sha1": "effa5f0a38d2cfe7d948a71ff51827e2e2017257",
+            "bytes": 14238,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/automations/benny/skills/reproduce-and-fix-issues/SKILL.md",
+            "disposition": "excluded-host-specific",
+            "upg_rule_ids": [
+              "SECURITY_ASSURANCE"
+            ],
+            "handling": "Do not install or activate Benny Slack/tracker/repro automations, sender identities, notifications or bot credentials. Existing authorization, deduplication, truthful repro and bounded mutation rules remain applicable."
+          },
+          {
+            "path": "pstack/automations/benny/skills/setup-benny/SKILL.md",
+            "git_blob_sha1": "b05c26f4d4a39c16559f5ef2bbdd380adc923fda",
+            "bytes": 13992,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/automations/benny/skills/setup-benny/SKILL.md",
+            "disposition": "excluded-host-specific",
+            "upg_rule_ids": [
+              "SECURITY_ASSURANCE"
+            ],
+            "handling": "Do not install or activate Benny Slack/tracker/repro automations, sender identities, notifications or bot credentials. Existing authorization, deduplication, truthful repro and bounded mutation rules remain applicable."
+          },
+          {
+            "path": "pstack/automations/benny/skills/triage-issue-reports/SKILL.md",
+            "git_blob_sha1": "d691672d00fb8f8f07fc17290d00ae49d1fd119b",
+            "bytes": 10320,
+            "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/automations/benny/skills/triage-issue-reports/SKILL.md",
+            "disposition": "excluded-host-specific",
+            "upg_rule_ids": [
+              "SECURITY_ASSURANCE"
+            ],
+            "handling": "Do not install or activate Benny Slack/tracker/repro automations, sender identities, notifications or bot credentials. Existing authorization, deduplication, truthful repro and bounded mutation rules remain applicable."
+          }
+        ]
+      },
+      "excluded": [
+        "Cursor/Grok/Claude model slugs, paid fan-out, budget rules, .cursor configuration, plugin install and host-global changes",
+        "automatic schedules, background watchers, cloud owners, standing orchestration stores, Slack/tracker messages, webhooks and bot credentials",
+        "blanket external-action permission, automatic merge/push, forced branch rewriting, reset --hard, force removal and system cache cleanup",
+        "mandatory multi-model reviews, fixed candidate/worker counts, 1000-line blocker thresholds, commit-per-step and always-ready-PR mandates",
+        "delete-on-ambiguity comment persona, deletion of safety/legal/contract context, blanket removal of guards or required compatibility",
+        "fixed prose/report templates, punctuation/vocabulary bans, invented certainty and unknown evidence presented as a pass",
+        "prior transcript or delegated self-report treated as authority over current project evidence; broad private transcript or unrelated connector sweeps",
+        "project-wide no-debt/clean claims from a scoped review, static fixture/hash equality as runtime efficacy, and model/verification claims beyond actual bounds",
+        "runtime source import, copied complete prompts, persistent mode, a second history/decision ledger, automatic upstream refresh and live installed-Skill self-mutation"
       ]
     }
   ],
@@ -1013,6 +2312,234 @@
         ],
         "status": "acceptance-contract; referenced tests are not a new execution receipt",
         "evidence_scope": "Deterministic/static contract only; no model efficacy or qualification claim."
+      }
+    },
+    {
+      "id": "UPM-011",
+      "source_refs": [
+        {
+          "source_id": "pstack",
+          "path": "pstack/skills/poteto-mode/SKILL.md",
+          "section": "Non-negotiables / Principles / Playbooks"
+        },
+        {
+          "source_id": "pstack",
+          "path": "pstack/skills/architect/SKILL.md",
+          "section": "Ground the problem / Sketch"
+        },
+        {
+          "source_id": "pstack",
+          "path": "pstack/skills/poteto-mode/playbooks/bug-fix.md",
+          "section": "Bug fix"
+        },
+        {
+          "source_id": "pstack",
+          "path": "pstack/skills/poteto-mode/playbooks/refactoring.md",
+          "section": "Refactoring"
+        },
+        {
+          "source_id": "pstack",
+          "path": "pstack/skills/correct/SKILL.md",
+          "section": "Fix each class at the highest level that works"
+        }
+      ],
+      "upg_rule_ids": [
+        "STRUCTURAL_INTEGRATION",
+        "CONTRACT_VALIDATE",
+        "CLEANUP_OBSOLETE",
+        "EVIDENCE_AFFECTED"
+      ],
+      "execution_guidance_ids": [
+        "complete_change",
+        "task_scoped_reading"
+      ],
+      "operational_guidance_ids": [
+        "engineering_workflow"
+      ],
+      "implementation_refs": [
+        "governance-src/model/governance-model.json",
+        "governance-src/runtime-scripts/plan_governance.py"
+      ],
+      "trigger": "Non-trivial engineering change selected by the existing policy closure; read-only, local low-risk and specialized work retain proportional existing obligations.",
+      "adapted_capability": "Ground intent and affected behavior/contracts/consumers, choose canonical data and ownership, sequence verifiable implementation, distinguish bug fix from behavior-preserving refactor, test repeated failed assumptions, remove safe replaced paths and encode recurring proven mistakes structurally.",
+      "exclusions": [
+        "mandatory external skill/role or model fan-out",
+        "shortest diff, automatic PR/commit, unrelated redesign or cleanup",
+        "unproven guard deletion and external contract removal"
+      ],
+      "acceptance": {
+        "case_id": "UPM-011",
+        "fixture": "A task combines a changed API consumer, an existing legitimate boundary guard, a repeated failed premise and a proposed second implementation path.",
+        "pass_if": [
+          "the plan selects engineering_workflow once through existing closure and preserves mandatory core policies",
+          "the responsible canonical layer and actual affected consumers govern the change",
+          "regression/equivalence evidence is chosen for the actual change; the failed premise is tested and superseded paths are removed only when safe"
+        ],
+        "fail_if": [
+          "workflow guidance widens scope, removes legitimate defenses or enforces paid/design fan-out",
+          "generated runtime is hand-edited, a parallel truth is installed or mandatory cleanup/proof is skipped"
+        ],
+        "test_references": [
+          "tests/test_pstack_workflow.py"
+        ],
+        "status": "acceptance-contract; referenced tests are not a new execution receipt",
+        "evidence_scope": "Static/planner contract and bounded deterministic fixtures; no model efficacy or upstream runtime qualification claim."
+      }
+    },
+    {
+      "id": "UPM-012",
+      "source_refs": [
+        {
+          "source_id": "pstack",
+          "path": "pstack/skills/interrogate/SKILL.md",
+          "section": "Scope / Intent / Synthesize / Lead Judgment"
+        },
+        {
+          "source_id": "pstack",
+          "path": "pstack/skills/interrogate/references/rubric.md",
+          "section": "Correctness / Root Causes vs. Symptoms / Structural Integrity / Verification / Complexity Budget / Security"
+        },
+        {
+          "source_id": "pstack",
+          "path": "pstack/skills/interrogate/references/lead-judgment.md",
+          "section": "Filtering Principles / When Reviewers Are Right"
+        },
+        {
+          "source_id": "pstack",
+          "path": "pstack/skills/blast-radius/SKILL.md",
+          "section": "How sure are you / Steps"
+        },
+        {
+          "source_id": "pstack",
+          "path": "pstack/skills/poteto-mode/playbooks/shipping.md",
+          "section": "Re-check that the verdicts still describe the code"
+        }
+      ],
+      "upg_rule_ids": [
+        "EVIDENCE_AFFECTED",
+        "CLEANUP_OBSOLETE",
+        "TRUTH_CURRENT",
+        "CONTRACT_VALIDATE",
+        "SECURITY_ASSURANCE",
+        "RELEASE_AUDIT"
+      ],
+      "execution_guidance_ids": [
+        "evidence_fidelity",
+        "complete_change"
+      ],
+      "operational_guidance_ids": [],
+      "implementation_refs": [
+        "governance-src/model/governance-model.json",
+        "governance-src/runtime-scripts/project_tool.py",
+        "governance-src/schemas/execution.schema.json",
+        "governance-src/schemas/field-report.schema.json",
+        "governance-src/runtime-scripts/completion_review.py"
+      ],
+      "trigger": "Before every normal completion that modified maintained project state, including local/report-none work; lifecycle enforcement applies wherever the available helper tracks the completion.",
+      "adapted_capability": "Review and audit the actual affected final state against intent, contracts, actual risk paths, root cause, canonical structure, obsolete/duplicate/stale/generated residue and current proof. Triage findings with evidence and lead judgment, fix confirmed in-scope blockers and invalidate affected review/proof after later changes. Independent review scales with risk and observed capabilities; missing independence is disclosed, not invented.",
+      "exclusions": [
+        "reviewer agreement or a self-attested path/hash proves semantic correctness",
+        "mandatory model diversity, fixed finding counts, 1000-line threshold or code-style veto",
+        "a local review proves project-wide no-debt or hidden/runtime behavior",
+        "same-host/provider family labels or repeated calls described as independently verified model diversity"
+      ],
+      "acceptance": {
+        "case_id": "UPM-012",
+        "fixture": "A modifying workflow requests normal completion with missing review, an omitted changed path, later-edited reviewed bytes, a blocking finding or missing proof; a valid final review then covers the actual affected state.",
+        "pass_if": [
+          "missing, stale, incomplete or blocking review evidence cannot yield a tracked completed outcome",
+          "after confirmed scoped fixes, relevant review and proof are refreshed on final affected bytes",
+          "partial/blocked outcomes preserve unfinished state and evidence limits, with existing completion/history/reporting boundaries retained"
+        ],
+        "fail_if": [
+          "report-none bypasses the universal final-review instruction",
+          "an old review or hash alone establishes present correctness",
+          "the helper fabricates independent review, a clean repository claim or successful test evidence"
+        ],
+        "test_references": [
+          "tests/test_completion_review.py",
+          "tests/test_pstack_workflow.py"
+        ],
+        "status": "acceptance-contract; referenced tests are not a new execution receipt",
+        "evidence_scope": "Bounded lifecycle evidence consistency and instruction contracts only; does not prove an agent followed the review or all project defects are absent."
+      }
+    },
+    {
+      "id": "UPM-013",
+      "source_refs": [
+        {
+          "source_id": "pstack",
+          "path": "pstack/skills/create-verification-skill/SKILL.md",
+          "section": "Interview the repo, not the user / Generate the skill / Prove the generated skill before handing it over"
+        },
+        {
+          "source_id": "pstack",
+          "path": "pstack/skills/maintain-verification-skill/SKILL.md",
+          "section": "Outcomes / Edit scope / Pass"
+        },
+        {
+          "source_id": "pstack",
+          "path": "pstack/skills/create-formal-verification-skill/SKILL.md",
+          "section": "What makes it good / Prove it before you hand off"
+        },
+        {
+          "source_id": "pstack",
+          "path": "pstack/skills/maintain-formal-verification-skill/SKILL.md",
+          "section": "Outcomes / Pass"
+        },
+        {
+          "source_id": "pstack",
+          "path": "pstack/skills/benchmark-checklist/SKILL.md",
+          "section": "The questions / Report"
+        },
+        {
+          "source_id": "pstack",
+          "path": "pstack/skills/principle-prove-it-works/SKILL.md",
+          "section": "Prove It Works / Script the check when you can"
+        }
+      ],
+      "upg_rule_ids": [
+        "EVIDENCE_AFFECTED",
+        "CONTRACT_VALIDATE",
+        "TRUTH_CURRENT",
+        "DEBT_BOUNDARY"
+      ],
+      "execution_guidance_ids": [
+        "evidence_fidelity",
+        "task_scoped_reading"
+      ],
+      "operational_guidance_ids": [
+        "engineering_workflow"
+      ],
+      "implementation_refs": [
+        "governance-src/model/governance-model.json",
+        "governance-src/runtime-scripts/state_tool.py"
+      ],
+      "trigger": "An affected behavior claim requires real-surface proof, changed harness/model coverage, equivalence, a performance number or a consequential state invariant; new verification infrastructure requires an actual justified gap.",
+      "adapted_capability": "Use existing launch/drive/observe/cleanup paths and real current artifacts; capture action and resulting state, keep evidence after owned cleanup, distinguish doc/harness/model drift from real defects, preserve model bounds and counterexamples, and validate that measured work completed correctly under comparable conditions.",
+      "exclusions": [
+        "automatic project skill generation or import of statechart/TLA/Bun scripts",
+        "mandatory live/performance/full-feature checks for every local edit",
+        "weakened properties, altered baselines, mocked proxy checks or no-op/error timing presented as success"
+      ],
+      "acceptance": {
+        "case_id": "UPM-013",
+        "fixture": "Compilation passes but the real changed path is unexercised; a stale model, a harness defect and a fast rejected/no-op benchmark result are proposed as proof.",
+        "pass_if": [
+          "the behavior remains unverified until meaningful current evidence exists",
+          "model and harness drift are corrected from code/contracts rather than weakened to make the result pass",
+          "performance claims retain work/error counts, comparable scope, limits and inconclusive status; cleanup preserves evidence and owns only its processes"
+        ],
+        "fail_if": [
+          "compile, timestamps, existence, static fixtures, delegated summaries or equal hashes prove the whole behavior",
+          "a model pass is reported as whole-system proof or an unknown benchmark is a measured gain"
+        ],
+        "test_references": [
+          "tests/test_pstack_workflow.py",
+          "tests/test_validation_continuity.py"
+        ],
+        "status": "acceptance-contract; referenced tests are not a new execution receipt",
+        "evidence_scope": "Deterministic instruction/evidence continuity contracts; specialized live, formal and performance claims still require actual task evidence."
       }
     }
   ]

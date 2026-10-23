@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Current candidate: **3.0.0-rc.20.8 — Whole-project Contract Reconciliation**.
+Current candidate: **3.0.0-rc.20.9 — Scoped Engineering and Completion Review**.
 
 ## First modifying activation
 
@@ -35,6 +35,8 @@ Binding schema v2 records in-place adoption, handoff-or-reconstruct continuity, 
 ## Completion
 
 For tracked non-trivial work, begin and finish through `project_tool.py`. Each observed partial/blocked boundary uses a stable `checkpoint_id`; identical retries add nothing. Reference existing canonical project state with `current_state` (path/SHA), then check `status`; stale references require reconciliation. `latest_change` means latest completed workflow, not current unfinished progress. Reporting on appends bounded history; off keeps active recovery and latest/previous completion without a ledger. Do not copy source bodies, credentials, secrets, customer/private data, or private chain-of-thought into reports.
+
+Every modifying normal completion follows the canonical `evidence_fidelity` review/audit obligation. New tracked completions need the final-byte `completion_review` receipt; its input and limits are described in [docs/completion-review.md](docs/completion-review.md). Historical records are readable without inventing retrospective reviews.
 
 Explicit scoped Git enablement bootstraps the project root and verified initial commit when needed. The lifecycle executes Git checkpoints; hosts without it use a configured foreground project-session watcher only when their command waits for the actual session. A session end or owner crash ends its observer subtree; there is no detached start, persistent process, OS startup, or injected host configuration. Unsupported hosts use finite checkpoints/ticks. Configuration, scope, cooldown and recovery are defined in [docs/git-checkpoints.md](docs/git-checkpoints.md); the canonical tracked-state guidance routes to the helper. Check the actual finish result before claiming a commit or clean handoff.
 

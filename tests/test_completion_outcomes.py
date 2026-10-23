@@ -9,7 +9,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from registration_fixture import change
+from registration_fixture import change, reviewed_report
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.dont_write_bytecode = True
@@ -32,14 +32,14 @@ def report(start, status="complete"):
     metadata.update(after="observed implementation outcome", result_revision="a" * 40,
                     validation_revision="b" * 40, occurred_at="2026-10-10T02:03:04Z",
                     time_source="observed synthetic fixture event")
-    return dict(
+    return reviewed_report(dict(
         workflow_id=start["workflow_id"], change=metadata, task="synthetic completion regression",
         status=status, change_mode="local", scope_guard="local-only", risk_level="low",
         active_rules=[], changed_files=["runtime.py"], validation=["focused fixture passed"],
         cleanup=["superseded path removed"], integrity="pass", handoff="not-required", feedback=[],
         structural_scope=dict(canonical_layer="runtime", unrelated_changes=[], api_changes=[],
                               architecture_changes=[], overreach_concern=False),
-    )
+    ))
 
 
 class CompletionOutcomeTests(unittest.TestCase):

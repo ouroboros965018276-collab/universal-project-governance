@@ -33,9 +33,11 @@ def main():
         "README.md", "CHANGELOG.md", "PUBLISHING.md", "PROJECT_STATE.md",
         "MODULE_MAP.md", "DECISIONS.md", "AGENTS.md", "SECURITY.md",
         "audits/rc20-ocr-report.audit.json",
+        "audits/rc20-pstack-workflow.audit.json",
         "governance-src/model/governance-model.json",
         "governance-src/schemas/field-report.schema.json",
         "governance-src/runtime-scripts/project_tool.py",
+        "governance-src/runtime-scripts/completion_review.py",
         "compiler/compile_governance.py",
         "qualification/protocol/qualification-v3.json",
         "qualification/FREEZE.json",
@@ -121,6 +123,7 @@ def main():
     expected_runtime = [
         "schemas/field-report.schema.json",
         "scripts/project_tool.py",
+        "scripts/completion_review.py",
     ]
     for rel in expected_runtime:
         if not (root / SKILL / rel).is_file():

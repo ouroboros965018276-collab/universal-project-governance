@@ -10,7 +10,7 @@ import sys
 import tempfile
 import unittest
 from unittest.mock import patch
-from registration_fixture import change as fixture_change, report_identity
+from registration_fixture import change as fixture_change, report_identity, reviewed_report
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 PY = sys.executable
@@ -817,7 +817,7 @@ class CompiledRuntimeTests(unittest.TestCase):
             "change": fixture_change(),
         }
         report["change"]["parent_event_id"] = parent_event_id
-        return report
+        return reviewed_report(report)
 
     def test_default_workflow_finish_is_idempotent_and_continues_into_opt_in_sequence(self):
         with tempfile.TemporaryDirectory() as td:

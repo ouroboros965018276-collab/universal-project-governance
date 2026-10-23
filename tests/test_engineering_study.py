@@ -20,10 +20,12 @@ class EngineeringStudyTests(unittest.TestCase):
     def setUp(self):
         self.current_candidate = json.loads((ROOT / 'governance-src/model/governance-model.json').read_bytes())
         self.baseline_delta = json.loads((ROOT / 'tests/fixtures/engineering-study-rc19-model-delta.json').read_bytes())
-        # Reconstruct only the three historical contract fields that differ;
-        # the maintained canonical model supplies all other policy structure.
+        # Reconstruct only explicit historical differences; complete fixed hashes
+        # prevent a later candidate from silently becoming the old study.
         self.full = copy.deepcopy(self.current_candidate)
         self.full.update(copy.deepcopy(self.baseline_delta['full_model_test_overrides']))
+        next(g for g in self.full['execution_guidance'] if g['id'] == 'evidence_fidelity')['statement'] = (
+            self.baseline_delta['full_evidence_fidelity_statement'])
         self.assertEqual(study.digest(self.full), self.baseline_delta['full_model_sha256'])
         self.baseline = copy.deepcopy(self.full)
         for field in self.baseline_delta['full_only_fields']:

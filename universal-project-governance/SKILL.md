@@ -4,7 +4,7 @@ description: Govern maintained projects; exclude read-only Q&A and unrelated one
 license: Apache-2.0
 compatibility: Core needs no runtime; optional helpers need Python 3.8+.
 metadata:
-  version: "3.0.0-rc.20.8"
+  version: "3.0.0-rc.20.9"
   maturity: "release-candidate"
 ---
 
@@ -27,7 +27,7 @@ First edit: resolve installed Skill; `scripts/project_tool.py ensure <root>` if 
 
 **complete_change** — Keep contracts/safety/error handling; resolve affected consumers/tests and obsolete paths. Use current bytes/revisions and the tool's edit semantics; a fragment cannot replace a whole file. Change edge/error returns/exceptions only for the authorized goal. Minimize needless work, not diff size; reserve final validation/handoff budget and check every explicit task obligation before finishing. Priority: user intent; correctness/safety/truth; contracts/structure; maintainability/readability; cost.
 
-**evidence_fidelity** — Observe validation on the final affected state before claiming completion. Later edits invalidate affected evidence: rerun those checks before completion, or report pending checks and keep work unfinished. Preserve identifiers, input domains, numbers, references, negation and evidence limits when shortening; distinguish planned, failed and unknown checks from observed results.
+**evidence_fidelity** — Observe validation on the final affected state before claiming completion. Every normal modifying completion, including local/report-none work: review changed portions and affected consumers for correctness/contracts and audit their evidence, scope, duplicates, stale docs and residue; fix confirmed scoped blockers. Record proportionate review/audit evidence in existing final/VCS or required state, with explicit unverified limits. Tracked completion uses completion_review with exact changed_files/current-byte hashes (null for deletion), both passes and no unresolved findings; helpers reject missing/stale coverage before new completion. Later edits invalidate affected review and validation: rerun before completion or keep work unfinished. Preserve identifiers, input domains, numbers, references, negation and evidence limits when shortening; distinguish planned, failed and unknown checks from observed results.
 
 **task_scoped_reading** — Honor required reads; discover existing paths/anchors via indexes or bounded search before batching. Writable paths may be planned additions; listings/links alone are not read obligations. Trace implementations/contracts/consumers/tests; expand for dependencies, failures, stale/conflicting evidence or coverage gaps. Defer unrelated material. Recover interrupted/stale/contradictory state from project evidence. Indexes/labels/read budgets never prove coverage; unknowns stay unknown.
 
@@ -43,7 +43,7 @@ Preserve reporting settings: field reporting defaults off; explicit temporary ow
 
 ## Verify and finish
 
-Finish only when selected obligations, integrity, binding and active reporting hold. State blockers; local review cannot establish project-wide debt clearance.
+Finish only when evidence_fidelity review/audit, selected obligations, integrity, binding and active reporting hold. Tracked new completion: `scripts/completion_review.py <root> --path <file>` (repeatable) captures identities only; add actual review/audit evidence as `completion_review` for `project_tool finish`. Check finish/status; pending recovery or blocked Git is unfinished. Preserve historical records and unfinished checkpoints. State blockers; local review cannot establish project-wide debt clearance.
 
 Installation/receipts/matching behavior/tests prove neither historical loading nor causal benefit; missing activation receipts stay unknown. Prospectively measure matched baseline/attention-control/UPG actual token/time/tool costs and cross-agent handoffs.
 

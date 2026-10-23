@@ -49,5 +49,6 @@
     },
     "version": "3.0.0-rc.20"
   },
-  "fixture_scope": "Test-only reconstruction of the fixed reviewed study model from current canonical model plus three explicit historical top-level overrides; not a runtime or alternative current model."
+  "fixture_scope": "Test-only reconstruction of the fixed reviewed study from the current canonical model plus explicit historical top-level overrides and the historical evidence_fidelity statement; complete baseline/full digests remain unchanged. Not a runtime, current policy source or new trial acceptance.",
+  "full_evidence_fidelity_statement": "Observe validation on the final affected state before claiming completion. Later edits invalidate affected evidence: rerun those checks before completion, or report pending checks and keep work unfinished. Preserve identifiers, input domains, numbers, references, negation and evidence limits when shortening; distinguish planned, failed and unknown checks from observed results."
 }
