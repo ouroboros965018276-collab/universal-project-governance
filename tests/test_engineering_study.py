@@ -24,8 +24,9 @@ class EngineeringStudyTests(unittest.TestCase):
         # prevent a later candidate from silently becoming the old study.
         self.full = copy.deepcopy(self.current_candidate)
         self.full.update(copy.deepcopy(self.baseline_delta['full_model_test_overrides']))
-        next(g for g in self.full['execution_guidance'] if g['id'] == 'evidence_fidelity')['statement'] = (
-            self.baseline_delta['full_evidence_fidelity_statement'])
+        for guidance_id in ('complete_change', 'evidence_fidelity'):
+            next(g for g in self.full['execution_guidance'] if g['id'] == guidance_id)['statement'] = (
+                self.baseline_delta['full_' + guidance_id + '_statement'])
         self.assertEqual(study.digest(self.full), self.baseline_delta['full_model_sha256'])
         self.baseline = copy.deepcopy(self.full)
         for field in self.baseline_delta['full_only_fields']:

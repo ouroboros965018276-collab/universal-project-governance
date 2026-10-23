@@ -9,7 +9,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from registration_fixture import change, reviewed_report
+from registration_fixture import change, reviewed_report, task_contract, task_progress, seed_legacy_active
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.dont_write_bytecode = True
@@ -27,12 +27,12 @@ def write(path, payload):
     return path
 
 
-def report(start, status="complete"):
+def report(start, status="complete", root=None):
     metadata = copy.deepcopy(start["change"])
     metadata.update(after="observed implementation outcome", result_revision="a" * 40,
                     validation_revision="b" * 40, occurred_at="2026-10-10T02:03:04Z",
                     time_source="observed synthetic fixture event")
-    return reviewed_report(dict(
+    value = reviewed_report(dict(
         workflow_id=start["workflow_id"], change=metadata, task="synthetic completion regression",
         status=status, change_mode="local", scope_guard="local-only", risk_level="low",
         active_rules=[], changed_files=["runtime.py"], validation=["focused fixture passed"],
@@ -40,6 +40,9 @@ def report(start, status="complete"):
         structural_scope=dict(canonical_layer="runtime", unrelated_changes=[], api_changes=[],
                               architecture_changes=[], overreach_concern=False),
     ))
+    if "task_contract" in start:
+        value["task_progress"] = task_progress(start["task_contract"], status, root, value["changed_files"])
+    return value
 
 
 class CompletionOutcomeTests(unittest.TestCase):
@@ -53,7 +56,7 @@ class CompletionOutcomeTests(unittest.TestCase):
 
     def begin(self, project, reporting, workflow="outcomes", parent=None):
         tool.ensure(project, field_test_reporting=reporting)
-        start = dict(workflow_id=workflow, change=change())
+        start = dict(workflow_id=workflow, change=change(), task_contract=task_contract())
         start["change"]["after"] = "planned target, outcome unknown"
         start["change"]["parent_event_id"] = parent
         tool.begin_workflow(project, write(Path(project) / (workflow + "-start.json"), start))
@@ -69,7 +72,7 @@ class CompletionOutcomeTests(unittest.TestCase):
         for reporting in (False, True):
             with self.subTest(reporting=reporting), tempfile.TemporaryDirectory(prefix="completion-test-", dir=ROOT) as td:
                 start = self.begin(td, reporting)
-                completed = report(start)
+                completed = report(start, root=td)
                 self.finish(td, completed)
                 state = tool.status(td)
                 self.assertIsNone(state["active_workflow"])
@@ -90,7 +93,7 @@ class CompletionOutcomeTests(unittest.TestCase):
         for reporting in (False, True):
             with self.subTest(reporting=reporting), tempfile.TemporaryDirectory(prefix="completion-test-", dir=ROOT) as td:
                 start = self.begin(td, reporting)
-                completed = report(start)
+                completed = report(start, root=td)
                 completed["change"].update(result_revision="unknown", validation_revision="unknown",
                                            occurred_at=None, time_source="unknown")
                 self.finish(td, completed)
@@ -106,7 +109,7 @@ class CompletionOutcomeTests(unittest.TestCase):
             for field, value in changes.items():
                 with self.subTest(reporting=reporting, field=field), tempfile.TemporaryDirectory(prefix="completion-test-", dir=ROOT) as td:
                     start = self.begin(td, reporting)
-                    altered = report(start)
+                    altered = report(start, root=td)
                     altered["change"][field] = value
                     path = write(Path(td) / "altered.json", altered)
                     with self.assertRaisesRegex(ValueError, "immutable workflow start facts"):
@@ -120,7 +123,7 @@ class CompletionOutcomeTests(unittest.TestCase):
     def test_direct_report_accepts_outcome_evolution_with_observed_start(self):
         with tempfile.TemporaryDirectory(prefix="completion-test-", dir=ROOT) as td:
             start = self.begin(td, True)
-            completed = report(start)
+            completed = report(start, root=td)
             tool.record_report(td, write(Path(td) / "report.json", completed))
             self.assertEqual(tool.status(td)["latest_change"]["change"], completed["change"])
             self.assertEqual(self.ledger(td)["reports"][0]["start_change"], start["change"])
@@ -137,7 +140,7 @@ class CompletionOutcomeTests(unittest.TestCase):
         for reporting in (False, True):
             with self.subTest(reporting=reporting), tempfile.TemporaryDirectory(prefix="completion-test-", dir=ROOT) as td:
                 start = self.begin(td, reporting)
-                forged = report(start)
+                forged = report(start, root=td)
                 forged["start_change"] = copy.deepcopy(start["change"])
                 forged["start_change"]["before"] = "invented start"
                 with self.assertRaisesRegex(ValueError, "tool-owned"):
@@ -154,7 +157,7 @@ class CompletionOutcomeTests(unittest.TestCase):
         for reporting in (False, True):
             with self.subTest(reporting=reporting), tempfile.TemporaryDirectory(prefix="completion-test-", dir=ROOT) as td:
                 start = self.begin(td, reporting)
-                partial = report(start, "partial")
+                partial = report(start, "partial", root=td)
                 partial["change"]["after"] = "implementation present; validation incomplete"
                 partial["validation"] = ["focused check failed at synthetic fixture"]
                 partial["handoff"] = "created"
@@ -164,7 +167,7 @@ class CompletionOutcomeTests(unittest.TestCase):
                 self.assertEqual(state["active_workflow"]["last_outcome"]["validation"], partial["validation"])
                 self.assertIsNone(state["latest_change"])
                 self.assertTrue(tool.begin_workflow(td, Path(td) / "outcomes-start.json")["idempotent"])
-                blocked = report(start, "blocked")
+                blocked = report(start, "blocked", root=td)
                 blocked["change"]["after"] = "waiting for external fixture input"
                 blocked["validation"] = ["external fixture unavailable"]
                 self.finish(td, blocked)
@@ -175,7 +178,7 @@ class CompletionOutcomeTests(unittest.TestCase):
                 conflict["validation"] = ["conflicting partial check"]
                 with self.assertRaisesRegex(ValueError, "conflicting"):
                     self.finish(td, conflict)
-                self.finish(td, report(start))
+                self.finish(td, report(start, root=td))
                 state = tool.status(td)
                 self.assertIsNone(state["active_workflow"])
                 self.assertEqual(state["latest_change"]["start_change"], start["change"])
@@ -187,7 +190,7 @@ class CompletionOutcomeTests(unittest.TestCase):
         for reporting in (False, True):
             with self.subTest(reporting=reporting), tempfile.TemporaryDirectory(prefix="completion-test-", dir=ROOT) as td:
                 start = self.begin(td, reporting, "first")
-                first = report(start)
+                first = report(start, root=td)
                 self.finish(td, first)
                 altered = copy.deepcopy(first)
                 altered["change"]["result_revision"] = "d" * 40
@@ -198,7 +201,7 @@ class CompletionOutcomeTests(unittest.TestCase):
                 active = tool.status(td)["active_workflow"]
                 self.assertTrue(self.finish(td, first)["idempotent"])
                 self.assertEqual(tool.status(td)["active_workflow"], active)
-                self.finish(td, report(second_start))
+                self.finish(td, report(second_start, root=td))
                 latest = tool.status(td)["latest_change"]
                 self.assertTrue(self.finish(td, first)["idempotent"])
                 self.assertEqual(tool.status(td)["latest_change"], latest)
@@ -207,14 +210,14 @@ class CompletionOutcomeTests(unittest.TestCase):
         for reporting in (False, True):
             with self.subTest(reporting=reporting), tempfile.TemporaryDirectory(prefix="completion-test-", dir=ROOT) as td:
                 start = self.begin(td, reporting)
-                self.finish(td, report(start))
+                self.finish(td, report(start, root=td))
                 with self.assertRaisesRegex(ValueError, "already completed"):
                     tool.begin_workflow(td, Path(td) / "outcomes-start.json")
 
     def test_old_finish_retry_survives_reporting_opt_in_while_new_work_is_active(self):
         with tempfile.TemporaryDirectory(prefix="completion-test-", dir=ROOT) as td:
             first_start = self.begin(td, False, "first")
-            first = report(first_start)
+            first = report(first_start, root=td)
             self.finish(td, first)
             parent = tool.status(td)["latest_change"]["event_id"]
             second_start = self.begin(td, False, "second", parent)
@@ -225,16 +228,16 @@ class CompletionOutcomeTests(unittest.TestCase):
             self.assertEqual(tool.status(td), before_retry)
             self.assertEqual(self.ledger(td)["reports"], [])
             self.assertEqual(self.ledger(td)["next_sequence"], 2)
-            self.assertEqual(self.finish(td, report(second_start))["sequence"], 2)
+            self.assertEqual(self.finish(td, report(second_start, root=td))["sequence"], 2)
 
     def test_begin_rejects_retained_ledger_identity_older_than_bounded_checkpoints(self):
         with tempfile.TemporaryDirectory(prefix="completion-test-", dir=ROOT) as td:
             parent = None
             for workflow in ("first", "second", "third"):
                 start = self.begin(td, True, workflow, parent)
-                self.finish(td, report(start))
+                self.finish(td, report(start, root=td))
                 parent = tool.status(td)["latest_change"]["event_id"]
-            repeated = dict(workflow_id="first", change=change())
+            repeated = dict(workflow_id="first", change=change(), task_contract=task_contract())
             repeated["change"]["parent_event_id"] = parent
             before = tool.status(td)
             with self.assertRaisesRegex(ValueError, "already recorded in this epoch"):
@@ -246,16 +249,16 @@ class CompletionOutcomeTests(unittest.TestCase):
             with self.subTest(status=status), tempfile.TemporaryDirectory(prefix="completion-test-", dir=ROOT) as td:
                 tool.ensure(td, field_test_reporting=True)
                 start = dict(workflow_id="direct-record", change=change())
-                tool.record_report(td, write(Path(td) / "report.json", report(start, status)))
+                tool.record_report(td, write(Path(td) / "report.json", report(start, status, root=td)))
                 self.assertIsNone(tool.status(td)["active_workflow"])
                 with self.assertRaisesRegex(ValueError, "already recorded in this epoch"):
-                    tool.begin_workflow(td, write(Path(td) / "start.json", start))
+                    tool.begin_workflow(td, write(Path(td) / "start.json", dict(start, task_contract=task_contract())))
 
     def test_completion_recovers_exactly_once_after_ledger_write_before_binding_update(self):
         for status in ("partial", "complete"):
             with self.subTest(status=status), tempfile.TemporaryDirectory(prefix="completion-test-", dir=ROOT) as td:
                 start = self.begin(td, True)
-                completed = report(start, status)
+                completed = report(start, status, root=td)
                 with patch.object(tool, "_reconcile_completion", side_effect=OSError("simulated crash")):
                     with self.assertRaises(OSError):
                         self.finish(td, completed)
@@ -273,7 +276,7 @@ class CompletionOutcomeTests(unittest.TestCase):
     def test_no_report_completion_retries_after_interruption_before_atomic_binding_write(self):
         with tempfile.TemporaryDirectory(prefix="completion-test-", dir=ROOT) as td:
             start = self.begin(td, False)
-            completed = report(start)
+            completed = report(start, root=td)
             original = tool.write_json_atomic
 
             def fail_completion(path, value):
@@ -293,7 +296,7 @@ class CompletionOutcomeTests(unittest.TestCase):
         for reporting in (False, True):
             with self.subTest(reporting=reporting), tempfile.TemporaryDirectory(prefix="completion-test-", dir=ROOT) as td:
                 start = self.begin(td, reporting)
-                with patch.object(tool.sys, "stdin", io.StringIO(json.dumps(report(start)))):
+                with patch.object(tool.sys, "stdin", io.StringIO(json.dumps(report(start, root=td)))):
                     tool.finish_workflow(td, "-")
                 self.assertIsNone(tool.status(td)["active_workflow"])
 
@@ -301,9 +304,9 @@ class CompletionOutcomeTests(unittest.TestCase):
         for reporting in (False, True):
             with self.subTest(reporting=reporting), tempfile.TemporaryDirectory(prefix="completion-test-", dir=ROOT) as td:
                 start = self.begin(td, reporting)
-                legacy = report(start, "partial")
+                legacy = report(start, "partial", root=td)
                 self.finish(td, legacy)
-                stage = dict(report(start, "partial"), checkpoint_id="verified-stage-2")
+                stage = dict(report(start, "partial", root=td), checkpoint_id="verified-stage-2")
                 stage["change"]["after"] = "new observed stage, still unfinished"
                 self.finish(td, stage)
                 state = tool.status(td)
@@ -316,7 +319,7 @@ class CompletionOutcomeTests(unittest.TestCase):
                 conflict = dict(stage, validation=["different evidence under same stage"])
                 with self.assertRaisesRegex(ValueError, "conflicting"):
                     self.finish(td, conflict)
-                self.finish(td, report(start))
+                self.finish(td, report(start, root=td))
                 self.assertEqual(tool.status(td)["latest_change"]["sequence"], 3)
                 if reporting:
                     self.assertEqual([x["sequence"] for x in self.ledger(td)["reports"]], [1, 2, 3])
@@ -329,14 +332,14 @@ class CompletionOutcomeTests(unittest.TestCase):
                 current = Path(td) / "current.json"
                 write(current, {"delivery": "unfinished", "observed": "first"})
                 ref = lambda: dict(path="current.json", sha256=hashlib.sha256(current.read_bytes()).hexdigest())
-                first = dict(report(start, "partial"), checkpoint_id="first", current_state=ref())
+                first = dict(report(start, "partial", root=td), checkpoint_id="first", current_state=ref())
                 self.finish(td, first)
                 self.assertTrue(tool.status(td)["ok"])
                 write(current, {"delivery": "unfinished", "observed": "second"})
                 self.assertEqual(tool.status(td)["reason"], "current-state-drift")
                 with self.assertRaisesRegex(ValueError, "current_state changed"):
                     self.finish(td, dict(first, checkpoint_id="second"))
-                second = dict(report(start, "partial"), checkpoint_id="second", current_state=ref())
+                second = dict(report(start, "partial", root=td), checkpoint_id="second", current_state=ref())
                 self.finish(td, second)
                 self.assertTrue(self.finish(td, first)["idempotent"])
                 tool.ensure(td)
@@ -356,10 +359,10 @@ class CompletionOutcomeTests(unittest.TestCase):
                 (Path(td) / name).write_bytes(raw)
                 ref = dict(path=name, sha256=hashlib.sha256(raw).hexdigest())
                 with self.assertRaises(ValueError):
-                    self.finish(td, dict(report(start, "partial"), checkpoint_id="invalid", current_state=ref))
+                    self.finish(td, dict(report(start, "partial", root=td), checkpoint_id="invalid", current_state=ref))
             for name in ("../outside.json", "C:/outside.json", ".governance/upg.json", ".env"):
                 with self.assertRaises(ValueError):
-                    self.finish(td, dict(report(start, "partial"), checkpoint_id="invalid",
+                    self.finish(td, dict(report(start, "partial", root=td), checkpoint_id="invalid",
                                          current_state=dict(path=name, sha256="a" * 64)))
             self.assertNotIn("last_outcome", tool.status(td)["active_workflow"])
 
@@ -368,19 +371,19 @@ class CompletionOutcomeTests(unittest.TestCase):
             with self.subTest(reporting=reporting), tempfile.TemporaryDirectory(prefix="completion-test-", dir=ROOT) as td:
                 start = self.begin(td, reporting)
                 with self.assertRaisesRegex(ValueError, "completion identity remains unique"):
-                    self.finish(td, dict(report(start), checkpoint_id="bypass"))
+                    self.finish(td, dict(report(start, root=td), checkpoint_id="bypass"))
 
     def test_reporting_opt_in_after_partial_keeps_monotonic_sequence(self):
         with tempfile.TemporaryDirectory(prefix="completion-test-", dir=ROOT) as td:
             start = self.begin(td, False)
-            self.finish(td, dict(report(start, "partial"), checkpoint_id="one"))
-            second = dict(report(start, "partial"), checkpoint_id="two")
+            self.finish(td, dict(report(start, "partial", root=td), checkpoint_id="one"))
+            second = dict(report(start, "partial", root=td), checkpoint_id="two")
             self.finish(td, second)
             tool.ensure(td, field_test_reporting=True)
             self.assertEqual(self.ledger(td)["next_sequence"], 3)
             self.assertTrue(self.finish(td, second)["idempotent"])
             self.assertEqual(self.ledger(td)["reports"], [])
-            self.finish(td, report(start))
+            self.finish(td, report(start, root=td))
             self.assertEqual(tool.status(td)["latest_change"]["sequence"], 3)
 
     def test_invalid_sequence_is_not_masked_by_active_progress(self):
@@ -392,7 +395,7 @@ class CompletionOutcomeTests(unittest.TestCase):
                 state["latest_change"] = {"sequence": bad, "epoch": 0}
                 write(binding, state)
                 with self.assertRaisesRegex(ValueError, "sequence/epoch is invalid"):
-                    self.finish(td, report(start))
+                    self.finish(td, report(start, root=td))
                 self.assertEqual(tool.status(td)["reason"], "binding-drift")
                 self.assertIsNotNone(json.loads(binding.read_bytes())["active_workflow"])
 
@@ -401,7 +404,7 @@ class CompletionOutcomeTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix="completion-test-", dir=ROOT) as td:
             start = self.begin(td, True)
             path = write(Path(td) / "current.json", {"actual": "partial"})
-            stage = dict(report(start, "partial"), checkpoint_id="interrupted",
+            stage = dict(report(start, "partial", root=td), checkpoint_id="interrupted",
                          current_state=dict(path=path.name, sha256=hashlib.sha256(path.read_bytes()).hexdigest()))
             with patch.object(tool, "_reconcile_completion", side_effect=OSError("simulated crash")):
                 with self.assertRaises(OSError):
@@ -418,11 +421,11 @@ class CompletionOutcomeTests(unittest.TestCase):
                 parent = None
                 if prior_completion:
                     first = dict(workflow_id="first", change=change())
-                    tool.record_report(td, write(Path(td) / "first.json", report(first)))
+                    tool.record_report(td, write(Path(td) / "first.json", report(first, root=td)))
                     parent = tool.status(td)["latest_change"]["event_id"]
                 start = dict(workflow_id="direct-after-crash", change=change())
                 start["change"]["parent_event_id"] = parent
-                payload = report(start)
+                payload = report(start, root=td)
                 path = write(Path(td) / "direct.json", payload)
                 with patch.object(tool, "_reconcile_completion", side_effect=OSError("simulated crash")):
                     with self.assertRaises(OSError):
@@ -442,16 +445,16 @@ class CompletionOutcomeTests(unittest.TestCase):
         for reporting in (False, True):
             with self.subTest(reporting=reporting), tempfile.TemporaryDirectory(prefix="completion-test-", dir=ROOT) as td:
                 start = self.begin(td, reporting, "first")
-                partial = dict(report(start, "partial"), checkpoint_id="complete")
+                partial = dict(report(start, "partial", root=td), checkpoint_id="complete")
                 self.finish(td, partial)
                 partial_event = tool.status(td)["current_outcome"]["event_id"]
-                self.finish(td, report(start))
+                self.finish(td, report(start, root=td))
                 parent = tool.status(td)["latest_change"]["event_id"]
                 # Windows filenames cannot contain colons, but workflow IDs can.
-                colon_start = dict(workflow_id="first:partial", change=change())
+                colon_start = dict(workflow_id="first:partial", change=change(), task_contract=task_contract())
                 colon_start["change"]["parent_event_id"] = parent
                 tool.begin_workflow(td, write(Path(td) / "colon-start.json", colon_start))
-                completed = report(colon_start)
+                completed = report(colon_start, root=td)
                 self.finish(td, completed)
                 state = tool.status(td)
                 self.assertTrue(state["ok"])
@@ -470,8 +473,8 @@ class CompletionOutcomeTests(unittest.TestCase):
             with self.subTest(reporting=reporting), tempfile.TemporaryDirectory(prefix="completion-test-", dir=ROOT) as td:
                 tool.ensure(td, field_test_reporting=reporting)
                 start = dict(workflow_id="legacy:partial", change=change())
-                tool.begin_workflow(td, write(Path(td) / "legacy-start.json", start))
-                completed = report(start)
+                seed_legacy_active(tool, td, start)
+                completed = report(start, root=td)
                 self.finish(td, completed)
                 state = tool.status(td)
                 self.assertEqual(state["latest_change"]["event_id"], "0:legacy:partial:complete")
@@ -486,7 +489,7 @@ class CompletionOutcomeTests(unittest.TestCase):
         for reporting in (False, True):
             with self.subTest(reporting=reporting), tempfile.TemporaryDirectory(prefix="completion-test-", dir=ROOT) as td:
                 start = self.begin(td, reporting)
-                completed = report(start)
+                completed = report(start, root=td)
                 completed["change"]["time_source"] = "unknown"
                 with self.assertRaisesRegex(ValueError, "known occurrence time"):
                     self.finish(td, completed)
@@ -495,7 +498,7 @@ class CompletionOutcomeTests(unittest.TestCase):
     def test_start_metadata_is_scanned_before_binding_write(self):
         with tempfile.TemporaryDirectory(prefix="completion-test-", dir=ROOT) as td:
             tool.ensure(td)
-            start = dict(workflow_id="private-start", change=change())
+            start = dict(workflow_id="private-start", change=change(), task_contract=task_contract())
             start["change"]["after"] = "password=" + "synthetic-value"
             with self.assertRaisesRegex(ValueError, "credential or secret"):
                 tool.begin_workflow(td, write(Path(td) / "start.json", start))
@@ -504,7 +507,9 @@ class CompletionOutcomeTests(unittest.TestCase):
     def test_preserved_legacy_start_is_scanned_before_completion_write(self):
         for reporting in (False, True):
             with self.subTest(reporting=reporting), tempfile.TemporaryDirectory(prefix="completion-test-", dir=ROOT) as td:
-                start = self.begin(td, reporting)
+                tool.ensure(td, field_test_reporting=reporting)
+                start = dict(workflow_id="legacy-private-start", change=change())
+                seed_legacy_active(tool, td, start)
                 binding_path = Path(td) / ".governance/upg.json"
                 binding = json.loads(binding_path.read_text(encoding="utf-8"))
                 # Model a start recorded by an older runtime without its privacy
@@ -512,7 +517,7 @@ class CompletionOutcomeTests(unittest.TestCase):
                 binding["active_workflow"]["change"]["after"] = "password=" + "synthetic-value"
                 write(binding_path, binding)
                 with self.assertRaisesRegex(ValueError, "credential or secret"):
-                    self.finish(td, report(start))
+                    self.finish(td, report(start, root=td))
                 self.assertIsNone(tool.status(td)["latest_change"])
                 if reporting:
                     self.assertEqual(self.ledger(td)["reports"], [])

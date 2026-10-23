@@ -10,7 +10,7 @@ import sys
 import tempfile
 import unittest
 from unittest.mock import patch
-from registration_fixture import change as fixture_change, report_identity, reviewed_report
+from registration_fixture import change as fixture_change, report_identity, reviewed_report, task_contract, task_progress
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 PY = sys.executable
@@ -792,7 +792,7 @@ class CompiledRuntimeTests(unittest.TestCase):
             self.assertNotEqual(cp.returncode, 0)
             self.assertIn("generated artifact bundled", cp.stderr)
 
-    def _workflow_report(self, workflow_id, status="complete", parent_event_id=None, task="Bounded test change"):
+    def _workflow_report(self, workflow_id, status="complete", parent_event_id=None, task="Bounded test change", project=None):
         report = {
             "task": task,
             "status": status,
@@ -817,6 +817,7 @@ class CompiledRuntimeTests(unittest.TestCase):
             "change": fixture_change(),
         }
         report["change"]["parent_event_id"] = parent_event_id
+        report["task_progress"] = task_progress(task_contract(), status, project, report["changed_files"])
         return reviewed_report(report)
 
     def test_default_workflow_finish_is_idempotent_and_continues_into_opt_in_sequence(self):
@@ -828,13 +829,13 @@ class CompiledRuntimeTests(unittest.TestCase):
             self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
             binding_path = project / ".governance/upg.json"
 
-            begin_a = {"workflow_id": "workflow-a", "change": fixture_change()}
+            begin_a = {"workflow_id": "workflow-a", "change": fixture_change(), "task_contract": task_contract()}
             begin_path = project / "begin-a.json"
             begin_path.write_text(json.dumps(begin_a), encoding="utf-8")
             cp = run(tool, "begin", project, "--input", begin_path)
             self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
 
-            report_a = self._workflow_report("workflow-a")
+            report_a = self._workflow_report("workflow-a", project=project)
             report_path = project / "finish-a.json"
             report_path.write_text(json.dumps(report_a), encoding="utf-8")
             cp = run(tool, "finish", project, "--input", report_path)
@@ -861,7 +862,7 @@ class CompiledRuntimeTests(unittest.TestCase):
             ledger = json.loads(ledger_path.read_text(encoding="utf-8"))
             self.assertEqual(ledger["next_sequence"], 2)
 
-            wrong_parent = {"workflow_id": "workflow-b", "change": fixture_change()}
+            wrong_parent = {"workflow_id": "workflow-b", "change": fixture_change(), "task_contract": task_contract()}
             wrong_parent["change"]["parent_event_id"] = "incorrect-parent"
             wrong_path = project / "begin-b-wrong.json"
             wrong_path.write_text(json.dumps(wrong_parent), encoding="utf-8")
@@ -869,13 +870,13 @@ class CompiledRuntimeTests(unittest.TestCase):
             self.assertNotEqual(cp.returncode, 0)
             self.assertIn("latest completed event", cp.stderr)
 
-            begin_b = {"workflow_id": "workflow-b", "change": fixture_change()}
+            begin_b = {"workflow_id": "workflow-b", "change": fixture_change(), "task_contract": task_contract()}
             begin_b["change"]["parent_event_id"] = binding["latest_change"]["event_id"]
             begin_b_path = project / "begin-b.json"
             begin_b_path.write_text(json.dumps(begin_b), encoding="utf-8")
             cp = run(tool, "begin", project, "--input", begin_b_path)
             self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
-            report_b = self._workflow_report("workflow-b", parent_event_id=begin_b["change"]["parent_event_id"])
+            report_b = self._workflow_report("workflow-b", parent_event_id=begin_b["change"]["parent_event_id"], project=project)
             report_b_path = project / "finish-b.json"
             report_b_path.write_text(json.dumps(report_b), encoding="utf-8")
             cp = run(tool, "finish", project, "--input", report_b_path)
@@ -897,13 +898,13 @@ class CompiledRuntimeTests(unittest.TestCase):
             tool = RUNTIME / "scripts/project_tool.py"
             cp = run(tool, "install", project, "--field-test-reporting")
             self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
-            start = {"workflow_id": "workflow-partial", "change": fixture_change()}
+            start = {"workflow_id": "workflow-partial", "change": fixture_change(), "task_contract": task_contract()}
             start_path = project / "begin.json"
             start_path.write_text(json.dumps(start), encoding="utf-8")
             cp = run(tool, "begin", project, "--input", start_path)
             self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
 
-            partial = self._workflow_report("workflow-partial", status="partial")
+            partial = self._workflow_report("workflow-partial", status="partial", project=project)
             partial_path = project / "partial.json"
             partial_path.write_text(json.dumps(partial), encoding="utf-8")
             cp = run(tool, "finish", project, "--input", partial_path)
@@ -913,7 +914,7 @@ class CompiledRuntimeTests(unittest.TestCase):
             self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
             self.assertTrue(json.loads(cp.stdout)["idempotent"])
 
-            complete = self._workflow_report("workflow-partial")
+            complete = self._workflow_report("workflow-partial", project=project)
             complete_path = project / "complete.json"
             complete_path.write_text(json.dumps(complete), encoding="utf-8")
             cp = run(tool, "finish", project, "--input", complete_path)
@@ -930,14 +931,14 @@ class CompiledRuntimeTests(unittest.TestCase):
             tool = RUNTIME / "scripts/project_tool.py"
             cp = run(tool, "install", project)
             self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
-            start = {"workflow_id": "workflow-default-partial", "change": fixture_change()}
+            start = {"workflow_id": "workflow-default-partial", "change": fixture_change(), "task_contract": task_contract()}
             start_path = project / "begin.json"
             start_path.write_text(json.dumps(start), encoding="utf-8")
             cp = run(tool, "begin", project, "--input", start_path)
             self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
 
             partial_path = project / "partial.json"
-            partial_path.write_text(json.dumps(self._workflow_report("workflow-default-partial", status="partial")), encoding="utf-8")
+            partial_path.write_text(json.dumps(self._workflow_report("workflow-default-partial", status="partial", project=project)), encoding="utf-8")
             cp = run(tool, "finish", project, "--input", partial_path)
             self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
             partial_binding = json.loads((project / ".governance/upg.json").read_text(encoding="utf-8"))
@@ -949,7 +950,7 @@ class CompiledRuntimeTests(unittest.TestCase):
             self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
             self.assertTrue(json.loads(cp.stdout)["idempotent"])
             complete_path = project / "complete.json"
-            complete_path.write_text(json.dumps(self._workflow_report("workflow-default-partial")), encoding="utf-8")
+            complete_path.write_text(json.dumps(self._workflow_report("workflow-default-partial", project=project)), encoding="utf-8")
             cp = run(tool, "finish", project, "--input", complete_path)
             self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
             binding = json.loads((project / ".governance/upg.json").read_text(encoding="utf-8"))

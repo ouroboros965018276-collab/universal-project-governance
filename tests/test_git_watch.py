@@ -10,7 +10,7 @@ import tempfile
 import time
 import unittest
 
-from registration_fixture import change
+from registration_fixture import change, task_contract
 
 ROOT = Path(__file__).resolve().parents[1]
 CLI = ROOT / "universal-project-governance/scripts/project_tool.py"
@@ -492,7 +492,7 @@ class GitWatchTests(unittest.TestCase):
 
     def test_manual_workflow_takes_priority_without_overwriting_its_baseline(self):
         self.configure()
-        start = {"workflow_id": "manual-owner", "change": change()}
+        start = {"workflow_id": "manual-owner", "change": change(), "task_contract": task_contract()}
         path = self.root / ".governance/manual-start.json"
         self.write(".governance/manual-start.json", json.dumps(start))
         self.cli("begin", str(self.root), "--input", str(path))

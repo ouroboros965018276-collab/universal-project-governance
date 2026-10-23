@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "recorded_at_utc": "2026-10-23T17:48:54Z",
-  "scope": "RC20 selective source provenance and pstack workflow integration; independent UPG-native conceptual adaptation",
+  "recorded_at_utc": "2026-10-23T19:08:28Z",
+  "scope": "RC20 selective source provenance and full task lifecycle adaptation; independent UPG-native conceptual adaptation",
   "authority": {
     "governance_semantics": "governance-src/model/governance-model.json",
     "provenance_and_acceptance": "third_party/upstream-sources.json",
@@ -513,7 +513,8 @@
           "sections": [
             "Ground the problem",
             "Sketch",
-            "Scrap when the architecture is wrong"
+            "Scrap when the architecture is wrong",
+            "Implement against the sketch"
           ]
         },
         {
@@ -524,7 +525,9 @@
           "sections": [
             "Frame",
             "Run the loop",
-            "Verify and hand back"
+            "Verify and hand back",
+            "Design the workflow",
+            "Keep the audit trail"
           ]
         },
         {
@@ -722,7 +725,9 @@
           "bytes": 2870,
           "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/poteto-mode/playbooks/feature.md",
           "sections": [
-            "Feature"
+            "Feature",
+            "step 3: throughput checkpoint",
+            "phase-boundary checkpoint rewrite"
           ]
         },
         {
@@ -787,11 +792,188 @@
           "sections": [
             "Comment Sicko"
           ]
+        },
+        {
+          "path": "pstack/skills/how/references/explorer-prompt.md",
+          "git_blob_sha1": "724bacfc7df759865c0c29705bfee641e4c1aeca",
+          "bytes": 1135,
+          "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/how/references/explorer-prompt.md",
+          "sections": [
+            "Components Found",
+            "Flow",
+            "Boundaries",
+            "Open Questions"
+          ]
+        },
+        {
+          "path": "pstack/skills/how/references/explainer-prompt.md",
+          "git_blob_sha1": "3a36fb6736c5b74ac2774350841e332a019dec94",
+          "bytes": 3085,
+          "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/how/references/explainer-prompt.md",
+          "sections": [
+            "Instructions"
+          ]
+        },
+        {
+          "path": "pstack/skills/why/SKILL.md",
+          "git_blob_sha1": "b5fe93f8b78f58b06e0bf245a6b5b8faae4300e8",
+          "bytes": 8903,
+          "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/why/SKILL.md",
+          "sections": [
+            "Understand the Target and the Question",
+            "Establish the Code Anchor",
+            "Discovery"
+          ]
+        },
+        {
+          "path": "pstack/skills/architect/references/runner-prompt.md",
+          "git_blob_sha1": "b1ad21aef22e80d718c361787190b599eb359d6c",
+          "bytes": 3092,
+          "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/architect/references/runner-prompt.md",
+          "sections": [
+            "Caller's usage first",
+            "Data structures first",
+            "Single source of truth per invariant"
+          ]
+        },
+        {
+          "path": "pstack/skills/architect/references/design-red-flags.md",
+          "git_blob_sha1": "f8503c9595b289c607ff5088f82b21197edf94ec",
+          "bytes": 3009,
+          "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/architect/references/design-red-flags.md",
+          "sections": [
+            "Split ownership",
+            "Two ways to do one task",
+            "Hand-synced list"
+          ]
+        },
+        {
+          "path": "pstack/skills/poteto-mode/playbooks/multi-phase-plan.md",
+          "git_blob_sha1": "27e99947bd20575e2ff503dbfba985a4f0fa298e",
+          "bytes": 13217,
+          "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/poteto-mode/playbooks/multi-phase-plan.md",
+          "sections": [
+            "steps 2-4 and 6",
+            "How to read this",
+            "dependency graph and file boundaries"
+          ]
+        },
+        {
+          "path": "pstack/skills/swarm/SKILL.md",
+          "git_blob_sha1": "b0b1eb83363853843ccf1524917b83d0c16d2cd8",
+          "bytes": 2734,
+          "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/swarm/SKILL.md",
+          "sections": [
+            "Frame",
+            "Fan out",
+            "Aggregate"
+          ]
+        },
+        {
+          "path": "pstack/skills/arena/SKILL.md",
+          "git_blob_sha1": "b198b9e425c6b3e6ff01ca789b97ca5b4abb7ce2",
+          "bytes": 4511,
+          "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/arena/SKILL.md",
+          "sections": [
+            "Frame",
+            "Pick a base",
+            "Graft",
+            "Verify"
+          ]
+        },
+        {
+          "path": "pstack/skills/poteto-mode/playbooks/orchestrate.md",
+          "git_blob_sha1": "4ccb24d76c5e190125cecc99d4a9b5c9eb2932d9",
+          "bytes": 17127,
+          "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/poteto-mode/playbooks/orchestrate.md",
+          "sections": [
+            "Steps: Pilot",
+            "Queue and drain",
+            "Verification",
+            "Liveness and failure",
+            "Escalation"
+          ]
+        },
+        {
+          "path": "pstack/skills/show-me-your-work/SKILL.md",
+          "git_blob_sha1": "ada1bba1e51356de0e0d4da1d13ba5a56ba9c7cb",
+          "bytes": 6551,
+          "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/show-me-your-work/SKILL.md",
+          "sections": [
+            "Logging a row",
+            "Rules",
+            "Audit the log against the transcript"
+          ]
+        },
+        {
+          "path": "pstack/skills/poteto-mode/playbooks/autonomous-run.md",
+          "git_blob_sha1": "e6b88703cf327a76bcdd424429345ac0efeca67e",
+          "bytes": 1982,
+          "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/poteto-mode/playbooks/autonomous-run.md",
+          "sections": [
+            "steps 1,3,5,6"
+          ]
+        },
+        {
+          "path": "pstack/skills/poteto-mode/playbooks/prototype.md",
+          "git_blob_sha1": "18bedc7e9249d180f9198d5b4b13e3817d41d281",
+          "bytes": 2161,
+          "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/poteto-mode/playbooks/prototype.md",
+          "sections": [
+            "steps 1,3,5,6"
+          ]
+        },
+        {
+          "path": "pstack/skills/principle-sequence-verifiable-units/SKILL.md",
+          "git_blob_sha1": "986371260ebccd9a5a6818c9561e88c1d270d0ee",
+          "bytes": 1705,
+          "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/principle-sequence-verifiable-units/SKILL.md",
+          "sections": [
+            "Execution",
+            "Delivery"
+          ]
+        },
+        {
+          "path": "pstack/skills/poteto-mode/playbooks/pause-safely.md",
+          "git_blob_sha1": "9d1c5f8303976fff40de099f7f28185909430c11",
+          "bytes": 1135,
+          "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/poteto-mode/playbooks/pause-safely.md",
+          "sections": [
+            "Pause safely"
+          ]
+        },
+        {
+          "path": "pstack/skills/ketchup/SKILL.md",
+          "git_blob_sha1": "9eef27f92f8029137a7bfa7378305b075df9dc4f",
+          "bytes": 6426,
+          "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/ketchup/SKILL.md",
+          "sections": [
+            "Gather what changed",
+            "Write the reply"
+          ]
+        },
+        {
+          "path": "pstack/skills/in-your-own-words/SKILL.md",
+          "git_blob_sha1": "4b2a476a9017863032c8dba9d12f0a2026943292",
+          "bytes": 315,
+          "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/in-your-own-words/SKILL.md",
+          "sections": [
+            "user goal and problem restatement"
+          ]
+        },
+        {
+          "path": "pstack/skills/sharpen/SKILL.md",
+          "git_blob_sha1": "5b4a7b104e709f8cded1726541be42431c334164",
+          "bytes": 661,
+          "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/sharpen/SKILL.md",
+          "sections": [
+            "questions 1-4 and user-owned choices"
+          ]
         }
       ],
       "adaptation_mode": "independent-concepts-no-source-import",
-      "handling": "Independent task-bounded conceptual adaptation into existing canonical policies, engineering_workflow, universal final-change review guidance and the bounded completion lifecycle. No pstack source, prompts, scripts, package, roles or automation are installed or executed.",
-      "inspection_scope": "All 57 top-level skill bodies and 23 playbooks were fetched at the pin and inspected for declared scope, routing and steps; selected_files identifies the substantive sections reviewed for adaptation. Both agents and the three nested Benny skill scopes were separately inspected. This is source research, not observed upstream runtime behavior.",
+      "handling": "Independent task-bounded conceptual adaptation into existing canonical policies, engineering_workflow, tracked_state, bounded task-lifecycle state and universal final-change review/completion gates. No pstack source, prompts, scripts, package, roles, orchestration store or automation are installed or executed.",
+      "inspection_scope": "All 57 top-level skill bodies and 23 playbooks were fetched at the pin and inspected for declared scope, routing and steps; selected_files identifies the substantive sections reviewed for adaptation. Both agents and the three nested Benny skill scopes were separately inspected. This is source research, not observed upstream runtime behavior. Follow-up review read the listed intake, discovery/research, planning, per-unit execution, pilot/dependency/ownership, monitoring/replan and handoff sections at the same fixed commit; this still does not establish upstream runtime behavior.",
       "inventory": {
         "skills": [
           {
@@ -801,9 +983,10 @@
             "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/architect/SKILL.md",
             "disposition": "adapted-workflow",
             "upg_rule_ids": [
-              "STRUCTURAL_INTEGRATION"
+              "STRUCTURAL_INTEGRATION",
+              "CONTRACT_VALIDATE"
             ],
-            "handling": "Ground behavior and constraints; choose a canonical data and ownership shape before consequential implementation. Alternative sketches are proportional to unresolved design risk."
+            "handling": "Ground current contracts before consequential design; derive data and ownership from actual caller usage and compare alternatives only for unresolved risk. Implementation deviations trigger a recorded diagnosis or replan; repeated incompatible workarounds require re-grounding at the responsible layer, without fixed candidates or extra approval gates."
           },
           {
             "path": "pstack/skills/arena/SKILL.md",
@@ -812,9 +995,10 @@
             "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/arena/SKILL.md",
             "disposition": "conditional-specialized",
             "upg_rule_ids": [
+              "STRUCTURAL_INTEGRATION",
               "EVIDENCE_AFFECTED"
             ],
-            "handling": "Compare genuinely competing designs with a declared rubric and isolated outputs only when the task warrants alternatives; final choice requires direct validation."
+            "handling": "For a consequential unresolved choice, declare comparable outputs and decision criteria, isolate candidates, reconcile contradictory rationales, and verify a coherent synthesis. Record missing candidates as gaps; no paid/model fan-out, mandatory count or consensus-as-proof."
           },
           {
             "path": "pstack/skills/automate-me/SKILL.md",
@@ -900,9 +1084,11 @@
             "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/figure-it-out/SKILL.md",
             "disposition": "adapted-workflow",
             "upg_rule_ids": [
-              "STRUCTURAL_INTEGRATION"
+              "STRUCTURAL_INTEGRATION",
+              "EVIDENCE_AFFECTED",
+              "HANDOFF_CONTINUITY"
             ],
-            "handling": "Set a checkable outcome, scale rigor to risk, and iterate hypotheses using existing state and evidence rather than a second workflow store."
+            "handling": "Before non-trivial work, ground a falsifiable outcome, actual scope and risk; order dependency-aware verifiable units with risky unknowns first, then use observed per-unit results to revise only the remaining plan. Keep factual checkpoints in existing UPG state, without a bespoke upstream runtime or second store."
           },
           {
             "path": "pstack/skills/how/SKILL.md",
@@ -911,9 +1097,10 @@
             "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/how/SKILL.md",
             "disposition": "adapted-workflow",
             "upg_rule_ids": [
-              "EXPLAIN_SIGNIFICANT_UNIT"
+              "EXPLAIN_SIGNIFICANT_UNIT",
+              "EVIDENCE_AFFECTED"
             ],
-            "handling": "Ground ownership, data flow, runtime behavior, consumers and invariants in task-scoped source before changing them."
+            "handling": "Discover the actual current entry, components, data flow, boundaries, consumers and open questions proportionately. Partition consequential investigations by independent question when useful, reconcile conflicts against source, and do not treat file names or delegated summaries as grounding."
           },
           {
             "path": "pstack/skills/in-your-own-words/SKILL.md",
@@ -924,7 +1111,7 @@
             "upg_rule_ids": [
               "TRUTH_CURRENT"
             ],
-            "handling": "Resolve actual intent and acceptance from the user and project evidence; restatement is needed only when it changes an implementation decision."
+            "handling": "At intake, identify the user's actual goal and problem and preserve their constraints; record a concise interpretation only when it affects execution. Do not rewrite authorization or add a mandatory restatement ritual."
           },
           {
             "path": "pstack/skills/interrogate/SKILL.md",
@@ -944,9 +1131,10 @@
             "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/ketchup/SKILL.md",
             "disposition": "existing-policy",
             "upg_rule_ids": [
-              "HANDOFF_CONTINUITY"
+              "HANDOFF_CONTINUITY",
+              "TRUTH_CURRENT"
             ],
-            "handling": "Report current progress, evidence, unresolved decisions and next action from existing canonical state; avoid a new status ledger."
+            "handling": "Report meaningful changes, verified progress, remaining work and actual user-owned decisions from current evidence. Never mark blocked or unverified work complete, turn work the agent can perform into user action items, or invent status to fill a template."
           },
           {
             "path": "pstack/skills/maintain-formal-verification-skill/SKILL.md",
@@ -1241,9 +1429,10 @@
             "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/principle-sequence-verifiable-units/SKILL.md",
             "disposition": "adapted-workflow",
             "upg_rule_ids": [
-              "EVIDENCE_AFFECTED"
+              "EVIDENCE_AFFECTED",
+              "CONTRACT_VALIDATE"
             ],
-            "handling": "Sequence dependent work into meaningful validated units and validate after affected changes; no commit-per-step requirement."
+            "handling": "Define a meaningful precondition and check for each necessary unit. A failed, pending or inconclusive prerequisite does not authorize its dependent mutation; unaffected independent work may proceed. Reuse current proof, invalidate affected downstream evidence after change, and do not require a commit or expensive full suite per edit."
           },
           {
             "path": "pstack/skills/principle-subtract-before-you-add/SKILL.md",
@@ -1318,9 +1507,10 @@
             "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/sharpen/SKILL.md",
             "disposition": "existing-policy",
             "upg_rule_ids": [
-              "EVIDENCE_AFFECTED"
+              "EVIDENCE_AFFECTED",
+              "STRUCTURAL_INTEGRATION"
             ],
-            "handling": "Clarify the actual outcome, primary evidence and objective acceptance without enlarging the authorized task."
+            "handling": "Deepen the authorized task through primary evidence, suitable methods and objective acceptance rather than enlarging scope. Keep user-owned choices and permission gates intact; do not replace the original request with an invented prompt."
           },
           {
             "path": "pstack/skills/show-me-your-work/SKILL.md",
@@ -1329,9 +1519,10 @@
             "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/show-me-your-work/SKILL.md",
             "disposition": "existing-policy",
             "upg_rule_ids": [
-              "HANDOFF_CONTINUITY"
+              "HANDOFF_CONTINUITY",
+              "EVIDENCE_AFFECTED"
             ],
-            "handling": "Keep factual decisions and reusable evidence in existing current state and bounded handoff; do not add a second TSV/history ledger."
+            "handling": "Keep factual stage results, decisions, pivots, blockers, current evidence and next actions in existing canonical current state and bounded checkpoints. Verify references against actual observations and preserve failure facts; no second TSV/history ledger, broad transcript harvesting, mandatory cross-model review or per-tool narration."
           },
           {
             "path": "pstack/skills/statechart/SKILL.md",
@@ -1351,9 +1542,11 @@
             "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/swarm/SKILL.md",
             "disposition": "adapted-workflow",
             "upg_rule_ids": [
-              "STRUCTURAL_INTEGRATION"
+              "STRUCTURAL_INTEGRATION",
+              "EVIDENCE_AFFECTED",
+              "HANDOFF_CONTINUITY"
             ],
-            "handling": "Declare coverage and done criteria, isolate independent writes, account for delegated outcomes and verify their artifacts; respect actual host capacity and cost limits."
+            "handling": "Before useful delegation, declare outcome, scope, owned writes, dependencies, verification and the result required from each slice. Account for every result, match its actual revision/method, and keep absent, stale or inconclusive coverage explicit. Reconcile late artifacts before acceptance; respect actual host capacity and cost boundaries."
           },
           {
             "path": "pstack/skills/tdd/SKILL.md",
@@ -1417,9 +1610,10 @@
             "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/why/SKILL.md",
             "disposition": "existing-policy",
             "upg_rule_ids": [
-              "HANDOFF_CONTINUITY"
+              "HANDOFF_CONTINUITY",
+              "EVIDENCE_AFFECTED"
             ],
-            "handling": "Distinguish explicit rationale, supported inference, hypotheses and unknowns; search relevant authorized sources without mandatory unrelated connector sweeps."
+            "handling": "Start rationale research from a current code/history anchor and the task's actual question; distinguish direct facts, supported inference, hypotheses and unknowns. Select only relevant authorized evidence sources; reject the mandatory seven-category sweep, presumed git/gh availability, private-history harvesting and model quotas."
           }
         ],
         "playbooks": [
@@ -1441,9 +1635,10 @@
             "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/poteto-mode/playbooks/autonomous-run.md",
             "disposition": "adapted-workflow",
             "upg_rule_ids": [
-              "EVIDENCE_AFFECTED"
+              "EVIDENCE_AFFECTED",
+              "HANDOFF_CONTINUITY"
             ],
-            "handling": "Use a checkable exit condition and bounded evidence-led iterations within current authorization; no persistent loop, automatic schedule, side-scope fixes or relaxed acceptance."
+            "handling": "Set a checkable exit condition and drive authorized work through bounded evidence-led units, keeping observed checkpoint results and revising the remaining plan when a method stops producing progress. Never relax acceptance to declare success; no persistent loop, automatic schedule, out-of-scope side fixes or unbounded retries."
           },
           {
             "path": "pstack/skills/poteto-mode/playbooks/autopilot-full.md",
@@ -1507,9 +1702,11 @@
             "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/poteto-mode/playbooks/feature.md",
             "disposition": "adapted-workflow",
             "upg_rule_ids": [
-              "STRUCTURAL_INTEGRATION"
+              "STRUCTURAL_INTEGRATION",
+              "CONTRACT_VALIDATE",
+              "EVIDENCE_AFFECTED"
             ],
-            "handling": "Ground affected behavior, model state/ownership, order dependent steps, delegate independent scopes proportionally and prove actual acceptance."
+            "handling": "Before non-trivial implementation, ground the outcome and model, identify blocking prerequisites, independent slices, shared-write ownership and the smallest safe decomposition. Refresh the current plan at phase boundaries and verify units on the actual relevant surface; no universal delegation, PR or commit mandates."
           },
           {
             "path": "pstack/skills/poteto-mode/playbooks/hillclimb.md",
@@ -1540,9 +1737,10 @@
             "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/poteto-mode/playbooks/multi-phase-plan.md",
             "disposition": "conditional-specialized",
             "upg_rule_ids": [
-              "STRUCTURAL_INTEGRATION"
+              "STRUCTURAL_INTEGRATION",
+              "EVIDENCE_AFFECTED"
             ],
-            "handling": "For an actual planning deliverable, record dependencies, owned outputs, acceptance and unresolved gates in existing project form; reject fixed templates and ten verification lanes."
+            "handling": "Make the task plan executable through explicit dependencies, owned scopes and evidence for each necessary unit; validate its bounded structure and retain unresolved decisions. When the actual request is plan-only, do not implement. Reject the fixed Markdown skeleton, ten live lanes, compulsory performance box, extra approval and automation protocol."
           },
           {
             "path": "pstack/skills/poteto-mode/playbooks/opening-a-pr.md",
@@ -1560,11 +1758,14 @@
             "git_blob_sha1": "4ccb24d76c5e190125cecc99d4a9b5c9eb2932d9",
             "bytes": 17127,
             "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/poteto-mode/playbooks/orchestrate.md",
-            "disposition": "excluded-host-specific",
+            "disposition": "conditional-specialized",
             "upg_rule_ids": [
-              "HANDOFF_CONTINUITY"
+              "STRUCTURAL_INTEGRATION",
+              "EVIDENCE_AFFECTED",
+              "HANDOFF_CONTINUITY",
+              "CONTRACT_VALIDATE"
             ],
-            "handling": "Retain bounded owner/accountability and prerequisite ordering concepts in existing workflow state; do not install orch runtime, multi-day coordinator or parallel ledger."
+            "handling": "For genuinely large repeated work, validate the first real unit's brief, recipe and unit size before scaling. Recompute ready dependencies from observed results, account for every delegated slice, judge progress from current artifacts rather than transcript timestamps, reconcile late results, stop dependent work on systemic gate/infra failure, and recover within bounded current-state checkpoints. Do not install orch runtime, its store/ledger/locks, cloud placement, background watchers, model switching, fixed time/retry quotas, automatic landing or upstream permission grants."
           },
           {
             "path": "pstack/skills/poteto-mode/playbooks/pause-safely.md",
@@ -1575,7 +1776,7 @@
             "upg_rule_ids": [
               "HANDOFF_CONTINUITY"
             ],
-            "handling": "On an explicit pause, leave factual resumable current state and stop owned work safely; no automatic WIP commit, push or temporary-only canonical handoff."
+            "handling": "On an explicit pause or unavoidable boundary, finish or safely back out of the owned atomic step, stop owned dependent work and persist a durable factual resume point with checked versus pending work. Do not infer a pause from continued autonomy, force a WIP commit/push, or use temporary-only state as the canonical handoff."
           },
           {
             "path": "pstack/skills/poteto-mode/playbooks/perf-issue.md",
@@ -1595,9 +1796,10 @@
             "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/poteto-mode/playbooks/prototype.md",
             "disposition": "conditional-specialized",
             "upg_rule_ids": [
-              "EVIDENCE_AFFECTED"
+              "EVIDENCE_AFFECTED",
+              "STRUCTURAL_INTEGRATION"
             ],
-            "handling": "For consequential empirical uncertainty, isolate the smallest experiment and label its observed scope and throwaway status; do not treat prototype evidence as release proof."
+            "handling": "When a task-relevant empirical fork cannot be settled from current evidence, run the smallest authorized isolated observation and use the result to choose the real implementation. Keep prototypes and their proof scope explicit; no speculative scope expansion, paid search, automatic infrastructure or release proof from a sketch."
           },
           {
             "path": "pstack/skills/poteto-mode/playbooks/refactoring.md",
@@ -1628,9 +1830,10 @@
             "url": "https://github.com/cursor/plugins/blob/8b3326d99fd4b993cb33a24dad8af03175c642c5/pstack/skills/poteto-mode/playbooks/session-pickup.md",
             "disposition": "existing-policy",
             "upg_rule_ids": [
-              "HANDOFF_CONTINUITY"
+              "HANDOFF_CONTINUITY",
+              "EVIDENCE_AFFECTED"
             ],
-            "handling": "Reuse still-current verified evidence and reconstruct observable state; prior transcripts and self-reports remain input and never override current code or validation."
+            "handling": "Recover actual goal, current worktree/state, completed versus remaining units, decision deltas, evidence and next action. Reuse still-current proof and reconcile stale or contradictory claims before the next mutation; never treat a transcript, prior summary or actor intent as authority over observable project truth."
           },
           {
             "path": "pstack/skills/poteto-mode/playbooks/shipping.md",
@@ -1746,7 +1949,10 @@
         "fixed prose/report templates, punctuation/vocabulary bans, invented certainty and unknown evidence presented as a pass",
         "prior transcript or delegated self-report treated as authority over current project evidence; broad private transcript or unrelated connector sweeps",
         "project-wide no-debt/clean claims from a scoped review, static fixture/hash equality as runtime efficacy, and model/verification claims beyond actual bounds",
-        "runtime source import, copied complete prompts, persistent mode, a second history/decision ledger, automatic upstream refresh and live installed-Skill self-mutation"
+        "runtime source import, copied complete prompts, persistent mode, a second history/decision ledger, automatic upstream refresh and live installed-Skill self-mutation",
+        "mandatory seven-category source sweeps or a fixed repeated-work pilot/worker/verification quota",
+        "upstream orch runtime/store/locks, model-switching recovery, automatic landing and timer/event watchers; bounded conceptual stage supervision grants none of these",
+        "plan metadata, transcript timestamps or delegated self-report presented as proof of actual intake, research, execution or stage acceptance"
       ]
     }
   ],
@@ -2540,6 +2746,136 @@
         ],
         "status": "acceptance-contract; referenced tests are not a new execution receipt",
         "evidence_scope": "Deterministic instruction/evidence continuity contracts; specialized live, formal and performance claims still require actual task evidence."
+      }
+    },
+    {
+      "id": "UPM-014",
+      "source_refs": [
+        {
+          "source_id": "pstack",
+          "path": "pstack/skills/figure-it-out/SKILL.md",
+          "section": "Frame / Design the workflow / Run the loop / Keep the audit trail"
+        },
+        {
+          "source_id": "pstack",
+          "path": "pstack/skills/how/references/explorer-prompt.md",
+          "section": "Components Found / Flow / Boundaries / Open Questions"
+        },
+        {
+          "source_id": "pstack",
+          "path": "pstack/skills/how/references/explainer-prompt.md",
+          "section": "Instructions"
+        },
+        {
+          "source_id": "pstack",
+          "path": "pstack/skills/why/SKILL.md",
+          "section": "Understand the Target and the Question / Establish the Code Anchor / Discovery"
+        },
+        {
+          "source_id": "pstack",
+          "path": "pstack/skills/architect/SKILL.md",
+          "section": "Ground the problem / Implement against the sketch / Scrap when the architecture is wrong"
+        },
+        {
+          "source_id": "pstack",
+          "path": "pstack/skills/poteto-mode/playbooks/feature.md",
+          "section": "step 3 throughput checkpoint / phase-boundary checkpoint rewrite"
+        },
+        {
+          "source_id": "pstack",
+          "path": "pstack/skills/poteto-mode/playbooks/multi-phase-plan.md",
+          "section": "steps 2-4 and 6 / How to read this / dependency and file boundaries"
+        },
+        {
+          "source_id": "pstack",
+          "path": "pstack/skills/swarm/SKILL.md",
+          "section": "Frame / Fan out / Aggregate"
+        },
+        {
+          "source_id": "pstack",
+          "path": "pstack/skills/poteto-mode/playbooks/orchestrate.md",
+          "section": "Steps: Pilot / Queue and drain / Verification / Liveness and failure / Escalation"
+        },
+        {
+          "source_id": "pstack",
+          "path": "pstack/skills/show-me-your-work/SKILL.md",
+          "section": "Logging a row / Rules / Audit the log against the transcript"
+        },
+        {
+          "source_id": "pstack",
+          "path": "pstack/skills/principle-sequence-verifiable-units/SKILL.md",
+          "section": "Execution / Delivery"
+        },
+        {
+          "source_id": "pstack",
+          "path": "pstack/skills/poteto-mode/playbooks/autonomous-run.md",
+          "section": "steps 1, 3, 5, 6"
+        },
+        {
+          "source_id": "pstack",
+          "path": "pstack/skills/poteto-mode/playbooks/session-pickup.md",
+          "section": "Session pickup"
+        },
+        {
+          "source_id": "pstack",
+          "path": "pstack/skills/poteto-mode/playbooks/pause-safely.md",
+          "section": "Pause safely"
+        }
+      ],
+      "upg_rule_ids": [
+        "STRUCTURAL_INTEGRATION",
+        "EVIDENCE_AFFECTED",
+        "CONTRACT_VALIDATE",
+        "HANDOFF_CONTINUITY",
+        "TRUTH_CURRENT"
+      ],
+      "execution_guidance_ids": [
+        "complete_change",
+        "task_scoped_reading",
+        "evidence_fidelity"
+      ],
+      "operational_guidance_ids": [
+        "engineering_workflow",
+        "tracked_state"
+      ],
+      "implementation_refs": [
+        "governance-src/model/governance-model.json",
+        "governance-src/runtime-scripts/project_tool.py",
+        "governance-src/schemas/field-report.schema.json"
+      ],
+      "trigger": "An authorized maintained-project task starts or advances through non-trivial work, encounters new evidence or constraints, delegates independent units, repeats many similar changes, or crosses a checkpoint/actor/session boundary; local low-risk work remains proportional.",
+      "adapted_capability": "Bind intake, discovery and relevant research to actual outcome, scope, constraints, baseline, unknowns and acceptance; maintain one bounded dependency-aware plan in existing UPG state, with owned writes and meaningful per-unit evidence. Validate readiness before dependent mutation, prove the first real repeated unit before scaling, record observed progress/checkpoints, keep failed or inconclusive prerequisites unfinished, account for delegated and late outputs, and revise only affected remaining work from explicit new evidence. Preserve immutable start facts, valid proof, failure history and current handoff/next action; normal completion still requires the existing final review/audit gate.",
+      "exclusions": [
+        "plan fields, path existence, hashes, transcript timestamps or actor self-report presented as proof that actual research/execution happened",
+        "fixed playbook/template/lane counts, mandatory per-edit commits, universal full-source or seven-category connector sweeps",
+        "new parallel plan/history/TSV databases, imported orch runtime/store/locks, background watchers, schedules, cloud placement, model changes or paid trials",
+        "upstream permission or approval defaults overriding user authorization; automatic push/merge/messages or uncertain business-write retries without state reconciliation",
+        "relaxing original acceptance, inventing a passed prerequisite, erasing failures or retrofitting plans onto historical completed records",
+        "automatic unrelated side fixes, destructive rollback of concurrent work, or a heavy staged workflow imposed on a genuinely local low-risk correction"
+      ],
+      "acceptance": {
+        "case_id": "UPM-014",
+        "fixture": "A non-trivial task has missing readiness facts, dependency-ordered units, a failed or inconclusive prerequisite, a stale delegated result and a later constraint that requires a bounded replan; a separate local one-unit task and historical completed record remain valid under their actual contracts.",
+        "pass_if": [
+          "the current task records outcome/scope/constraints, discovered sources and unknowns, necessary units/dependencies and actual verification before required advancement",
+          "missing/stale/failed/inconclusive prerequisite evidence cannot be recorded as completed dependency coverage; independent unaffected work may continue",
+          "phase changes, new constraints and invalidated evidence produce an explicit bounded plan revision, preserving immutable start facts and unaffected valid results",
+          "repeated work proves the first real unit before scaling, delegated slices and late artifacts are reconciled against current scope/state, and recovery preserves a durable next action",
+          "normal completion still requires actual task acceptance and the final completion_review, without changing reporting opt-in or adding external authority"
+        ],
+        "fail_if": [
+          "a metadata-only filled plan is called proof of actual research or runtime behavior",
+          "an old result, omitted unit or self-reported done bypasses the new task lifecycle or final review",
+          "replan silently weakens acceptance, changes original start facts or attributes unobserved history",
+          "the change adds an upstream runtime, second ledger, background residency, paid execution or unauthorized external mutation"
+        ],
+        "test_references": [
+          "tests/test_task_lifecycle.py",
+          "tests/test_pstack_workflow.py",
+          "tests/test_upstream_sources.py"
+        ],
+        "status": "acceptance-contract; referenced tests are not a new execution receipt",
+        "evidence_scope": "Bounded deterministic lifecycle/record consistency and instruction routing only; actual research, artifact semantics, model efficacy and complete dynamic coverage still need appropriate observed evidence."
       }
     }
   ]

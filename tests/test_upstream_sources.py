@@ -113,9 +113,9 @@ def validate(manifest, model):
     guidance = {g["id"] for g in model["execution_guidance"]}
     operational = {g["id"] for g in model.get("operational_guidance", [])}
     mappings = manifest.get("mappings", [])
-    expected_cases = {"UPM-%03d" % i for i in range(1, 14)}
-    require(len(mappings) == 13 and {m["id"] for m in mappings} == expected_cases, "thirteen unique mappings required")
-    require({m["acceptance"]["case_id"] for m in mappings} == expected_cases, "thirteen unique acceptance cases required")
+    expected_cases = {"UPM-%03d" % i for i in range(1, 15)}
+    require(len(mappings) == 14 and {m["id"] for m in mappings} == expected_cases, "fourteen unique mappings required")
+    require({m["acceptance"]["case_id"] for m in mappings} == expected_cases, "fourteen unique acceptance cases required")
     referenced_sources = set()
     for mapping in mappings:
         require(bool(mapping.get("upg_rule_ids")) and set(mapping["upg_rule_ids"]) <= rules, "unknown UPG rule")
@@ -182,6 +182,21 @@ class UpstreamSourcesTests(unittest.TestCase):
 
     def test_reviewed_manifest_resolves_without_network_or_source_execution(self):
         validate(self.manifest, self.model)
+
+    def test_task_lifecycle_mapping_preserves_authority_and_evidence_limits(self):
+        mapping = next(item for item in self.manifest["mappings"] if item["id"] == "UPM-014")
+        self.assertEqual({ref["source_id"] for ref in mapping["source_refs"]}, {"pstack"})
+        self.assertTrue({"STRUCTURAL_INTEGRATION", "EVIDENCE_AFFECTED", "HANDOFF_CONTINUITY"}
+                        <= set(mapping["upg_rule_ids"]))
+        self.assertTrue({"complete_change", "evidence_fidelity"} <= set(mapping["execution_guidance_ids"]))
+        self.assertEqual(set(mapping["operational_guidance_ids"]), {"engineering_workflow", "tracked_state"})
+        self.assertTrue({"tests/test_task_lifecycle.py", "tests/test_pstack_workflow.py"}
+                        <= set(mapping["acceptance"]["test_references"]))
+        limits = " ".join(mapping["exclusions"] + mapping["acceptance"]["fail_if"])
+        for required in ("historical", "acceptance", "second ledger", "paid", "unauthorized"):
+            self.assertIn(required, limits)
+        self.assertIn("not a new execution receipt", mapping["acceptance"]["status"])
+        self.assertIn("deterministic", mapping["acceptance"]["evidence_scope"])
 
     def test_bad_identity_license_reference_exclusion_or_copy_claim_fails(self):
         mutations = {

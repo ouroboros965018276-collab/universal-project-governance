@@ -1,141 +1,95 @@
 {
   "schema_version": 1,
-  "version": "3.0.0-rc.20.9",
-  "status": "SOURCE_REVIEWED_ENGINEERING_ACCEPTANCE_TRACKED_IN_ISSUE",
-  "observed_at_utc": "2026-10-23T18:10:43.071522+00:00",
-  "baseline_revision": "f24c24c2dccbb294126da11ab9101fbcada35475",
-  "scope": "UPG-native pstack capability integration and every modifying normal completion review/audit; existing permissions/reporting/qualification preserved",
+  "version": "3.0.0-rc.20.10",
+  "status": "SOURCE_REVIEW_PASSED_ACCEPTANCE_SEPARATELY_RECORDED",
+  "observed_at_utc": "2026-10-23T19:58:27+00:00",
+  "baseline_revision": "ff6d82fc548d0d05e6f1e1f47c4a0ee04ab04f9a",
+  "scope": "UPG task intake/start, investigation, verifiable units/dependencies, actual stage evidence, monitoring/replan/recovery/handoff fused with existing completion review; existing policy/risk/reporting/authorization retained.",
   "canonical_provenance": "third_party/upstream-sources.json",
   "review": {
-    "status": "SCOPED_REVIEW_PASSED",
-    "independent_agents": [
-      "pstack_research",
-      "completion_design",
-      "repository_audit"
+    "status": "PASSED",
+    "actors": ["runtime implementer", "independent continuity and compatibility reviewer", "independent actual-use engineering actor", "primary integration reviewer"],
+    "resolved_findings": ["Current active task proofs are protected before compaction; invalid references fail before mutation.", "Legacy exact begin retries are checked before new-start contract requirements.", "Original unrelated policy fingerprints remain pinned; only the two authorized lifecycle prefixes are normalized in the historical comparison.", "First full native regression and Linux CI exposed two stale fixture assertions: generated file count23 versus actual24, and expected whole-binding byte stability during a legitimate runtime-version migration. Tests now pin the new canonical module bytes and distinguish one-field migration from subsequent byte-stable exact retry; no runtime gate was weakened."],
+    "required_coverage": [
+      "New starts and observational/legacy boundaries",
+      "Both report modes and stable checkpoint/idempotent/crash recovery",
+      "Dependency coverage, current evidence, invalidation and legitimate replanning",
+      "Immutable goal/scope/acceptance and bounded tool-owned task state",
+      "Current-state authority preservation during compaction",
+      "Global lightweight guidance, conditional engineering routing, historical study identity and source attribution"
     ],
-    "resolved_findings": [
-      "Immutable-ledger crash recovery and explicit fresh review",
-      "Nonignored .governance self-input exclusion",
-      "Staged/restored index omission and preexisting-dirty preservation",
-      "Aggregate baseline byte and metadata budgets",
-      "Original branch/verified HEAD ownership identity and capture-time recheck",
-      "Existing native journal recovery before historical final reconciliation"
-    ],
-    "limits": "Independent source review plus deterministic behavior tests; same-host agents are not proof of model diversity or project-wide defect absence"
+    "limits": "Structural metadata/fixity and engineering behavior do not prove semantic task truth, model efficacy or whole-disk clearance."
   },
   "validation": {
-    "required_static_gates": [
-      {
-        "name": "compiler",
-        "exit_code": 0,
-        "log_sha256": "e56cb455cbf44f486010a866d303bf9e7409b70f021f504a6d20c77cd3d06534"
-      },
-      {
-        "name": "lint",
-        "exit_code": 0,
-        "log_sha256": "7597053ba940286b057c48961cbfac02eeb1a12805b7ab202f7ce8047e81ef3a"
-      },
-      {
-        "name": "qualification",
-        "exit_code": 0,
-        "log_sha256": "ec5801c4bec168955effa9548529b64eccd5b0c56dd996c034aeba8b1e59ccc7"
-      },
-      {
-        "name": "freeze",
-        "exit_code": 0,
-        "log_sha256": "e26c78c018e6b329c2e9d197a31d924f4e25ca1e65c5bbfe28453461b30b2c4b"
-      },
-      {
-        "name": "repository",
-        "exit_code": 0,
-        "log_sha256": "00a865fb710a2d66485a2404cfcd34487db89581775ef123fdea6c73dfd83827"
-      },
-      {
-        "name": "bundle",
-        "exit_code": 0,
-        "log_sha256": "41f8e1eb0d7b28a52edb9ec4ce46364a2ce5a17dcdeaeb825c54353b4ebec29c"
-      },
-      {
-        "name": "integrity",
-        "exit_code": 0,
-        "log_sha256": "c8256773e940228dd577b45a44b0d468b3c8ab2995ca50a1e282e8b3db03821e"
-      },
-      {
-        "name": "security",
-        "exit_code": 0,
-        "log_sha256": "dd5f76e71b474be099704d02f231bfb654f4715435d8ce6d2823e45b73bf79a7"
-      },
-      {
-        "name": "navigation",
-        "exit_code": 0,
-        "log_sha256": "d8c15df2ed7140823f000f78cbc532b76a0129fd2635fb60e159d7c633fa234c"
-      }
+    "status": "NINE_STATIC_GATES_AND_FOCUSED_CHECKS_PASSED_FULL_REGRESSION_REQUIRED_AT_ACCEPTANCE",
+    "static_gates_passed": 9,
+    "freeze_fingerprint": "sha256:75781ddf4de4cfe4429d82d2c5554d1c937fb98fb003f06e5ea0f4ead3fbcdb1",
+    "deterministic_package_sha256": "4eb30c71552444747a214c866edd3523f5feda4e2f4092ea45da67af1e69c9cf",
+    "focused_observations": {"task_lifecycle": "Earlier actor reported22/22 before final full regression; its invocation source identity was not independently captured and it is not final-revision acceptance", "continuity": "22/22 passed plus separately executed new real-CLI compaction case 1/1 passed", "completion_review_compatibility": "30/30 passed", "actual_maintenance": "2 methods / 13 subcases passed after observing 5 original failing subcases; begin/partial/repair/review/finish/status passed; fixture retired"},
+    "first_full_regression": {"status": "FAILED_AND_RETAINED", "source_revision": "b72e947437896b2510b0d889b42a96a5e33698fc", "native": "1599 tests,2 stale fixture failures,8 skips, numeric exit1, unchanged273 input files", "source_ci_run": "40012949247", "linux": "Python3.8/3.11/3.13 each failed the same two fixture assertions", "evidence": ".governance/rc2010-full-regression.json and rc2010-source-ci-first-failure-*.log", "resolution_scope": "Only two regression fixture assertions and this audit observation; generated runtime, package and frozen canonical semantics unchanged. Final source/main CI and the new native run remain required."},
+    "actual_use_limits": "Actual maintenance exercised the candidate task lifecycle before the final active-proof compaction fix and did not call compact. Later focused compaction checks and required final full regression cover that fix. Early ensure/planner/begin per-command hashes were not captured and are not retrospectively asserted. This is an engineering usability check, not formal/model qualification.",
+    "private_evidence": [".governance/rc2010-final-gates.json", ".governance/rc2010-final-packaging.json", ".governance/rc2010-forwardtest/lifecycle-formatter-ea38aff8f31d/.governance/acceptance.json"],
+    "focused_tests": [
+      "tests/test_task_lifecycle.py",
+      "tests/test_validation_continuity.py",
+      "tests/test_completion_review.py",
+      "tests/test_pstack_workflow.py",
+      "tests/test_upstream_sources.py"
     ],
-    "source_sha256": "806bff49e4d0a515b29164a92257a42c93e9f8b38c399e21733e1da9056acd9c",
-    "qualification_fingerprint": "sha256:efd4ff5e7b8b4749e7ed331182f09bf0481b671e28c9d12a79cfc0711e54b100",
-    "native_completion_suite": {
-      "original_expanded_cases": 24,
-      "passed": 24,
-      "final_guard_and_recovery_cases": 8,
-      "final_guard_and_recovery_passed": 8,
-      "final_elapsed_seconds": 152.319
-    },
-    "historical_study_compatibility": {
-      "targeted_tests": 16,
-      "passed": 16,
-      "baseline_and_full_model_hashes_unchanged": true,
-      "reason": "The test reconstruction now explicitly retains historical evidence_fidelity text rather than relabeling new workflow semantics as an old fixed study"
-    },
-    "full_regression_evidence_location": ".governance/rc209-full-regression.log and exact-revision final CI recorded at acceptance_url; only observed completed runs establish pass",
+    "required_static_gates": [
+      "compiler",
+      "lint",
+      "qualification",
+      "freeze",
+      "repository",
+      "bundle",
+      "integrity",
+      "security",
+      "navigation"
+    ],
+    "full_regression_evidence_location": ".governance/rc2010-final-full-regression.log and exact-revision CI at acceptance_url; only actual completed runs establish pass; the original failing run remains separately retained",
     "optional_authoring_validator": {
       "status": "UNAVAILABLE",
       "reason": "PyYAML absent in both existing Python runtimes; no dependency installed. Existing bundle validator and exact-revision upstream Agent Skills CI validate the actual supported Skill; no helper success fabricated."
     }
   },
   "delivery": {
-    "authority": "acceptance_url records the final GitHub source/main CI, exact accepted revisions and installed-runtime acceptance after observation; this source audit does not preannounce those results",
+    "authority": "acceptance_url records actual source/main CI, accepted immutable revision, both clean checkouts, package/installed identity, fresh discovery and actual installed lifecycle acceptance; this source review does not preannounce those observations",
     "private_receipts": [
-      ".governance/rc209-delivery.json",
-      ".governance/rc209-installed-probe.json",
-      ".governance/rc209-discovery.json"
-    ],
-    "requirements": [
-      "All installed file paths/bytes equal accepted main",
-      "Fresh official discovery at all three project cwd values",
-      "This actor reads full installed Skill",
-      "Actual installed missing/stale rejection, valid completion and idempotent retry",
-      "Primary and maintenance clean at same accepted main"
+      ".governance/rc2010-delivery.json",
+      ".governance/rc2010-installed-probe.json",
+      ".governance/rc2010-discovery.json"
     ]
   },
+  "compatibility": {
+    "historical_starts": "Existing active/history exact retries retain observed facts; no retrospective task contracts.",
+    "new_tracking": "New begin requires bounded task_contract; every new governed stage uses task_progress. No caller legacy switch.",
+    "direct_reports": "Existing no-active direct reports remain observations and cannot claim contract/progress execution.",
+    "project_state": "Reuse existing active/current_state/last_outcome/handoff and original ledger; no second task store."
+  },
   "cleanup_review": {
-    "initial_checkouts": "Primary and maintenance clean at baseline; two active worktrees only",
-    "production_ast_scan": {
-      "modules": 80,
-      "duplicate_groups": 1,
-      "assessment": "Only three minimal strict-JSON duplicate-key callbacks with distinct numeric/input/deployment contracts; no actionable duplicate feature implementation observed",
-      "limit": "Exact AST scan does not prove semantic duplicate absence"
-    },
-    "experimental_root": "D:/UPG Experimental Projects contains README.md only",
-    "retained_failure_evidence": "RC20.7 diagnostic snapshot preserves original FAIL2 evidence; not an independent experiment to delete",
-    "actionable": [
-      "Local evidence index refreshed; test/tool/package residue removed after dependent processes end, with verified target identities and failure facts retained"
-    ]
+    "initial_checkouts": "Both clean at accepted RC20.9 baseline; two live worktrees.",
+    "scope": "Owned test/helper/package residue and changed source/docs neighborhood; original diagnostics and migration/chat/attachment facts retained.",
+    "private_record_reconciliation": ".governance/rc2010-execution-reconciliation.json preserves observed old format failure, original actual report input and existing execution-schema correction.",
+    "limits": "Final AST/doc/residue audit and cleanup are recorded only after actual checks."
   },
   "external_boundaries": [
     {
       "id": "five-old-c-temp-directories",
       "status": "ACCESS_DENIED",
-      "current_observation": "Independent native os.scandir returned WinError5 on all five exact recorded paths; ordinary-directory attributes16",
       "contents_and_sizes": "UNKNOWN",
       "source": ".governance/whole-upg-final-c-temp-boundary.json",
-      "resolution_condition": "Authorized OS access becomes available; inventory before removal; no ACL takeover"
+      "resolution_condition": "Authorized OS access becomes available; inventory before removal; no ACL takeover",
+      "retained_observation": "Independent native os.scandir returned WinError5 on all five exact recorded paths; ordinary-directory attributes16",
+      "observation_scope": "Retained RC20.9 boundary; not repeated or relabeled as a new RC20.10 probe."
     },
     {
       "id": "ygg-business-gateway",
       "status": "GATEWAY_CONNECT_TIMEOUT",
-      "current_observation": "Official list_projects failed before dispatch twice; requestMayHaveBeenDispatched:false",
       "business_state": "UNVERIFIED",
-      "resolution_condition": "Official current-host gateway becomes reachable; inspect selected project through published tools"
+      "resolution_condition": "Official current-host gateway becomes reachable; inspect selected project through published tools",
+      "retained_observation": "Official list_projects failed before dispatch twice; requestMayHaveBeenDispatched:false",
+      "observation_scope": "Retained RC20.9 boundary; not repeated or relabeled as a new RC20.10 probe."
     }
   ],
   "constraints": {
@@ -155,9 +109,8 @@
     "hot_path": 8,
     "default_rules": 3,
     "managed_project_files": 2,
-    "skill_lines": 52,
-    "runtime_markdown_files": 3,
-    "delivered_files": 23,
-    "integrity_entries": 22
+    "package_files_including_manifest": 24,
+    "integrity_entries": 23,
+    "skill_lines": 52
   }
 }

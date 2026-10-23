@@ -10,7 +10,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from registration_fixture import change, reviewed_report
+from registration_fixture import change, reviewed_report, task_contract, task_progress, seed_legacy_active
 from test_completion_outcomes import report, write
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -33,15 +33,21 @@ class CompletionReviewTests(unittest.TestCase):
         self.addCleanup(temporary.cleanup)
         self.root = Path(temporary.name)
 
-    def begin(self, reporting=False):
+    def begin(self, reporting=False, legacy=False):
         tool.ensure(self.root, field_test_reporting=reporting)
         start = dict(workflow_id="reviewed-task", change=change())
-        tool.begin_workflow(self.root, write(self.root / ".governance/start.json", start))
+        if legacy:
+            seed_legacy_active(tool, self.root, start)
+        else:
+            start["task_contract"] = task_contract()
+            tool.begin_workflow(self.root, write(self.root / ".governance/start.json", start))
         return start
 
     def payload(self, start, paths=("runtime.py",)):
-        value = report(start)
+        value = report(start, root=self.root)
         value["changed_files"] = list(paths)
+        if "task_contract" in start:
+            value["task_progress"] = task_progress(start["task_contract"], "complete", self.root, list(paths))
         return reviewed_report(value, self.root)
 
     def finish(self, value, direct=False):
@@ -157,7 +163,7 @@ class CompletionReviewTests(unittest.TestCase):
     def test_partial_and_blocked_do_not_require_or_claim_final_review(self):
         start = self.begin()
         for status in ("partial", "blocked"):
-            value = report(start, status)
+            value = report(start, status, root=self.root)
             value["checkpoint_id"] = status + "-stage"
             self.finish(value)
             self.assertEqual(tool.status(self.root)["active_workflow"]["last_outcome"]["status"], status)
@@ -179,7 +185,7 @@ class CompletionReviewTests(unittest.TestCase):
         self.assertEqual(state["reason"], "completion-review-pending")
         self.assertIsNone(state["active_workflow"])
         self.assertEqual(state["completion_review_pending"]["paths"], ["runtime.py"])
-        fresh = dict(workflow_id="fresh-review", change=change())
+        fresh = dict(workflow_id="fresh-review", change=change(), task_contract=task_contract())
         fresh["change"]["parent_event_id"] = state["latest_change"]["event_id"]
         tool.begin_workflow(self.root, write(self.root / ".governance/fresh-start.json", fresh))
         with self.assertRaisesRegex(ValueError, "pending recovery scope"):
@@ -198,7 +204,7 @@ class CompletionReviewTests(unittest.TestCase):
     def test_legacy_completed_receipt_is_readable_and_exact_retry_stays_historical(self):
         for reporting in (False, True):
             with self.subTest(reporting=reporting):
-                start = self.begin(reporting)
+                start = self.begin(reporting, legacy=True)
                 value = self.payload(start)
                 self.finish(value)
                 legacy = copy.deepcopy(value)
@@ -301,7 +307,7 @@ class CompletionReviewTests(unittest.TestCase):
 
     def complete_recovery(self):
         state = tool.status(self.root)
-        fresh = dict(workflow_id="fresh-reviewed-recovery", change=change())
+        fresh = dict(workflow_id="fresh-reviewed-recovery", change=change(), task_contract=task_contract())
         fresh["change"]["parent_event_id"] = state["latest_change"]["event_id"]
         tool.begin_workflow(self.root, write(self.root / ".governance/recovery-start.json", fresh))
         result = self.finish(self.payload(fresh, state["completion_review_pending"]["paths"]))
@@ -370,11 +376,10 @@ class CompletionReviewTests(unittest.TestCase):
         self.git_repo()
         other = self.root / "other.py"
         other.write_bytes(b"owner edit before upgrade\n")
-        start = self.git_begin()
-        binding_path = self.root / ".governance/upg.json"
-        binding = tool.load_json(binding_path)
-        binding["active_workflow"].pop("completion_baseline")
-        tool.write_json_atomic(binding_path, binding)
+        tool.ensure(self.root)
+        policy = tool.configure_git(self.root, True, ["."], [], 300)["git_checkpoint"]
+        start = dict(workflow_id="legacy-dirty-task", change=change())
+        seed_legacy_active(tool, self.root, start, git_snapshot=git_checkpoint.capture(self.root, policy))
         (self.root / "runtime.py").write_bytes(b"reviewed upgrade change\n")
         result = self.finish(self.payload(start))
         self.assertEqual(result["git_checkpoint"]["status"], "committed", result)
@@ -385,7 +390,7 @@ class CompletionReviewTests(unittest.TestCase):
         self.git_repo()
         start = self.git_begin()
         (self.root / "runtime.py").write_bytes(b"first owned stage\n")
-        stage = report(start, "partial")
+        stage = report(start, "partial", root=self.root)
         stage["checkpoint_id"] = "first-stage"
         result = self.finish(stage)
         self.assertEqual(result["git_checkpoint"]["status"], "committed", result)
@@ -442,7 +447,7 @@ class CompletionReviewTests(unittest.TestCase):
         recovered = self.finish(original)
         self.assertFalse(recovered["completed"])
         state = tool.status(self.root)
-        fresh = dict(workflow_id="branch-b-fresh-review", change=change())
+        fresh = dict(workflow_id="branch-b-fresh-review", change=change(), task_contract=task_contract())
         fresh["change"]["parent_event_id"] = state["latest_change"]["event_id"]
         tool.begin_workflow(self.root, write(self.root / ".governance/branch-b-start.json", fresh))
         result = self.finish(self.payload(fresh))
@@ -465,7 +470,7 @@ class CompletionReviewTests(unittest.TestCase):
 
     def assert_recovery_does_not_transfer(self):
         state = tool.status(self.root)
-        fresh = dict(workflow_id="identity-guarded-fresh-review", change=change())
+        fresh = dict(workflow_id="identity-guarded-fresh-review", change=change(), task_contract=task_contract())
         fresh["change"]["parent_event_id"] = state["latest_change"]["event_id"]
         tool.begin_workflow(self.root, write(self.root / ".governance/guarded-start.json", fresh))
         self.assertFalse(tool.status(self.root)["git_checkpoint"].get("pending_paths"))
@@ -513,7 +518,7 @@ class CompletionReviewTests(unittest.TestCase):
         self.git("branch", "other-owner-branch")
         self.prepare_owned_recovery()
         state = tool.status(self.root)
-        fresh = dict(workflow_id="concurrent-branch-review", change=change())
+        fresh = dict(workflow_id="concurrent-branch-review", change=change(), task_contract=task_contract())
         fresh["change"]["parent_event_id"] = state["latest_change"]["event_id"]
         observed = git_checkpoint.capture
         switched = False
@@ -541,7 +546,7 @@ class CompletionReviewTests(unittest.TestCase):
         hook.parent.mkdir(exist_ok=True)
         hook.write_bytes(b"#!/bin/sh\nexit 1\n")
         hook.chmod(0o755)
-        partial = report(start, "partial")
+        partial = report(start, "partial", root=self.root)
         partial["checkpoint_id"] = "native-stage"
         result = self.finish(partial)
         self.assertEqual(result["git_checkpoint"]["status"], "blocked", result)

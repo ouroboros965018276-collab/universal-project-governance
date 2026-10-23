@@ -280,7 +280,7 @@ def _transient_binding_errors(value):
                if isinstance(value.get(key), dict)]
     active = value.get("active_workflow")
     if isinstance(active, dict):
-        for key in ("last_outcome", "outcome_receipts"):
+        for key in ("last_outcome", "outcome_receipts", "task_state"):
             if key in active and not isinstance(active[key], dict):
                 errors.append("active_workflow.%s must be an object" % key)
         if isinstance(active.get("last_outcome"), dict):
@@ -520,18 +520,8 @@ def configure_git(project, enabled, allowed_paths=None, status_paths=None, min_i
 
 def _verify_current_state(project, ref):
     """Bind one existing project authority without copying its application schema."""
-    from project_facts import Reader, strict_json
-    schema = load_json(ROOT / "schemas/field-report.schema.json")["properties"]["current_state"]
-    errors = validate_node(ref, schema)
-    if errors:
-        raise ValueError("invalid current_state: " + "; ".join(errors))
-    if ref["path"] in {config()["binding_file"], config()["field_report_file"]}:
-        raise ValueError("current_state must reference project truth, not the UPG historical ledger")
-    raw = Reader(project_root(project)).read(ref["path"], limit=256 * 1024)
-    if hashlib.sha256(raw).hexdigest() != ref["sha256"]:
-        raise ValueError("current_state changed; reconcile a new checkpoint against project truth")
-    if not isinstance(strict_json(raw), dict):
-        raise ValueError("current_state must reference a structured JSON object")
+    from state_tool import resolve_current_state
+    return resolve_current_state(project_root(project), ref)
 
 def _receipt_key(payload):
     return payload["status"] + (":" + payload["checkpoint_id"] if "checkpoint_id" in payload else "")
@@ -657,15 +647,15 @@ def validate_report(report):
         raise ValueError("; ".join(errors))
 
 def _completion_payload_sha256(entry):
-    auto_fields = {"schema_version", "sequence", "epoch", "event_id", "recorded_at", "runtime_version", "start_change"}
+    auto_fields = {"schema_version", "sequence", "epoch", "event_id", "recorded_at", "runtime_version", "start_change", "task_contract", "task_state"}
     payload = {key: value for key, value in entry.items() if key not in auto_fields}
     canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
     return hashlib.sha256(canonical).hexdigest()
 
 def _read_report(input_path):
     payload = json.load(sys.stdin) if input_path == "-" else load_json(input_path)
-    if isinstance(payload, dict) and "start_change" in payload:
-        raise ValueError("start_change is tool-owned; preserve the observed workflow start")
+    if isinstance(payload, dict) and {"start_change", "task_contract", "task_state"}.intersection(payload):
+        raise ValueError("start_change/task_contract/task_state are tool-owned in outcomes; preserve the observed workflow start")
     validate_report(payload)
     return payload
 
@@ -726,9 +716,11 @@ def _reconcile_completion(project, entry, review_recovery=None):
                 "event_id", "epoch", "workflow_id", "sequence", "recorded_at", "status", "change", "validation",
                 "changed_files", "cleanup", "integrity", "handoff", "feedback",
             ]}
-            for optional in ["checkpoint_id", "current_state", "git_boundary"]:
+            for optional in ["checkpoint_id", "current_state", "git_boundary", "task_progress"]:
                 if optional in entry:
                     active["last_outcome"][optional] = entry[optional]
+            if "task_state" in entry:
+                active["task_state"] = entry["task_state"]
             if "current_state" in entry and entry["sequence"] >= binding.get("current_state_sequence", 0):
                 binding["current_state"] = entry["current_state"]
                 binding["current_state_sequence"] = entry["sequence"]
@@ -749,6 +741,9 @@ def _reconcile_completion(project, entry, review_recovery=None):
             binding["latest_change"]["start_change"] = entry["start_change"]
         if "completion_review" in entry:
             binding["latest_change"]["completion_review"] = entry["completion_review"]
+        for optional in ("task_contract", "task_progress", "task_state"):
+            if optional in entry:
+                binding["latest_change"][optional] = entry[optional]
         binding["latest_change"]["payload_sha256"] = payload_sha256
         if "current_state" in entry:
             binding["current_state"] = entry["current_state"]
@@ -766,7 +761,7 @@ def begin_workflow(project, input_path):
     payload = load_json(input_path)
     if not isinstance(payload, dict) or not isinstance(payload.get("workflow_id"), str) or not payload["workflow_id"]:
         raise ValueError("workflow_id required")
-    if {"observed_at", "last_outcome", "outcome_receipts", "start_change", "git_start", "completion_baseline"}.intersection(payload):
+    if {"observed_at", "last_outcome", "outcome_receipts", "start_change", "git_start", "completion_baseline", "task_state"}.intersection(payload):
         raise ValueError("workflow observation and recovery fields are tool-owned")
     # Validate the same change contract used at completion; no separate history database.
     change_schema = load_json(ROOT / "schemas/field-report.schema.json")["properties"]["change"]
@@ -791,7 +786,7 @@ def begin_workflow(project, input_path):
     if active and active.get("workflow_id") != payload["workflow_id"]:
         raise ValueError("another workflow is unfinished; reconstruct it before replacing its identity")
     if active:
-        if {k: v for k, v in active.items() if k not in {"observed_at", "last_outcome", "outcome_receipts", "completion_baseline"}} != payload:
+        if {k: v for k, v in active.items() if k not in {"observed_at", "last_outcome", "outcome_receipts", "completion_baseline", "task_state"}} != payload:
             raise ValueError("conflicting workflow start; preserve the original observed checkpoint")
         return {"active_workflow": active, "idempotent": True}
     if any(isinstance(value, dict) and value.get("workflow_id") == payload["workflow_id"]
@@ -807,7 +802,20 @@ def begin_workflow(project, input_path):
         raise ValueError("new workflow must reference the latest completed event")
     if payload["change"].get("occurred_at") is not None and payload["change"].get("time_source") in {"unknown", ""}:
         raise ValueError("known occurrence time requires its observed source")
+    from task_lifecycle import initial_state
+    if "task_progress" in payload:
+        raise ValueError("task_progress belongs to an observed outcome, not a new workflow start")
+    if "task_contract" not in payload:
+        raise ValueError("new tracked workflow requires task_contract")
+    task_state = initial_state(payload["task_contract"])
+    if "current_state" in payload:
+        _verify_current_state(project, payload["current_state"])
+        binding["current_state"] = payload["current_state"]
     payload["observed_at"] = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    payload["task_state"] = task_state
+    errors = _metadata_errors(payload)
+    if errors:
+        raise ValueError("; ".join(errors))
     binding["active_workflow"] = payload
     if binding.get("git_checkpoint", {}).get("enabled"):
         from git_checkpoint import bootstrap, capture
@@ -828,6 +836,9 @@ def begin_workflow(project, input_path):
         if recovery_transfer and recovery.get("git_owned_paths"):
             binding["git_checkpoint"]["pending_paths"] = list(recovery["git_owned_paths"])
             binding["git_checkpoint"]["pending_workflow_id"] = payload["workflow_id"]
+    errors = _metadata_errors(payload)
+    if errors:
+        raise ValueError("; ".join(errors))
     write_json_atomic(binding_path, binding)
     return {"active_workflow": payload}
 
@@ -860,6 +871,8 @@ def _record_report_payload(project, payload, require_active=False):
                 from completion_review import verify_completion
                 try:
                     verify_completion(project_root(project), previous, binding)
+                    from task_lifecycle import verify_evidence
+                    verify_evidence(project_root(project), previous)
                 except (OSError, ValueError):
                     if binding.get("git_checkpoint", {}).get("journal"):
                         raise ValueError("completion review drift cannot retire an active native Git journal; recover its original stage first")
@@ -893,11 +906,16 @@ def _record_report_payload(project, payload, require_active=False):
         raise ValueError("completion must reference the latest completed event")
     if len(ledger["reports"]) >= int(cfg["max_reports"]):
         raise ValueError("field report ledger is full; export and purge it before recording more reports")
+    from task_lifecycle import evaluate
+    task_state = evaluate(project_root(project), payload, active)
     event_id = _event_id(ledger["epoch"], payload, ledger["reports"] + [
         binding.get("latest_change"), binding.get("previous_change")])
     entry = dict(payload)
     if active:
         entry["start_change"] = active["change"]
+        if task_state is not None:
+            entry["task_contract"] = active["task_contract"]
+            entry["task_state"] = task_state
     entry["schema_version"] = 1
     entry["sequence"] = ledger["next_sequence"]
     entry["epoch"] = ledger["epoch"]
@@ -911,6 +929,9 @@ def _record_report_payload(project, payload, require_active=False):
     validate_report(entry)
     from completion_review import verify_completion
     verify_completion(project_root(project), entry, binding)
+    if task_state is not None:
+        from task_lifecycle import verify_evidence
+        verify_evidence(project_root(project), entry)
     ledger["runtime_version"] = index()["version"]
     ledger["reports"].append(entry)
     write_json_atomic(report_path, ledger)
@@ -991,6 +1012,8 @@ def _finish_workflow_payload(project, payload):
         raise ValueError("completion must reference the latest completed event")
     if payload.get("current_state", binding.get("current_state")) is not None:
         _verify_current_state(project, payload.get("current_state", binding.get("current_state")))
+    from task_lifecycle import evaluate
+    task_state = evaluate(project_root(project), payload, active)
     sequences = [latest.get("sequence", 0), active.get("last_outcome", {}).get("sequence", 0)]
     if any(type(n) is not int or n < 0 for n in sequences):
         raise ValueError("latest completion sequence/epoch is invalid; reconcile preserved project state before finishing")
@@ -1000,6 +1023,9 @@ def _finish_workflow_payload(project, payload):
         raise ValueError("latest completion sequence/epoch is invalid; reconcile preserved project state before finishing")
     entry = dict(payload)
     entry["start_change"] = active["change"]
+    if task_state is not None:
+        entry["task_contract"] = active["task_contract"]
+        entry["task_state"] = task_state
     entry["schema_version"] = 1
     entry["sequence"] = sequence
     entry["epoch"] = epoch
@@ -1012,6 +1038,9 @@ def _finish_workflow_payload(project, payload):
     validate_report(entry)
     from completion_review import verify_completion
     verify_completion(project_root(project), entry, binding)
+    if task_state is not None:
+        from task_lifecycle import verify_evidence
+        verify_evidence(project_root(project), entry)
     _reconcile_completion(project, entry)
     if payload["status"] != "complete":
         return {"status": payload["status"], "completed": False, "active_workflow": load_json(binding_path)["active_workflow"], "field_test_reporting": False}

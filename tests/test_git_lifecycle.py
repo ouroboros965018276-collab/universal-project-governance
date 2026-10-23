@@ -8,7 +8,7 @@ import tempfile
 import unittest
 
 from test_completion_outcomes import write, report, change
-from registration_fixture import reviewed_report
+from registration_fixture import reviewed_report, task_contract
 
 ROOT = Path(__file__).resolve().parents[1]
 RUNTIME = ROOT / "universal-project-governance"
@@ -52,7 +52,7 @@ class GitLifecycleTests(unittest.TestCase):
     def begin(self, root, reporting):
         tool.ensure(root, field_test_reporting=reporting)
         tool.configure_git(root, True, ["."], [], 300)
-        start = {"workflow_id": "automatic-lifecycle", "change": change()}
+        start = {"workflow_id": "automatic-lifecycle", "change": change(), "task_contract": task_contract()}
         tool.begin_workflow(root, write(root / ".governance/start.json", start))
         return start
 
@@ -65,7 +65,7 @@ class GitLifecycleTests(unittest.TestCase):
                 root = self.repo()
                 start = self.begin(root, reporting)
                 (root / "runtime.py").write_bytes(b"value = 2\n")
-                outcome = report(start)
+                outcome = report(start, root=root)
                 outcome["changed_files"] = ["runtime.py"]
                 result = self.finish(root, outcome)
                 self.assertEqual(result["git_checkpoint"]["status"], "committed", result)
@@ -87,7 +87,7 @@ class GitLifecycleTests(unittest.TestCase):
         hook.write_bytes(b"#!/bin/sh\nexit 1\n")
         hook.chmod(0o755)
         (root / "runtime.py").write_bytes(b"value = 3\n")
-        outcome = report(start)
+        outcome = report(start, root=root)
         outcome["changed_files"] = ["runtime.py"]
         result = self.finish(root, outcome)
         self.assertEqual(result["git_checkpoint"]["status"], "blocked", result)
@@ -96,7 +96,7 @@ class GitLifecycleTests(unittest.TestCase):
         self.assertEqual(state["reason"], "git-checkpoint-pending")
         self.assertEqual(state["report_count"], 1)
         self.assertEqual(self.git(root, "rev-list", "--count", "HEAD").strip(), b"1")
-        next_start = {"workflow_id": "unrelated-next-workflow", "change": change()}
+        next_start = {"workflow_id": "unrelated-next-workflow", "change": change(), "task_contract": task_contract()}
         next_start["change"]["parent_event_id"] = state["latest_change"]["event_id"]
         with self.assertRaisesRegex(ValueError, "pending Git checkpoint"):
             tool.begin_workflow(root, write(root / ".governance/next-start.json", next_start))
@@ -122,11 +122,11 @@ class GitLifecycleTests(unittest.TestCase):
         root = self.repo()
         start = self.begin(root, True)
         (root / "runtime.py").write_bytes(b"value = 2\n")
-        first = report(start, "partial")
+        first = report(start, "partial", root=root)
         first["checkpoint_id"] = "first-verified-stage"
         self.assertEqual(self.finish(root, first)["git_checkpoint"]["status"], "committed")
         (root / "runtime.py").write_bytes(b"value = 3\n")
-        second = report(start, "partial")
+        second = report(start, "partial", root=root)
         second["checkpoint_id"] = "second-verified-stage"
         self.assertEqual(self.finish(root, second)["git_checkpoint"]["status"], "deferred")
         before = tool.status(root)["git_checkpoint"]

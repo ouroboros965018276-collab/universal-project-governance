@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Current candidate: **3.0.0-rc.20.9 — Scoped Engineering and Completion Review**.
+Current candidate: **3.0.0-rc.20.10 — Governed Task Lifecycle**.
 
 ## First modifying activation
 
@@ -33,6 +33,8 @@ New project bindings default field-test reporting off. Qualification A2 workspac
 Binding schema v2 records in-place adoption, handoff-or-reconstruct continuity, capability handshake, and whether the project existed before adoption. Never rewrite these paths outside the project-tool lifecycle.
 
 ## Completion
+
+For new tracked work, `begin` requires a bounded `task_contract`; `task_progress` binds stage results, current evidence and the next action to the same lifecycle. Replan remaining work explicitly without rewriting original scope or acceptance; existing historical starts stay historical. See [docs/task-lifecycle.md](docs/task-lifecycle.md).
 
 For tracked non-trivial work, begin and finish through `project_tool.py`. Each observed partial/blocked boundary uses a stable `checkpoint_id`; identical retries add nothing. Reference existing canonical project state with `current_state` (path/SHA), then check `status`; stale references require reconciliation. `latest_change` means latest completed workflow, not current unfinished progress. Reporting on appends bounded history; off keeps active recovery and latest/previous completion without a ledger. Do not copy source bodies, credentials, secrets, customer/private data, or private chain-of-thought into reports.
 

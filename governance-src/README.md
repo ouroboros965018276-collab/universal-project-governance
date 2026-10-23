@@ -24,6 +24,8 @@
 
 `finish` 在 reporting 关闭时推进有界 latest/previous，在开启时复用恰一次报告路径。原始 start facts、因果顺序、未知状态和未完成工作流边界不因路由改变。正式资格 A2 运行器仍需显式 opt-in；普通项目不强制采集研究数据。
 
+新跟踪任务通过 task_contract 约束启动，通过 task_progress 在原有阶段结果中推进与重规划；目标仍取原 change.function，规范字段与运行时由既有 schema 和 task_lifecycle.py 共同验收。current_state 可贯通开始和结果；compaction 保留仍被当前引用的记录。旧活动、直接观察、报告选择、因果与精确重试各守原事实边界。输入见[任务生命周期](../docs/task-lifecycle.md)。
+
 每次修改正常完成的审查/审计属于 `evidence_fidelity`；适用的非平凡工程路径由 `engineering_workflow` 按既有规则与报告级别选取。新 `complete` 在生命周期写入前通过 `completion_review.py` 核对审查、审计及当前文件身份，历史读取和已完成精确重试保留原事实。字段与边界见[完成输入](../docs/completion-review.md)。
 
 ## 修改与验证

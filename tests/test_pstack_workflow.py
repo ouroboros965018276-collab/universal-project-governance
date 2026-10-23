@@ -79,6 +79,33 @@ class PstackWorkflowTests(unittest.TestCase):
         self.assertIs(self.index["project_binding"]["field_test_reporting"], False)
         self.assertEqual(self.index["project_binding"]["managed_files_max"], 2)
 
+    def test_intake_and_advancement_guidance_stays_global_without_heavy_local_routing(self):
+        skill = COMPILER.render_skill(SOURCE, self.model)
+        guidance = next(item for item in self.model["execution_guidance"] if item["id"] == "complete_change")
+        self.assertEqual(skill.count(guidance["statement"]), 1)
+        context = {"operation": "edit", "domains": ["code"], "profiles": ["unknown-future-task"]}
+        plan = PLANNER.compile_plan(self.index, context)
+        self.assertEqual(plan["change_mode"], "local")
+        self.assertEqual(plan["report"], "none")
+        self.assertFalse(any(item.startswith("Operational tracked_state:") for item in plan["required_closures"]))
+        self.assertFalse(any(item.startswith("Operational engineering_workflow:") for item in plan["required_closures"]))
+        # A task plan is project execution state; the policy projection never
+        # manufactures task acceptance, units, progress or a ready verdict.
+        self.assertFalse({"task_contract", "task_progress", "ready"} & set(plan))
+
+    def test_evidence_change_routes_continuity_without_authorizing_structural_scope(self):
+        for signal in ("interrupted", "no-progress", "contradiction"):
+            with self.subTest(signal=signal):
+                plan = PLANNER.compile_plan(self.index, {"operation": "edit", "domains": ["code"], "signals": [signal]})
+                self.assertEqual(plan["change_mode"], "local")
+                self.assertEqual(plan["handoff"], "required")
+                self.assertIn("HANDOFF_CONTINUITY", plan["active_rules"])
+                for group in ("tracked_state", "recovery_tools"):
+                    self.assertEqual(sum(item.startswith("Operational " + group + ":")
+                                         for item in plan["required_closures"]), 1)
+                self.assertFalse(any(item.startswith("Operational engineering_workflow:")
+                                     for item in plan["required_closures"]))
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -12,6 +12,48 @@ def freeze():
 def change():
     return {"function": "test", "before": "observed baseline", "after": "observed target", "rationale": "engineering test", "source": "test fixture", "base_revision": "unknown", "result_revision": "unknown", "validation_revision": "unknown", "occurred_at": None, "time_source": "unknown", "parent_event_id": None}
 
+def task_contract():
+    """One explicit synthetic unit; dedicated lifecycle tests own counterexamples."""
+    return {"revision": "p1", "scope": ["synthetic lifecycle fixture"],
+            "acceptance": ["synthetic fixture state observed"], "constraints": [], "unknowns": [],
+            "units": [{"id": "fixture-unit", "outcome": "exercise the stated fixture boundary",
+                       "verification": "observe fixture file identities and assert the lifecycle result", "depends_on": []}]}
+
+def task_progress(contract, status, root, paths):
+    """Explicit fixture outcome using actual present/deleted file identities."""
+    if len(contract["units"]) != 1 or root is None:
+        raise ValueError("synthetic task progress requires its explicit project root and one fixture unit")
+    passed = status == "complete"
+    result = {"id": contract["units"][0]["id"], "status": "passed" if passed else "pending", "evidence": []}
+    progress = {"revision": contract["revision"], "results": [result],
+                "next_action": None if passed else "continue the next synthetic fixture check"}
+    if passed:
+        files = []
+        # Empty-change fixtures explicitly verify a sentinel's observed absence;
+        # real changed paths are always read from this fixture's actual root.
+        for relative in paths or ["synthetic-no-change-proof.absent"]:
+            path = pathlib.Path(root) / relative
+            present = path.is_file()
+            files.append(dict(path=relative, sha256=hashlib.sha256(path.read_bytes()).hexdigest() if present else None,
+                              executable=path.stat().st_mode & 0o111 if present else 0))
+        evidence = ["Synthetic fixture file identities observed; not real-Agent or product acceptance"]
+        result.update(evidence=evidence, sources=files)
+        progress["acceptance"] = [{"criterion": criterion, "evidence": evidence, "sources": copy.deepcopy(files)}
+                                  for criterion in contract["acceptance"]]
+    return progress
+
+def seed_legacy_active(tool, root, start, git_snapshot=None):
+    """Install observed pre-contract facts without invoking the new begin gate."""
+    path = pathlib.Path(root) / ".governance/upg.json"
+    binding = tool.load_json(path)
+    binding["runtime_version"] = "3.0.0-rc.20.9"
+    binding["active_workflow"] = dict(copy.deepcopy(start), observed_at="2026-10-23T00:00:00Z")
+    if git_snapshot is not None:
+        if not binding["git_checkpoint"]["enabled"] or not git_snapshot.get("ok"):
+            raise ValueError("legacy Git fixture requires an actual successful snapshot")
+        binding["git_checkpoint"]["start"] = {"workflow_id": start["workflow_id"], "snapshot": git_snapshot}
+    tool.write_json_atomic(path, binding)
+
 def report_identity(payload):
     return reviewed_report(dict(payload, workflow_id="engineering-fixture", change=change()))
 

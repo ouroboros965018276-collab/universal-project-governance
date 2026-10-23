@@ -52,9 +52,56 @@ def ref(path, root, run_id="focused", **extra):
     return value
 
 
+def compact_records(root):
+    """Actual compact candidates; no historical or product acceptance claim."""
+    return {
+        "execution": write(root / ".governance/execution/latest.json", execution([run(result="passed", passed=145)])),
+        "handoff": write(root / ".governance/handoff.json", dict(handoff(), status="ready", in_progress=[], next_actions=[])),
+        "feedback": write(root / ".governance/feedback/open.json", {
+            "updated_at": "2026-10-11T06:00:00Z", "items": [{
+                "id": "resolved", "status": "resolved", "observation": "resolved fixture",
+                "evidence": ["synthetic test assertion"], "consequence": "none", "scope": "project"}]}),
+    }
+
+
+def active_task_binding(root, proof, location="result"):
+    """Derive the active task state through the real evidence/contract verifier."""
+    from task_lifecycle import evaluate
+    contract = {"revision": "p1", "scope": ["synthetic compaction fixture"],
+                "acceptance": ["current proof"], "constraints": [], "unknowns": [],
+                "units": [{"id": "observed", "outcome": "current fixture identity observed",
+                           "verification": "check actual file or canonical run", "depends_on": []}]}
+    result = {"id": "observed", "status": "pending", "evidence": []}
+    progress = {"revision": "p1", "results": [result], "next_action": "continue the synthetic task"}
+    if location == "result":
+        result.update(proof, status="passed")
+    else:
+        progress["acceptance"] = [dict(proof, criterion="current proof")]
+    outcome = {"status": "partial", "change": {"validation_revision": "tested-a"}, "task_progress": progress}
+    active = {"task_contract": contract}
+    active["task_state"] = evaluate(root, outcome, active)
+    active["last_outcome"] = outcome
+    return {"active_workflow": active}
+
+
+def task_proof(kind, path, root):
+    proof = {"evidence": ["Synthetic current file/run observation; no product acceptance claim"]}
+    reference = {"path": path.relative_to(root).as_posix(), "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}
+    if kind == "sources":
+        proof[kind] = [dict(reference, executable=path.stat().st_mode & 0o111)]
+    elif kind == "current_state":
+        proof[kind] = reference
+    else:
+        proof[kind] = dict(reference, run_id="focused")
+    return proof
+
+
 class ValidationContinuityTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        runtime_path = patch.object(sys, "path", [str(TOOL.parent)] + sys.path)
+        runtime_path.start()
+        cls.addClassCleanup(runtime_path.stop)
         helper_spec = importlib.util.spec_from_file_location("project_facts", TOOL.with_name("project_facts.py"))
         helper = importlib.util.module_from_spec(helper_spec)
         helper_spec.loader.exec_module(helper)
@@ -188,6 +235,134 @@ class ValidationContinuityTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "stale validation_ref"):
                 state.compact(root, True, False)
             self.assertTrue(source.exists())
+
+    def test_compaction_preserves_each_binding_current_state_candidate(self):
+        for candidate in ("execution/latest.json", "handoff.json", "feedback/open.json"):
+            with self.subTest(candidate=candidate), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                if candidate == "execution/latest.json":
+                    value = execution()
+                elif candidate == "handoff.json":
+                    value = dict(handoff(), status="ready", in_progress=[], next_actions=[])
+                else:
+                    value = {"updated_at": "2026-10-11T06:00:00Z", "items": [{
+                        "id": "resolved", "status": "resolved", "observation": "resolved fixture",
+                        "evidence": ["synthetic test assertion"], "consequence": "none", "scope": "project"}]}
+                source = write(root / ".governance" / candidate, value)
+                current = {"path": source.relative_to(root).as_posix(),
+                           "sha256": hashlib.sha256(source.read_bytes()).hexdigest()}
+                write(root / ".governance/upg.json", {"current_state": current})
+                before = source.read_bytes()
+                self.assertEqual(state.resolve_current_state(root, current), source.resolve())
+                self.assertEqual(state.compact(root, False, True), [])
+                self.assertEqual(state.compact(root, True, True), [])
+                self.assertEqual(source.read_bytes(), before)
+
+    def test_compaction_rejects_stale_current_state_before_any_cleanup(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = write(root / "current.json", {"stage": "first"})
+            current = {"path": "current.json", "sha256": hashlib.sha256(source.read_bytes()).hexdigest()}
+            write(root / ".governance/upg.json", {"current_state": current})
+            removable = write(root / ".governance/execution/latest.json", execution())
+            write(source, {"stage": "later"})
+            before = removable.read_bytes()
+            with self.assertRaisesRegex(ValueError, "current_state changed"):
+                state.compact(root, True, True)
+            self.assertEqual(removable.read_bytes(), before)
+
+    def test_compaction_protects_current_active_results_and_acceptance_only(self):
+        for location in ("result", "acceptance"):
+            for kind in ("sources", "current_state", "validation_ref"):
+                candidates = ("execution",) if kind == "validation_ref" else ("execution", "handoff", "feedback")
+                for candidate in candidates:
+                    with self.subTest(location=location, kind=kind, candidate=candidate), tempfile.TemporaryDirectory() as directory:
+                        root = Path(directory)
+                        records = compact_records(root)
+                        source = records[candidate]
+                        binding = active_task_binding(root, task_proof(kind, source, root), location)
+                        write(root / ".governance/upg.json", binding)
+                        before = source.read_bytes()
+                        planned = state.compact(root, False, True)
+                        self.assertEqual(len(planned), 2)
+                        self.assertEqual(state.compact(root, True, True), planned)
+                        self.assertEqual(source.read_bytes(), before)
+                        self.assertTrue(all(not path.exists() for name, path in records.items() if name != candidate))
+
+    def test_compaction_rejects_stale_or_unsafe_active_proofs_before_any_cleanup(self):
+        for location in ("result", "acceptance"):
+            for kind in ("sources", "current_state", "validation_ref"):
+                for invalid in ("stale", "unsafe"):
+                    with self.subTest(location=location, kind=kind, invalid=invalid), tempfile.TemporaryDirectory() as directory:
+                        root = Path(directory)
+                        records = compact_records(root)
+                        source = records["execution"]
+                        binding = active_task_binding(root, task_proof(kind, source, root), location)
+                        if invalid == "stale":
+                            write(source, dict(execution([run(result="passed", passed=145)]), task="changed after proof"))
+                        else:
+                            progress = binding["active_workflow"]["last_outcome"]["task_progress"]
+                            proof = progress["results"][0] if location == "result" else progress["acceptance"][0]
+                            reference = proof[kind][0] if kind == "sources" else proof[kind]
+                            reference["path"] = "../outside.json"
+                        write(root / ".governance/upg.json", binding)
+                        before = {name: path.read_bytes() for name, path in records.items()}
+                        with self.assertRaises((OSError, ValueError)):
+                            state.compact(root, True, True)
+                        self.assertEqual({name: path.read_bytes() for name, path in records.items()}, before)
+
+    def test_compaction_cli_preserves_active_task_proof_without_import_cycle(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            records = compact_records(root)
+            source = records["execution"]
+            write(root / ".governance/upg.json", active_task_binding(root, task_proof("validation_ref", source, root)))
+            before = source.read_bytes()
+            result = subprocess.run([sys.executable, "-B", str(TOOL), "compact", str(root), "--apply", "--close-handoff"],
+                                    cwd=ROOT, capture_output=True, text=True, timeout=30)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(source.read_bytes(), before)
+            self.assertFalse(records["handoff"].exists())
+            self.assertFalse(records["feedback"].exists())
+
+    def test_compaction_rejects_current_nonpassed_validation_but_ignores_old_task_proofs(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            records = compact_records(root)
+            source = records["execution"]
+            binding = active_task_binding(root, task_proof("validation_ref", source, root))
+            write(source, execution([run(result="passed", passed=145, pending_retest=True)]))
+            result = binding["active_workflow"]["last_outcome"]["task_progress"]["results"][0]
+            result["validation_ref"]["sha256"] = hashlib.sha256(source.read_bytes()).hexdigest()
+            write(root / ".governance/upg.json", binding)
+            before = {name: path.read_bytes() for name, path in records.items()}
+            with self.assertRaisesRegex(ValueError, "currently passed"):
+                state.compact(root, True, True)
+            self.assertEqual({name: path.read_bytes() for name, path in records.items()}, before)
+            # The latest stage has explicitly invalidated this result. Its old
+            # proof and earlier completed history must not become retention roots.
+            old_outcome = json.loads(json.dumps(binding["active_workflow"]["last_outcome"]))
+            result.update(status="unknown", invalidation_reason="canonical run needs retest")
+            binding["active_workflow"]["task_state"]["completed"] = {}
+            binding["latest_change"] = old_outcome
+            write(root / ".governance/upg.json", binding)
+            write(root / ".governance/field-reports.json", {"reports": [old_outcome]})
+            self.assertEqual(len(state.compact(root, True, True)), 3)
+            self.assertTrue(all(not path.exists() for path in records.values()))
+            self.assertTrue((root / ".governance/field-reports.json").exists())
+
+    def test_current_state_resolver_preserves_safe_object_and_read_boundaries(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for relative, value, message in (("current.json", [], "structured JSON object"),
+                                              ("large.json", {"value": "x" * (256 * 1024)}, "bounded read limit")):
+                source = write(root / relative, value)
+                current = {"path": relative, "sha256": hashlib.sha256(source.read_bytes()).hexdigest()}
+                with self.subTest(relative=relative), self.assertRaisesRegex(ValueError, message):
+                    state.resolve_current_state(root, current)
+            for relative in ("../outside.json", ".governance/upg.json", ".governance/field-reports.json"):
+                with self.subTest(relative=relative), self.assertRaises(ValueError):
+                    state.resolve_current_state(root, {"path": relative, "sha256": "a" * 64})
 
     def test_compaction_preserves_reference_through_noncanonical_root(self):
         with tempfile.TemporaryDirectory() as directory:

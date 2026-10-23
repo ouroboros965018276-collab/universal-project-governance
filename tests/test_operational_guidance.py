@@ -236,7 +236,9 @@ class OperationalGuidanceTests(unittest.TestCase):
             self.assertEqual(generated["scripts/session_lifetime.py"], (SOURCE / "runtime-scripts/session_lifetime.py").read_bytes())
             self.assertEqual(generated["scripts/git_checkpoint.py"], (SOURCE / "runtime-scripts/git_checkpoint.py").read_bytes())
             self.assertIn("scripts/completion_review.py", generated)
-            self.assertEqual(len(generated), 23)
+            self.assertIn("scripts/task_lifecycle.py", generated)
+            self.assertEqual(generated["scripts/task_lifecycle.py"], (SOURCE / "runtime-scripts/task_lifecycle.py").read_bytes())
+            self.assertEqual(len(generated), 24)
 
 
 if __name__ == "__main__":
